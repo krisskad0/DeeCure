@@ -501,6 +501,28 @@ export interface BackupsInfo {
   timeshift: { installed: boolean; configured: boolean; mode?: string; schedule: string[]; snapshots: { created: number; kind: string; comment?: string }[] };
 }
 
+export interface DiagnosticReport {
+  steps: { name: string; result: "ok" | "warn" | "crit" | "na"; value: string }[];
+  verdict: string;
+  tone: "ok" | "warn" | "crit";
+  top?: [string, number][];
+}
+
+export interface AgentInfo {
+  version: string;
+  database: string;
+  database_bytes: number;
+  rules: number;
+  rules_dir: string;
+  uptime_seconds: number;
+  memory_bytes: number;
+}
+
+export interface VersionInfo {
+  agent: string;
+  protocol: number;
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
@@ -538,6 +560,8 @@ export function getInventory(kind: "privacy"): Promise<PrivacyInfo>;
 export function getInventory(kind: "packages"): Promise<PackagesInfo>;
 export function getInventory(kind: "containers"): Promise<ContainersInfo>;
 export function getInventory(kind: "backups"): Promise<BackupsInfo>;
+export function getInventory(kind: "diagnose_performance" | "diagnose_network"): Promise<DiagnosticReport>;
+export function getInventory(kind: "agent"): Promise<AgentInfo | null>;
 export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }

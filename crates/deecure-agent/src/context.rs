@@ -16,11 +16,26 @@ pub struct Agent {
     pub root: SystemRoot,
     /// Remembers the last process reading, so CPU use is measured between requests.
     processes: Mutex<ProcessSampler>,
+    /// Set once at start by `main`; empty in tests.
+    pub facts: std::sync::OnceLock<Facts>,
     /// The last folder-size scan, shared with the thread that runs a new one.
     pub usage: Arc<Mutex<UsageState>>,
     /// D-Bus connections, opened on first use and dropped after an error.
     system_bus: tokio::sync::Mutex<Option<zbus::Connection>>,
     session_bus: tokio::sync::Mutex<Option<zbus::Connection>>,
+}
+
+/// What the agent was started with, for Settings › About.
+#[derive(Debug, Clone)]
+pub struct Facts {
+    /// The database file.
+    pub database: std::path::PathBuf,
+    /// Where rules were loaded from, and how many.
+    pub rules_dir: std::path::PathBuf,
+    /// How many rules loaded.
+    pub rules: usize,
+    /// When the agent started.
+    pub started: std::time::Instant,
 }
 
 /// Which D-Bus bus to talk to.
@@ -40,6 +55,7 @@ impl Agent {
             root,
             processes: Mutex::new(ProcessSampler::default()),
             usage: Arc::new(Mutex::new(UsageState::default())),
+            facts: std::sync::OnceLock::new(),
             system_bus: tokio::sync::Mutex::new(None),
             session_bus: tokio::sync::Mutex::new(None),
         })

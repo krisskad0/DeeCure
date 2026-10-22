@@ -15,7 +15,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use deecure_agent::collect::{self, SystemRoot};
-use deecure_agent::context::Agent;
+use deecure_agent::context::{Agent, Facts};
 use deecure_agent::store::{self, SharedStore, Store};
 use deecure_agent::{rules, server, socket};
 use deecure_core::rpc::default_socket_path;
@@ -104,7 +104,9 @@ async fn run(
     eprintln!("deecure-agent: database {}", db_path.display());
     tokio::spawn(clean_up_regularly(store.clone()));
     let rules_dir = rules_dir.unwrap_or_else(|| PathBuf::from(rules::INSTALLED_DIR));
+    let started = std::time::Instant::now();
     let (rules, errors) = rules::load_dir(&rules_dir);
+    let rule_count = rules.len();
     for error in &errors {
         eprintln!("deecure-agent: skipped a rule: {error}");
     }
@@ -139,6 +141,12 @@ async fn run(
     };
 
     let agent = Agent::new(store, SystemRoot::real());
+    let _ = agent.facts.set(Facts {
+        database: db_path.clone(),
+        rules_dir: rules_dir.clone(),
+        rules: rule_count,
+        started,
+    });
     server::serve(listener, agent, shutdown_signal()).await;
 
     if let Some(path) = owned_path {

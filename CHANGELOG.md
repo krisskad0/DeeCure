@@ -53,6 +53,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Packages pages: every package from APT, snap, Flatpak, and AppImages with size and who installed it, software sources with signature checks, and what could be removed (from a simulation).
 - Containers pages: Docker containers with ports open to every network flagged, images, volumes (never offered for deletion), and virtual machines.
 - Backups pages: Déjà Dup and Timeshift status and snapshots. New rules `backups.none` and `backups.overdue`.
+- Diagnostics: a performance check that names the main cause of slowness, a network test (gateway, packet loss, DNS, internet, IPv6), and hardware tests. New diagnostics runner component.
+- Settings: Expert mode, default time range, and narrow sidebar (shared across the app at once), access levels, notification choices, data retention and database size, and About with the agent's version, uptime, memory, and rules. The Assistant page explains what is planned.
+- Every one of the 22 pages and 91 tabs now shows real data.
 - Data table (search, filter chips, unit-aware sorting, paging with totals, row selection with a bulk action, Expert-only columns, empty text) and form controls (switch, select, radio cards, field rows, state tiles).
 - First real page: Services › System Services, with a KPI row, an alert per failed service, and a searchable, filterable units table. The services collector now also records each service's enabled-at-boot state and restarts since boot.
 - Pinned Rust 1.99.1 (`rust-toolchain.toml`), shared lints, `Makefile` (`build`, `test`, `lint`, `fmt`), and a GitHub Actions CI workflow.

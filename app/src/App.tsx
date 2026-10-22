@@ -19,6 +19,9 @@ import { SecurityHardening, SecurityIntegrity, SecurityMalware, SecurityOverview
 import { BackupsJobs, BackupsRestore, BackupsSnapshots } from "./pages/backups/Backups";
 import { ContainersImages, ContainersList, ContainersVms, ContainersVolumes } from "./pages/containers/Containers";
 import { PackagesCleanup, PackagesInstalled, PackagesPermissions, PackagesSources } from "./pages/packages/Packages";
+import { AssistantChat } from "./pages/assistant/Assistant";
+import { DiagnosticsHardware, DiagnosticsNetwork, DiagnosticsPerformance } from "./pages/diagnostics/Diagnostics";
+import { SettingsAbout, SettingsAccess, SettingsAssistant, SettingsData, SettingsGeneral, SettingsNotifications } from "./pages/settings/Settings";
 import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "./pages/activity/Activity";
 import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
 import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel } from "./pages/logs/Logs";
@@ -91,6 +94,9 @@ const TABS: Record<string, Record<string, Tab>> = {
   packages: { installed: PackagesInstalled, sources: PackagesSources, cleanup: PackagesCleanup, permissions: PackagesPermissions },
   containers: { containers: ContainersList, images: ContainersImages, volumes: ContainersVolumes, vms: ContainersVms },
   backups: { jobs: BackupsJobs, snapshots: BackupsSnapshots, restore: BackupsRestore },
+  diagnostics: { performance: DiagnosticsPerformance, network: DiagnosticsNetwork, hardware: DiagnosticsHardware },
+  assistant: { chat: AssistantChat },
+  settings: { general: SettingsGeneral, access: SettingsAccess, notifications: SettingsNotifications, assistant: SettingsAssistant, data: SettingsData, about: SettingsAbout },
   storage: { overview: StorageOverview, filesystems: StorageFilesystems, usage: StorageUsage, cleanup: StorageCleanup },
   services: { user: ServicesUser, startup: ServicesStartup },
   jobs: { calendar: JobsCalendar, cron: JobsCron, timers: JobsTimers, anacron: JobsAnacron, at: JobsAt },

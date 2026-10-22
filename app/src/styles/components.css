@@ -222,3 +222,20 @@ a.btn { text-decoration: none; }
 .tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: var(--hover); border: 1px solid var(--line); font-size: 12px; color: var(--ink-2); }
 .plain-list { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+/* 23 Diagnostics runner */
+.runner { display: flex; flex-direction: column; gap: 12px; }
+.runner-progress { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.runner-progress span { display: block; height: 100%; background: var(--accent); transition: width 0.35s; }
+.runner-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.runner-step { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font-size: 13px; }
+.runner-step.done, .runner-step.current { color: var(--ink); }
+.runner-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--track); flex: none; }
+.runner-check { width: 20px; height: 20px; border-radius: 50%; background: var(--good); color: #fff; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.runner-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--track); border-top-color: var(--accent); animation: runner-spin 0.8s linear infinite; flex: none; }
+@keyframes runner-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .runner-spin { animation: none; } .runner-progress span { transition: none; } }
+.runner-actions { display: flex; gap: 8px; }
+.question-list { list-style: none; padding: 0 16px; }
+.question-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.question-list li:last-child { border-bottom: none; }
