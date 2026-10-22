@@ -18,7 +18,7 @@ These came up while setting up the repo. Each one has a proposed default, so wor
 | 7 | License (closes #2) | Apache-2.0, matching the prototype's About page | [ADR 0004](../02-architecture/decisions/0004-license-apache-2.0.md), `LICENSE` |
 | 8 | ~~Rust vs Go (closes #5)~~ | **Decided: Rust** | [ADR 0001](../02-architecture/decisions/0001-rust-for-agent-helper-cli.md) |
 | 9 | Supported systems | Ubuntu 24.04 LTS and 26.04 LTS on amd64 first, then arm64, then Debian 13 | [Packaging](../06-packaging/README.md) |
-| 10 | Charts in the real app | Custom SVG components that match the spec, or a library such as uPlot for long time series | [UI design](../03-ui-design/README.md) |
+| 10 | ~~Charts in the real app~~ | **Decided 2026-10-23: our own SVG components** ([ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)) | [UI design](../03-ui-design/README.md) |
 | 11 | Contact emails | One address for security, one for the code of conduct, and the package maintainer address (now a placeholder: `krisskad0@users.noreply.github.com`) | `SECURITY.md`, `CODE_OF_CONDUCT.md`, `packaging/debian/control` |
 | 12 | APT signing key | Who owns it and where the offline primary key is kept | [APT repository](../06-packaging/apt-repository.md) |
 | 13 | Missing insights catalog | Add `insights-catalog.md` (was `linux-system-insights.md`) | [Product](README.md), [Roadmap](../05-roadmap/README.md) |

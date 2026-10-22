@@ -65,7 +65,7 @@ The `Makefile` gives short names to the real commands:
 | `make perf` | Checks the agent against the [performance budget](../02-architecture/performance-budget.md) (about 80 s) |
 | `make help` | Lists all commands |
 | `make app` | Runs the desktop app with live reload (start `make agent` first) |
-| `make web` | Type-checks and builds the web UI |
+| `make web` | Runs the UI tests, type-checks, and builds the web UI |
 | `make deb` | Builds the `.deb` into `target/deb/` and checks it with lintian (see [Debian package](../06-packaging/debian-package.md)) |
 | `make deb-test` | Installs, uses, and purges the `.deb` in a clean Ubuntu container (needs Docker) |
 

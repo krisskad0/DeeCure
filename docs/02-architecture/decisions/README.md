@@ -13,6 +13,7 @@ An architecture decision record (ADR) is a short note about one big technical ch
 | [0003](0003-deb-and-apt-repository.md) | `.deb` package and our own APT repository as the main channel | Accepted |
 | [0004](0004-license-apache-2.0.md) | Apache-2.0 license | Proposed |
 | [0005](0005-root-helper-dbus-polkit.md) | Separate root helper on D-Bus, guarded by polkit | Accepted |
+| [0006](0006-charts-as-own-svg-components.md) | Charts as our own SVG components | Accepted |
 
 **Status words:** Proposed (waiting for a team decision) · Accepted · Replaced by #NNNN.
 

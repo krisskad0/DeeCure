@@ -7,13 +7,15 @@ import { PAGES, type PageSpec } from "./spec/pages";
 export interface Route {
   page: PageSpec;
   tab: PageSpec["tabs"][number];
+  /** The development-only component gallery (#/gallery). */
+  gallery: boolean;
 }
 
 export function parseHash(hash: string): Route {
   const [pageId, tabId] = hash.replace(/^#\/?/, "").split("/");
   const page = PAGES.find((p) => p.id === pageId) ?? PAGES[0];
   const tab = page.tabs.find((t) => t.id === tabId) ?? page.tabs[0];
-  return { page, tab };
+  return { page, tab, gallery: import.meta.env.DEV && pageId === "gallery" };
 }
 
 export function href(pageId: string, tabId?: string): string {

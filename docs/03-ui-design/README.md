@@ -69,4 +69,4 @@ The prototype was built with these rules:
 - The theme, tabular numbers, and reduced-motion rules still apply.
 - Ship the fonts inside the app. The app must work offline, so it cannot load Google Fonts.
 - Real data from the agent replaces the [sample data](04-behavior/sample-data.md). Keep the sample data for tests and demos.
-- The chart approach is still open. See [Open decisions](../01-product/open-decisions.md).
+- Charts are our own SVG components ([ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)).

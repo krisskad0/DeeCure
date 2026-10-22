@@ -15,6 +15,8 @@ import { Sidebar } from "./shell/Sidebar";
 import { useToast } from "./shell/Toast";
 import { type Mode, type Range, TopBar } from "./shell/TopBar";
 import { findingsFor, pageStatus } from "./status";
+import { UiContext } from "./ui";
+import { Gallery } from "./dev/Gallery";
 
 const REFRESH_MS = 10_000;
 
@@ -53,8 +55,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    document.title = `${route.page.label} · DeeCure`;
-  }, [route.page.label]);
+    document.title = `${route.gallery ? "Component gallery" : route.page.label} · DeeCure`;
+  }, [route.gallery, route.page.label]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -77,7 +79,9 @@ export default function App() {
   const shared = { report, error, now };
 
   let content;
-  if (route.page.id === "overview" && route.tab.id === "summary") {
+  if (route.gallery) {
+    content = <Gallery />;
+  } else if (route.page.id === "overview" && route.tab.id === "summary") {
     content = <IssuesPanel title="Active issues" subtitle="Most serious first" findings={all} {...shared} />;
   } else if (route.page.id === "overview" && route.tab.id === "issues") {
     content = <IssuesPanel title="All open issues" subtitle="Everything DeeCure found, most serious first" findings={all} {...shared} />;
@@ -86,6 +90,7 @@ export default function App() {
   }
 
   return (
+    <UiContext.Provider value={{ mode, range }}>
     <div className={`app ${rail ? "is-rail" : ""} mode-${mode}`}>
       <TopBar
         machine={machine}
@@ -128,14 +133,25 @@ export default function App() {
         onNavigate={() => setDrawer(false)}
       />
       <main className="main">
-        <PageHeader
-          route={route}
-          status={pageStatus(route.page.id, report, error)}
-          tabCounts={tabCounts}
-          onRefresh={() => void refresh()}
-        />
+        {route.gallery ? (
+          <div className="page-header">
+            <div className="crumbs">Development</div>
+            <div className="title-row">
+              <h1>Component gallery</h1>
+            </div>
+            <div className="tabs-spacer" />
+          </div>
+        ) : (
+          <PageHeader
+            route={route}
+            status={pageStatus(route.page.id, report, error)}
+            tabCounts={tabCounts}
+            onRefresh={() => void refresh()}
+          />
+        )}
         <div className="grid">{content}</div>
       </main>
     </div>
+    </UiContext.Provider>
   );
 }

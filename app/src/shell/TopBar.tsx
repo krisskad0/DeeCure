@@ -4,10 +4,10 @@
 import type { AppError, Machine, StatusReport } from "../api";
 import { Icon } from "../components/Icon";
 import { ago } from "../time";
+import type { Mode, Range } from "../ui";
 import { Segmented } from "./Segmented";
 
-export type Range = "1h" | "24h" | "7d" | "30d";
-export type Mode = "beginner" | "expert";
+export type { Mode, Range };
 
 const RANGES = [
   { value: "1h", label: "1h" },

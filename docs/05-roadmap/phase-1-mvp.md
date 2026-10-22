@@ -14,7 +14,8 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 | 2. App scaffold | ✅ Done. Tauri v2 + React 19 + TypeScript; one live screen (Overview › Active issues) with real findings from the agent, refreshed every 10 s; agent-not-running and first-check states. `make app`. |
 | 3. Foundations | ✅ Done. Design tokens (light and dark), bundled Ubuntu Sans fonts, spec typography, and the 43 icons plus the 22-page list generated from the spec by `scripts/gen-ui.py`. |
 | 4. Shell | ✅ Done. Top bar, sidebar (22 pages, sub-page trees, rail mode, narrow-window drawer), sticky page header with tabs, 12-column grid, and overlays: Ctrl K command palette (pages and services), notifications list, machines list, toasts. The side drawer comes with the components that open it (row inspect, fixes). |
-| 1, 5–13 | Not started |
+| 5. Components | Started. Done: 01 panel, 02 status badge, 03 buttons, 04 KPI tile, 06 inline meter, 07 key-value list, 08 status list, 09 checklist, 10 activity timeline, 11 alert banner, 22 code and log blocks, with UI tests and a component gallery. Next: the charts (own SVG, [ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)), then the data table and form controls. |
+| 1, 6–13 | Not started |
 
 ## Tasks (in order)
 

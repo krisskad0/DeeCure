@@ -11,7 +11,7 @@ import { PAGES } from "../spec/pages";
 
 interface Entry {
   label: string;
-  kind: "Page" | "Service";
+  kind: "Page" | "Service" | "Dev";
   target: string;
 }
 
@@ -22,6 +22,8 @@ const PAGE_ENTRIES: Entry[] = PAGES.flatMap((page) =>
     ? [{ label: page.label, kind: "Page" as const, target: href(page.id, page.tabs[0].id) }]
     : page.tabs.map((tab) => ({ label: `${page.label} › ${tab.label}`, kind: "Page" as const, target: href(page.id, tab.id) })),
 );
+
+const DEV_ENTRIES: Entry[] = import.meta.env.DEV ? [{ label: "Component gallery", kind: "Dev", target: "#/gallery" }] : [];
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
@@ -43,7 +45,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return [...PAGE_ENTRIES, ...services].filter((e) => e.label.toLowerCase().includes(needle)).slice(0, MAX_RESULTS);
+    return [...DEV_ENTRIES, ...PAGE_ENTRIES, ...services].filter((e) => e.label.toLowerCase().includes(needle)).slice(0, MAX_RESULTS);
   }, [query, services]);
 
   useEffect(() => setHighlight(0), [query]);

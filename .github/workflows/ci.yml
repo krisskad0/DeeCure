@@ -42,7 +42,7 @@ jobs:
         run: make test
 
   web:
-    name: Web UI (type-check and build)
+    name: Web UI (test, type-check, build)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
@@ -62,6 +62,9 @@ jobs:
 
       - name: Install packages
         run: npm ci
+
+      - name: Test
+        run: npm test
 
       - name: Type-check and build
         run: npm run build

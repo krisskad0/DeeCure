@@ -2,6 +2,7 @@
 // The list of open findings, with honest states for "agent not running" and "not checked yet".
 
 import type { AppError, Finding, StatusReport } from "../api";
+import { Panel, type Span } from "../components/Panel";
 import { StatusBadge } from "../components/StatusBadge";
 import { severityVariant } from "../status";
 import { ago } from "../time";
@@ -13,16 +14,12 @@ export function IssuesPanel(props: {
   report: StatusReport | null;
   error: AppError | null;
   now: number;
-  span?: number;
+  span?: Span;
 }) {
   return (
-    <section className={`panel span-${props.span ?? 12}`}>
-      <div className="panel-head">
-        <h2>{props.title}</h2>
-        <span className="panel-sub">{props.subtitle}</span>
-      </div>
+    <Panel title={props.title} subtitle={props.subtitle} span={props.span} flush>
       <Body {...props} />
-    </section>
+    </Panel>
   );
 }
 

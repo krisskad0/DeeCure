@@ -8,6 +8,7 @@ The DeeCure desktop app: Tauri v2 + React + TypeScript.
 | `src/components/` | Reusable components, one file each ([spec](../docs/03-ui-design/03-components/README.md)) |
 | `src/api.ts` | Calls into the Tauri side. Types mirror `crates/deecure-core`. |
 | `src/spec/` | **Generated** from the UI spec by `scripts/gen-ui.py`: icons and the page list. Do not edit; change the spec and run the script. CI fails if they drift. |
+| `src/dev/` | Development-only: the **component gallery** (Ctrl K → "Component gallery", or `#/gallery`) and the prototype's sample-data generator |
 | `src-tauri/` | Tauri Rust side. Its commands talk to the agent's socket through `deecure_core::client`. |
 | `src-tauri/icons/` | Window icons, made from `packaging/desktop/deecure.svg` with `npx tauri icon` |
 
@@ -23,7 +24,7 @@ Node.js 22 or newer is needed (`nvm install 22`). `make app` installs the packag
 ## Check it
 
 ```bash
-make web     # type-check (TypeScript) and build the web UI
+make web     # UI tests (Vitest), type-check (TypeScript), and build
 make lint    # Rust lints, including src-tauri
 ```
 

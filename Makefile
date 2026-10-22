@@ -29,8 +29,8 @@ status: ## Show what the running agent found (deecure status)
 app: ## Run the desktop app with live reload (start the agent first: make agent)
 	cd app && ([ -d node_modules ] || npm ci) && npm run tauri dev
 
-web: ## Type-check and build the web UI
-	cd app && ([ -d node_modules ] || npm ci) && npm run build
+web: ## Test, type-check, and build the web UI
+	cd app && ([ -d node_modules ] || npm ci) && npm test && npm run build
 
 perf: ## Check the agent against the performance budget (takes about 80 s)
 	scripts/perf-check.sh
