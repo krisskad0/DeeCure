@@ -43,7 +43,9 @@ su deecure-test -c '
   deecure --socket /tmp/deecure-test.sock status
   deecure --socket /tmp/deecure-test.sock status --json > /tmp/deecure-test.json
   kill $agent || true
-  grep -q "3 rules from /usr/share/deecure/rules" /tmp/deecure-test.log
+  # Every installed rule must load: the count in the log matches the files shipped.
+  rules=$(find /usr/share/deecure/rules -name "*.yaml" | wc -l)
+  grep -q "$rules rules from /usr/share/deecure/rules" /tmp/deecure-test.log
   [ "$(stat -c %a ~/.local/share/deecure/deecure.db)" = 600 ]
 '
 grep -q '"generated_at"' /tmp/deecure-test.json || fail "status --json did not print the report"
