@@ -12,7 +12,8 @@
 | 1. Blocking decisions | Name ✅, Rust ✅. License and app ID still open. |
 | 2. Repo setup | git ✅, CI ✅. Branch protection: turn on in GitHub settings. |
 | 3. Cargo workspace | ✅ Done |
-| 4–12 | Not started |
+| 4. Shared types | ✅ Done. Wire format in [IPC protocol](../02-architecture/ipc-protocol.md). |
+| 5–12 | Not started |
 
 ## Tasks (in order)
 

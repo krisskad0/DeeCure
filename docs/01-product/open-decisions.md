@@ -23,3 +23,4 @@ These came up while setting up the repo. Each one has a proposed default, so wor
 | 12 | APT signing key | Who owns it and where the offline primary key is kept | [APT repository](../06-packaging/apt-repository.md) |
 | 13 | Missing insights catalog | Add `insights-catalog.md` (was `linux-system-insights.md`) | [Product](README.md), [Roadmap](../05-roadmap/README.md) |
 | 14 | Onboarding and first-scan screens | Design them. They are not in the prototype. | [Phase 1](../05-roadmap/phase-1-mvp.md) |
+| 15 | Health score points | The plan takes 15 points per critical finding and 5 per warning. The prototype uses smaller, hand-picked deductions (score 82). Pick one before Phase 1, task 9. The code currently follows the plan. | [Health score](../02-architecture/health-score.md), [State model](../03-ui-design/04-behavior/state-model.md) |

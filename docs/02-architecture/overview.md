@@ -56,7 +56,7 @@ flowchart TB
 
 | From → To | Channel | Format | Notes |
 | --- | --- | --- | --- |
-| Desktop app → agent | Unix socket `$XDG_RUNTIME_DIR/deecure/agent.sock` | JSON-RPC 2.0 (proposed) | The Tauri Rust side holds the connection. The React UI calls Tauri commands. |
+| Desktop app → agent | Unix socket `$XDG_RUNTIME_DIR/deecure/agent.sock` | JSON-RPC 2.0, one message per line ([IPC protocol](ipc-protocol.md)) | The Tauri Rust side holds the connection. The React UI calls Tauri commands. |
 | CLI → agent | Same socket | Same | `--json` prints the raw result |
 | Agent → helper | D-Bus system bus, name `io.github.krisskad0.DeeCure.Helper1` | D-Bus methods from a fixed list | polkit checks every call |
 | Agent → system | `/proc`, `/sys`, journal, D-Bus (systemd, NetworkManager, UPower, BlueZ) | — | Read-only |

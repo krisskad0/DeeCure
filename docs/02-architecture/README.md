@@ -9,6 +9,7 @@ How DeeCure is built. Start with the overview, then read the part you work on.
 | File | What it covers |
 | --- | --- |
 | [overview.md](overview.md) | Components, tech stack, how the parts talk, files on disk |
+| [ipc-protocol.md](ipc-protocol.md) | The messages between the agent, the CLI, and the app |
 | [security-model.md](security-model.md) | How DeeCure keeps itself safe, trust boundaries |
 | [performance-budget.md](performance-budget.md) | CPU, RAM, and speed limits the app must meet |
 
