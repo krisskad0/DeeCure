@@ -12,6 +12,16 @@ import { PerformanceGpu } from "./pages/performance/Gpu";
 import { PerformanceMemory } from "./pages/performance/Memory";
 import { PerformanceNetwork } from "./pages/performance/Network";
 import { PerformancePressure } from "./pages/performance/Pressure";
+import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
+import { HardwareFirmware } from "./pages/hardware/Firmware";
+import { HardwareGraphics } from "./pages/hardware/Graphics";
+import { HardwareMemory } from "./pages/hardware/Memory";
+import { HardwarePeripherals } from "./pages/hardware/Peripherals";
+import { HardwareProcessor } from "./pages/hardware/Processor";
+import { HardwareSensors } from "./pages/hardware/Sensors";
+import { HardwareStorage } from "./pages/hardware/Storage";
+import { HardwareSummary } from "./pages/hardware/Summary";
+import { PowerBattery, PowerProfile, PowerSleep } from "./pages/power/Power";
 import { ProcessesAll, ProcessesTop } from "./pages/processes/Processes";
 import { SystemBoot } from "./pages/system/Boot";
 import { SystemKernel } from "./pages/system/Kernel";
@@ -48,6 +58,18 @@ const TABS: Record<string, Record<string, Tab>> = {
     pressure: PerformancePressure,
   },
   processes: { all: ProcessesAll, top: ProcessesTop },
+  hardware: {
+    summary: HardwareSummary,
+    processor: HardwareProcessor,
+    memory: HardwareMemory,
+    storage: HardwareStorage,
+    graphics: HardwareGraphics,
+    sensors: HardwareSensors,
+    peripherals: HardwarePeripherals,
+    firmware: HardwareFirmware,
+  },
+  power: { battery: PowerBattery, profile: PowerProfile, sleep: PowerSleep },
+  display: { displays: DisplayDisplays, audio: DisplayAudio },
   system: { overview: SystemOverview, boot: SystemBoot, updates: SystemUpdates, kernel: SystemKernel, time: SystemTime },
 };
 

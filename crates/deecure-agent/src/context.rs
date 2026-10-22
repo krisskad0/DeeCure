@@ -16,6 +16,18 @@ pub struct Agent {
     pub root: SystemRoot,
     /// Remembers the last process reading, so CPU use is measured between requests.
     processes: Mutex<ProcessSampler>,
+    /// D-Bus connections, opened on first use and dropped after an error.
+    system_bus: tokio::sync::Mutex<Option<zbus::Connection>>,
+    session_bus: tokio::sync::Mutex<Option<zbus::Connection>>,
+}
+
+/// Which D-Bus bus to talk to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Bus {
+    /// The system bus: systemd, logind, UPower, BlueZ, fwupd.
+    System,
+    /// The user's session bus: the desktop shell.
+    Session,
 }
 
 impl Agent {
@@ -25,7 +37,59 @@ impl Agent {
             store,
             root,
             processes: Mutex::new(ProcessSampler::default()),
+            system_bus: tokio::sync::Mutex::new(None),
+            session_bus: tokio::sync::Mutex::new(None),
         })
+    }
+
+    /// A connection to `bus`, reused between requests.
+    pub async fn bus(&self, bus: Bus) -> zbus::Result<zbus::Connection> {
+        let slot = match bus {
+            Bus::System => &self.system_bus,
+            Bus::Session => &self.session_bus,
+        };
+        let mut slot = slot.lock().await;
+        if let Some(conn) = slot.as_ref() {
+            return Ok(conn.clone());
+        }
+        let conn = match bus {
+            Bus::System => zbus::Connection::system().await?,
+            Bus::Session => zbus::Connection::session().await?,
+        };
+        *slot = Some(conn.clone());
+        Ok(conn)
+    }
+
+    /// Forgets a connection after an error, so the next call opens a new one.
+    pub async fn drop_bus(&self, bus: Bus) {
+        match bus {
+            Bus::System => *self.system_bus.lock().await = None,
+            Bus::Session => *self.session_bus.lock().await = None,
+        }
+    }
+
+    /// True when `name` (such as `org.freedesktop.fwupd`) is running now. Asking never
+    /// starts a service: DeeCure must not wake or change anything on the system.
+    pub async fn is_running(&self, bus: Bus, name: &str) -> bool {
+        let Ok(conn) = self.bus(bus).await else {
+            return false;
+        };
+        let reply = conn
+            .call_method(
+                Some("org.freedesktop.DBus"),
+                "/org/freedesktop/DBus",
+                Some("org.freedesktop.DBus"),
+                "NameHasOwner",
+                &(name,),
+            )
+            .await;
+        match reply {
+            Ok(reply) => reply.body().deserialize::<bool>().unwrap_or(false),
+            Err(_) => {
+                self.drop_bus(bus).await;
+                false
+            }
+        }
     }
 
     /// The process reader. A panic elsewhere does not make it unusable.

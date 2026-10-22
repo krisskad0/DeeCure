@@ -217,3 +217,7 @@ a.btn { text-decoration: none; }
 .st-icon { width: 32px; height: 32px; border-radius: 7px; background: var(--neutral-soft); display: grid; place-items: center; color: var(--ink-2); flex: none; }
 .st-title { display: block; font-weight: 600; }
 .st-state { display: block; font-size: 12px; color: var(--muted); }
+
+/* Tag: a neutral pill for short labels, such as CPU features (notation ‹Text›). */
+.tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: var(--hover); border: 1px solid var(--line); font-size: 12px; color: var(--ink-2); }

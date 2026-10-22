@@ -40,6 +40,12 @@ The code is in `crates/deecure-agent/src/collect/`. Every file collector reads t
 
 Some data changes too fast to store, or is cheap to read again. The agent reads it when asked (the `inventory` call), and keeps nothing.
 
+Safety rules for live reads:
+
+- Read only. Helper programs (`pw-dump`, `journalctl`, `gsettings`) only read, and run with a time limit.
+- D-Bus services are asked only when they are already running (`NameHasOwner`). DeeCure never starts a service by asking it (no D-Bus activation).
+- Values only root can read are left out, and the app says they need Full access.
+
 | Kind | Reads | Contents |
 | --- | --- | --- |
 | `system` | `/etc/os-release`, `/proc`, `/sys/class/dmi/id`, `/run/reboot-required` | Host name, OS, kernel, architecture, maker and model, CPU model and threads, memory, uptime, and whether an update asks for a restart |
@@ -48,6 +54,13 @@ Some data changes too fast to store, or is cheap to read again. The agent reads 
 | `os` | `/etc/os-release`, `/usr/share/distro-info/ubuntu.csv`, `/proc/cpuinfo`, `/sys/class/dmi/id`, `/etc/machine-id`, `/run/systemd/users`, `/var/lib/ubuntu-advantage/status.json`, `/etc/timezone`, `/run/systemd/timesync/synchronized`, `/etc/adjtime`, `/etc/default/{locale,keyboard}` | Release name and support dates, virtualization, machine ID (shortened), people signed in, Ubuntu Pro and Livepatch, time zone, NTP sync, time server, RTC mode, locale, and keyboard layout |
 | `kernel` | `/proc/modules`, `/proc/cmdline`, `/proc/sys/kernel/tainted`, `/lib/modules`, `/boot` | Running kernel, taint flags, boot options, installed kernels (running, fallback, old) with size and install date, and loaded modules |
 | `update_history` | `/var/log/apt/history.log` | The last 100 apt runs: when, who started them, packages changed, and whether apt logged an error. Rotated logs are not read yet. |
+| `hardware` | `/sys/class/dmi/id`, `/sys/firmware`, `/sys/class/tpm`, `/proc/cpuinfo`, `/sys/devices/system/cpu`, `/sys/devices/cpu_{core,atom}`, `/sys/block`, `/sys/bus/{pci,usb}`, `/proc/bus/input/devices`, `pci.ids` | Machine, chassis, BIOS, boot mode, Secure Boot, TPM; processor model, cores (performance and efficient), threads, speeds, L3 cache, microcode, features, and each logical CPU; memory total and ECC reporting; whole disks; PCI, USB, keyboard, and pointer devices with their drivers |
+| `power` | `/sys/class/power_supply`, power-profiles-daemon (D-Bus), `/etc/UPower/UPower.conf`, `gsettings`, logind config, `/sys/power/mem_sleep` | Batteries (status, capacity, design, cycles, charge limit), mains power, power mode, battery policy, screen blank and suspend timeouts, lid action, sleep mode |
+| `display` | `/sys/class/drm` (EDID), GNOME Mutter `GetCurrentState` (session D-Bus), `gsettings` | Every connector, connected screens with name, resolution, refresh rate, scale, and primary; GNOME Shell version; fractional scaling |
+| `audio` | `pw-dump` | Sound server, output and input devices with volume, mute, and default; apps playing sound |
+| `bluetooth` | BlueZ (system D-Bus) | Adapters, whether one is on, and paired or connected devices with battery level |
+| `firmware` | fwupd (system D-Bus) | Devices with firmware, their version, and updates fwupd's local metadata offers |
+| `sleep` | `journalctl` (systemd-sleep) | Suspends and hibernates of the last 30 days, how long each lasted, and failures |
 | `gpu` | `/sys/class/drm/card*`, `pci.ids` | Each graphics card's maker and model, PCI ID, driver, whether it is the main card, and load, video memory, and temperature when the driver reports them without admin rights |
 
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.

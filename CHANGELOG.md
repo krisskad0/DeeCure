@@ -36,6 +36,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - System pages with real data: Overview (release, desktop, virtualization, Ubuntu Pro, release lifecycle bar from distro-info), Boot (phase times, slowest units, history of boots), Updates (pending packages from a read-only `apt list --upgradable` every hour, apt history), Kernel (installed kernels, modules, taint), and Time & Locale.
 - Processes pages with real data: all processes with state counts, user filter, start time, and a row-inspect side drawer; top consumers by CPU and memory.
 - New rules: `security.updates_pending` (warning) and `system.reboot_required` (info).
+- Hardware pages with real data: machine and firmware (Secure Boot, TPM, BIOS), processor with performance and efficient cores, memory, disks, graphics driver checks, all sensors and fans, PCI/USB/input/Bluetooth devices with drivers, and firmware updates from fwupd.
+- Power pages with real data: battery charge, health, capacity, cycles, charge limit, and trends; power mode and battery policies; sleep history from the journal.
+- Display & Audio pages with real data: every screen with resolution, refresh, scale, and primary (from GNOME); sound devices, volumes, defaults, and streams (from PipeWire).
+- The agent asks D-Bus services only when they already run, and never starts one.
 - Data table (search, filter chips, unit-aware sorting, paging with totals, row selection with a bulk action, Expert-only columns, empty text) and form controls (switch, select, radio cards, field rows, state tiles).
 - First real page: Services › System Services, with a KPI row, an alert per failed service, and a searchable, filterable units table. The services collector now also records each service's enabled-at-boot state and restarts since boot.
 - Pinned Rust 1.99.1 (`rust-toolchain.toml`), shared lints, `Makefile` (`build`, `test`, `lint`, `fmt`), and a GitHub Actions CI workflow.

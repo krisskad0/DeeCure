@@ -71,7 +71,7 @@ async fn serve_connection(stream: UnixStream, our_uid: u32, agent: Arc<Agent>) {
         } else if line.trim_ascii().is_empty() {
             continue;
         } else {
-            handler::handle_line(&line, &agent)
+            handler::handle_line(&line, &agent).await
         };
         if send(&mut write, &response).await.is_err() || !complete {
             // The client hung up, or the message was cut off: close the connection.

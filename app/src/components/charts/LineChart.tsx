@@ -78,7 +78,7 @@ export function LineChart(props: {
         </div>
       )}
       <svg width={width} height={height} onPointerMove={onMove} onPointerLeave={() => setHover(null)} role="img"
-        aria-label={series.map((s) => `${s.name}: ${formatValue(s.data[s.data.length - 1], unit)}`).join(", ")}>
+        aria-label={series.filter((s) => s.data.length).map((s) => `${s.name}: ${formatValue(s.data[s.data.length - 1], unit)}`).join(", ")}>
         {grid.map((v, k) => (
           <g key={k}>
             <line x1={left} x2={left + plotW} y1={yOf(v)} y2={yOf(v)} stroke={k === 0 ? "var(--axis)" : "var(--grid)"} />
@@ -148,7 +148,7 @@ export function LineChart(props: {
             <div key={s.name} className="tip-row">
               <i style={{ background: color(s, k) }} />
               {series.length > 1 ? `${s.name}: ` : ""}
-              {formatValue(s.data[hover], unit)}
+              {s.data[hover] === undefined ? "—" : formatValue(s.data[hover], unit)}
             </div>
           ))}
         </div>

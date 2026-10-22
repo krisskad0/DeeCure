@@ -20,15 +20,20 @@ export interface History {
   series: Metric[][];
 }
 
-/** Points for some metrics over the chosen time range, reloaded every minute. */
-export function useHistory(names: string[], subject?: string): History | undefined {
-  const { range } = useUi();
-  const key = `${range}|${names.join(",")}|${subject ?? ""}`;
+/** A metric name, or a name with its own subject (such as one sensor). */
+export type SeriesSpec = string | { name: string; subject?: string };
+
+/** Points for some metrics over the chosen time range (or a fixed one), reloaded every minute. */
+export function useHistory(specs: SeriesSpec[], subject?: string, fixed?: Range): History | undefined {
+  const ui = useUi();
+  const range = fixed ?? ui.range;
+  const list = specs.map((s) => (typeof s === "string" ? { name: s, subject } : s));
+  const key = `${range}|${list.map((s) => `${s.name}@${s.subject ?? ""}`).join(",")}`;
   return useLive(
     async () => {
       const until = Date.now();
       const since = until - RANGE_MS[range];
-      const series = await Promise.all(names.map((name) => getMetrics(name, since, until, { subject })));
+      const series = await Promise.all(list.map((s) => getMetrics(s.name, since, until, { subject: s.subject })));
       return { range, series };
     },
     60_000,
@@ -56,7 +61,10 @@ export function TimeChart(props: {
   const { history, scale = (v) => v } = props;
   if (!history) return <div className="chart-empty muted">Loading…</div>;
   const { times, data } = align(history.series);
-  const series: LineSeries[] = props.names.map((name, k) => ({ name, data: (data[k] ?? []).map(scale), slot: (k + 1) as LineSeries["slot"] }));
+  // While a reload is on its way, `names` can be longer than the data; leave those out.
+  const series: LineSeries[] = props.names
+    .map((name, k) => ({ name, data: (data[k] ?? []).map(scale), slot: (k + 1) as LineSeries["slot"] }))
+    .filter((s) => s.data.length > 0);
   return (
     <LineChart
       series={series}

@@ -7,7 +7,7 @@ use serde::Serialize;
 use crate::collect::SystemRoot;
 
 /// Where Ubuntu keeps the PCI ID list (packages `pci.ids` and `hwdata`).
-const PCI_IDS: &[&str] = &["/usr/share/misc/pci.ids", "/usr/share/hwdata/pci.ids"];
+pub(crate) const PCI_IDS: &[&str] = &["/usr/share/misc/pci.ids", "/usr/share/hwdata/pci.ids"];
 
 /// One graphics card.
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]

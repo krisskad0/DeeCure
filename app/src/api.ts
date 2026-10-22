@@ -200,6 +200,104 @@ export interface UpdatesInfo {
   automatic_security: boolean;
 }
 
+export interface HardwareInfo {
+  machine: {
+    vendor?: string;
+    model?: string;
+    chassis?: string;
+    bios_vendor?: string;
+    bios_version?: string;
+    /** As the firmware writes it: MM/DD/YYYY. */
+    bios_date?: string;
+    boot_mode: string;
+    secure_boot?: boolean;
+    tpm?: string;
+  };
+  processor: {
+    model?: string;
+    cores: number;
+    /** [performance, efficient] cores on hybrid CPUs. */
+    hybrid?: [number, number];
+    threads: number;
+    base_hz?: number;
+    max_hz?: number;
+    l3_bytes?: number;
+    microcode?: string;
+    features: string[];
+    cpus: { cpu: number; core_id: number; kind?: string; mhz?: number }[];
+  };
+  memory_total?: number;
+  ecc_reporting: boolean;
+  disks: { name: string; model?: string; kind: string; size: number; firmware?: string; removable: boolean }[];
+  devices: { name: string; bus: string; vendor?: string; drivers: string[]; class?: string; id?: string }[];
+  bluetooth_adapters: number;
+}
+
+export interface PowerInfo {
+  batteries: {
+    name: string;
+    status: string;
+    charge?: number;
+    full_wh?: number;
+    design_wh?: number;
+    cycles?: number;
+    technology?: string;
+    manufacturer?: string;
+    model?: string;
+    charge_limit?: number;
+  }[];
+  on_ac?: boolean;
+  profile?: string;
+  profiles: string[];
+  policy?: { low_percent: number; critical_percent: number; action_percent: number; critical_action: string };
+  screen_blank_seconds?: number;
+  suspend_on_battery_seconds?: number;
+  suspend_on_ac_seconds?: number;
+  lid_action: string;
+  sleep_mode?: string;
+}
+
+export interface DisplayInfo {
+  compositor?: string;
+  shell_version?: string;
+  fractional_scaling: boolean;
+  outputs: { connector: string; connected: boolean; name?: string; builtin: boolean; width?: number; height?: number; refresh_hz?: number; scale?: number; primary: boolean }[];
+}
+
+export interface AudioDevice {
+  name: string;
+  description: string;
+  volume?: number;
+  muted: boolean;
+  default: boolean;
+}
+
+export interface AudioInfo {
+  server?: string;
+  outputs: AudioDevice[];
+  inputs: AudioDevice[];
+  streams: string[];
+}
+
+export interface BluetoothInfo {
+  available: boolean;
+  adapters: number;
+  powered: boolean;
+  devices: { name: string; kind?: string; paired: boolean; connected: boolean; battery?: number }[];
+}
+
+export interface FirmwareInfo {
+  available: boolean;
+  devices: { name: string; vendor?: string; version?: string; available?: string; updatable: boolean }[];
+}
+
+export interface SleepEvent {
+  at: number;
+  kind: string;
+  duration_ms?: number;
+  failed: boolean;
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
@@ -208,6 +306,13 @@ export function getInventory(kind: "gpu"): Promise<Gpu[]>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;
+export function getInventory(kind: "hardware"): Promise<HardwareInfo>;
+export function getInventory(kind: "power"): Promise<PowerInfo>;
+export function getInventory(kind: "display"): Promise<DisplayInfo>;
+export function getInventory(kind: "audio"): Promise<AudioInfo>;
+export function getInventory(kind: "bluetooth"): Promise<BluetoothInfo>;
+export function getInventory(kind: "firmware"): Promise<FirmwareInfo>;
+export function getInventory(kind: "sleep"): Promise<SleepEvent[]>;
 export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }

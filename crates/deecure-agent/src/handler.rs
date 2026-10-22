@@ -18,7 +18,7 @@ use crate::rules::{CHECKED_CATEGORIES_SETTING, LAST_CHECK_SETTING};
 use crate::store::{self, StoreError};
 
 /// Reads one JSON-RPC message and answers it.
-pub fn handle_line(line: &[u8], agent: &Agent) -> Response {
+pub async fn handle_line(line: &[u8], agent: &Agent) -> Response {
     let value: Value = match serde_json::from_slice(line) {
         Ok(value) => value,
         Err(e) => {
@@ -31,7 +31,7 @@ pub fn handle_line(line: &[u8], agent: &Agent) -> Response {
         .get("id")
         .and_then(|id| serde_json::from_value::<RequestId>(id.clone()).ok());
     match serde_json::from_value::<Request>(value) {
-        Ok(request) => handle(request, agent),
+        Ok(request) => handle(request, agent).await,
         Err(e) => {
             let error = RpcError::new(
                 RpcError::INVALID_REQUEST,
@@ -43,7 +43,7 @@ pub fn handle_line(line: &[u8], agent: &Agent) -> Response {
 }
 
 /// Answers one request.
-pub fn handle(request: Request, agent: &Agent) -> Response {
+pub async fn handle(request: Request, agent: &Agent) -> Response {
     let store = || store::lock(&agent.store);
     let result = match request.method.as_str() {
         method::VERSION => no_params(&request).and_then(|()| {
@@ -91,10 +91,12 @@ pub fn handle(request: Request, agent: &Agent) -> Response {
         }),
         method::SNAPSHOT => params::<SnapshotParams>(&request)
             .and_then(|p| to_result(&store().latest_snapshot(p.kind).map_err(store_failed)?)),
-        method::INVENTORY => params::<InventoryParams>(&request).and_then(|p| {
-            inventory::read(&p.kind, agent)
-                .map_err(|why| RpcError::new(RpcError::INVALID_PARAMS, why))
-        }),
+        method::INVENTORY => match params::<InventoryParams>(&request) {
+            Ok(p) => inventory::read(&p.kind, agent)
+                .await
+                .map_err(|why| RpcError::new(RpcError::INVALID_PARAMS, why)),
+            Err(e) => Err(e),
+        },
         other => Err(RpcError::method_not_found(other)),
     };
     match result {
@@ -156,20 +158,20 @@ mod tests {
         Agent::new(store, SystemRoot::real())
     }
 
-    fn answer(line: &str) -> Value {
-        serde_json::to_value(handle_line(line.as_bytes(), &agent())).unwrap()
+    async fn answer(line: &str) -> Value {
+        serde_json::to_value(handle_line(line.as_bytes(), &agent()).await).unwrap()
     }
 
-    #[test]
-    fn version_reports_agent_and_protocol() {
+    #[tokio::test]
+    async fn version_reports_agent_and_protocol() {
         assert_eq!(
-            answer(r#"{"jsonrpc":"2.0","id":1,"method":"version"}"#),
+            answer(r#"{"jsonrpc":"2.0","id":1,"method":"version"}"#).await,
             json!({"jsonrpc": "2.0", "id": 1, "result": {"agent": VERSION, "protocol": PROTOCOL_VERSION}})
         );
     }
 
-    #[test]
-    fn status_returns_open_findings_from_the_store() {
+    #[tokio::test]
+    async fn status_returns_open_findings_from_the_store() {
         let agent = agent();
         let finding = Finding {
             rule: RuleId::new("storage.root_almost_full").unwrap(),
@@ -187,7 +189,8 @@ mod tests {
         let response = handle_line(
             br#"{"jsonrpc":"2.0","id":"s","method":"status","params":{}}"#,
             &agent,
-        );
+        )
+        .await;
         assert_eq!(response.id, Some(RequestId::from("s")));
         let Outcome::Success(result) = response.outcome else {
             panic!("expected a result");
@@ -197,53 +200,55 @@ mod tests {
         assert_eq!(report.score, None, "no score before the first check");
     }
 
-    #[test]
-    fn status_scores_health_after_a_check() {
+    #[tokio::test]
+    async fn status_scores_health_after_a_check() {
         let agent = agent();
         store::lock(&agent.store)
             .set_setting(LAST_CHECK_SETTING, &Timestamp(5))
             .unwrap();
-        let reply = answer_with(&agent, r#"{"jsonrpc":"2.0","id":1,"method":"status"}"#);
+        let reply = answer_with(&agent, r#"{"jsonrpc":"2.0","id":1,"method":"status"}"#).await;
         assert_eq!(reply["result"]["score"], 100);
     }
 
-    #[test]
-    fn inventory_reads_live_system_facts() {
+    #[tokio::test]
+    async fn inventory_reads_live_system_facts() {
         let reply =
-            answer(r#"{"jsonrpc":"2.0","id":1,"method":"inventory","params":{"kind":"system"}}"#);
+            answer(r#"{"jsonrpc":"2.0","id":1,"method":"inventory","params":{"kind":"system"}}"#)
+                .await;
         assert_eq!(reply["result"]["arch"], std::env::consts::ARCH);
         let reply =
-            answer(r#"{"jsonrpc":"2.0","id":2,"method":"inventory","params":{"kind":"toasters"}}"#);
+            answer(r#"{"jsonrpc":"2.0","id":2,"method":"inventory","params":{"kind":"toasters"}}"#)
+                .await;
         assert_eq!(reply["error"]["code"], RpcError::INVALID_PARAMS);
     }
 
-    fn answer_with(agent: &Agent, line: &str) -> Value {
-        serde_json::to_value(handle_line(line.as_bytes(), agent)).unwrap()
+    async fn answer_with(agent: &Agent, line: &str) -> Value {
+        serde_json::to_value(handle_line(line.as_bytes(), agent).await).unwrap()
     }
 
-    #[test]
-    fn unknown_method_is_reported() {
-        let reply = answer(r#"{"jsonrpc":"2.0","id":2,"method":"reboot"}"#);
+    #[tokio::test]
+    async fn unknown_method_is_reported() {
+        let reply = answer(r#"{"jsonrpc":"2.0","id":2,"method":"reboot"}"#).await;
         assert_eq!(reply["id"], 2);
         assert_eq!(reply["error"]["code"], RpcError::METHOD_NOT_FOUND);
     }
 
-    #[test]
-    fn bad_json_gets_parse_error_with_null_id() {
-        let reply = answer("{not json");
+    #[tokio::test]
+    async fn bad_json_gets_parse_error_with_null_id() {
+        let reply = answer("{not json").await;
         assert_eq!(reply["id"], Value::Null);
         assert_eq!(reply["error"]["code"], RpcError::PARSE_ERROR);
     }
 
-    #[test]
-    fn invalid_request_keeps_its_id() {
-        let reply = answer(r#"{"jsonrpc":"2.0","id":9}"#);
+    #[tokio::test]
+    async fn invalid_request_keeps_its_id() {
+        let reply = answer(r#"{"jsonrpc":"2.0","id":9}"#).await;
         assert_eq!(reply["id"], 9);
         assert_eq!(reply["error"]["code"], RpcError::INVALID_REQUEST);
     }
 
-    #[test]
-    fn metrics_and_snapshot_read_the_store() {
+    #[tokio::test]
+    async fn metrics_and_snapshot_read_the_store() {
         let agent = agent();
         store::lock(&agent.store)
             .add_metric(&deecure_core::Metric {
@@ -257,43 +262,46 @@ mod tests {
         let reply = serde_json::to_value(handle_line(
             br#"{"jsonrpc":"2.0","id":4,"method":"metrics","params":{"name":"cpu.usage","since":0,"until":120000}}"#,
             &agent,
-        ))
+        ).await)
         .unwrap();
         assert_eq!(reply["result"][0]["value"], 12.0);
 
-        let reply = answer_with(&agent, r#"{"jsonrpc":"2.0","id":9,"method":"latest"}"#);
+        let reply = answer_with(&agent, r#"{"jsonrpc":"2.0","id":9,"method":"latest"}"#).await;
         assert_eq!(
             reply["result"],
             json!([]),
             "the point is older than 10 minutes"
         );
 
-        let reply = serde_json::to_value(handle_line(
-            br#"{"jsonrpc":"2.0","id":5,"method":"snapshot","params":{"kind":"services"}}"#,
-            &agent,
-        ))
+        let reply = serde_json::to_value(
+            handle_line(
+                br#"{"jsonrpc":"2.0","id":5,"method":"snapshot","params":{"kind":"services"}}"#,
+                &agent,
+            )
+            .await,
+        )
         .unwrap();
         assert_eq!(reply["result"], Value::Null, "nothing stored yet");
     }
 
-    #[test]
-    fn missing_or_unknown_params_are_rejected() {
+    #[tokio::test]
+    async fn missing_or_unknown_params_are_rejected() {
         for line in [
             r#"{"jsonrpc":"2.0","id":6,"method":"metrics"}"#,
             r#"{"jsonrpc":"2.0","id":7,"method":"snapshot","params":{"kind":"toasters"}}"#,
             r#"{"jsonrpc":"2.0","id":8,"method":"snapshot","params":{"kind":"services","extra":1}}"#,
         ] {
             assert_eq!(
-                answer(line)["error"]["code"],
+                answer(line).await["error"]["code"],
                 RpcError::INVALID_PARAMS,
                 "{line}"
             );
         }
     }
 
-    #[test]
-    fn unexpected_params_are_rejected() {
-        let reply = answer(r#"{"jsonrpc":"2.0","id":3,"method":"version","params":{"x":1}}"#);
+    #[tokio::test]
+    async fn unexpected_params_are_rejected() {
+        let reply = answer(r#"{"jsonrpc":"2.0","id":3,"method":"version","params":{"x":1}}"#).await;
         assert_eq!(reply["error"]["code"], RpcError::INVALID_PARAMS);
     }
 }
