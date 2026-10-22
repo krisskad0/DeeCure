@@ -9,6 +9,7 @@ import "@fontsource-variable/ubuntu-sans-mono";
 import "./tokens.css";
 import "./styles/base.css";
 import "./styles/components.css";
+import "./styles/charts.css";
 import "./styles/shell.css";
 
 const root = document.getElementById("root");

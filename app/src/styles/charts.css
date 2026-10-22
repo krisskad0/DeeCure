@@ -1,0 +1,87 @@
+/* SPDX-License-Identifier: Apache-2.0
+   Charts: docs/03-ui-design/03-components/12–20. */
+
+.chart { position: relative; width: 100%; min-width: 0; }
+.chart svg { display: block; overflow: visible; }
+.chart-empty { padding: 28px 0; text-align: center; }
+.axis { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.bar-value { font-size: 11px; font-weight: 700; fill: var(--ink-2); }
+.forecast-label { font-size: 11.5px; font-weight: 700; fill: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 6px; font-size: 12px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 3px; border-radius: 2px; }
+.chart-tip {
+  position: absolute; z-index: 15; pointer-events: none; transform: translate(-50%, -100%);
+  background: var(--ink); color: var(--panel); font-size: 12px; padding: 7px 9px; border-radius: 7px;
+  box-shadow: var(--shadow); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.tip-head { font-weight: 600; margin-bottom: 2px; }
+.tip-row { display: flex; align-items: center; gap: 6px; }
+.tip-row i { width: 8px; height: 8px; border-radius: 2px; }
+
+/* 14 Donut */
+.donut { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.donut svg { flex: none; }
+.donut-value { font-size: 20px; font-weight: 600; fill: var(--ink); }
+.donut-legend { border-collapse: collapse; font-size: 12.5px; flex: 1; min-width: 160px; }
+.donut-legend td { padding: 3px 4px; }
+.donut-legend i { display: block; width: 10px; height: 10px; border-radius: 3px; }
+.donut-legend .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* 15 Gauge */
+.gauge { display: block; width: 100%; max-width: 220px; margin: 0 auto; }
+.gauge-value { font-size: 30px; font-weight: 600; fill: var(--ink); font-variant-numeric: tabular-nums; }
+.gauge-sub { font-size: 11.5px; fill: var(--muted); }
+.gauge-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 4px 12px; }
+.gauge-group figure { margin: 0; }
+.gauge-group figcaption { text-align: center; font-size: 12px; color: var(--ink-2); }
+
+/* 16 Heatmap */
+.heat-grid { display: grid; grid-template-columns: auto repeat(24, minmax(5px, 1fr)); gap: 2px; align-items: center; }
+.heat-hour { font-size: 11px; color: var(--muted); text-align: center; }
+.heat-label { font-size: 12px; color: var(--ink-2); padding-right: 6px; }
+.heat-cell { height: 18px; border-radius: 3px; }
+.h1 { background: var(--h1); } .h2 { background: var(--h2); } .h3 { background: var(--h3); }
+.h4 { background: var(--h4); } .h5 { background: var(--h5); }
+.heat-legend { display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 8px; font-size: 11px; color: var(--muted); }
+.heat-legend i { width: 14px; height: 10px; border-radius: 2px; }
+.heat-legend i:first-child { margin-left: 4px; } .heat-legend i:last-of-type { margin-right: 4px; }
+
+/* 17 Horizontal bar list */
+.barlist li { display: grid; grid-template-columns: minmax(90px, 38%) 1fr 70px; gap: 10px; align-items: center; padding: 5px 0; }
+.bl-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bl-label.mono, .mono { font-family: var(--mono); font-size: 12.5px; }
+.bl-track { height: 10px; background: var(--track); border-radius: 0 4px 4px 0; overflow: hidden; }
+.bl-fill { display: block; height: 100%; background: var(--s1); border-radius: 0 4px 4px 0; }
+.bl-fill.warn { background: var(--warn); }
+.bl-value { text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* 18 Allocation bar */
+.alloc-bar { display: flex; gap: 2px; height: 26px; border-radius: 6px; overflow: hidden; }
+.alloc-bar span { display: block; height: 100%; }
+.alloc-s1 { background: var(--s1); } .alloc-s2 { background: var(--s2); } .alloc-s3 { background: var(--s3); }
+.alloc-s4 { background: var(--s4); } .alloc-free { background: var(--track); }
+.alloc-reclaimable { background: repeating-linear-gradient(135deg, var(--crit) 0 4px, var(--crit-soft) 4px 8px); }
+.alloc-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12.5px; }
+.alloc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.alloc-legend i { width: 10px; height: 10px; border-radius: 3px; }
+
+/* 19 Swim lanes */
+.lanes-scroll { overflow-x: auto; }
+.lanes { min-width: 620px; }
+.lane { display: grid; grid-template-columns: 160px 1fr; gap: 10px; height: 28px; align-items: center; }
+.lane-name { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lane-track { position: relative; height: 100%; border-left: 1px solid var(--line); }
+.lane:not(.lane-axis) .lane-track::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--grid); }
+.run { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--s1); box-shadow: 0 0 0 2px var(--panel); }
+.run.small { width: 6px; height: 6px; margin: -3px 0 0 -3px; box-shadow: none; }
+.lane-axis .lane-track { border-left-color: transparent; }
+.lane-axis .lane-track span { position: absolute; top: 6px; font-size: 11px; color: var(--muted); white-space: nowrap; transform: translateX(-50%); }
+.lane-axis .lane-track span:first-child { transform: none; }
+
+/* 20 Lifecycle bar */
+.life-track { position: relative; height: 10px; margin-top: 26px; border-radius: 5px; background: var(--track); }
+.life-fill { display: block; height: 100%; border-radius: 5px; background: var(--s1); }
+.life-marker { position: absolute; top: -6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--ink); }
+.life-marker b { position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.life-axis { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--muted); }

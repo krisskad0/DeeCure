@@ -13,11 +13,40 @@ import { KpiRow } from "../components/KpiTile";
 import { Panel } from "../components/Panel";
 import { StatusBadge } from "../components/StatusBadge";
 import { StatusList } from "../components/StatusList";
+import { AllocationBar } from "../components/charts/AllocationBar";
+import { BarChart } from "../components/charts/BarChart";
+import { BarList } from "../components/charts/BarList";
+import { Donut } from "../components/charts/Donut";
+import { Gauge, GaugeGroup } from "../components/charts/Gauge";
+import { Heatmap } from "../components/charts/Heatmap";
+import { LifecycleBar } from "../components/charts/LifecycleBar";
+import { LineChart } from "../components/charts/LineChart";
+import { SwimLanes } from "../components/charts/SwimLanes";
 import { useUi } from "../ui";
-import { gen } from "./sample";
+import { NOW, RANGES, gen, timeAt } from "./sample";
+
+// Errors and warnings by hour, from 01-overview.md.
+const HEAT = `Thu 1 0 0 1 1 0 0 0 1 1 0 0 0 0 0 0 0 1 1 1 2 0 0 1
+Fri 0 1 0 0 0 1 0 1 0 1 1 0 1 0 1 0 0 0 1 0 0 0 0 0
+Sat 1 0 0 0 1 1 1 0 0 0 0 1 0 1 1 0 0 0 1 0 0 0 0 1
+Sun 1 0 1 2 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0
+Mon 0 0 0 0 0 0 0 0 2 1 1 0 0 0 0 0 7 1 0 0 0 0 0 0
+Tue 1 0 0 1 1 0 0 0 1 0 0 1 0 0 0 0 0 1 0 0 2 1 0 0
+Wed 1 1 3 0 0 2 0 1 1 9 0 0 1 0 2 0 0 1 0 0 0 6 0 2`
+  .split("\n")
+  .map((line) => {
+    const [label, ...values] = line.split(" ");
+    return { label, values: values.map(Number) };
+  });
+
+// Usage trend, 30 days, from 14-storage.md.
+const DISK = [73.7, 74.3, 75.7, 75.6, 77.1, 78, 78, 78.6, 79.8, 80.7, 81.4, 81.8, 82.8, 82.9, 83.3, 84.7, 85.2, 85.3, 86.8, 87.5, 87.5, 88.2, 89.3, 90, 90.7, 91.4, 92.1, 92.5, 93.7, 94.2];
+const DISK_DAYS = DISK.map((_, i) => new Date(2026, 8, 22 + i).toLocaleDateString("en-GB", { day: "numeric", month: "short" }));
 
 export function Gallery() {
   const { range } = useUi();
+  const { n, step } = RANGES[range];
+  const times = Array.from({ length: n }, (_, i) => timeAt(i, n, step).getTime());
   return (
     <>
       <AlertBanner
@@ -131,6 +160,151 @@ export function Gallery() {
           </>
         }
       />
+
+
+      <AlertBanner tone="info" title="Charts (12–20)" text="Hover the line and bar charts for the crosshair and tooltip. Change the time range in the top bar to redraw the time series." />
+
+      <Panel title="12 Line chart" subtitle="CPU and memory utilization" source="/proc/stat · /proc/meminfo" span={8}>
+        <LineChart
+          height={300}
+          max={100}
+          unit="%"
+          x={{ kind: "time", times, range }}
+          series={[
+            { name: "CPU", data: gen(range, [3, 14, 8, 6, 2, 60, 12]), slot: 1 },
+            { name: "Memory", data: gen(range, [5, 70, 8, 3, 40, 95, 78]), slot: 2 },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="15 Gauge + 17 bar list" subtitle="Health score" span={4}>
+        <Gauge value={82} subtitle="out of 100" status="warn" />
+        <BarList
+          rows={[
+            { label: "Storage", value: 8, display: "−8", tone: "warn" },
+            { label: "Services", value: 5, display: "−5", tone: "warn" },
+            { label: "Security", value: 3, display: "−3", tone: "warn" },
+            { label: "Power", value: 1, display: "−1", tone: "warn" },
+            { label: "Backups", value: 1, display: "−1", tone: "warn" },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="12 Stacked area chart" subtitle="CPU by type" span={12}>
+        <LineChart
+          stacked
+          height={220}
+          max="auto"
+          unit="%"
+          x={{ kind: "time", times, range }}
+          series={[
+            { name: "User", data: gen(range, [3, 9, 5, 4, 1, 40]), slot: 1 },
+            { name: "System", data: gen(range, [4, 3, 2, 2, 0.5, 20]), slot: 2 },
+            { name: "I/O wait", data: gen(range, [6, 1.2, 0.8, 1.5, 0, 15]), slot: 4 },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="12 Line chart with threshold and forecast" subtitle="Usage trend and forecast · 30 days" span={8}
+        info="The dashed line shows when the disk fills at the current rate.">
+        <LineChart
+          height={220}
+          min={60}
+          max={100}
+          unit="%"
+          x={{ kind: "labels", labels: DISK_DAYS }}
+          series={[{ name: "Used", data: DISK, slot: 1 }]}
+          threshold={{ value: 85, label: "Warning 85%" }}
+          forecast={{ ahead: 8, value: 100, label: "Full ~29 Oct" }}
+        />
+      </Panel>
+
+      <Panel title="14 Donut chart" subtitle="Disk usage ( / ) · 238 GB" span={4}>
+        <Donut
+          unit="GB"
+          center={{ value: "94%", subtitle: "used" }}
+          segments={[
+            { name: "Home", value: 128, slot: 1 },
+            { name: "Apps", value: 46, slot: 2 },
+            { name: "System", value: 22, slot: 3 },
+            { name: "Containers", value: 13, slot: 4 },
+            { name: "Reclaimable", value: 15.2, tone: "crit" },
+            { name: "Free", value: 13.8, tone: "neutral" },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="13 Bar chart" subtitle="Boot time history · last 10 boots" span={6}>
+        <BarChart
+          height={220}
+          unit="s"
+          highlight={[9]}
+          bars={[
+            ["8 Oct", 29], ["10 Oct", 28], ["12 Oct", 31], ["13 Oct", 27], ["14 Oct", 28],
+            ["15 Oct", 30], ["16 Oct", 29], ["17 Oct", 28], ["19 Oct", 28], ["Today", 41.2],
+          ].map(([label, value]) => ({ label: String(label), value: Number(value) }))}
+        />
+      </Panel>
+
+      <Panel title="17 Horizontal bar list" subtitle="Largest folders · home" source="du -h --max-depth=1 ~" span={6}>
+        <BarList
+          rows={[
+            { label: "~/Videos", value: 52, display: "52 GB", mono: true },
+            { label: "~/Documents", value: 41, display: "41 GB", mono: true },
+            { label: "~/Downloads", value: 22, display: "22 GB", mono: true },
+            { label: "~/.local/share", value: 5.2, display: "5.2 GB", mono: true },
+            { label: "~/.cache", value: 3.8, display: "3.8 GB", mono: true },
+            { label: "~/snap", value: 2.4, display: "2.4 GB", mono: true },
+            { label: "~/Pictures", value: 1.6, display: "1.6 GB", mono: true },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="16 Heatmap" subtitle="Errors and warnings by hour · last 7 days" source="journalctl -p warning" span={6}>
+        <Heatmap rows={HEAT} unit="events" />
+      </Panel>
+
+      <Panel title="15 Gauge group" subtitle="Temperatures" span={6}>
+        <GaugeGroup
+          gauges={[
+            { value: 54, max: 105, display: "54 °C", subtitle: "max 105 °C", status: "ok", caption: "CPU package" },
+            { value: 61, max: 90, display: "61 °C", subtitle: "max 90 °C", status: "ok", caption: "GPU" },
+            { value: 48, max: 70, display: "48 °C", subtitle: "max 70 °C", status: "ok", caption: "NVMe SSD" },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="18 Allocation bar" subtitle="Space allocation · /dev/nvme0n1p2 · ext4" span={12}>
+        <AllocationBar
+          totalGb={238}
+          segments={[
+            { name: "Home", gb: 128, kind: "s1" },
+            { name: "Apps", gb: 46, kind: "s2" },
+            { name: "System", gb: 22, kind: "s3" },
+            { name: "Containers", gb: 13, kind: "s4" },
+            { name: "Reclaimable", gb: 15.2, kind: "reclaimable" },
+            { name: "Free", gb: 13.8, kind: "free" },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="19 Swim-lane schedule" subtitle="Next 24 hours" span={12}>
+        <SwimLanes
+          now={new Date(NOW)}
+          lanes={[
+            { name: "sync-notes.sh", runs: Array.from({ length: 48 }, (_, i) => i * 0.5 + 0.1), frequent: true },
+            { name: "backup-photos.sh", runs: [4.43] },
+            { name: "apt-daily.timer", runs: [8.9, 20.4] },
+            { name: "logrotate.timer", runs: [2.43] },
+            { name: "e2scrub_all.timer", runs: [5.9] },
+            { name: "fstrim.timer", runs: [14.43] },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="20 Lifecycle bar" subtitle="Release lifecycle · Ubuntu 24.04 LTS" info="How long this Ubuntu version gets security updates." span={12}>
+        <LifecycleBar percent={50.4} start="Released · Apr 2024" end="Standard support ends · Apr 2029" />
+      </Panel>
 
       <Panel title="22 Code and log blocks" span={12}>
         <div className="gallery-col">
