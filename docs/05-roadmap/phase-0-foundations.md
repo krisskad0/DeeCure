@@ -17,7 +17,8 @@
 | 6. Storage | ✅ Done. SQLite schema v1, migrations, hourly cleanup; `status` reads findings from it. |
 | 7. First 5 collectors | ✅ Done. CPU, memory, filesystems, battery, services; new `metrics` and `snapshot` calls. |
 | 8. Rules engine | ✅ Done. YAML rules, condition language, finding lifecycle; 3 rules shipped. |
-| 9–12 | Not started |
+| 9. CLI | ✅ Done. `deecure status` (plain English) and `--json`; friendly message when the agent is not running. |
+| 10–12 | Not started |
 
 ## Tasks (in order)
 

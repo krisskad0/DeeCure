@@ -14,3 +14,40 @@ deecure status --json     # for scripts and servers
 ```
 
 The CLI also makes DeeCure usable on servers with no desktop.
+
+## What is built (Phase 0)
+
+The code is in `crates/deecure-cli/`. Commands not listed here are still planned.
+
+| Command | What it does |
+| --- | --- |
+| `deecure status` | Open problems, most serious first, in plain English, and when the agent last checked |
+| `deecure status --json` | The same report as JSON, for scripts and servers |
+| `deecure --socket PATH …` | Talk to an agent at another socket (for development) |
+| `deecure --version`, `deecure --help` | Version and help |
+
+Example:
+
+```text
+$ deecure status
+DeeCure status · checked just now
+
+  i Info      Battery has lost some of its capacity
+              Battery BAT0 now holds 79.3% of the charge it held when new, so
+              it runs out sooner. This is normal wear. If it no longer lasts
+              long enough for you, think about replacing it.
+              power.battery_worn · BAT0
+
+1 problem: 0 critical, 0 warnings, 1 info.
+```
+
+- Every problem shows an icon and a word (`✗ Critical`, `! Warning`, `i Info`), so the meaning never depends on color.
+- Colors appear only in a real terminal, and never when `NO_COLOR` is set.
+- "No problems found" is shown only after the rules have run. Right after the agent starts, the CLI says it has not checked yet.
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | It worked (whatever the findings are) |
+| `1` | It could not get an answer, for example because the agent is not running |
+| `2` | Wrong options |
+

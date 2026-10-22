@@ -11,6 +11,9 @@ use super::expr::{EvalError, Lookup};
 use super::facts::{Facts, ItemScope};
 use crate::store::{self, Store};
 
+/// The setting that holds when the rules last ran.
+pub const LAST_CHECK_SETTING: &str = "rules.checked_at";
+
 /// What one rule decided about one subject.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Outcome {
@@ -96,6 +99,8 @@ pub fn fill_in(template: &str, facts: &dyn Lookup) -> String {
 /// - a `for_each` rule resolves open findings whose subject is gone from the list;
 /// - an unknown outcome changes nothing.
 ///
+/// Also records `now` as the time of the last check ([`LAST_CHECK_SETTING`]).
+///
 /// Returns the mistakes found in rules, for the caller to log.
 pub fn apply(
     store: &Store,
@@ -161,6 +166,7 @@ pub fn apply(
             }
         }
     }
+    store.set_setting(LAST_CHECK_SETTING, &now)?;
     Ok(mistakes)
 }
 
@@ -283,7 +289,15 @@ severity:
         let store = Store::open_in_memory().unwrap();
         let rules = [root_rule()];
 
+        assert_eq!(
+            store.setting::<Timestamp>(LAST_CHECK_SETTING).unwrap(),
+            None
+        );
         apply(&store, &rules, &disk(95.0, 10.0), Timestamp(1)).unwrap();
+        assert_eq!(
+            store.setting(LAST_CHECK_SETTING).unwrap(),
+            Some(Timestamp(1))
+        );
         let open = store.open_findings().unwrap();
         assert_eq!(open.len(), 1);
         assert_eq!(open[0].fixes[0].as_str(), "storage.clean_apt_cache");

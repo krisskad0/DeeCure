@@ -14,7 +14,10 @@ name = "deecure"
 path = "src/main.rs"
 
 [dependencies]
+clap.workspace = true
 deecure-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true

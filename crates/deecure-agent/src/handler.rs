@@ -11,6 +11,7 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
+use crate::rules::LAST_CHECK_SETTING;
 use crate::store::{Store, StoreError};
 
 /// Reads one JSON-RPC message and answers it.
@@ -49,8 +50,10 @@ pub fn handle(request: Request, store: &Store) -> Response {
         }),
         method::STATUS => no_params(&request).and_then(|()| {
             let findings = store.open_findings().map_err(store_failed)?;
+            let checked_at = store.setting(LAST_CHECK_SETTING).map_err(store_failed)?;
             to_result(&StatusReport {
                 generated_at: Timestamp::now(),
+                checked_at,
                 findings,
             })
         }),

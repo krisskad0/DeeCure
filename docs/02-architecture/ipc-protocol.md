@@ -38,7 +38,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | Method | Params | Result | Since |
 | --- | --- | --- | --- |
 | `version` | none | `{"agent": "0.1.0", "protocol": 1}` | Phase 0 |
-| `status` | none | `{"generated_at": <ms>, "findings": [<Finding>, …]}`: open findings from the database, most serious first | Phase 0 |
+| `status` | none | `{"generated_at": <ms>, "checked_at": <ms>?, "findings": [<Finding>, …]}`: open findings, most serious first. `checked_at` is when the rules last ran; it is missing until they have run once. | Phase 0 |
 | `metrics` | `{"name": "cpu.usage", "subject": "/"?, "since": <ms>, "until": <ms>}` | `[<Metric>, …]`, oldest first | Phase 0 |
 | `snapshot` | `{"kind": "filesystems"}` | The newest `<Snapshot>` of that kind, or `null` | Phase 0 |
 

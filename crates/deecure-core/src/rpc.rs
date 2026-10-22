@@ -240,6 +240,10 @@ pub struct VersionInfo {
 pub struct StatusReport {
     /// When the agent built this report.
     pub generated_at: Timestamp,
+    /// When the rules last ran. `None` means they have not run yet (the agent just
+    /// started), so an empty `findings` list does not yet mean "all is well".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub checked_at: Option<Timestamp>,
     /// Open findings, most serious first.
     pub findings: Vec<Finding>,
 }
@@ -302,13 +306,19 @@ mod tests {
 
     #[test]
     fn status_report_json_shape() {
-        let report = StatusReport {
+        let mut report = StatusReport {
             generated_at: Timestamp(3),
+            checked_at: None,
             findings: vec![],
         };
         assert_eq!(
             serde_json::to_value(&report).unwrap(),
             json!({"generated_at": 3, "findings": []})
+        );
+        report.checked_at = Some(Timestamp(2));
+        assert_eq!(
+            serde_json::to_value(&report).unwrap(),
+            json!({"generated_at": 3, "checked_at": 2, "findings": []})
         );
     }
 }

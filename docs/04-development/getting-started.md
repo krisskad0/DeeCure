@@ -61,6 +61,7 @@ The `Makefile` gives short names to the real commands:
 | `make lint` | `cargo fmt --check` and `cargo clippy -- -D warnings` (later also `npm run lint`) |
 | `make fmt` | `cargo fmt --all` |
 | `make agent` | Runs the agent in the foreground |
+| `make status` | Runs `deecure status` against the running agent |
 | `make help` | Lists all commands |
 | `make dev` *(planned)* | Runs the agent, then `npm run tauri dev` in `app/` |
 | `make deb` *(planned)* | Builds the `.deb` (see [Debian package](../06-packaging/debian-package.md)) |
@@ -87,10 +88,12 @@ scripts/dev-agent-units.sh install     # and later: scripts/dev-agent-units.sh u
 
 The message format is in [IPC protocol](../02-architecture/ipc-protocol.md).
 
-## 7. Try the CLI *(planned: Phase 0, task 9)*
+## 7. Try the CLI
+
+With the agent running (step 6):
 
 ```bash
-cargo run -p deecure-cli -- status
+make status                                 # same as: cargo run -p deecure-cli -- status
 cargo run -p deecure-cli -- status --json
 ```
 
