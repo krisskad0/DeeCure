@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install system libraries
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
+
       - name: Install the pinned Rust toolchain
         run: rustup show active-toolchain || rustup toolchain install
 

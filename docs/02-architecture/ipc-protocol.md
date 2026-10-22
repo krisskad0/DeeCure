@@ -38,7 +38,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | Method | Params | Result | Since |
 | --- | --- | --- | --- |
 | `version` | none | `{"agent": "0.1.0", "protocol": 1}` | Phase 0 |
-| `status` | none | `{"generated_at": <ms>, "findings": [<Finding>, …]}`, most serious first | Phase 0 |
+| `status` | none | `{"generated_at": <ms>, "findings": [<Finding>, …]}`: open findings from the database, most serious first | Phase 0 |
 
 New methods are added to this table and to `rpc::method` in the same pull request.
 

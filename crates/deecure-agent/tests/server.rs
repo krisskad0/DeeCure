@@ -6,7 +6,9 @@
 
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
+use deecure_agent::store::Store;
 use deecure_agent::{server, socket};
 use deecure_core::rpc::{MAX_MESSAGE_BYTES, RpcError};
 use serde_json::Value;
@@ -24,8 +26,9 @@ fn test_dir(name: &str) -> PathBuf {
 /// Starts an agent on `path` and returns the switch that stops it.
 fn start_agent(path: &Path) -> oneshot::Sender<()> {
     let listener = socket::bind(path).unwrap();
+    let store = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
     let (stop, stopped) = oneshot::channel::<()>();
-    tokio::spawn(server::serve(listener, async {
+    tokio::spawn(server::serve(listener, store, async {
         let _ = stopped.await;
     }));
     stop

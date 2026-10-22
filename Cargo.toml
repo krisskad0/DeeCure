@@ -21,6 +21,7 @@ deecure-core = { path = "crates/deecure-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 listenfd = "1"
+rusqlite = "0.40"
 rustix = { version = "1", features = ["process"] }
 tokio = { version = "1", features = ["rt", "net", "io-util", "macros", "signal", "time", "sync"] }
 

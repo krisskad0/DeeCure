@@ -15,7 +15,7 @@
 sudo apt update
 sudo apt install -y build-essential curl wget file git pkg-config \
   libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev \
-  libsystemd-dev \
+  libsystemd-dev libsqlite3-dev socat \
   debhelper devscripts lintian desktop-file-utils appstream
 ```
 
@@ -24,6 +24,8 @@ sudo apt install -y build-essential curl wget file git pkg-config \
 | `build-essential`, `pkg-config` | C compiler and build tools |
 | `libwebkit2gtk-4.1-dev` … `librsvg2-dev` | Needed by Tauri v2 on Linux |
 | `libsystemd-dev` | Read the systemd journal |
+| `libsqlite3-dev` | The agent's database |
+| `socat` | Talk to the agent's socket by hand |
 | `debhelper`, `devscripts`, `lintian` | Build and check `.deb` packages |
 | `desktop-file-utils`, `appstream` | Check the `.desktop` file and the app store listing |
 

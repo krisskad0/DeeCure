@@ -14,7 +14,8 @@
 | 3. Cargo workspace | ✅ Done |
 | 4. Shared types | ✅ Done. Wire format in [IPC protocol](../02-architecture/ipc-protocol.md). |
 | 5. Agent skeleton | ✅ Done. Socket activation, same-user check, `version` and `status`. Idle: 2.4 MB RAM, 0% CPU. |
-| 6–12 | Not started |
+| 6. Storage | ✅ Done. SQLite schema v1, migrations, hourly cleanup; `status` reads findings from it. |
+| 7–12 | Not started |
 
 ## Tasks (in order)
 

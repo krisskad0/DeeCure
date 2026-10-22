@@ -28,7 +28,8 @@ Section: admin
 Priority: optional
 Maintainer: DeeCure maintainers <maintainers@example.org>
 Build-Depends: debhelper-compat (= 13), cargo, rustc, nodejs, pkgconf,
- libwebkit2gtk-4.1-dev, libxdo-dev, libssl-dev, libsystemd-dev, librsvg2-dev
+ libwebkit2gtk-4.1-dev, libxdo-dev, libssl-dev, libsystemd-dev, librsvg2-dev,
+ libsqlite3-dev
 Standards-Version: 4.7.0
 Homepage: https://github.com/krisskad0/DeeCure
 

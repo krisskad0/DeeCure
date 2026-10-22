@@ -10,9 +10,10 @@ use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::{UnixListener, UnixStream};
 
 use crate::handler;
+use crate::store::{self, SharedStore};
 
 /// Serves clients until `shutdown` completes.
-pub async fn serve(listener: UnixListener, shutdown: impl Future<Output = ()>) {
+pub async fn serve(listener: UnixListener, store: SharedStore, shutdown: impl Future<Output = ()>) {
     let our_uid = rustix::process::getuid().as_raw();
     tokio::pin!(shutdown);
     loop {
@@ -20,7 +21,7 @@ pub async fn serve(listener: UnixListener, shutdown: impl Future<Output = ()>) {
             () = &mut shutdown => break,
             accepted = listener.accept() => match accepted {
                 Ok((stream, _)) => {
-                    tokio::spawn(serve_connection(stream, our_uid));
+                    tokio::spawn(serve_connection(stream, our_uid, store.clone()));
                 }
                 Err(e) => {
                     eprintln!("deecure-agent: accept failed: {e}");
@@ -32,7 +33,7 @@ pub async fn serve(listener: UnixListener, shutdown: impl Future<Output = ()>) {
     }
 }
 
-async fn serve_connection(stream: UnixStream, our_uid: u32) {
+async fn serve_connection(stream: UnixStream, our_uid: u32, store: SharedStore) {
     match stream.peer_cred() {
         Ok(cred) if cred.uid() == our_uid => {}
         Ok(cred) => {
@@ -68,7 +69,7 @@ async fn serve_connection(stream: UnixStream, our_uid: u32) {
         } else if line.trim_ascii().is_empty() {
             continue;
         } else {
-            handler::handle_line(&line)
+            handler::handle_line(&line, &store::lock(&store))
         };
         if send(&mut write, &response).await.is_err() || !complete {
             // The client hung up, or the message was cut off: close the connection.

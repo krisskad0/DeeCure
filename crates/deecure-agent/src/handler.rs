@@ -9,8 +9,10 @@ use deecure_core::{Timestamp, VERSION};
 use serde::Serialize;
 use serde_json::Value;
 
+use crate::store::Store;
+
 /// Reads one JSON-RPC message and answers it.
-pub fn handle_line(line: &[u8]) -> Response {
+pub fn handle_line(line: &[u8], store: &Store) -> Response {
     let value: Value = match serde_json::from_slice(line) {
         Ok(value) => value,
         Err(e) => {
@@ -23,7 +25,7 @@ pub fn handle_line(line: &[u8]) -> Response {
         .get("id")
         .and_then(|id| serde_json::from_value::<RequestId>(id.clone()).ok());
     match serde_json::from_value::<Request>(value) {
-        Ok(request) => handle(request),
+        Ok(request) => handle(request, store),
         Err(e) => {
             let error = RpcError::new(
                 RpcError::INVALID_REQUEST,
@@ -35,7 +37,7 @@ pub fn handle_line(line: &[u8]) -> Response {
 }
 
 /// Answers one request.
-pub fn handle(request: Request) -> Response {
+pub fn handle(request: Request, store: &Store) -> Response {
     let result = match request.method.as_str() {
         method::VERSION => no_params(&request).and_then(|()| {
             to_result(&VersionInfo {
@@ -44,10 +46,15 @@ pub fn handle(request: Request) -> Response {
             })
         }),
         method::STATUS => no_params(&request).and_then(|()| {
-            // Collectors and rules arrive in later Phase 0 tasks; until then there is nothing to report.
+            let findings = store.open_findings().map_err(|e| {
+                RpcError::new(
+                    RpcError::INTERNAL_ERROR,
+                    format!("could not read findings: {e}"),
+                )
+            })?;
             to_result(&StatusReport {
                 generated_at: Timestamp::now(),
-                findings: Vec::new(),
+                findings,
             })
         }),
         other => Err(RpcError::method_not_found(other)),
@@ -85,10 +92,12 @@ fn to_result<T: Serialize>(value: &T) -> Result<Value, RpcError> {
 mod tests {
     use super::*;
     use deecure_core::rpc::Outcome;
+    use deecure_core::{Finding, FindingState, RuleId, Severity};
     use serde_json::json;
 
     fn answer(line: &str) -> Value {
-        serde_json::to_value(handle_line(line.as_bytes())).unwrap()
+        let store = Store::open_in_memory().unwrap();
+        serde_json::to_value(handle_line(line.as_bytes(), &store)).unwrap()
     }
 
     #[test]
@@ -100,14 +109,31 @@ mod tests {
     }
 
     #[test]
-    fn status_has_no_findings_yet() {
-        let response = handle_line(br#"{"jsonrpc":"2.0","id":"s","method":"status","params":{}}"#);
+    fn status_returns_open_findings_from_the_store() {
+        let store = Store::open_in_memory().unwrap();
+        let finding = Finding {
+            rule: RuleId::new("storage.root_almost_full").unwrap(),
+            subject: Some("/".into()),
+            severity: Severity::Critical,
+            state: FindingState::Open,
+            title: "Main disk is almost full".into(),
+            explain: "Only 13.8 GB left.".into(),
+            first_seen: Timestamp(1),
+            last_seen: Timestamp(2),
+            fixes: vec![],
+        };
+        store.upsert_finding(&finding).unwrap();
+
+        let response = handle_line(
+            br#"{"jsonrpc":"2.0","id":"s","method":"status","params":{}}"#,
+            &store,
+        );
         assert_eq!(response.id, Some(RequestId::from("s")));
         let Outcome::Success(result) = response.outcome else {
             panic!("expected a result");
         };
         let report: StatusReport = serde_json::from_value(result).unwrap();
-        assert!(report.findings.is_empty());
+        assert_eq!(report.findings, [finding]);
     }
 
     #[test]
