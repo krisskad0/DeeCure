@@ -53,7 +53,7 @@
 
 - [x] On a clean Ubuntu 24.04 system, `sudo apt install ./deecure_*.deb` works, then `deecure status` shows real data. *Checked in a clean container (`make deb-test`) and in CI. Still to try: a full desktop VM, where systemd starts the agent at login.*
 - [x] `sudo apt purge deecure` removes everything it installed. *Checked by `make deb-test` and CI.*
-- [ ] CI is green: format, lint, unit tests, fixture tests, `lintian`, performance check.
+- [x] CI is green: format, lint, unit tests, fixture tests, `lintian`, performance check. *All four CI jobs pass (run 39850817850, 2026-10-23).*
 
 ---
 
