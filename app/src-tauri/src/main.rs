@@ -7,10 +7,11 @@
 
 use std::path::PathBuf;
 
-use deecure_core::Snapshot;
 use deecure_core::client::{self, ClientError};
 use deecure_core::rpc::{StatusReport, default_socket_path, method};
+use deecure_core::{Metric, Snapshot};
 use serde::Serialize;
+use serde_json::{Value, json};
 
 /// An error the UI can show: `kind` tells it which screen to show, `message` is for people.
 #[derive(Debug, Serialize)]
@@ -41,12 +42,13 @@ fn socket() -> Result<PathBuf, AppError> {
     })
 }
 
-/// The open findings, most serious first.
-#[tauri::command]
-async fn status() -> Result<StatusReport, AppError> {
+/// Asks the agent one question. Socket calls block, so they run off the UI thread.
+async fn ask<T: serde::de::DeserializeOwned + Send + 'static>(
+    method: &'static str,
+    params: Option<Value>,
+) -> Result<T, AppError> {
     let socket = socket()?;
-    // Socket calls block, so they run off the UI thread.
-    tauri::async_runtime::spawn_blocking(move || client::call(&socket, method::STATUS, None))
+    tauri::async_runtime::spawn_blocking(move || client::call(&socket, method, params))
         .await
         .map_err(|e| AppError {
             kind: "other",
@@ -55,20 +57,44 @@ async fn status() -> Result<StatusReport, AppError> {
         .map_err(AppError::from)
 }
 
+/// The open findings, most serious first, with the health score.
+#[tauri::command]
+async fn status() -> Result<StatusReport, AppError> {
+    ask(method::STATUS, None).await
+}
+
 /// The newest inventory of one kind (such as `services`), or `None` if there is none yet.
 #[tauri::command]
 async fn snapshot(kind: String) -> Result<Option<Snapshot>, AppError> {
-    let socket = socket()?;
-    let params = serde_json::json!({ "kind": kind });
-    tauri::async_runtime::spawn_blocking(move || {
-        client::call(&socket, method::SNAPSHOT, Some(params))
-    })
-    .await
-    .map_err(|e| AppError {
-        kind: "other",
-        message: e.to_string(),
-    })?
-    .map_err(AppError::from)
+    ask(method::SNAPSHOT, Some(json!({ "kind": kind }))).await
+}
+
+/// Live data read now, such as `system` facts or `processes`.
+#[tauri::command]
+async fn inventory(kind: String) -> Result<Value, AppError> {
+    ask(method::INVENTORY, Some(json!({ "kind": kind }))).await
+}
+
+/// Points for one metric over a time range (milliseconds since 1970), averaged down
+/// to about `max_points`.
+#[tauri::command]
+async fn metrics(
+    name: String,
+    subject: Option<String>,
+    since: i64,
+    until: i64,
+    max_points: Option<usize>,
+) -> Result<Vec<Metric>, AppError> {
+    let params = json!({
+        "name": name, "subject": subject, "since": since, "until": until, "max_points": max_points,
+    });
+    ask(method::METRICS, Some(params)).await
+}
+
+/// The newest value of every metric.
+#[tauri::command]
+async fn latest() -> Result<Vec<Metric>, AppError> {
+    ask(method::LATEST, None).await
 }
 
 /// This computer, for the top bar's machine picker.
@@ -108,7 +134,9 @@ fn machine() -> Machine {
 
 fn main() {
     let result = tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![status, snapshot, machine])
+        .invoke_handler(tauri::generate_handler![
+            status, snapshot, inventory, metrics, latest, machine
+        ])
         .run(tauri::generate_context!());
     if let Err(e) = result {
         eprintln!("deecure-desktop: could not start: {e}");

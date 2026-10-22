@@ -3,19 +3,22 @@
 //! Turns one request line into one response. No I/O here, so it is easy to test.
 
 use deecure_core::rpc::{
-    MetricsParams, PROTOCOL_VERSION, Request, RequestId, Response, RpcError, SnapshotParams,
-    StatusReport, VersionInfo, method,
+    InventoryParams, MAX_POINTS, MetricsParams, PROTOCOL_VERSION, Request, RequestId, Response,
+    RpcError, SnapshotParams, StatusReport, VersionInfo, method,
 };
-use deecure_core::{Timestamp, VERSION};
+use deecure_core::{Timestamp, VERSION, health, thin};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
+use crate::context::Agent;
+use crate::inventory;
+use crate::rules::facts::FRESH_FOR_MS;
 use crate::rules::{CHECKED_CATEGORIES_SETTING, LAST_CHECK_SETTING};
-use crate::store::{Store, StoreError};
+use crate::store::{self, StoreError};
 
 /// Reads one JSON-RPC message and answers it.
-pub fn handle_line(line: &[u8], store: &Store) -> Response {
+pub fn handle_line(line: &[u8], agent: &Agent) -> Response {
     let value: Value = match serde_json::from_slice(line) {
         Ok(value) => value,
         Err(e) => {
@@ -28,7 +31,7 @@ pub fn handle_line(line: &[u8], store: &Store) -> Response {
         .get("id")
         .and_then(|id| serde_json::from_value::<RequestId>(id.clone()).ok());
     match serde_json::from_value::<Request>(value) {
-        Ok(request) => handle(request, store),
+        Ok(request) => handle(request, agent),
         Err(e) => {
             let error = RpcError::new(
                 RpcError::INVALID_REQUEST,
@@ -40,7 +43,8 @@ pub fn handle_line(line: &[u8], store: &Store) -> Response {
 }
 
 /// Answers one request.
-pub fn handle(request: Request, store: &Store) -> Response {
+pub fn handle(request: Request, agent: &Agent) -> Response {
+    let store = || store::lock(&agent.store);
     let result = match request.method.as_str() {
         method::VERSION => no_params(&request).and_then(|()| {
             to_result(&VersionInfo {
@@ -49,27 +53,48 @@ pub fn handle(request: Request, store: &Store) -> Response {
             })
         }),
         method::STATUS => no_params(&request).and_then(|()| {
+            let store = store();
             let findings = store.open_findings().map_err(store_failed)?;
             let checked_at = store.setting(LAST_CHECK_SETTING).map_err(store_failed)?;
             let checked = store
                 .setting(CHECKED_CATEGORIES_SETTING)
                 .map_err(store_failed)?
                 .unwrap_or_default();
+            // No score before the first check: an empty list would look like a perfect 100.
+            let (score, deductions) = match checked_at {
+                Some(_) => {
+                    let (score, deductions) = health::score(&findings);
+                    (Some(score), deductions)
+                }
+                None => (None, Vec::new()),
+            };
             to_result(&StatusReport {
                 generated_at: Timestamp::now(),
                 checked_at,
                 checked,
+                score,
+                deductions,
                 findings,
             })
         }),
         method::METRICS => params::<MetricsParams>(&request).and_then(|p| {
-            let points = store
+            let points = store()
                 .metrics(&p.name, p.subject.as_deref(), p.since, p.until)
                 .map_err(store_failed)?;
-            to_result(&points)
+            let max = p.max_points.unwrap_or(MAX_POINTS).clamp(1, MAX_POINTS);
+            let span = p.until.as_millis() - p.since.as_millis();
+            to_result(&thin(points, span, max))
+        }),
+        method::LATEST => no_params(&request).and_then(|()| {
+            let since = Timestamp(Timestamp::now().as_millis() - FRESH_FOR_MS);
+            to_result(&store().latest_metrics(since).map_err(store_failed)?)
         }),
         method::SNAPSHOT => params::<SnapshotParams>(&request)
-            .and_then(|p| to_result(&store.latest_snapshot(p.kind).map_err(store_failed)?)),
+            .and_then(|p| to_result(&store().latest_snapshot(p.kind).map_err(store_failed)?)),
+        method::INVENTORY => params::<InventoryParams>(&request).and_then(|p| {
+            inventory::read(&p.kind, agent)
+                .map_err(|why| RpcError::new(RpcError::INVALID_PARAMS, why))
+        }),
         other => Err(RpcError::method_not_found(other)),
     };
     match result {
@@ -119,13 +144,20 @@ fn to_result<T: Serialize>(value: &T) -> Result<Value, RpcError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::collect::SystemRoot;
+    use crate::store::Store;
     use deecure_core::rpc::Outcome;
     use deecure_core::{Finding, FindingState, RuleId, Severity};
     use serde_json::json;
+    use std::sync::{Arc, Mutex};
+
+    fn agent() -> Arc<Agent> {
+        let store = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
+        Agent::new(store, SystemRoot::real())
+    }
 
     fn answer(line: &str) -> Value {
-        let store = Store::open_in_memory().unwrap();
-        serde_json::to_value(handle_line(line.as_bytes(), &store)).unwrap()
+        serde_json::to_value(handle_line(line.as_bytes(), &agent())).unwrap()
     }
 
     #[test]
@@ -138,7 +170,7 @@ mod tests {
 
     #[test]
     fn status_returns_open_findings_from_the_store() {
-        let store = Store::open_in_memory().unwrap();
+        let agent = agent();
         let finding = Finding {
             rule: RuleId::new("storage.root_almost_full").unwrap(),
             subject: Some("/".into()),
@@ -150,11 +182,11 @@ mod tests {
             last_seen: Timestamp(2),
             fixes: vec![],
         };
-        store.upsert_finding(&finding).unwrap();
+        store::lock(&agent.store).upsert_finding(&finding).unwrap();
 
         let response = handle_line(
             br#"{"jsonrpc":"2.0","id":"s","method":"status","params":{}}"#,
-            &store,
+            &agent,
         );
         assert_eq!(response.id, Some(RequestId::from("s")));
         let Outcome::Success(result) = response.outcome else {
@@ -162,6 +194,31 @@ mod tests {
         };
         let report: StatusReport = serde_json::from_value(result).unwrap();
         assert_eq!(report.findings, [finding]);
+        assert_eq!(report.score, None, "no score before the first check");
+    }
+
+    #[test]
+    fn status_scores_health_after_a_check() {
+        let agent = agent();
+        store::lock(&agent.store)
+            .set_setting(LAST_CHECK_SETTING, &Timestamp(5))
+            .unwrap();
+        let reply = answer_with(&agent, r#"{"jsonrpc":"2.0","id":1,"method":"status"}"#);
+        assert_eq!(reply["result"]["score"], 100);
+    }
+
+    #[test]
+    fn inventory_reads_live_system_facts() {
+        let reply =
+            answer(r#"{"jsonrpc":"2.0","id":1,"method":"inventory","params":{"kind":"system"}}"#);
+        assert_eq!(reply["result"]["arch"], std::env::consts::ARCH);
+        let reply =
+            answer(r#"{"jsonrpc":"2.0","id":2,"method":"inventory","params":{"kind":"toasters"}}"#);
+        assert_eq!(reply["error"]["code"], RpcError::INVALID_PARAMS);
+    }
+
+    fn answer_with(agent: &Agent, line: &str) -> Value {
+        serde_json::to_value(handle_line(line.as_bytes(), agent)).unwrap()
     }
 
     #[test]
@@ -187,8 +244,8 @@ mod tests {
 
     #[test]
     fn metrics_and_snapshot_read_the_store() {
-        let store = Store::open_in_memory().unwrap();
-        store
+        let agent = agent();
+        store::lock(&agent.store)
             .add_metric(&deecure_core::Metric {
                 name: "cpu.usage".into(),
                 subject: None,
@@ -199,14 +256,21 @@ mod tests {
             .unwrap();
         let reply = serde_json::to_value(handle_line(
             br#"{"jsonrpc":"2.0","id":4,"method":"metrics","params":{"name":"cpu.usage","since":0,"until":120000}}"#,
-            &store,
+            &agent,
         ))
         .unwrap();
         assert_eq!(reply["result"][0]["value"], 12.0);
 
+        let reply = answer_with(&agent, r#"{"jsonrpc":"2.0","id":9,"method":"latest"}"#);
+        assert_eq!(
+            reply["result"],
+            json!([]),
+            "the point is older than 10 minutes"
+        );
+
         let reply = serde_json::to_value(handle_line(
             br#"{"jsonrpc":"2.0","id":5,"method":"snapshot","params":{"kind":"services"}}"#,
-            &store,
+            &agent,
         ))
         .unwrap();
         assert_eq!(reply["result"], Value::Null, "nothing stored yet");

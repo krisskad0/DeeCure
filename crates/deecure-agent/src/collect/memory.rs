@@ -20,6 +20,12 @@ pub struct MemInfo {
     pub swap_total: u64,
     /// Unused swap space.
     pub swap_free: u64,
+    /// Page cache and reclaimable kernel memory (given back when programs need it).
+    pub cache: u64,
+    /// Buffers for block devices.
+    pub buffers: u64,
+    /// Completely unused memory.
+    pub free: u64,
 }
 
 /// Reads `/proc/meminfo`. Values there are in kB (1024 bytes).
@@ -48,6 +54,9 @@ pub fn parse_meminfo(text: &str) -> io::Result<MemInfo> {
         available: available.min(total),
         swap_total: field("SwapTotal").unwrap_or(0),
         swap_free: field("SwapFree").unwrap_or(0),
+        cache: field("Cached").unwrap_or(0) + field("SReclaimable").unwrap_or(0),
+        buffers: field("Buffers").unwrap_or(0),
+        free: field("MemFree").unwrap_or(0),
     })
 }
 
@@ -67,6 +76,10 @@ impl Collector for Memory {
         let mut push =
             |name, value, unit| sample.metrics.push(metric(name, None, value, unit, now));
         push("memory.used", used as f64, Unit::Bytes);
+        push("memory.total", info.total as f64, Unit::Bytes);
+        push("memory.cache", info.cache as f64, Unit::Bytes);
+        push("memory.buffers", info.buffers as f64, Unit::Bytes);
+        push("memory.free", info.free as f64, Unit::Bytes);
         if info.total > 0 {
             push(
                 "memory.used_percent",
@@ -142,6 +155,6 @@ HugePages_Total:       0
         );
         let sample = Memory.collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&sample, "swap.used", None), None);
-        assert_eq!(sample.metrics.len(), 2);
+        assert_eq!(value(&sample, "memory.total", None), Some(1000.0 * 1024.0));
     }
 }

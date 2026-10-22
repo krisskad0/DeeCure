@@ -15,10 +15,11 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use deecure_agent::collect::{self, SystemRoot};
+use deecure_agent::context::Agent;
 use deecure_agent::store::{self, SharedStore, Store};
 use deecure_agent::{rules, server, socket};
 use deecure_core::rpc::default_socket_path;
-use deecure_core::{Timestamp, VERSION};
+use deecure_core::{Metric, Timestamp, Unit, VERSION, health};
 use tokio::signal::unix::{SignalKind, signal};
 
 /// How often old data is rolled up and deleted.
@@ -137,7 +138,8 @@ async fn run(
         }
     };
 
-    server::serve(listener, store, shutdown_signal()).await;
+    let agent = Agent::new(store, SystemRoot::real());
+    server::serve(listener, agent, shutdown_signal()).await;
 
     if let Some(path) = owned_path {
         let _ = std::fs::remove_file(path);
@@ -159,10 +161,25 @@ fn rule_checker(rules: Vec<rules::Rule>) -> impl FnMut(&Store, Timestamp) + Send
                         eprintln!("deecure-agent: {mistake}");
                     }
                 }
+                if let Err(e) = record_score(store, now) {
+                    eprintln!("deecure-agent: could not save the health score: {e}");
+                }
             }
             Err(e) => eprintln!("deecure-agent: could not check rules: {e}"),
         }
     }
+}
+
+/// Keeps the health score as a metric, so the app can show how it changed over time.
+fn record_score(store: &Store, now: Timestamp) -> Result<(), store::StoreError> {
+    let (score, _) = health::score(&store.open_findings()?);
+    store.add_metric(&Metric {
+        name: "health.score".into(),
+        subject: None,
+        value: f64::from(score),
+        unit: Unit::Count,
+        at: now,
+    })
 }
 
 /// Rolls up and deletes old data now, then every [`CLEANUP_EVERY`].

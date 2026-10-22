@@ -11,6 +11,7 @@ use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize, Serializer};
 use serde_json::Value;
 
+use crate::health::Deduction;
 use crate::{Category, Finding, Timestamp};
 
 /// The protocol version the agent speaks. Raise it when a method changes in a way
@@ -38,8 +39,13 @@ pub mod method {
     pub const STATUS: &str = "status";
     /// Returns a list of [`Metric`](crate::Metric). Takes [`MetricsParams`](super::MetricsParams).
     pub const METRICS: &str = "metrics";
+    /// Returns the newest point of every metric from the last 10 minutes, as a list of
+    /// [`Metric`](crate::Metric). Takes no params.
+    pub const LATEST: &str = "latest";
     /// Returns a [`Snapshot`](crate::Snapshot) or `null`. Takes [`SnapshotParams`](super::SnapshotParams).
     pub const SNAPSHOT: &str = "snapshot";
+    /// Returns live data read now, such as `system` facts or `processes`. Takes [`InventoryParams`](super::InventoryParams).
+    pub const INVENTORY: &str = "inventory";
 }
 
 /// Params of the `metrics` method.
@@ -55,6 +61,21 @@ pub struct MetricsParams {
     pub since: Timestamp,
     /// End of the time range (included).
     pub until: Timestamp,
+    /// Average the points down to about this many. The agent never sends more than
+    /// [`MAX_POINTS`], so long ranges fit in one message.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_points: Option<usize>,
+}
+
+/// The most points one `metrics` answer holds.
+pub const MAX_POINTS: usize = 2000;
+
+/// Params of the `inventory` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct InventoryParams {
+    /// What to read, such as `system` or `processes`.
+    pub kind: String,
 }
 
 /// Params of the `snapshot` method.
@@ -248,6 +269,12 @@ pub struct StatusReport {
     /// really checked, and "Unknown" for the rest.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub checked: Vec<Category>,
+    /// The health score out of 100, once the rules have run.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub score: Option<u8>,
+    /// What lowered the score, biggest first.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub deductions: Vec<Deduction>,
     /// Open findings, most serious first.
     pub findings: Vec<Finding>,
 }
@@ -314,6 +341,8 @@ mod tests {
             generated_at: Timestamp(3),
             checked_at: None,
             checked: vec![],
+            score: None,
+            deductions: vec![],
             findings: vec![],
         };
         assert_eq!(

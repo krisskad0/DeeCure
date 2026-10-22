@@ -8,6 +8,8 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use deecure_agent::collect::SystemRoot;
+use deecure_agent::context::Agent;
 use deecure_agent::store::Store;
 use deecure_agent::{server, socket};
 use deecure_core::rpc::{MAX_MESSAGE_BYTES, RpcError};
@@ -27,8 +29,9 @@ fn test_dir(name: &str) -> PathBuf {
 fn start_agent(path: &Path) -> oneshot::Sender<()> {
     let listener = socket::bind(path).unwrap();
     let store = Arc::new(Mutex::new(Store::open_in_memory().unwrap()));
+    let agent = Agent::new(store, SystemRoot::real());
     let (stop, stopped) = oneshot::channel::<()>();
-    tokio::spawn(server::serve(listener, store, async {
+    tokio::spawn(server::serve(listener, agent, async {
         let _ = stopped.await;
     }));
     stop

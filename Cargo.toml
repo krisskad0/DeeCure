@@ -27,7 +27,7 @@ tauri = "2.12"
 tauri-build = "2.7"
 listenfd = "1"
 rusqlite = "0.40"
-rustix = { version = "1", features = ["fs", "process"] }
+rustix = { version = "1", features = ["fs", "param", "process"] }
 tokio = { version = "1", features = ["rt", "net", "io-util", "macros", "signal", "time", "sync"] }
 zbus = { version = "5.19", default-features = false, features = ["tokio"] }
 

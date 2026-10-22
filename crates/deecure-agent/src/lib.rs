@@ -5,7 +5,9 @@
 //! The binary in `main.rs` only parses arguments and starts [`server::serve`].
 
 pub mod collect;
+pub mod context;
 pub mod handler;
+pub mod inventory;
 pub mod rules;
 pub mod server;
 pub mod socket;

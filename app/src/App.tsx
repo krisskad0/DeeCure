@@ -4,8 +4,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { type AppError, type Machine, type StatusReport, getMachine, getStatus, toAppError } from "./api";
-import { IssuesPanel } from "./pages/IssuesPanel";
 import { NotBuilt } from "./pages/NotBuilt";
+import { OverviewScore } from "./pages/overview/HealthScore";
+import { OverviewIssues } from "./pages/overview/Issues";
+import { OverviewSummary } from "./pages/overview/Summary";
 import { SystemServices } from "./pages/services/SystemServices";
 import { usePref } from "./prefs";
 import { useRoute } from "./route";
@@ -88,11 +90,13 @@ export default function App() {
   if (route.gallery) {
     content = <Gallery />;
   } else if (route.page.id === "overview" && route.tab.id === "summary") {
-    content = <IssuesPanel title="Active issues" subtitle="Most serious first" findings={all} {...shared} />;
+    content = <OverviewSummary {...shared} />;
+  } else if (route.page.id === "overview" && route.tab.id === "issues") {
+    content = <OverviewIssues {...shared} />;
+  } else if (route.page.id === "overview" && route.tab.id === "score") {
+    content = <OverviewScore {...shared} />;
   } else if (route.page.id === "services" && route.tab.id === "system") {
     content = <SystemServices />;
-  } else if (route.page.id === "overview" && route.tab.id === "issues") {
-    content = <IssuesPanel title="All open issues" subtitle="Everything DeeCure found, most serious first" findings={all} {...shared} />;
   } else {
     content = <NotBuilt route={route} findings={pageFindings} {...shared} />;
   }

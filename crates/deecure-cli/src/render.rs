@@ -46,9 +46,13 @@ pub fn status(report: &StatusReport, now: Timestamp, style: Style) -> String {
         out.push_str("after the agent starts. Try again in a minute.\n");
         return out;
     };
+    let health = report
+        .score
+        .map(|score| format!(" · health {score}/100"))
+        .unwrap_or_default();
     let _ = writeln!(
         out,
-        "{} · checked {}\n",
+        "{}{health} · checked {}\n",
         style.paint("1", "DeeCure status"),
         ago(checked_at, now)
     );
@@ -179,6 +183,8 @@ mod tests {
             generated_at: Timestamp(10 * MINUTE),
             checked_at: checked_at.map(Timestamp),
             checked: vec![],
+            score: None,
+            deductions: vec![],
             findings,
         }
     }

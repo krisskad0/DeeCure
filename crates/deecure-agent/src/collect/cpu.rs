@@ -41,6 +41,20 @@ pub fn parse_stat(text: &str) -> io::Result<CpuTimes> {
         .lines()
         .find(|line| line.starts_with("cpu "))
         .ok_or_else(|| invalid("/proc/stat", "no 'cpu' line"))?;
+    parse_cpu_line(line)
+}
+
+/// Reads the per-core lines (`cpu0`, `cpu1`, …) of `/proc/stat`, in order.
+pub fn parse_cores(text: &str) -> Vec<CpuTimes> {
+    text.lines()
+        .filter(|line| {
+            line.starts_with("cpu") && line.as_bytes().get(3).is_some_and(u8::is_ascii_digit)
+        })
+        .filter_map(|line| parse_cpu_line(line).ok())
+        .collect()
+}
+
+fn parse_cpu_line(line: &str) -> io::Result<CpuTimes> {
     let numbers = line
         .split_whitespace()
         .skip(1)
@@ -97,6 +111,7 @@ fn usage(before: CpuTimes, after: CpuTimes) -> Option<[(&'static str, f64); 4]> 
 #[derive(Debug, Default)]
 pub struct Cpu {
     previous: Option<CpuTimes>,
+    previous_cores: Vec<CpuTimes>,
 }
 
 impl Collector for Cpu {
@@ -105,7 +120,9 @@ impl Collector for Cpu {
     }
 
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
-        let times = parse_stat(&root.read("/proc/stat")?)?;
+        let stat = root.read("/proc/stat")?;
+        let times = parse_stat(&stat)?;
+        let cores = parse_cores(&stat);
         let load = parse_loadavg(&root.read("/proc/loadavg")?)?;
         let mut sample = Sample::default();
         if let Some(percentages) = self
@@ -117,6 +134,18 @@ impl Collector for Cpu {
                 sample
                     .metrics
                     .push(metric(name, None, value, Unit::Percent, now));
+            }
+        }
+        let before = std::mem::replace(&mut self.previous_cores, cores.clone());
+        for (i, (old, new)) in before.iter().zip(&cores).enumerate() {
+            if let Some([(_, busy), ..]) = usage(*old, *new) {
+                sample.metrics.push(metric(
+                    "cpu.core",
+                    Some(&i.to_string()),
+                    busy,
+                    Unit::Percent,
+                    now,
+                ));
             }
         }
         sample
@@ -176,5 +205,8 @@ mod tests {
         let second = cpu.collect(&root, Timestamp(60_000)).unwrap();
         let usage = value(&second, "cpu.usage", None).unwrap();
         assert!((usage - 33.33).abs() < 0.01, "usage was {usage}");
+        // cpu0: total 750, idle 400, iowait 100 → busy 250 → 33.3%
+        let core = value(&second, "cpu.core", Some("0")).unwrap();
+        assert!((core - 33.33).abs() < 0.01, "core 0 was {core}");
     }
 }

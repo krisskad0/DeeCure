@@ -4,7 +4,8 @@
 import { useEffect, useState } from "react";
 import { type AppError, toAppError } from "./api";
 
-export function useLive<T>(load: () => Promise<T>, everyMs = 10_000): { data: T | undefined; error: AppError | null } {
+/** `key`: load again at once when it changes, such as the time range. */
+export function useLive<T>(load: () => Promise<T>, everyMs = 10_000, key = ""): { data: T | undefined; error: AppError | null } {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<AppError | null>(null);
   useEffect(() => {
@@ -20,7 +21,7 @@ export function useLive<T>(load: () => Promise<T>, everyMs = 10_000): { data: T 
       alive = false;
       clearInterval(timer);
     };
-    // `load` is a module-level function in every caller, so it never changes.
-  }, [everyMs]);
+    // `load` may be a new closure on every render; `key` names what it depends on.
+  }, [everyMs, key]);
   return { data, error };
 }

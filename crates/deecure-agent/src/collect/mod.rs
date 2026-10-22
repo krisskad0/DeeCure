@@ -8,8 +8,12 @@
 
 mod battery;
 mod cpu;
+mod diskio;
 mod filesystems;
 mod memory;
+mod network;
+mod pressure;
+mod sensors;
 mod services;
 
 use std::collections::HashSet;
@@ -24,8 +28,12 @@ use crate::store::{self, SharedStore, Store};
 
 pub use battery::Battery;
 pub use cpu::Cpu;
+pub use diskio::DiskIo;
 pub use filesystems::{Filesystems, FsUsage};
 pub use memory::Memory;
+pub use network::Network;
+pub use pressure::Pressure;
+pub use sensors::Sensors;
 pub use services::{Services, UnitState, summarize as summarize_services};
 
 /// How often the file collectors run in the background.
@@ -89,6 +97,10 @@ pub async fn run(
         Box::new(Memory),
         Box::new(Battery),
         Box::new(Filesystems::real()),
+        Box::new(Network::default()),
+        Box::new(DiskIo::default()),
+        Box::new(Pressure),
+        Box::new(Sensors),
     ];
     let mut services = Services::default();
     // Collectors that are failing right now, so each failure is logged once, not every minute.

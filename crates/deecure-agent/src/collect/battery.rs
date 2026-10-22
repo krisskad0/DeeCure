@@ -65,6 +65,17 @@ impl Collector for Battery {
                     .metrics
                     .push(metric("battery.power", subject, watts, Unit::Watts, now));
             }
+            if text("status").as_deref() == Some("Discharging")
+                && let Some(seconds) = time_left(&supply)
+            {
+                sample.metrics.push(metric(
+                    "battery.time_left",
+                    subject,
+                    seconds,
+                    Unit::Seconds,
+                    now,
+                ));
+            }
         }
         Ok(sample)
     }
@@ -85,6 +96,17 @@ fn health(supply: &Path) -> Option<f64> {
         let (full, design) = (number(supply, full)?, number(supply, design)?);
         (design > 0.0).then(|| full * 100.0 / design)
     })
+}
+
+/// Time until empty at the current draw, in seconds.
+fn time_left(supply: &Path) -> Option<f64> {
+    let hours = [("energy_now", "power_now"), ("charge_now", "current_now")]
+        .into_iter()
+        .find_map(|(stored, rate)| {
+            let (stored, rate) = (number(supply, stored)?, number(supply, rate)?);
+            (rate > 0.0).then(|| stored / rate)
+        })?;
+    Some(hours * 3600.0)
 }
 
 /// Power going in or out right now, in watts.
@@ -148,6 +170,8 @@ mod tests {
                     "50000000\n",
                 ),
                 ("/sys/class/power_supply/BAT1/power_now", "7500000\n"),
+                ("/sys/class/power_supply/BAT1/energy_now", "15000000\n"),
+                ("/sys/class/power_supply/BAT1/status", "Discharging\n"),
             ],
         );
         let sample = Battery.collect(&root, Timestamp(0)).unwrap();
@@ -157,6 +181,11 @@ mod tests {
             value(&sample, "battery.charge", Some("BAT1")),
             None,
             "no capacity file"
+        );
+        // 15 Wh at 7.5 W = 2 hours.
+        assert_eq!(
+            value(&sample, "battery.time_left", Some("BAT1")),
+            Some(7200.0)
         );
     }
 

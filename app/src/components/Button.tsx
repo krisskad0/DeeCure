@@ -32,3 +32,12 @@ export function IconButton({ icon, label, ...rest }: ButtonHTMLAttributes<HTMLBu
     </button>
   );
 }
+
+/** A link that looks like a small link-style button, for "View all" and "Open" in panel headers. */
+export function LinkButton({ to, children }: { to: string; children: string }) {
+  return (
+    <a className="btn btn-link btn-sm" href={to}>
+      {children}
+    </a>
+  );
+}

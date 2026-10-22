@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // The list of open findings, with honest states for "agent not running" and "not checked yet".
 
+import type { ReactNode } from "react";
 import type { AppError, Finding, StatusReport } from "../api";
 import { Panel, type Span } from "../components/Panel";
 import { StatusBadge } from "../components/StatusBadge";
@@ -16,9 +17,10 @@ export function IssuesPanel(props: {
   error: AppError | null;
   now: number;
   span?: Span;
+  actions?: ReactNode;
 }) {
   return (
-    <Panel title={props.title} subtitle={props.subtitle} span={props.span} flush>
+    <Panel title={props.title} subtitle={props.subtitle} span={props.span} actions={props.actions} flush>
       <Body {...props} />
     </Panel>
   );

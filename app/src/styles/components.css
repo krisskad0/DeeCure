@@ -38,6 +38,7 @@
   display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
 }
 .btn:hover:not(:disabled) { background: var(--hover); }
+a.btn { text-decoration: none; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.07); }
