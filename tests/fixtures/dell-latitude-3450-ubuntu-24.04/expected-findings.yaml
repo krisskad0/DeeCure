@@ -1,0 +1,6 @@
+# The exact findings DeeCure must report for this machine.
+# Battery health is 79.3%, under the 80% "info" line. The disk is 41% full
+# and no service has failed, so nothing else.
+- rule: power.battery_worn
+  subject: BAT0
+  severity: info

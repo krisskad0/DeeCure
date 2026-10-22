@@ -1,0 +1,8 @@
+[
+  { "name": "apt-daily.service", "description": "Daily apt download activities", "load": "loaded", "active": "inactive", "sub": "dead" },
+  { "name": "bluetooth.service", "description": "Bluetooth service", "load": "loaded", "active": "failed", "sub": "failed" },
+  { "name": "cups-browsed.service", "description": "Make remote CUPS printers available locally", "load": "loaded", "active": "inactive", "sub": "dead" },
+  { "name": "docker.service", "description": "Docker Application Container Engine", "load": "loaded", "active": "active", "sub": "running" },
+  { "name": "NetworkManager.service", "description": "Network Manager", "load": "loaded", "active": "active", "sub": "running" },
+  { "name": "snapd.service", "description": "Snap Daemon", "load": "loaded", "active": "active", "sub": "running" }
+]

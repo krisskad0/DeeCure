@@ -1,0 +1,5 @@
+[
+  { "name": "cron.service", "description": "Regular background program processing daemon", "load": "loaded", "active": "active", "sub": "running" },
+  { "name": "NetworkManager.service", "description": "Network Manager", "load": "loaded", "active": "active", "sub": "running" },
+  { "name": "ssh.service", "description": "OpenBSD Secure Shell server", "load": "loaded", "active": "active", "sub": "running" }
+]

@@ -1,0 +1,5 @@
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+/dev/nvme0n1p2 / ext4 rw,relatime 0 0
+/dev/nvme0n1p1 /boot/efi vfat rw,relatime,fmask=0077,dmask=0077 0 0
+/dev/sda1 /home xfs rw,relatime,attr2,inode64 0 0
+nas.local:/backup /mnt/backup nfs4 rw,relatime,vers=4.2 0 0

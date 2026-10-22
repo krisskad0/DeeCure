@@ -1,0 +1,6 @@
+description: "Desktop PC with no battery: main disk 86% full, separate /home on xfs, a network share, no swap"
+source: synthetic
+captured: 2026-10-23
+machine: "Desktop (made up)"
+os: "Ubuntu 26.04 LTS"
+kernel: "7.0.0-12-generic"

@@ -1,0 +1,6 @@
+description: "Riya's laptop from the UI prototype: main disk 94% full, Bluetooth service failed, worn battery (71%)"
+source: synthetic
+captured: 2026-10-23
+machine: "Laptop (made up)"
+os: "Ubuntu 24.04.1 LTS"
+kernel: "6.8.0-45-generic"

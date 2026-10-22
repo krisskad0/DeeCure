@@ -1,0 +1,6 @@
+description: "Dell Latitude 3450 laptop, Ubuntu 24.04, ext4, worn battery (79% health)"
+source: real
+captured: 2026-10-23
+machine: "Dell Inc. Latitude 3450"
+os: "Ubuntu 24.04.5 LTS"
+kernel: "7.0.0-38-generic"

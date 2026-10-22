@@ -1,0 +1,10 @@
+# The exact findings DeeCure must report for this machine.
+# Same problems as the UI prototype's Overview page.
+- rule: storage.root_almost_full
+  severity: critical
+- rule: services.unit_failed
+  subject: bluetooth.service
+  severity: warning
+- rule: power.battery_worn
+  subject: BAT0
+  severity: info

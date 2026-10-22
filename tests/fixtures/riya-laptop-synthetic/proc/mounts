@@ -1,0 +1,10 @@
+sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+udev /dev devtmpfs rw,nosuid,relatime,size=3958604k 0 0
+tmpfs /run tmpfs rw,nosuid,nodev,noexec,relatime,size=796980k,mode=755 0 0
+/dev/nvme0n1p2 / btrfs rw,relatime,ssd,space_cache=v2,subvol=/@ 0 0
+/dev/loop3 /snap/firefox/4793 squashfs ro,nodev,relatime,errors=continue 0 0
+/dev/loop4 /snap/firefox/4848 squashfs ro,nodev,relatime,errors=continue 0 0
+/dev/nvme0n1p2 /home btrfs rw,relatime,ssd,space_cache=v2,subvol=/@home 0 0
+/dev/nvme0n1p1 /boot/efi vfat rw,relatime,fmask=0077,dmask=0077 0 0
+tmpfs /run/user/1000 tmpfs rw,nosuid,nodev,relatime,size=796976k,mode=700 0 0

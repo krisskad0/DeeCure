@@ -41,8 +41,8 @@ The file name must match the last part of the `id`.
 
 1. Pick an `id`: `<category>.<short_name>`.
 2. Write the YAML file. Fill in `title`, `explain`, `severity`, and `fixes`.
-3. Add a test in `crates/deecure-agent/tests/rules.rs` with a healthy case and a problem case. (From Phase 0 task 10, you can also add saved machine data in `tests/fixtures/`.)
-4. Run the rule tests: `cargo test -p deecure-agent --test rules`. A broken rule file fails this test.
+3. Add a test in `crates/deecure-agent/tests/rules.rs` with a healthy case and a problem case. If the rule changes what a [fixture](testing.md#fixtures) machine reports, update its `expected-findings.yaml`.
+4. Run the rule tests: `cargo test -p deecure-agent --test rules --test fixtures`. A broken rule file fails them.
 5. Try it live: `make agent` loads the rules from `rules/`.
 6. Open a pull request using the checklist below.
 

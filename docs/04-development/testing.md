@@ -33,9 +33,32 @@
 | `tests/vm/` | Scripts that build VMs, install the package, and run checks |
 | `packaging/debian/tests/` | `autopkgtest` smoke tests |
 
+## Fixtures
+
+A fixture is a saved copy of what the collectors read on one machine. `crates/deecure-agent/tests/fixtures.rs` replays every fixture through the real collectors and rules, and checks that DeeCure reports **exactly** the expected findings.
+
+```
+tests/fixtures/<machine>/
+├── fixture.yaml             # description, source (real or synthetic), machine, OS, kernel
+├── proc/                    # stat, loadavg, meminfo, mounts
+├── sys/class/power_supply/  # battery and charger files (missing on desktops)
+├── statvfs.json             # disk space per mount point
+├── services.json            # systemd services and their states
+└── expected-findings.yaml   # the exact findings DeeCure must report
+```
+
+| Fixture | Source | Why it is there |
+| --- | --- | --- |
+| `dell-latitude-3450-ubuntu-24.04` | Real | LVM disk, separate `/boot`, USB-C power supply that must be ignored, worn battery |
+| `riya-laptop-synthetic` | Made up, from the UI prototype | Disk 94% full, failed Bluetooth service, worn battery, btrfs subvolumes, snap images |
+| `desktop-no-battery-synthetic` | Made up | No battery (no battery finding allowed), network share that must be skipped, no swap |
+
+More real machines make DeeCure safer. Captures from other laptops and desktops are very welcome.
+
 ## Adding a fixture
 
-1. Run the capture script on a real machine: `scripts/capture-fixture.sh` *(planned)*. It copies the needed `/proc`, `/sys`, journal, and command outputs.
-2. Check the output for private data. The script removes user names, host names, IPs, and serial numbers, but look again.
-3. Save it as `tests/fixtures/<short-machine-name>/`.
-4. Add `expected-findings.yaml` with the findings this machine should produce.
+1. On the machine, run `scripts/capture-fixture.py <name> --description "…"`. It copies only what the collectors read. It replaces your user name and host name, blanks disk UUIDs, and skips battery serial numbers, models, and makers.
+2. Read every file it wrote and remove anything private that is left, such as a personal disk label.
+3. Run `cargo test -p deecure-agent --test fixtures`. The new fixture fails at first and prints what DeeCure found.
+4. Check that the result is right for that machine, then copy it into `expected-findings.yaml`.
+5. Commit the folder.

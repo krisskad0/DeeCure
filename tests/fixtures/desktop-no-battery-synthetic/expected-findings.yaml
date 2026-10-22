@@ -1,0 +1,5 @@
+# The exact findings DeeCure must report for this machine.
+# The main disk is 86% full (warning). No battery, so no battery finding:
+# DeeCure must not guess. The network share must be skipped.
+- rule: storage.root_almost_full
+  severity: warning

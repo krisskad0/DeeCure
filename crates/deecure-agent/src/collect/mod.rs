@@ -26,7 +26,7 @@ pub use battery::Battery;
 pub use cpu::Cpu;
 pub use filesystems::{Filesystems, FsUsage};
 pub use memory::Memory;
-pub use services::{Services, UnitState};
+pub use services::{Services, UnitState, summarize as summarize_services};
 
 /// How often the file collectors run in the background.
 pub const EVERY: Duration = Duration::from_secs(60);

@@ -1,0 +1,1430 @@
+[
+  {
+    "name": "apparmor.service",
+    "description": "Load AppArmor profiles",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "whoopsie.service",
+    "description": "crash report submission",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-networkd-wait-online.service",
+    "description": "Wait for Network to be Configured",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-repart.service",
+    "description": "Repartition Root Disk",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "user@1001.service",
+    "description": "User Manager for UID 1001",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-pcrmachine.service",
+    "description": "TPM2 PCR Machine ID Measurement",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "gnome-remote-desktop.service",
+    "description": "GNOME Remote Desktop",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "update-notifier-download.service",
+    "description": "Download data for packages that failed at package install time",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "cloud-init-local.service",
+    "description": "Cloud-init: Local Stage (pre-network)",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "snapd.seeded.service",
+    "description": "Wait until snapd is fully seeded",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-update-done.service",
+    "description": "Update is Completed",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "tlp.service",
+    "description": "tlp.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "secureboot-db.service",
+    "description": "Secure Boot updates for DB and DBX",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "system76-power.service",
+    "description": "system76-power.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "setvtrgb.service",
+    "description": "Set console scheme",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-update-utmp-runlevel.service",
+    "description": "Record Runlevel Change in UTMP",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "rsyslog.service",
+    "description": "System Logging Service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "ua-auto-attach.service",
+    "description": "ua-auto-attach.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-battery-check.service",
+    "description": "Check battery level during early boot",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "iscsi.service",
+    "description": "iscsi.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "tuned.service",
+    "description": "tuned.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "console-screen.service",
+    "description": "console-screen.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "user-runtime-dir@1001.service",
+    "description": "User Runtime Directory /run/user/1001",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "rtkit-daemon.service",
+    "description": "RealtimeKit Scheduling Policy Service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "tpm-udev.service",
+    "description": "Handle dynamically added tpm devices",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-random-seed.service",
+    "description": "Load/Save OS Random Seed",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "lvm2-monitor.service",
+    "description": "Monitoring of LVM2 mirrors, snapshots etc. using dmeventd or progress polling",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-tpm2-setup.service",
+    "description": "TPM2 SRK Setup",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-user-sessions.service",
+    "description": "Permit User Sessions",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-fsck-root.service",
+    "description": "File System Check on Root Device",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "plymouth-read-write.service",
+    "description": "Tell Plymouth To Write Out Runtime Data",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "e2scrub_reap.service",
+    "description": "Remove Stale Online ext4 Metadata Check Snapshots",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sysstat-summary.service",
+    "description": "Generate a daily summary of process accounting",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sssd-pam.service",
+    "description": "SSSD PAM Service responder",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "motd-news.service",
+    "description": "Message of the Day",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-backlight@leds:dell::kbd_backlight.service",
+    "description": "Load/Save Screen Backlight Brightness of leds:dell::kbd_backlight",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "apport.service",
+    "description": "automatic crash report generation",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-tmpfiles-setup-dev-early.service",
+    "description": "Create Static Device Nodes in /dev gracefully",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "blueman-mechanism.service",
+    "description": "Bluetooth management mechanism",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "colord.service",
+    "description": "Manage, Install and Generate Color Profiles",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-remount-fs.service",
+    "description": "Remount Root and Kernel File Systems",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "bluetooth.service",
+    "description": "Bluetooth service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "netplan-ovs-cleanup.service",
+    "description": "OpenVSwitch configuration for cleanup",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-tmpfiles-setup.service",
+    "description": "Create Volatile Files and Directories",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-pcrphase-sysinit.service",
+    "description": "TPM2 PCR Barrier (Initialization)",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "ubuntu-advantage-cloud-id-shim.service",
+    "description": "ubuntu-advantage-cloud-id-shim.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "snapd.failure.service",
+    "description": "Failure handling of the snapd snap",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "NetworkManager-wait-online.service",
+    "description": "Network Manager Wait Online",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "modprobe@fuse.service",
+    "description": "Load Kernel Module fuse",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "getty-static.service",
+    "description": "getty on tty2-tty6 if dbus and logind are not available",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "networking.service",
+    "description": "networking.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-journal-catalog-update.service",
+    "description": "Rebuild Journal Catalog",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sshd-keygen.service",
+    "description": "sshd-keygen.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "modprobe@sd_mod.service",
+    "description": "Load Kernel Module sd_mod",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-logind.service",
+    "description": "User Login Management",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-machine-id-commit.service",
+    "description": "Commit a transient machine-id on disk",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "networkd-dispatcher.service",
+    "description": "Dispatcher daemon for systemd-networkd",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-soft-reboot.service",
+    "description": "Reboot System Userspace",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-bsod.service",
+    "description": "Displays emergency message in full screen.",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "fcoe.service",
+    "description": "fcoe.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "upower.service",
+    "description": "Daemon for power management",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-update-utmp.service",
+    "description": "Record System Boot/Shutdown in UTMP",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "blk-availability.service",
+    "description": "Availability of block devices",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "snapd.autoimport.service",
+    "description": "Auto import assertions from block devices",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sssd-autofs.service",
+    "description": "SSSD AutoFS Service responder",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-rfkill.service",
+    "description": "Load/Save RF Kill Switch Status",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "hv_kvp_daemon.service",
+    "description": "hv_kvp_daemon.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-resolved.service",
+    "description": "Network Name Resolution",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "console-setup.service",
+    "description": "Set console font and keymap",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "ovsdb-server.service",
+    "description": "ovsdb-server.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "lm-sensors.service",
+    "description": "Initialize hardware monitoring sensors",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "modprobe@efi_pstore.service",
+    "description": "Load Kernel Module efi_pstore",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-fsck@dev-disk-by\\x2duuid-39399965\\x2d656b\\x2d4b85\\x2d81b9\\x2d8acbfa24e1a8.service",
+    "description": "File System Check on /dev/disk/by-uuid/00000000-0000-0000-0000-000000000000",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-ask-password-wall.service",
+    "description": "Forward Password Requests to Wall",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-binfmt.service",
+    "description": "Set Up Additional Binary Formats",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-backlight@backlight:intel_backlight.service",
+    "description": "Load/Save Screen Backlight Brightness of backlight:intel_backlight",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "clamav-daemon.service",
+    "description": "Clam AntiVirus userspace daemon",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "firewalld.service",
+    "description": "firewalld.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "fwupd.service",
+    "description": "Firmware update daemon",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "NetworkManager.service",
+    "description": "Network Manager",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "dm-event.service",
+    "description": "Device-mapper event daemon",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-networkd.service",
+    "description": "Network Configuration",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "grub-common.service",
+    "description": "Record successful boot for GRUB",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "dmesg.service",
+    "description": "Save initial kernel messages after boot",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "snapd.snap-repair.service",
+    "description": "Automatically fetch and run repair assertions",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "accounts-daemon.service",
+    "description": "Accounts Service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-initctl.service",
+    "description": "initctl Compatibility Daemon",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "containerd.service",
+    "description": "containerd container runtime",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "cups-browsed.service",
+    "description": "Make remote CUPS printers available locally",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "sssd.service",
+    "description": "System Security Services Daemon",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-hibernate.service",
+    "description": "System Hibernate",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "docker.service",
+    "description": "Docker Application Container Engine",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "nslcd.service",
+    "description": "nslcd.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "initrd-udevadm-cleanup-db.service",
+    "description": "Cleanup udev Database",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "kerneloops.service",
+    "description": "Tool to automatically collect and submit kernel crash signatures",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "dpkg-db-backup.service",
+    "description": "Daily dpkg database backup service",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-sysext.service",
+    "description": "Merge System Extension Images into /usr/ and /opt/",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "man-db.service",
+    "description": "Daily man-db regeneration",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-suspend.service",
+    "description": "System Suspend",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "alsa-restore.service",
+    "description": "Save/Restore Sound Card State",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "snapd.service",
+    "description": "Snap Daemon",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "polkit.service",
+    "description": "Authorization Manager",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-pstore.service",
+    "description": "Platform Persistent Storage Archival",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sysstat-collect.service",
+    "description": "system activity accounting tool",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "kbd.service",
+    "description": "kbd.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-firstboot.service",
+    "description": "First Boot Wizard",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-udev-settle.service",
+    "description": "Wait for udev To Complete Device Initialization",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "kmod-static-nodes.service",
+    "description": "Create List of Static Device Nodes",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "modprobe@configfs.service",
+    "description": "Load Kernel Module configfs",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-ask-password-console.service",
+    "description": "Dispatch Password Requests to Console",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-fsckd.service",
+    "description": "File System Check Daemon to report status",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "plymouth-quit-wait.service",
+    "description": "Hold until boot process finishes up",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "ssl-cert.service",
+    "description": "Generate snakeoil SSL keypair",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "fwupd-refresh.service",
+    "description": "Refresh fwupd metadata and update motd",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "plymouth-start.service",
+    "description": "Show Plymouth Boot Screen",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-vconsole-setup.service",
+    "description": "systemd-vconsole-setup.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-pcrphase.service",
+    "description": "TPM2 PCR Barrier (User)",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "iscsid.service",
+    "description": "iscsid.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "uuidd.service",
+    "description": "Daemon for generating UUIDs",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "update-notifier-motd.service",
+    "description": "Check to see whether there is a new version of Ubuntu available",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "thermald.service",
+    "description": "Thermal Daemon Service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "initrd-cleanup.service",
+    "description": "Cleaning Up and Shutting Down Daemons",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sssd-pac.service",
+    "description": "SSSD PAC Service responder",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "fstrim.service",
+    "description": "Discard unused blocks on filesystems from /etc/fstab",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "initrd-parse-etc.service",
+    "description": "Mountpoints Configured in the Real Root",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sssd-ssh.service",
+    "description": "SSSD SSH Service responder",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "anacron.service",
+    "description": "Run anacron jobs",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-fsck@dev-disk-by\\x2duuid-353A\\x2d348B.service",
+    "description": "File System Check on /dev/disk/by-uuid/353A-348B",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-hybrid-sleep.service",
+    "description": "System Hybrid Suspend+Hibernate",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "modprobe@loop.service",
+    "description": "Load Kernel Module loop",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "udisks2.service",
+    "description": "Disk Manager",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "unattended-upgrades.service",
+    "description": "Unattended Upgrades Shutdown",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "cloud-config.service",
+    "description": "Cloud-init: Config Stage",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "snapd.apparmor.service",
+    "description": "Load AppArmor profiles managed internally by snapd",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "plymouth-quit.service",
+    "description": "Terminate Plymouth Boot Screen",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "ua-timer.service",
+    "description": "Ubuntu Pro Timer for running repeated jobs",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "bolt.service",
+    "description": "Thunderbolt system service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "sssd-sudo.service",
+    "description": "SSSD Sudo Service responder",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-oomd.service",
+    "description": "Userspace Out-Of-Memory (OOM) Killer",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-journald.service",
+    "description": "Journal Service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "systemd-tpm2-setup-early.service",
+    "description": "TPM2 SRK Setup (Early)",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-hibernate-resume.service",
+    "description": "Resume from hibernation",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "cron.service",
+    "description": "Regular background program processing daemon",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "gpu-manager.service",
+    "description": "Detect the available GPUs and deal with any system changes",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "lvm2-lvmpolld.service",
+    "description": "LVM2 poll daemon",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-udev-trigger.service",
+    "description": "Coldplug All udev Devices",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "ldconfig.service",
+    "description": "Rebuild Dynamic Linker Cache",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-modules-load.service",
+    "description": "Load Kernel Modules",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-tmpfiles-clean.service",
+    "description": "Cleanup of Temporary Directories",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "ubuntu-fan.service",
+    "description": "ubuntu-fan.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sshd.service",
+    "description": "sshd.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "e2scrub_all.service",
+    "description": "Online ext4 Metadata Check for All Filesystems",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "logrotate.service",
+    "description": "Rotate log files",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "apport-autoreport.service",
+    "description": "Process error reports when automatic reporting is enabled",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-suspend-then-hibernate.service",
+    "description": "System Suspend then Hibernate",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "plymouth-switch-root.service",
+    "description": "Plymouth switch root service",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-sysusers.service",
+    "description": "Create System Users",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "grub-initrd-fallback.service",
+    "description": "GRUB failed boot detection",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "ModemManager.service",
+    "description": "Modem Manager",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "rbdmap.service",
+    "description": "rbdmap.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "auditd.service",
+    "description": "auditd.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "auto-cpufreq.service",
+    "description": "auto-cpufreq.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "modprobe@drm.service",
+    "description": "Load Kernel Module drm",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "cloud-init.service",
+    "description": "Cloud-init: Network Stage",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "cups.service",
+    "description": "CUPS Scheduler",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "gdm.service",
+    "description": "GNOME Display Manager",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "dbus.service",
+    "description": "D-Bus System Message Bus",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "snapd.system-shutdown.service",
+    "description": "Ubuntu core (all-snaps) system shutdown helper setup service",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "alsa-state.service",
+    "description": "Manage Sound Card State (restore and store)",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-tmpfiles-setup-dev.service",
+    "description": "Create Static Device Nodes in /dev",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "connman.service",
+    "description": "connman.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-journal-flush.service",
+    "description": "Flush Journal to Persistent Storage",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-timesyncd.service",
+    "description": "Network Time Synchronization",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "keyboard-setup.service",
+    "description": "Set the console keyboard layout",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "rescue.service",
+    "description": "Rescue Shell",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-cryptsetup@dm_crypt\\x2d0.service",
+    "description": "Cryptography Setup for dm_crypt-0",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "apt-daily-upgrade.service",
+    "description": "Daily apt upgrade and clean activities",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "wpa_supplicant.service",
+    "description": "WPA supplicant",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "openvpn.service",
+    "description": "OpenVPN service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "snapd.core-fixup.service",
+    "description": "Automatically repair incorrect owner/permissions on core devices",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-udevd.service",
+    "description": "Rule-based Manager for Device Events and Files",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "emergency.service",
+    "description": "Emergency Shell",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "modprobe@dm_mod.service",
+    "description": "Load Kernel Module dm_mod",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-pcrphase-initrd.service",
+    "description": "TPM2 PCR Barrier (initrd)",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "avahi-daemon.service",
+    "description": "Avahi mDNS/DNS-SD Stack",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "apt-daily.service",
+    "description": "Daily apt download activities",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sysstat.service",
+    "description": "Resets System Activity Logs",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "systemd-sysctl.service",
+    "description": "Apply Kernel Variables",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "ufw.service",
+    "description": "Uncomplicated firewall",
+    "load": "loaded",
+    "active": "active",
+    "sub": "exited"
+  },
+  {
+    "name": "iscsi-shutdown.service",
+    "description": "iscsi-shutdown.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "oem-config.service",
+    "description": "oem-config.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-quotacheck.service",
+    "description": "File System Quota Check",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-hwdb-update.service",
+    "description": "Rebuild Hardware Database",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "switcheroo-control.service",
+    "description": "Switcheroo Control Proxy service",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "power-profiles-daemon.service",
+    "description": "Power Profiles daemon",
+    "load": "loaded",
+    "active": "active",
+    "sub": "running"
+  },
+  {
+    "name": "initrd-switch-root.service",
+    "description": "Switch Root",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "systemd-ask-password-plymouth.service",
+    "description": "Forward Password Requests to Plymouth",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "zfs-mount.service",
+    "description": "zfs-mount.service",
+    "load": "not-found",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "rc-local.service",
+    "description": "/etc/rc.local Compatibility",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "getty@tty1.service",
+    "description": "Getty on tty1",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "ua-reboot-cmds.service",
+    "description": "Ubuntu Pro reboot cmds",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "sssd-nss.service",
+    "description": "SSSD NSS Service responder",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "ubuntu-advantage.service",
+    "description": "Ubuntu Pro Background Auto Attach",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  },
+  {
+    "name": "snapd.recovery-chooser-trigger.service",
+    "description": "Wait for the Ubuntu Core chooser trigger",
+    "load": "loaded",
+    "active": "inactive",
+    "sub": "dead"
+  }
+]
