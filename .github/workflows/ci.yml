@@ -99,7 +99,7 @@ jobs:
         run: |
           sudo apt-get $APT_OPTIONS update
           sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
-            libsqlite3-dev debhelper devscripts lintian pkgconf
+            build-essential libsqlite3-dev debhelper devscripts lintian pkgconf
 
       - name: Install the pinned Rust toolchain
         run: rustup show active-toolchain || rustup toolchain install
