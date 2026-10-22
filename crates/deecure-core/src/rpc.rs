@@ -5,6 +5,7 @@
 //! The wire format is described in `docs/02-architecture/ipc-protocol.md`.
 
 use std::fmt;
+use std::path::PathBuf;
 
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize, Serializer};
@@ -15,6 +16,19 @@ use crate::{Finding, Timestamp};
 /// The protocol version the agent speaks. Raise it when a method changes in a way
 /// that breaks old clients.
 pub const PROTOCOL_VERSION: u32 = 1;
+
+/// The longest message, in bytes, that either side accepts on one line.
+pub const MAX_MESSAGE_BYTES: usize = 1024 * 1024;
+
+/// Where the agent listens by default: `$XDG_RUNTIME_DIR/deecure/agent.sock`.
+///
+/// `None` when `XDG_RUNTIME_DIR` is not set. There is no fallback to `/tmp`,
+/// because other users can reach `/tmp`.
+pub fn default_socket_path() -> Option<PathBuf> {
+    std::env::var_os("XDG_RUNTIME_DIR")
+        .filter(|dir| !dir.is_empty())
+        .map(|dir| PathBuf::from(dir).join("deecure").join("agent.sock"))
+}
 
 /// Method names the agent answers.
 pub mod method {

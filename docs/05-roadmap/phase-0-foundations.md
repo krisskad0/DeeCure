@@ -13,7 +13,8 @@
 | 2. Repo setup | git ✅, CI ✅. Branch protection: turn on in GitHub settings. |
 | 3. Cargo workspace | ✅ Done |
 | 4. Shared types | ✅ Done. Wire format in [IPC protocol](../02-architecture/ipc-protocol.md). |
-| 5–12 | Not started |
+| 5. Agent skeleton | ✅ Done. Socket activation, same-user check, `version` and `status`. Idle: 2.4 MB RAM, 0% CPU. |
+| 6–12 | Not started |
 
 ## Tasks (in order)
 

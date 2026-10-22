@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt clean
+.PHONY: help build test lint fmt agent clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -19,6 +19,9 @@ lint: ## Check formatting and lints (CI runs this)
 
 fmt: ## Format all Rust code
 	$(CARGO) fmt --all
+
+agent: ## Run the agent in the foreground (Ctrl+C to stop)
+	$(CARGO) run -p deecure-agent
 
 clean: ## Remove build output
 	$(CARGO) clean

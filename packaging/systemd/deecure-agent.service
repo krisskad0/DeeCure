@@ -1,0 +1,19 @@
+[Unit]
+Description=DeeCure agent
+Documentation=https://github.com/krisskad0/DeeCure
+Requires=deecure-agent.socket
+After=deecure-agent.socket
+
+[Service]
+Type=exec
+ExecStart=/usr/libexec/deecure/deecure-agent
+Restart=on-failure
+RestartSec=5
+# Stay out of the user's way (docs/02-architecture/performance-budget.md).
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target
+Also=deecure-agent.socket

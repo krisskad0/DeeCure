@@ -1,0 +1,12 @@
+[Unit]
+Description=DeeCure agent socket
+Documentation=https://github.com/krisskad0/DeeCure
+
+[Socket]
+ListenStream=%t/deecure/agent.sock
+SocketMode=0600
+DirectoryMode=0700
+RemoveOnStop=yes
+
+[Install]
+WantedBy=sockets.target

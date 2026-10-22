@@ -43,9 +43,9 @@ Install the current Node.js LTS release (for example with `nvm`). The desktop ap
 
 ```bash
 git clone https://github.com/krisskad0/DeeCure.git
-cd deecure
+cd DeeCure
 
-make build        # build all Rust crates and the web UI
+make build        # build all Rust crates
 make test         # run all tests
 make help         # list all commands
 ```
@@ -58,18 +58,41 @@ The `Makefile` gives short names to the real commands:
 | `make test` | `cargo test --workspace` (later also `npm test` in `app/`) |
 | `make lint` | `cargo fmt --check` and `cargo clippy -- -D warnings` (later also `npm run lint`) |
 | `make fmt` | `cargo fmt --all` |
+| `make agent` | Runs the agent in the foreground |
 | `make help` | Lists all commands |
 | `make dev` *(planned)* | Runs the agent, then `npm run tauri dev` in `app/` |
 | `make deb` *(planned)* | Builds the `.deb` (see [Debian package](../06-packaging/debian-package.md)) |
 
-## 6. Try the CLI
+## 6. Run the agent
+
+Start it in one terminal:
+
+```bash
+make agent
+```
+
+Talk to it from another terminal (install `socat` with `sudo apt install socat` if needed):
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_RUNTIME_DIR/deecure/agent.sock
+```
+
+To let systemd start it on demand, the way the real package will, install the user units that point at your debug build:
+
+```bash
+scripts/dev-agent-units.sh install     # and later: scripts/dev-agent-units.sh uninstall
+```
+
+The message format is in [IPC protocol](../02-architecture/ipc-protocol.md).
+
+## 7. Try the CLI *(planned: Phase 0, task 9)*
 
 ```bash
 cargo run -p deecure-cli -- status
 cargo run -p deecure-cli -- status --json
 ```
 
-## 7. Work on the root helper (Phase 2 and later)
+## 8. Work on the root helper (Phase 2 and later)
 
 The helper needs system files for D-Bus and polkit. Install dev copies with a script, and remove them when you are done:
 
@@ -80,7 +103,7 @@ sudo scripts/dev-uninstall-helper.sh
 
 Do helper work in a VM, not on your main computer.
 
-## 8. Look at the prototype
+## 9. Look at the prototype
 
 Open `docs/03-ui-design/prototype/deecure-dashboard.html` in a browser. It shows what every screen should look like.
 
