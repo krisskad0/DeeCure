@@ -14,7 +14,7 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 | 2. App scaffold | ✅ Done. Tauri v2 + React 19 + TypeScript; one live screen (Overview › Active issues) with real findings from the agent, refreshed every 10 s; agent-not-running and first-check states. `make app`. |
 | 3. Foundations | ✅ Done. Design tokens (light and dark), bundled Ubuntu Sans fonts, spec typography, and the 43 icons plus the 22-page list generated from the spec by `scripts/gen-ui.py`. |
 | 4. Shell | ✅ Done. Top bar, sidebar (22 pages, sub-page trees, rail mode, narrow-window drawer), sticky page header with tabs, 12-column grid, and overlays: Ctrl K command palette (pages and services), notifications list, machines list, toasts. The side drawer comes with the components that open it (row inspect, fixes). |
-| 5. Components | Mostly done. 01–04, 06–20, and 22 are built, with UI tests and the component gallery: the basic components plus all charts as our own SVG ([ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)): line/area (stacked, threshold, forecast, hover tooltip), bar, donut, gauge and gauge group, heatmap, bar list, allocation bar, swim lanes, lifecycle bar. Still to do: 05 data table and 21 form controls. |
+| 5. Components | ✅ Done. All of 01–22 are built, with UI tests and the component gallery (Ctrl K → "Component gallery"). Charts are our own SVG ([ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)). 23 (diagnostics runner) and 24 (chat) come with their pages. |
 | 1, 6–13 | Not started |
 
 ## Tasks (in order)

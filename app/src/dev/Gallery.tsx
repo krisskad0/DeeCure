@@ -7,6 +7,8 @@ import { AlertBanner } from "../components/AlertBanner";
 import { Button, IconButton } from "../components/Button";
 import { Checklist } from "../components/Checklist";
 import { Command, LogLine } from "../components/CodeBlock";
+import { DataTable } from "../components/DataTable";
+import { FieldRow, RadioCards, Select, StateTiles, Switch } from "../components/FormControls";
 import { InlineMeter } from "../components/InlineMeter";
 import { KeyValueList } from "../components/KeyValueList";
 import { KpiRow } from "../components/KpiTile";
@@ -23,7 +25,26 @@ import { LifecycleBar } from "../components/charts/LifecycleBar";
 import { LineChart } from "../components/charts/LineChart";
 import { SwimLanes } from "../components/charts/SwimLanes";
 import { useUi } from "../ui";
+import { useState } from "react";
 import { NOW, RANGES, gen, timeAt } from "./sample";
+
+// Top processes, in the shape of 09-processes.md.
+const PROCESSES = [
+  ["chrome", "riya", "S", "18.2", "2.1 GB", "42"],
+  ["code", "riya", "S", "6.4", "820 MB", "38"],
+  ["gnome-shell", "riya", "S", "4.1", "410 MB", "21"],
+  ["dockerd", "root", "S", "1.2", "96 MB", "34"],
+  ["Xwayland", "riya", "S", "0.9", "88 MB", "6"],
+  ["spotify", "riya", "S", "2.6", "310 MB", "29"],
+  ["slack", "riya", "S", "1.8", "540 MB", "33"],
+  ["snapd", "root", "S", "0.1", "44 MB", "19"],
+  ["NetworkManager", "root", "S", "0.0", "22 MB", "4"],
+  ["pipewire", "riya", "S", "0.7", "18 MB", "3"],
+  ["tracker-miner-fs-3", "riya", "D", "3.5", "64 MB", "6"],
+  ["systemd-journald", "root", "S", "0.2", "38 MB", "1"],
+  ["bluetoothd", "root", "Z", "0.0", "0 KB", "1"],
+  ["postgres", "999", "S", "0.3", "1.1 GB", "8"],
+].map(([name, user, state, cpu, mem, threads]) => ({ name, user, state, cpu, mem, threads }));
 
 // Errors and warnings by hour, from 01-overview.md.
 const HEAT = `Thu 1 0 0 1 1 0 0 0 1 1 0 0 0 0 0 0 0 1 1 1 2 0 0 1
@@ -45,6 +66,9 @@ const DISK_DAYS = DISK.map((_, i) => new Date(2026, 8, 22 + i).toLocaleDateStrin
 
 export function Gallery() {
   const { range } = useUi();
+  const [expertSwitch, setExpertSwitch] = useState(false);
+  const [refresh, setRefresh] = useState<"2" | "5" | "15" | "manual">("5");
+  const [access, setAccess] = useState<"basic" | "full">("full");
   const { n, step } = RANGES[range];
   const times = Array.from({ length: n }, (_, i) => timeAt(i, n, step).getTime());
   return (
@@ -304,6 +328,65 @@ export function Gallery() {
 
       <Panel title="20 Lifecycle bar" subtitle="Release lifecycle · Ubuntu 24.04 LTS" info="How long this Ubuntu version gets security updates." span={12}>
         <LifecycleBar percent={50.4} start="Released · Apr 2024" end="Standard support ends · Apr 2029" />
+      </Panel>
+
+
+      <Panel title="05 Data table" subtitle="Top processes (sample)" source="ps -eo pid,user,stat,%cpu,rss,nlwp" span={12} flush>
+        <DataTable
+          rows={PROCESSES}
+          rowKey={(r) => r.name}
+          search={{ placeholder: "Filter processes" }}
+          filter={{ column: "state", options: ["S", "D", "Z"] }}
+          selection={{ action: "End selected", onAction: () => {} }}
+          pageSize={8}
+          columns={[
+            { key: "name", label: "Process", text: (r) => r.name, render: (r) => <code>{r.name}</code> },
+            { key: "user", label: "User", text: (r) => r.user },
+            { key: "state", label: "State", text: (r) => r.state },
+            { key: "cpu", label: "CPU", text: (r) => `${r.cpu}%`, numeric: true },
+            { key: "mem", label: "Memory", text: (r) => r.mem, numeric: true },
+            { key: "threads", label: "Threads", text: (r) => r.threads, numeric: true, expert: true },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="21 Form controls" subtitle="Settings › General and Access" span={8} flush>
+        <FieldRow label="Expert mode" description="Show data sources, commands and raw columns">
+          <Switch checked={expertSwitch} onChange={setExpertSwitch} label="Expert mode" />
+        </FieldRow>
+        <FieldRow label="Refresh interval" description="Live metrics">
+          <Select
+            label="Refresh interval"
+            value={refresh}
+            onChange={setRefresh}
+            options={[
+              { value: "2", label: "2 s" },
+              { value: "5", label: "5 s" },
+              { value: "15", label: "15 s" },
+              { value: "manual", label: "Manual" },
+            ]}
+          />
+        </FieldRow>
+        <RadioCards
+          name="access"
+          value={access}
+          onChange={setAccess}
+          options={[
+            { value: "basic", title: "Basic", description: "No password · about 80% of checks" },
+            { value: "full", title: "Full", description: "Admin helper approved once · all checks" },
+          ]}
+        />
+      </Panel>
+
+      <Panel title="21 State tiles" subtitle="Device access" span={4}>
+        <StateTiles
+          tiles={[
+            { icon: "cam", title: "Camera", state: "Not in use" },
+            { icon: "mic", title: "Microphone", state: "Used by Zoom" },
+            { icon: "screen", title: "Screen sharing", state: "Off" },
+            { icon: "pin", title: "Location", state: "Off" },
+          ]}
+        />
       </Panel>
 
       <Panel title="22 Code and log blocks" span={12}>
