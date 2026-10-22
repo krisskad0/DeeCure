@@ -8,6 +8,7 @@
 //! tests; change those tests only on purpose.
 
 mod category;
+pub mod client;
 mod event;
 mod finding;
 mod id;

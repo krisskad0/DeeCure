@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-//! A tiny, blocking client for the agent's socket.
+//! A tiny, blocking client for the agent's socket, shared by the CLI and the desktop app.
 
 use std::fmt;
 use std::io::{self, BufRead, BufReader, Read, Write};
@@ -8,7 +8,7 @@ use std::os::unix::net::UnixStream;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use deecure_core::rpc::{MAX_MESSAGE_BYTES, Outcome, Request, Response, RpcError};
+use crate::rpc::{MAX_MESSAGE_BYTES, Outcome, Request, Response, RpcError};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
@@ -56,6 +56,8 @@ impl fmt::Display for ClientError {
         }
     }
 }
+
+impl std::error::Error for ClientError {}
 
 impl From<io::Error> for ClientError {
     fn from(e: io::Error) -> Self {

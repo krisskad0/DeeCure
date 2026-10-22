@@ -39,7 +39,7 @@ The repo pins the Rust version (1.99.1) in `rust-toolchain.toml`. `rustup` insta
 
 ## 4. Install Node.js
 
-Install the current Node.js LTS release (for example with `nvm`). The desktop app's web UI needs it.
+Install Node.js 22 or newer, for example with `nvm install 22`. The desktop app's web UI needs it.
 
 ## 5. Build and run
 
@@ -64,7 +64,8 @@ The `Makefile` gives short names to the real commands:
 | `make status` | Runs `deecure status` against the running agent |
 | `make perf` | Checks the agent against the [performance budget](../02-architecture/performance-budget.md) (about 80 s) |
 | `make help` | Lists all commands |
-| `make dev` *(planned)* | Runs the agent, then `npm run tauri dev` in `app/` |
+| `make app` | Runs the desktop app with live reload (start `make agent` first) |
+| `make web` | Type-checks and builds the web UI |
 | `make deb` | Builds the `.deb` into `target/deb/` and checks it with lintian (see [Debian package](../06-packaging/debian-package.md)) |
 | `make deb-test` | Installs, uses, and purges the `.deb` in a clean Ubuntu container (needs Docker) |
 
@@ -90,7 +91,17 @@ scripts/dev-agent-units.sh install     # and later: scripts/dev-agent-units.sh u
 
 The message format is in [IPC protocol](../02-architecture/ipc-protocol.md).
 
-## 7. Try the CLI
+## 7. Run the desktop app
+
+With the agent running:
+
+```bash
+make app
+```
+
+A DeeCure window opens. Changes to `app/src/` show up in it right away. See [app/README.md](../../app/README.md).
+
+## 8. Try the CLI
 
 With the agent running (step 6):
 
@@ -99,7 +110,7 @@ make status                                 # same as: cargo run -p deecure-cli 
 cargo run -p deecure-cli -- status --json
 ```
 
-## 8. Work on the root helper (Phase 2 and later)
+## 9. Work on the root helper (Phase 2 and later)
 
 The helper needs system files for D-Bus and polkit. Install dev copies with a script, and remove them when you are done:
 
@@ -110,7 +121,7 @@ sudo scripts/dev-uninstall-helper.sh
 
 Do helper work in a VM, not on your main computer.
 
-## 9. Look at the prototype
+## 10. Look at the prototype
 
 Open `docs/03-ui-design/prototype/deecure-dashboard.html` in a browser. It shows what every screen should look like.
 

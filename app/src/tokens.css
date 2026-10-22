@@ -1,0 +1,51 @@
+/* Design tokens, copied from the prototype (docs/03-ui-design/01-foundations/design-tokens.md).
+   Light by default; dark follows the system unless data-theme is set on <html>. */
+
+:root{
+  --bg:#f3f4f6; --panel:#ffffff; --panel-2:#f7f8fa; --hover:#eef1f5; --track:#e8ebf0;
+  --line:#e2e5ea; --line-2:#cfd4dc; --ink:#111620; --ink-2:#465061; --muted:#768092;
+  --accent:#2563c9; --accent-ink:#ffffff; --accent-soft:#e8f0fc;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --good:#0ca30c; --good-ink:#14742b; --good-soft:#e4f4e6;
+  --warn:#fab219; --warn-ink:#8a5900; --warn-soft:#fdf2da;
+  --crit:#d03b3b; --crit-ink:#b42525; --crit-soft:#fbe7e7;
+  --info-ink:#2457ad; --info-soft:#e8f0fc; --neutral-soft:#eceef2;
+  --grid:#eceef2; --axis:#c9ced6;
+  --h1:#e3edfb; --h2:#b7d3f6; --h3:#6da7ec; --h4:#2a78d6; --h5:#184f95;
+  --scrim:rgba(17,22,32,.42); --shadow:0 12px 32px -8px rgba(17,22,32,.25), 0 2px 6px rgba(17,22,32,.08);
+  --font:"Ubuntu Sans","Ubuntu",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Ubuntu Sans Mono",ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+  --r:8px;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0d11; --panel:#14171c; --panel-2:#191d23; --hover:#1f242b; --track:#262c35;
+    --line:#252a32; --line-2:#343b46; --ink:#e8ebef; --ink-2:#aab2bf; --muted:#7d8695;
+    --accent:#5f9df0; --accent-ink:#0b0d11; --accent-soft:#16243a;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --good:#0ca30c; --good-ink:#5fcf6a; --good-soft:#12261a;
+    --warn:#fab219; --warn-ink:#f6c457; --warn-soft:#2c2411;
+    --crit:#d03b3b; --crit-ink:#f08585; --crit-soft:#331919;
+    --info-ink:#8fb8f6; --info-soft:#16243a; --neutral-soft:#222831;
+    --grid:#1f242b; --axis:#384049;
+    --h1:#17202d; --h2:#1c3a63; --h3:#255da0; --h4:#3987e5; --h5:#86b6ef;
+    --scrim:rgba(0,0,0,.6); --shadow:0 12px 32px -8px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+
+:root[data-theme="dark"]{
+  --bg:#0b0d11; --panel:#14171c; --panel-2:#191d23; --hover:#1f242b; --track:#262c35;
+  --line:#252a32; --line-2:#343b46; --ink:#e8ebef; --ink-2:#aab2bf; --muted:#7d8695;
+  --accent:#5f9df0; --accent-ink:#0b0d11; --accent-soft:#16243a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --good:#0ca30c; --good-ink:#5fcf6a; --good-soft:#12261a;
+  --warn:#fab219; --warn-ink:#f6c457; --warn-soft:#2c2411;
+  --crit:#d03b3b; --crit-ink:#f08585; --crit-soft:#331919;
+  --info-ink:#8fb8f6; --info-soft:#16243a; --neutral-soft:#222831;
+  --grid:#1f242b; --axis:#384049;
+  --h1:#17202d; --h2:#1c3a63; --h3:#255da0; --h4:#3987e5; --h5:#86b6ef;
+  --scrim:rgba(0,0,0,.6); --shadow:0 12px 32px -8px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.4);
+  color-scheme:dark;
+}

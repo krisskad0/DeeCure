@@ -24,12 +24,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system libraries
+      - name: Install system libraries (SQLite, and WebKitGTK for the desktop app)
         run: |
-          dpkg -s libsqlite3-dev >/dev/null 2>&1 || {
-            sudo apt-get $APT_OPTIONS update
-            sudo apt-get $APT_OPTIONS install -y --no-install-recommends libsqlite3-dev
-          }
+          sudo apt-get $APT_OPTIONS update
+          sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
+            libsqlite3-dev libwebkit2gtk-4.1-dev libxdo-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev
 
       - name: Install the pinned Rust toolchain
         run: rustup show active-toolchain || rustup toolchain install
@@ -41,6 +40,28 @@ jobs:
 
       - name: Test
         run: make test
+
+  web:
+    name: Web UI (type-check and build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Type-check and build
+        run: npm run build
 
   performance:
     name: Performance budget

@@ -8,8 +8,8 @@ What every folder is for. Items marked *(planned)* do not exist yet.
 deecure/
 ├── .github/                 # Issue and pull request templates; CI workflow (workflows/ci.yml)
 ├── app/                     # Desktop app: Tauri v2 + React + TypeScript
-│   ├── src/                 #   React UI (planned)
-│   └── src-tauri/           #   Tauri Rust side, talks to the agent (planned)
+│   ├── src/                 #   React UI
+│   └── src-tauri/           #   Tauri Rust side, talks to the agent
 ├── crates/                  # Rust workspace
 │   ├── deecure-core/         #   Shared types: findings, metrics, IPC messages, rule schema
 │   ├── deecure-agent/        #   Collectors, rules engine, fix planner, storage, socket API
@@ -19,7 +19,7 @@ deecure/
 ├── kb/                      # Knowledge base YAML: services, errors, ports, packages
 ├── packaging/               # Everything needed to ship DeeCure
 │   ├── debian/              #   Debian packaging files (copied to debian/ at build time)
-│   ├── desktop/             #   .desktop file, AppStream metainfo, icons
+│   ├── desktop/             #   App icon (deecure.svg); .desktop file and AppStream metainfo (planned)
 │   ├── dbus/                #   D-Bus activation and policy files for the helper
 │   ├── polkit/              #   polkit action policy for the helper
 │   ├── systemd/             #   systemd units for the agent and the helper

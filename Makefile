@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status perf deb deb-test clean
+.PHONY: help build test lint fmt agent status app web perf deb deb-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -25,6 +25,12 @@ agent: ## Run the agent in the foreground (Ctrl+C to stop)
 
 status: ## Show what the running agent found (deecure status)
 	$(CARGO) run -q -p deecure-cli -- status
+
+app: ## Run the desktop app with live reload (start the agent first: make agent)
+	cd app && ([ -d node_modules ] || npm ci) && npm run tauri dev
+
+web: ## Type-check and build the web UI
+	cd app && ([ -d node_modules ] || npm ci) && npm run build
 
 perf: ## Check the agent against the performance budget (takes about 80 s)
 	scripts/perf-check.sh

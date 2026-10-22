@@ -5,6 +5,16 @@
 **Goal:** the desktop app shows every insight that needs no password, explained in plain English.
 **Rough time:** 8–10 weeks.
 
+## Progress
+
+The insights catalog (task 1) moved to just before the collectors (task 7), so the app window could come first.
+
+| Task | Status |
+| --- | --- |
+| 2. App scaffold | ✅ Done. Tauri v2 + React 19 + TypeScript; one live screen (Overview › Active issues) with real findings from the agent, refreshed every 10 s; agent-not-running and first-check states. `make app`. |
+| 3. Foundations | Started: design tokens copied from the prototype (light and dark). Fonts and icons next. |
+| 1, 4–13 | Not started |
+
 ## Tasks (in order)
 
 1. **Write the insights catalog:** every check, marked Yes / Admin / No. This phase builds all "Yes" checks.

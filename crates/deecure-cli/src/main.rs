@@ -4,15 +4,14 @@
 //!
 //! Commands are listed in `docs/02-architecture/cli.md`.
 
-mod client;
 mod render;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
-use deecure_core::Timestamp;
 use deecure_core::rpc::{StatusReport, default_socket_path, method};
+use deecure_core::{Timestamp, client};
 
 /// See, understand, and fix everything in your Linux PC.
 #[derive(Parser)]
