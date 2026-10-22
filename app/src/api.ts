@@ -22,7 +22,15 @@ export interface StatusReport {
   generated_at: number;
   /** When the rules last ran. Missing until they have run once. */
   checked_at?: number;
+  /** The areas (page IDs) that have rules. Other areas are "Unknown", not "Healthy". */
+  checked?: string[];
   findings: Finding[];
+}
+
+export interface Machine {
+  hostname: string;
+  os: string;
+  user: string;
 }
 
 export interface AppError {
@@ -32,6 +40,10 @@ export interface AppError {
 
 export function getStatus(): Promise<StatusReport> {
   return invoke<StatusReport>("status");
+}
+
+export function getMachine(): Promise<Machine> {
+  return invoke<Machine>("machine");
 }
 
 /** Turns whatever `invoke` threw into an AppError. */

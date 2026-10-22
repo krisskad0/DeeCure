@@ -178,6 +178,7 @@ mod tests {
         StatusReport {
             generated_at: Timestamp(10 * MINUTE),
             checked_at: checked_at.map(Timestamp),
+            checked: vec![],
             findings,
         }
     }

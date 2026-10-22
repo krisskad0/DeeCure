@@ -6,7 +6,9 @@ import App from "./App";
 import "@fontsource-variable/ubuntu-sans";
 import "@fontsource-variable/ubuntu-sans-mono";
 import "./tokens.css";
-import "./app.css";
+import "./styles/base.css";
+import "./styles/components.css";
+import "./styles/shell.css";
 
 const root = document.getElementById("root");
 if (root) {

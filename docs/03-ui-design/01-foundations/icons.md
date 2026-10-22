@@ -49,5 +49,8 @@ All icons are 24×24 viewBox, one `<path>` each, `fill:none; stroke:currentColor
 | `fan` | `M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 10c0-4 1-7 4-7 2 0 3 2 1 4M14 12c4 0 7 1 7 4 0 2-2 3-4 1M12 14c0 4-1 7-4 7-2 0-3-2-1-4M10 12c-4 0-7-1-7-4 0-2 2-3 4-1` |
 | `bolt` | `M13 3L5 13.5h6L10 21l8-10.5h-6z` |
 | `usb` | `M12 3v14M9 6l3-3 3 3M7 10v3l5 3 5-3v-3M12 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z` |
+| `menu` | `M4 6h16M4 12h16M4 18h16` |
+| `bell` | `M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0` |
+| `chevdown` | `M6 9l6 6 6-6` |
 
-Page icons: Overview = `grid`, Performance = `perf`, Logs = `logs`, Activity = `hist`, System = `sys`, Hardware = `chip`, Power = `bat`, Display & Audio = `mon`, Processes = `layers`, Services = `cog`, Scheduled Jobs = `cal`, Containers = `cube`, Packages = `pkg`, Storage = `db`, Backups = `backup`, Network = `wifi`, Accounts = `users`, Security = `shield`, Privacy = `eye`, Diagnostics = `gauge`, Assistant = `chat`, Settings = `sliders`. Hamburger menu: `M4 6h16M4 12h16M4 18h16`. Bell: `M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0`. Chevron down (machine picker): `M6 9l6 6 6-6`.
+Page icons: Overview = `grid`, Performance = `perf`, Logs = `logs`, Activity = `hist`, System = `sys`, Hardware = `chip`, Power = `bat`, Display & Audio = `mon`, Processes = `layers`, Services = `cog`, Scheduled Jobs = `cal`, Containers = `cube`, Packages = `pkg`, Storage = `db`, Backups = `backup`, Network = `wifi`, Accounts = `users`, Security = `shield`, Privacy = `eye`, Diagnostics = `gauge`, Assistant = `chat`, Settings = `sliders`. Top bar: `menu` (narrow windows), `bell` (notifications), `chevdown` (machine picker).

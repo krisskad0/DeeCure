@@ -54,9 +54,44 @@ async fn status() -> Result<StatusReport, AppError> {
         .map_err(AppError::from)
 }
 
+/// This computer, for the top bar's machine picker.
+#[derive(Debug, Serialize)]
+struct Machine {
+    /// The host name, such as `riya-laptop`.
+    hostname: String,
+    /// The OS name, such as `Ubuntu 24.04.5 LTS`.
+    os: String,
+    /// The user's login name, for the avatar.
+    user: String,
+}
+
+/// Reads the host name, OS name, and user name. Missing values become "unknown".
+#[tauri::command]
+fn machine() -> Machine {
+    let read = |path: &str| std::fs::read_to_string(path).unwrap_or_default();
+    let os = read("/etc/os-release")
+        .lines()
+        .find_map(|line| line.strip_prefix("PRETTY_NAME="))
+        .map(|name| name.trim_matches('"').to_owned());
+    let hostname = read("/proc/sys/kernel/hostname").trim().to_owned();
+    let user = std::env::var("USER").or_else(|_| std::env::var("LOGNAME"));
+    let known = |value: String| {
+        if value.is_empty() {
+            "unknown".to_owned()
+        } else {
+            value
+        }
+    };
+    Machine {
+        hostname: known(hostname),
+        os: known(os.unwrap_or_default()),
+        user: known(user.unwrap_or_default()),
+    }
+}
+
 fn main() {
     let result = tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![status])
+        .invoke_handler(tauri::generate_handler![status, machine])
         .run(tauri::generate_context!());
     if let Err(e) = result {
         eprintln!("deecure-desktop: could not start: {e}");

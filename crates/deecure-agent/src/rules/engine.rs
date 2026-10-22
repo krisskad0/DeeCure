@@ -4,7 +4,7 @@
 
 use std::collections::HashSet;
 
-use deecure_core::{Finding, FindingState, Severity, Timestamp};
+use deecure_core::{Category, Finding, FindingState, Severity, Timestamp};
 
 use super::Rule;
 use super::expr::{EvalError, Lookup};
@@ -13,6 +13,8 @@ use crate::store::{self, Store};
 
 /// The setting that holds when the rules last ran.
 pub const LAST_CHECK_SETTING: &str = "rules.checked_at";
+/// The setting that holds the categories that have rules.
+pub const CHECKED_CATEGORIES_SETTING: &str = "rules.categories";
 
 /// What one rule decided about one subject.
 #[derive(Debug, Clone, PartialEq)]
@@ -167,6 +169,10 @@ pub fn apply(
         }
     }
     store.set_setting(LAST_CHECK_SETTING, &now)?;
+    let mut categories: Vec<Category> = rules.iter().map(|r| r.id.category()).collect();
+    categories.sort();
+    categories.dedup();
+    store.set_setting(CHECKED_CATEGORIES_SETTING, &categories)?;
     Ok(mistakes)
 }
 
@@ -297,6 +303,12 @@ severity:
         assert_eq!(
             store.setting(LAST_CHECK_SETTING).unwrap(),
             Some(Timestamp(1))
+        );
+        assert_eq!(
+            store
+                .setting::<Vec<Category>>(CHECKED_CATEGORIES_SETTING)
+                .unwrap(),
+            Some(vec![Category::Storage])
         );
         let open = store.open_findings().unwrap();
         assert_eq!(open.len(), 1);

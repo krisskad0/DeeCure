@@ -11,7 +11,7 @@ use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize, Serializer};
 use serde_json::Value;
 
-use crate::{Finding, Timestamp};
+use crate::{Category, Finding, Timestamp};
 
 /// The protocol version the agent speaks. Raise it when a method changes in a way
 /// that breaks old clients.
@@ -244,6 +244,10 @@ pub struct StatusReport {
     /// started), so an empty `findings` list does not yet mean "all is well".
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub checked_at: Option<Timestamp>,
+    /// The areas that have rules, so the UI says "Healthy" only for areas that are
+    /// really checked, and "Unknown" for the rest.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub checked: Vec<Category>,
     /// Open findings, most serious first.
     pub findings: Vec<Finding>,
 }
@@ -309,6 +313,7 @@ mod tests {
         let mut report = StatusReport {
             generated_at: Timestamp(3),
             checked_at: None,
+            checked: vec![],
             findings: vec![],
         };
         assert_eq!(
@@ -316,9 +321,10 @@ mod tests {
             json!({"generated_at": 3, "findings": []})
         );
         report.checked_at = Some(Timestamp(2));
+        report.checked = vec![Category::Storage, Category::Power];
         assert_eq!(
             serde_json::to_value(&report).unwrap(),
-            json!({"generated_at": 3, "checked_at": 2, "findings": []})
+            json!({"generated_at": 3, "checked_at": 2, "checked": ["storage", "power"], "findings": []})
         );
     }
 }

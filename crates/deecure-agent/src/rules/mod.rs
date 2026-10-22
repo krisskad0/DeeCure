@@ -16,7 +16,9 @@ use std::path::{Path, PathBuf};
 use deecure_core::{FixActionId, RuleId, Severity};
 use serde::Deserialize;
 
-pub use engine::{LAST_CHECK_SETTING, Outcome, apply, evaluate, fill_in};
+pub use engine::{
+    CHECKED_CATEGORIES_SETTING, LAST_CHECK_SETTING, Outcome, apply, evaluate, fill_in,
+};
 pub use facts::{Facts, gather};
 
 use expr::Expr;
