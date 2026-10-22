@@ -54,7 +54,7 @@ Planned later: `deecure.postinst`/`postrm` and a debconf question (offer to add 
 | Maintainer: `DeeCure maintainers <krisskad0@users.noreply.github.com>` | A placeholder until the contact address is decided ([open decision 11](../01-product/open-decisions.md)) |
 | Version `0.1.0-1`, distribution `noble` | Per-release suffixes (`~ubuntu24.04`) come with the APT repository ([release process](release-process.md)) |
 
-Before the first public release, `copyright` must also list the licenses of the Rust crates built into the binaries (for example, generated with `cargo-about` or checked with `cargo-deny`).
+Before the first public release, `copyright` must also list the licenses of the Rust crates built into the binaries (for example, generated with `cargo-about` or checked with `cargo-deny`), and, once the desktop app is packaged, of the fonts it bundles (Ubuntu Sans and Ubuntu Sans Mono).
 
 ## What `make deb-test` checks
 

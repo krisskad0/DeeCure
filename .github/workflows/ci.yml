@@ -57,6 +57,9 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
+      - name: Generated UI code matches the spec
+        run: python3 ../scripts/gen-ui.py --check
+
       - name: Install packages
         run: npm ci
 

@@ -19,6 +19,17 @@ Follow the folders in number order.
 | 4 | [04-behavior](04-behavior/README.md) | State model, page status rules, fixes, sample data, interactions |
 | 5 | [05-pages](05-pages/README.md) | 22 pages and 91 sub-pages. Each widget lists its type, grid width, title, and full data. |
 
+## Spec to code
+
+Some parts of this spec are turned into code by `scripts/gen-ui.py`, so the app cannot drift from the docs:
+
+| Spec | Generated file |
+| --- | --- |
+| [icons.md](01-foundations/icons.md) | `app/src/spec/icons.ts` |
+| [sidebar.md](02-shell/sidebar.md) (pages, groups, icons, sub-pages) | `app/src/spec/pages.ts` |
+
+Change the spec, run `scripts/gen-ui.py`, and commit both. CI runs `scripts/gen-ui.py --check`.
+
 ## Screens list
 
 These are the screen types the UI team builds. The full page tree is in [05-pages](05-pages/README.md).

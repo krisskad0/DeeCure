@@ -4,9 +4,10 @@ The DeeCure desktop app: Tauri v2 + React + TypeScript.
 
 | Path | What |
 | --- | --- |
-| `src/` | React UI. `tokens.css` holds the design tokens from the prototype. |
+| `src/` | React UI. `tokens.css` holds the design tokens from the prototype. Fonts (Ubuntu Sans, Ubuntu Sans Mono) are bundled, so the app works offline. |
 | `src/components/` | Reusable components, one file each ([spec](../docs/03-ui-design/03-components/README.md)) |
 | `src/api.ts` | Calls into the Tauri side. Types mirror `crates/deecure-core`. |
+| `src/spec/` | **Generated** from the UI spec by `scripts/gen-ui.py`: icons and the page list. Do not edit; change the spec and run the script. CI fails if they drift. |
 | `src-tauri/` | Tauri Rust side. Its commands talk to the agent's socket through `deecure_core::client`. |
 | `src-tauri/icons/` | Window icons, made from `packaging/desktop/deecure.svg` with `npx tauri icon` |
 

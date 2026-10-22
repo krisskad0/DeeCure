@@ -3,6 +3,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import "@fontsource-variable/ubuntu-sans";
+import "@fontsource-variable/ubuntu-sans-mono";
 import "./tokens.css";
 import "./app.css";
 

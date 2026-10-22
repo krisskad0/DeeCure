@@ -4,6 +4,7 @@ Developer scripts. Run each script with `--help`, or without arguments, to see h
 
 | Script | What it does |
 | --- | --- |
+| `gen-ui.py` | Generate the app's icon set and page list from the UI spec (`--check` in CI) |
 | `dev-agent-units.sh` | Install or remove systemd user units that run the agent from your debug build |
 | `capture-fixture.py` | Save this machine's data as a test fixture, with private data removed |
 | `build-deb.sh` | Build the `.deb` into `target/deb/` and run `lintian` (used by `make deb`) |
