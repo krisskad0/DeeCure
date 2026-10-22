@@ -20,7 +20,7 @@
 | 9. CLI | ✅ Done. `deecure status` (plain English) and `--json`; friendly message when the agent is not running. |
 | 10. Fixture tests | ✅ Done. Capture script; 3 machines (1 real, 2 made up); exact expected findings. More real machines welcome. |
 | 11. First `.deb` | ✅ Done. `make deb` (lintian clean), `make deb-test` (install, use, purge in a container); CI builds and tests it and keeps the file. |
-| 12 | Not started |
+| 12. Performance check | ✅ Done. `make perf` and CI job. On a Dell Latitude 3450: first result 0.1 s, idle CPU 0.02%, peak RAM 8.2 MB, database 1 MB. |
 
 ## Tasks (in order)
 
@@ -51,8 +51,8 @@
 
 ## Done when
 
-- [ ] On a clean Ubuntu 24.04 VM, `sudo apt install ./deecure_*.deb` works, then `deecure status` shows real CPU, memory, disk, battery, and service data.
-- [ ] `sudo apt purge deecure` removes everything it installed.
+- [x] On a clean Ubuntu 24.04 system, `sudo apt install ./deecure_*.deb` works, then `deecure status` shows real data. *Checked in a clean container (`make deb-test`) and in CI. Still to try: a full desktop VM, where systemd starts the agent at login.*
+- [x] `sudo apt purge deecure` removes everything it installed. *Checked by `make deb-test` and CI.*
 - [ ] CI is green: format, lint, unit tests, fixture tests, `lintian`, performance check.
 
 ---

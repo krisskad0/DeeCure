@@ -42,6 +42,28 @@ jobs:
       - name: Test
         run: make test
 
+  performance:
+    name: Performance budget
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system libraries
+        run: |
+          dpkg -s libsqlite3-dev >/dev/null 2>&1 || {
+            sudo apt-get $APT_OPTIONS update
+            sudo apt-get $APT_OPTIONS install -y --no-install-recommends libsqlite3-dev
+          }
+
+      - name: Install the pinned Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check the agent against the budget
+        run: make perf
+
   package:
     name: Build and test the .deb
     runs-on: ubuntu-24.04

@@ -62,6 +62,7 @@ The `Makefile` gives short names to the real commands:
 | `make fmt` | `cargo fmt --all` |
 | `make agent` | Runs the agent in the foreground |
 | `make status` | Runs `deecure status` against the running agent |
+| `make perf` | Checks the agent against the [performance budget](../02-architecture/performance-budget.md) (about 80 s) |
 | `make help` | Lists all commands |
 | `make dev` *(planned)* | Runs the agent, then `npm run tauri dev` in `app/` |
 | `make deb` | Builds the `.deb` into `target/deb/` and checks it with lintian (see [Debian package](../06-packaging/debian-package.md)) |

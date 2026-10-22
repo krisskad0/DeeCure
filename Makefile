@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status deb deb-test clean
+.PHONY: help build test lint fmt agent status perf deb deb-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -25,6 +25,9 @@ agent: ## Run the agent in the foreground (Ctrl+C to stop)
 
 status: ## Show what the running agent found (deecure status)
 	$(CARGO) run -q -p deecure-cli -- status
+
+perf: ## Check the agent against the performance budget (takes about 80 s)
+	scripts/perf-check.sh
 
 deb: ## Build the .deb package into target/deb/ and check it with lintian
 	scripts/build-deb.sh
