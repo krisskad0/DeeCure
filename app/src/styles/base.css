@@ -23,3 +23,4 @@ code, kbd, pre { font-family: var(--mono); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+.wrap-anywhere { overflow-wrap: anywhere; white-space: normal; }

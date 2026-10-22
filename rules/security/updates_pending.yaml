@@ -1,0 +1,10 @@
+id: security.updates_pending
+category: security
+title: "Security updates are waiting"
+explain: >
+  {updates.security} security updates are ready to install. They close known
+  holes that attackers use. Install them with the Software Updater, or open
+  System › Updates to see the list.
+severity:
+  warning: "updates.security >= 1"
+learn_more: kb/security/updates.md

@@ -25,6 +25,10 @@ pub enum SnapshotKind {
     Jobs,
     /// Listening ports.
     Ports,
+    /// How long the last boot took.
+    Boot,
+    /// Pending package updates.
+    Updates,
 }
 
 /// An inventory of one kind, taken at one moment.

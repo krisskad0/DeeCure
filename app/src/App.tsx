@@ -12,6 +12,12 @@ import { PerformanceGpu } from "./pages/performance/Gpu";
 import { PerformanceMemory } from "./pages/performance/Memory";
 import { PerformanceNetwork } from "./pages/performance/Network";
 import { PerformancePressure } from "./pages/performance/Pressure";
+import { ProcessesAll, ProcessesTop } from "./pages/processes/Processes";
+import { SystemBoot } from "./pages/system/Boot";
+import { SystemKernel } from "./pages/system/Kernel";
+import { SystemOverview } from "./pages/system/Overview";
+import { SystemTime } from "./pages/system/Time";
+import { SystemUpdates } from "./pages/system/Updates";
 import { OverviewIssues } from "./pages/overview/Issues";
 import { OverviewSummary } from "./pages/overview/Summary";
 import { SystemServices } from "./pages/services/SystemServices";
@@ -29,13 +35,20 @@ import { Gallery } from "./dev/Gallery";
 
 const REFRESH_MS = 10_000;
 
-const PERFORMANCE: Record<string, () => React.JSX.Element> = {
-  cpu: PerformanceCpu,
-  memory: PerformanceMemory,
-  disk: PerformanceDisk,
-  network: PerformanceNetwork,
-  gpu: PerformanceGpu,
-  pressure: PerformancePressure,
+type Tab = () => React.JSX.Element;
+
+/** Pages whose tabs need no shared props, by page and tab ID. */
+const TABS: Record<string, Record<string, Tab>> = {
+  performance: {
+    cpu: PerformanceCpu,
+    memory: PerformanceMemory,
+    disk: PerformanceDisk,
+    network: PerformanceNetwork,
+    gpu: PerformanceGpu,
+    pressure: PerformancePressure,
+  },
+  processes: { all: ProcessesAll, top: ProcessesTop },
+  system: { overview: SystemOverview, boot: SystemBoot, updates: SystemUpdates, kernel: SystemKernel, time: SystemTime },
 };
 
 export default function App() {
@@ -110,8 +123,8 @@ export default function App() {
     content = <OverviewIssues {...shared} />;
   } else if (route.page.id === "overview" && route.tab.id === "score") {
     content = <OverviewScore {...shared} />;
-  } else if (route.page.id === "performance" && PERFORMANCE[route.tab.id]) {
-    const Tab = PERFORMANCE[route.tab.id];
+  } else if (TABS[route.page.id]?.[route.tab.id]) {
+    const Tab = TABS[route.page.id][route.tab.id];
     content = <Tab />;
   } else if (route.page.id === "services" && route.tab.id === "system") {
     content = <SystemServices />;

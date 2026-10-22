@@ -7,6 +7,7 @@
 //! Metric names and units: `docs/02-architecture/collectors.md`.
 
 mod battery;
+mod boot;
 mod cpu;
 mod diskio;
 mod filesystems;
@@ -15,6 +16,7 @@ mod network;
 mod pressure;
 mod sensors;
 mod services;
+mod updates;
 
 use std::collections::HashSet;
 use std::io;
@@ -27,6 +29,7 @@ use tokio::time::{MissedTickBehavior, interval};
 use crate::store::{self, SharedStore, Store};
 
 pub use battery::Battery;
+pub use boot::{Boot, BootInfo};
 pub use cpu::Cpu;
 pub use diskio::DiskIo;
 pub use filesystems::{Filesystems, FsUsage};
@@ -35,6 +38,7 @@ pub use network::Network;
 pub use pressure::Pressure;
 pub use sensors::Sensors;
 pub use services::{Services, UnitState, summarize as summarize_services};
+pub use updates::{Updates, UpdatesInfo, Upgradable};
 
 /// How often the file collectors run in the background.
 pub const EVERY: Duration = Duration::from_secs(60);
@@ -103,6 +107,8 @@ pub async fn run(
         Box::new(Sensors),
     ];
     let mut services = Services::default();
+    let mut boot = Boot::default();
+    let mut updates = Updates::default();
     // Collectors that are failing right now, so each failure is logged once, not every minute.
     let mut failing = HashSet::new();
     let mut timer = interval(EVERY);
@@ -120,7 +126,12 @@ pub async fn run(
         if run_number.is_multiple_of(SERVICES_EVERY_NTH_RUN) {
             let result = services.collect(now).await;
             merge(&mut sample, &mut failing, Services::NAME, result);
+            // Reads once per boot; until the boot has finished, it tries again here.
+            let result = boot.collect(&root, now).await;
+            merge(&mut sample, &mut failing, Boot::NAME, result);
         }
+        let result = updates.collect(&root, now).await;
+        merge(&mut sample, &mut failing, Updates::NAME, result);
         save(&store, &sample, now, &mut after_save);
         run_number = run_number.wrapping_add(1);
     }

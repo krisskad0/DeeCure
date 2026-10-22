@@ -32,6 +32,8 @@ The code is in `crates/deecure-agent/src/collect/`. Every file collector reads t
 | Network | `/proc/net/dev` | Every minute | Rates need two readings. The loopback interface (`lo`) is left out. |
 | Disk I/O | `/proc/diskstats` | Every minute | Whole disks only: partitions, loop devices, and RAM disks are left out. For all disks together, `disk.busy` is the busiest disk. |
 | Pressure | `/proc/pressure/{cpu,memory,io}` | Every minute | The "some" 10-second average. Missing on kernels without PSI. |
+| Boot | systemd over D-Bus (`Manager` and unit timestamps) | Once per boot, after it finished | Phase times and the 15 slowest units, like `systemd-analyze`. Saves `boot.time` at the moment of boot, so the history shows one point per boot. |
+| Updates | `apt list --upgradable` | Every hour; the last answer is repeated every minute | Read-only: no admin rights, no lock, changes nothing. Also reads `/etc/apt/apt.conf.d/20auto-upgrades` and `/run/reboot-required`. |
 | Sensors | `/sys/class/hwmon/*` | Every minute | Every temperature and fan the kernel exposes. `temp.cpu` comes from the best CPU sensor (`coretemp` package, `k10temp`, …). |
 
 ### Live inventories
@@ -43,6 +45,9 @@ Some data changes too fast to store, or is cheap to read again. The agent reads 
 | `system` | `/etc/os-release`, `/proc`, `/sys/class/dmi/id`, `/run/reboot-required` | Host name, OS, kernel, architecture, maker and model, CPU model and threads, memory, uptime, and whether an update asks for a restart |
 | `processes` | `/proc/<pid>/stat`, `status`, `cmdline`, `/etc/passwd` | PID, name, user, state, CPU %, memory, swap, threads, and command line of every process. CPU % is measured between two calls; the first call gives the average since each process started. Names cut at 15 characters by Linux are completed from the command line. |
 | `network` | `/sys/class/net`, `/proc/net/{tcp,tcp6,udp,udp6}` | Each interface's kind (Wi-Fi, Ethernet, USB Ethernet, bridge, loopback, mobile, VPN, virtual), state, MAC, link speed, and MTU; counts of open TCP connections, listening TCP ports, and UDP sockets |
+| `os` | `/etc/os-release`, `/usr/share/distro-info/ubuntu.csv`, `/proc/cpuinfo`, `/sys/class/dmi/id`, `/etc/machine-id`, `/run/systemd/users`, `/var/lib/ubuntu-advantage/status.json`, `/etc/timezone`, `/run/systemd/timesync/synchronized`, `/etc/adjtime`, `/etc/default/{locale,keyboard}` | Release name and support dates, virtualization, machine ID (shortened), people signed in, Ubuntu Pro and Livepatch, time zone, NTP sync, time server, RTC mode, locale, and keyboard layout |
+| `kernel` | `/proc/modules`, `/proc/cmdline`, `/proc/sys/kernel/tainted`, `/lib/modules`, `/boot` | Running kernel, taint flags, boot options, installed kernels (running, fallback, old) with size and install date, and loaded modules |
+| `update_history` | `/var/log/apt/history.log` | The last 100 apt runs: when, who started them, packages changed, and whether apt logged an error. Rotated logs are not read yet. |
 | `gpu` | `/sys/class/drm/card*`, `pci.ids` | Each graphics card's maker and model, PCI ID, driver, whether it is the main card, and load, video memory, and temperature when the driver reports them without admin rights |
 
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.
@@ -84,6 +89,9 @@ The 2-second rate while the app is open comes with the app in Phase 1. The colle
 | `temp` | sensor, as `<chip>/<label>` | celsius | Every temperature sensor |
 | `temp.cpu` | — | celsius | The CPU temperature |
 | `fan` | fan, as `<chip>/<label>` | count | Fan speed in RPM |
+| `boot.time` | — | seconds | How long a boot took, stored at the time of that boot |
+| `updates.pending`, `updates.security` | — | count | Packages with a newer version, and how many of those are security updates |
+| `system.reboot_required` | — | count | 1 when an update asks for a restart, else 0 |
 | `health.score` | — | count | The [health score](health-score.md), saved after every check |
 | `services.running` | — | count | Services that are running |
 | `services.failed` | — | count | Services that failed |
@@ -95,5 +103,7 @@ Stored only when they change, so they take little space.
 | Kind | Contents |
 | --- | --- |
 | `filesystems` | Mount point, device, type, and size of each local filesystem |
+| `boot` | Boot ID, boot time, systemd version, phase times, and the slowest units |
+| `updates` | Pending updates (name, installed and new version, origin, security or not), when apt last refreshed, and whether automatic security updates are on |
 | `services` | Name, description, load, active, and sub state, enabled-at-boot state (`UnitFileState`), and restarts since boot (`NRestarts`) of each service |
 

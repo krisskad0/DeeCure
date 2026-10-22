@@ -29,6 +29,9 @@ pub struct Process {
     pub swap_bytes: u64,
     /// Threads.
     pub threads: u32,
+    /// When it started, in milliseconds since 1970. Missing when `/proc/stat` has no boot time.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub started_at: Option<i64>,
     /// The full command line, shortened to 200 characters.
     pub command: String,
 }
@@ -62,6 +65,12 @@ impl ProcessSampler {
     /// All processes, busiest first.
     pub fn read(&mut self, root: &SystemRoot) -> io::Result<Vec<Process>> {
         let hz = rustix::param::clock_ticks_per_second() as f64;
+        // Boot time, in seconds since 1970, from the `btime` line.
+        let boot: Option<f64> = root.read("/proc/stat").ok().and_then(|s| {
+            s.lines()
+                .find_map(|l| l.strip_prefix("btime "))
+                .and_then(|v| v.trim().parse().ok())
+        });
         let uptime: f64 = root
             .read("/proc/uptime")?
             .split_whitespace()
@@ -134,6 +143,7 @@ impl ProcessSampler {
                 memory_bytes: kilobytes(field("VmRSS:")),
                 swap_bytes: kilobytes(field("VmSwap:")),
                 threads: field("Threads:").and_then(|v| v.parse().ok()).unwrap_or(1),
+                started_at: boot.map(|b| ((b + stat.start_ticks as f64 / hz) * 1000.0) as i64),
                 command: command.chars().take(200).collect(),
             });
         }
@@ -211,6 +221,7 @@ mod tests {
             "processes",
             &[
                 ("/proc/uptime", "110.00 50.00\n"),
+                ("/proc/stat", "cpu 1 2 3 4\nbtime 1792627200\n"),
                 (
                     "/etc/passwd",
                     "root:x:0:0:root:/root:/bin/bash\nriya:x:1000:1000:Riya:/home/riya:/bin/bash\n",
@@ -237,6 +248,11 @@ mod tests {
         assert_eq!(p.memory_bytes, 204_800 * 1024);
         assert_eq!(p.swap_bytes, 1024 * 1024);
         assert_eq!(p.threads, 42);
+        let hz = rustix::param::clock_ticks_per_second() as f64;
+        assert_eq!(
+            p.started_at,
+            Some(((1_792_627_200.0 + 1000.0 / hz) * 1000.0) as i64)
+        );
         assert_eq!(p.command, "/usr/lib/firefox/firefox -contentproc");
         assert!(p.cpu_percent > 0.0);
     }

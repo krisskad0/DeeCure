@@ -11,7 +11,7 @@ use zbus::zvariant::{OwnedObjectPath, OwnedValue};
 use super::{Sample, metric};
 
 /// One row of systemd's `ListUnits` reply.
-type UnitRow = (
+pub(crate) type UnitRow = (
     String,          // name
     String,          // description
     String,          // load state

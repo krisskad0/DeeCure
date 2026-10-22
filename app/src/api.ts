@@ -35,6 +35,10 @@ export interface Machine {
   hostname: string;
   os: string;
   user: string;
+  /** Such as `ubuntu:GNOME`. */
+  desktop?: string | null;
+  /** `wayland` or `x11`. */
+  session_type?: string | null;
 }
 
 export interface AppError {
@@ -64,7 +68,7 @@ export interface UnitState {
   restarts?: number;
 }
 
-export function getSnapshot<T>(kind: "services" | "filesystems"): Promise<Snapshot<T> | null> {
+export function getSnapshot<T>(kind: "services" | "filesystems" | "boot" | "updates"): Promise<Snapshot<T> | null> {
   return invoke<Snapshot<T> | null>("snapshot", { kind });
 }
 
@@ -115,6 +119,8 @@ export interface Process {
   memory_bytes: number;
   swap_bytes: number;
   threads: number;
+  /** Milliseconds since 1970. */
+  started_at?: number;
   command: string;
 }
 
@@ -147,12 +153,62 @@ export interface Gpu {
   temperature?: number;
 }
 
+export interface OsDetails {
+  distribution?: string;
+  lifecycle?: { release: string; eol: string; eol_esm?: string };
+  virtualization: string;
+  machine_id?: string;
+  users_signed_in: number;
+  pro_attached?: boolean;
+  livepatch?: string;
+  timezone?: string;
+  ntp_synchronized: boolean;
+  time_server: string;
+  rtc_local: boolean;
+  locale?: string;
+  keyboard?: string;
+}
+
+export interface KernelInfo {
+  running: string;
+  tainted: number;
+  command_line: string;
+  installed: { version: string; status: "running" | "fallback" | "old"; size: number; installed_at?: number }[];
+  modules: { name: string; size: number; used: number; used_by: string[] }[];
+}
+
+export interface AptRun {
+  /** Local time as apt wrote it: `YYYY-MM-DD  HH:MM:SS`. */
+  start: string;
+  source: string;
+  packages: number;
+  changes: string[];
+  failed: boolean;
+}
+
+export interface BootInfo {
+  boot_id: string;
+  booted_at: number;
+  systemd?: string | null;
+  times?: { firmware?: number; loader?: number; kernel: number; initrd?: number; userspace: number; total: number } | null;
+  slowest: { name: string; seconds: number }[];
+}
+
+export interface UpdatesInfo {
+  pending: { name: string; installed: string; candidate: string; origin: string; security: boolean }[];
+  lists_updated_at?: number | null;
+  automatic_security: boolean;
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
 export function getInventory(kind: "network"): Promise<NetworkInfo>;
 export function getInventory(kind: "gpu"): Promise<Gpu[]>;
-export function getInventory(kind: "system" | "processes" | "network" | "gpu"): Promise<unknown> {
+export function getInventory(kind: "os"): Promise<OsDetails>;
+export function getInventory(kind: "kernel"): Promise<KernelInfo>;
+export function getInventory(kind: "update_history"): Promise<AptRun[]>;
+export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }
 

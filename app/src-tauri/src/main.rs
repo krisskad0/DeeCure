@@ -106,6 +106,10 @@ struct Machine {
     os: String,
     /// The user's login name, for the avatar.
     user: String,
+    /// The desktop, such as `ubuntu:GNOME`, from the session the app runs in.
+    desktop: Option<String>,
+    /// `wayland` or `x11`.
+    session_type: Option<String>,
 }
 
 /// Reads the host name, OS name, and user name. Missing values become "unknown".
@@ -129,6 +133,12 @@ fn machine() -> Machine {
         hostname: known(hostname),
         os: known(os.unwrap_or_default()),
         user: known(user.unwrap_or_default()),
+        desktop: std::env::var("XDG_CURRENT_DESKTOP")
+            .ok()
+            .filter(|v| !v.is_empty()),
+        session_type: std::env::var("XDG_SESSION_TYPE")
+            .ok()
+            .filter(|v| !v.is_empty()),
     }
 }
 

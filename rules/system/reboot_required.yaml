@@ -1,0 +1,9 @@
+id: system.reboot_required
+category: system
+title: "Restart to finish installing updates"
+explain: >
+  Some updates, such as a new kernel or system library, only take effect after
+  a restart. Restart when it suits you.
+severity:
+  info: "system.reboot_required == 1"
+learn_more: kb/system/reboot-required.md
