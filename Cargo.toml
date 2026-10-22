@@ -20,6 +20,7 @@ authors = ["DeeCure contributors"]
 deecure-core = { path = "crates/deecure-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde-saphyr = "1.3"
 listenfd = "1"
 rusqlite = "0.40"
 rustix = { version = "1", features = ["fs", "process"] }

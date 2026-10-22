@@ -1,0 +1,14 @@
+id: storage.root_almost_full
+category: storage
+title: "Main disk is almost full"
+explain: >
+  Your main disk has only {root.free_gb} GB left. When it is full, apps can
+  crash and updates can fail. Free up space with the suggested fixes.
+severity:
+  critical: "root.used_percent >= 93"
+  warning: "root.used_percent >= 85"
+fixes:
+  - action: storage.clean_apt_cache
+  - action: storage.remove_old_snap_revisions
+  - action: storage.empty_trash
+learn_more: kb/storage/disk-full.md

@@ -10,5 +10,11 @@ rules/
 
 Categories match the app pages: `storage`, `security`, `power`, `services`, `packages`, and so on.
 
-- Format: [Rules engine](../docs/02-architecture/rules-engine.md)
+| Rule | Fires when |
+| --- | --- |
+| `storage.root_almost_full` | The main disk is 85% full (warning) or 93% (critical) |
+| `services.unit_failed` | A service failed (warning) |
+| `power.battery_worn` | Battery health is under 80% (info) or 60% (warning) |
+
+- Format: [Rules engine](../docs/02-architecture/rules-engine.md#rule-file-reference)
 - How to add one: [Writing rules and KB entries](../docs/04-development/writing-rules-and-kb.md)

@@ -16,7 +16,8 @@
 | 5. Agent skeleton | ✅ Done. Socket activation, same-user check, `version` and `status`. Idle: 2.4 MB RAM, 0% CPU. |
 | 6. Storage | ✅ Done. SQLite schema v1, migrations, hourly cleanup; `status` reads findings from it. |
 | 7. First 5 collectors | ✅ Done. CPU, memory, filesystems, battery, services; new `metrics` and `snapshot` calls. |
-| 8–12 | Not started |
+| 8. Rules engine | ✅ Done. YAML rules, condition language, finding lifecycle; 3 rules shipped. |
+| 9–12 | Not started |
 
 ## Tasks (in order)
 

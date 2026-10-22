@@ -20,7 +20,7 @@ use std::time::Duration;
 use deecure_core::{Metric, Snapshot, Timestamp, Unit};
 use tokio::time::{MissedTickBehavior, interval};
 
-use crate::store::{self, SharedStore};
+use crate::store::{self, SharedStore, Store};
 
 pub use battery::Battery;
 pub use cpu::Cpu;
@@ -77,8 +77,13 @@ pub trait Collector: Send {
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample>;
 }
 
-/// Runs every collector forever and saves what they find.
-pub async fn run(store: SharedStore, root: SystemRoot) {
+/// Runs every collector forever and saves what they find. `after_save` runs right
+/// after each save, with the store still locked (the agent checks rules there).
+pub async fn run(
+    store: SharedStore,
+    root: SystemRoot,
+    mut after_save: impl FnMut(&Store, Timestamp) + Send + 'static,
+) {
     let mut collectors: Vec<Box<dyn Collector>> = vec![
         Box::new(Cpu::default()),
         Box::new(Memory),
@@ -104,7 +109,7 @@ pub async fn run(store: SharedStore, root: SystemRoot) {
             let result = services.collect(now).await;
             merge(&mut sample, &mut failing, Services::NAME, result);
         }
-        save(&store, &sample);
+        save(&store, &sample, now, &mut after_save);
         run_number = run_number.wrapping_add(1);
     }
 }
@@ -131,7 +136,12 @@ fn merge(
     }
 }
 
-fn save(store: &SharedStore, sample: &Sample) {
+fn save(
+    store: &SharedStore,
+    sample: &Sample,
+    now: Timestamp,
+    after_save: &mut impl FnMut(&Store, Timestamp),
+) {
     let store = store::lock(store);
     if let Err(e) = store.add_metrics(&sample.metrics) {
         eprintln!("deecure-agent: could not save metrics: {e}");
@@ -144,6 +154,7 @@ fn save(store: &SharedStore, sample: &Sample) {
             );
         }
     }
+    after_save(&store, now);
 }
 
 /// Builds a metric.

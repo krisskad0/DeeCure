@@ -1,0 +1,12 @@
+id: power.battery_worn
+category: power
+for_each: batteries
+title: "Battery has lost some of its capacity"
+explain: >
+  Battery {item.name} now holds {item.health}% of the charge it held when
+  new, so it runs out sooner. This is normal wear. If it no longer lasts
+  long enough for you, think about replacing it.
+severity:
+  warning: "item.health < 60"
+  info: "item.health < 80"
+learn_more: kb/power/battery-health.md

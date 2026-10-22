@@ -1,0 +1,11 @@
+id: services.unit_failed
+category: services
+for_each: services
+title: "{item.name} has stopped working"
+explain: >
+  The service "{item.description}" failed, so whatever it does is not
+  running now. Restarting it often helps. If it keeps failing, its log
+  shows why.
+severity:
+  warning: "item.active == 'failed'"
+learn_more: kb/services/failed-service.md

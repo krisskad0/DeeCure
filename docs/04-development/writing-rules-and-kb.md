@@ -4,7 +4,7 @@
 
 This is the easiest way to help DeeCure. You need YAML and Linux knowledge, not Rust.
 
-- A **rule** turns system data into a finding, like "Main disk is almost full". Format: [Rules engine](../02-architecture/rules-engine.md).
+- A **rule** turns system data into a finding, like "Main disk is almost full". Format, conditions, and facts: [Rules engine](../02-architecture/rules-engine.md#rule-file-reference).
 - A **fix action** is a safe step that solves a finding. It points to one allowed helper call.
 - A **KB entry** explains one thing in plain English: a service, an error, a port, or a package. Format: [Knowledge base](../02-architecture/knowledge-base.md).
 
@@ -41,9 +41,10 @@ The file name must match the last part of the `id`.
 
 1. Pick an `id`: `<category>.<short_name>`.
 2. Write the YAML file. Fill in `title`, `explain`, `severity`, and `fixes`.
-3. Add a test case in `tests/fixtures/`: the input data and the finding you expect.
-4. Run the rule tests: `cargo test -p deecure-agent rules`.
-5. Open a pull request using the checklist below.
+3. Add a test in `crates/deecure-agent/tests/rules.rs` with a healthy case and a problem case. (From Phase 0 task 10, you can also add saved machine data in `tests/fixtures/`.)
+4. Run the rule tests: `cargo test -p deecure-agent --test rules`. A broken rule file fails this test.
+5. Try it live: `make agent` loads the rules from `rules/`.
+6. Open a pull request using the checklist below.
 
 ## Fix actions: safety rules
 

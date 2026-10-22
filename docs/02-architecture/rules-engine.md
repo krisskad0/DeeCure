@@ -33,3 +33,69 @@ undo: none
 undo_note: "These are old copies. Your current apps are not touched."
 verify: "snap list --all shows no disabled revisions"
 ```
+
+## Rule file reference
+
+The code is in `crates/deecure-agent/src/rules/`. Rule files live in `rules/<category>/<name>.yaml` in the repo, and in `/usr/share/deecure/rules/` when installed.
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `id` | Yes | `<category>.<name>`. Must match the file path: `storage/root_almost_full.yaml`. |
+| `category` | Yes | Must match the first part of `id`. |
+| `for_each` | No | A list to go through, one finding per entry: `filesystems`, `batteries`, or `services`. |
+| `title` | Yes | One short line. May use `{fact}` placeholders. |
+| `explain` | Yes | What it means, why it matters, what to do. May use `{fact}` placeholders. |
+| `severity` | Yes | One condition per level: `critical`, `warning`, `info`. The most serious true one wins. |
+| `fixes` | No | Fix action IDs to offer, in order: `- action: storage.clean_apt_cache`. |
+| `learn_more` | No | A knowledge-base page. |
+| `cause_hint` | No | Reserved for Phase 2. |
+
+Unknown fields are refused, so a typo cannot hide.
+
+### Conditions
+
+```text
+root.used_percent >= 93
+item.active == 'failed'
+item.health < 60 and not (cpu.usage > 95)
+```
+
+- Values: numbers, text in quotes, `true`, `false`, and fact names.
+- Comparisons: `<`, `<=`, `>`, `>=`, `==`, `!=`. Text and true/false only allow `==` and `!=`.
+- Logic: `and`, `or`, `not`, and brackets. `and` binds tighter than `or`.
+
+### When a fact is missing
+
+If a condition needs a fact that is not known right now, the rule says "unknown" and **nothing changes**: no new finding, and no finding is closed. This keeps DeeCure honest on computers without a battery or a sensor. A side that is surely false still decides an `and` (and surely true decides an `or`).
+
+### How findings open and close
+
+| The rule… | Then |
+| --- | --- |
+| fires | The finding opens, or is updated. `first_seen` stays from when it first opened. A finding the user dismissed stays dismissed. |
+| is clear | An open finding is resolved. |
+| is unknown | Nothing changes. |
+| (`for_each`) entry is gone from the list | Its open finding is resolved. |
+| has a mistake, such as comparing text with a number | Nothing changes; the agent logs it once. |
+
+Rules run every minute, right after the collectors save new data.
+
+## Facts
+
+Readings older than 10 minutes are ignored, so a rule never acts on stale data.
+
+| Fact | Example | From |
+| --- | --- | --- |
+| Every metric without a subject, by its name | `memory.used_percent`, `cpu.usage`, `services.failed` | [Collectors](collectors.md#metric-names) |
+| `root.used_percent`, `root.free_gb`, `root.size_gb`, `root.fs_type`, `root.device`, `root.mount_point` | `root.free_gb` = 13.8 | The `/` filesystem |
+
+Lists for `for_each`, used as `item.<field>`:
+
+| List | One entry per | Fields |
+| --- | --- | --- |
+| `filesystems` | Mount point | `mount_point`, `used_percent`, `free_gb`, `size_gb`, `fs_type`, `device` |
+| `batteries` | Battery, such as `BAT0` | `name`, `charge`, `health`, `power` |
+| `services` | `.service` unit | `name`, `description`, `load`, `active`, `sub` |
+
+A list that is not known (no battery, for example) means "unknown", not "empty".
+

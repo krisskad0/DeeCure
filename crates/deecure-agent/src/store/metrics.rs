@@ -54,6 +54,37 @@ impl Store {
         Ok(())
     }
 
+    /// The newest 1-minute point of every metric and subject that has one from `since` on.
+    pub fn latest_metrics(&self, since: Timestamp) -> Result<Vec<Metric>> {
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT name, subject, at, value, unit FROM metric AS m
+             WHERE resolution = 60 AND at >= ?1
+               AND at = (SELECT max(at) FROM metric
+                         WHERE name = m.name AND subject = m.subject AND resolution = 60)
+             ORDER BY name, subject",
+        )?;
+        let rows = stmt.query_map(params![since.as_millis()], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, i64>(2)?,
+                row.get::<_, f64>(3)?,
+                row.get::<_, String>(4)?,
+            ))
+        })?;
+        rows.map(|row| {
+            let (name, subject, at, value, unit) = row?;
+            Ok(Metric {
+                name,
+                subject: subject_from_db(subject),
+                value,
+                unit: from_text::<Unit>(unit)?,
+                at: Timestamp(at),
+            })
+        })
+        .collect()
+    }
+
     /// Points for one metric from `since` to `until` (both included), oldest first.
     ///
     /// Recent points are one minute apart. Older points are 15-minute or daily
@@ -160,6 +191,30 @@ mod tests {
             .metrics("cpu.usage", None, Timestamp(0), Timestamp(120_000))
             .unwrap();
         assert_eq!(points.len(), 3);
+    }
+
+    #[test]
+    fn latest_gives_the_newest_point_of_each_series() {
+        let store = Store::open_in_memory().unwrap();
+        let mut disk = cpu(120_000, 94.0);
+        disk.name = "disk.used_percent".into();
+        disk.subject = Some("/".into());
+        store
+            .add_metrics(&[cpu(0, 10.0), cpu(60_000, 20.0), disk, cpu(-600_000, 5.0)])
+            .unwrap();
+        let latest: Vec<_> = store
+            .latest_metrics(Timestamp(30_000))
+            .unwrap()
+            .into_iter()
+            .map(|m| (m.name, m.subject, m.value))
+            .collect();
+        assert_eq!(
+            latest,
+            [
+                ("cpu.usage".to_owned(), None, 20.0),
+                ("disk.used_percent".to_owned(), Some("/".to_owned()), 94.0)
+            ]
+        );
     }
 
     #[test]

@@ -11,7 +11,7 @@ case "${1:-}" in
     cargo build -p deecure-agent --manifest-path "$repo/Cargo.toml"
     mkdir -p "$units"
     cp "$repo/packaging/systemd/deecure-agent.socket" "$units/"
-    sed "s|^ExecStart=.*|ExecStart=$repo/target/debug/deecure-agent|" \
+    sed "s|^ExecStart=.*|ExecStart=$repo/target/debug/deecure-agent --rules $repo/rules|" \
       "$repo/packaging/systemd/deecure-agent.service" > "$units/deecure-agent.service"
     systemctl --user daemon-reload
     systemctl --user restart deecure-agent.socket

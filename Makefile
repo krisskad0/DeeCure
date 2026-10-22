@@ -21,7 +21,7 @@ fmt: ## Format all Rust code
 	$(CARGO) fmt --all
 
 agent: ## Run the agent in the foreground (Ctrl+C to stop)
-	$(CARGO) run -p deecure-agent
+	$(CARGO) run -p deecure-agent -- --rules rules
 
 clean: ## Remove build output
 	$(CARGO) clean
