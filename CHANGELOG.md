@@ -1,10 +1,14 @@
 # Changelog
 
-All notable changes to SysDoc are listed here.
+All notable changes to DeeCure are listed here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+### Changed
+
+- Renamed the app from the working name SysDoc to **DeeCure** (package and command `deecure`).
 
 ### Added
 

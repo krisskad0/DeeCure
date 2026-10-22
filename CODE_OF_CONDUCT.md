@@ -1,6 +1,6 @@
 # Code of Conduct
 
-SysDoc follows the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). The full text at that link is our code of conduct.
+DeeCure follows the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). The full text at that link is our code of conduct.
 
 ## In short
 

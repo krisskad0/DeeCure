@@ -1,4 +1,4 @@
-# Collector (sysdoc-agent)
+# Collector (deecure-agent)
 
 [Docs](../README.md) › [Architecture](README.md)
 

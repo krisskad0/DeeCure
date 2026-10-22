@@ -13,7 +13,7 @@ Each file below covers one page. Each sub-page lists its header actions (if any)
 | 01 | Monitoring | [Overview](01-overview.md) | Summary, Issues, Health Score |
 | 02 | Monitoring | [Performance](02-performance.md) | CPU, Memory, Disk I/O, Network, GPU, Pressure (PSI) |
 | 03 | Monitoring | [Logs](03-logs.md) | Journal, Errors, Crashes, Kernel, Boots |
-| 04 | Monitoring | [Activity](04-activity.md) | Timeline, Package History, Config Changes, Device Events, SysDoc Actions |
+| 04 | Monitoring | [Activity](04-activity.md) | Timeline, Package History, Config Changes, Device Events, DeeCure Actions |
 | 05 | System | [System](05-system.md) | Overview, Boot, Updates, Kernel, Time & Locale |
 | 06 | System | [Hardware](06-hardware.md) | Summary, Processor, Memory, Storage Devices, Graphics, Sensors, Peripherals, Firmware |
 | 07 | System | [Power](07-power.md) | Battery, Power Profile, Sleep |

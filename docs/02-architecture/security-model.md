@@ -1,4 +1,4 @@
-# Security and privacy of SysDoc itself
+# Security and privacy of DeeCure itself
 
 [Docs](../README.md) › [Architecture](README.md)
 
@@ -24,7 +24,7 @@ A trust boundary is a place where data moves from a less trusted part to a more 
 
 ## Helper review checklist
 
-Use this list when reviewing any change to `sysdoc-helper`.
+Use this list when reviewing any change to `deecure-helper`.
 
 - [ ] No shell. Run programs with a fixed argument list, never `sh -c`.
 - [ ] Every input is checked against a strict pattern or a live list (for example, the unit really exists).

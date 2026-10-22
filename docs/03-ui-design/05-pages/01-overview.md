@@ -26,7 +26,7 @@
 - X axis: time (current range)
 
 3. **Status list** — "Subsystems" · span 4
-- Info tooltip: "Status of every area SysDoc checks. Select a row to open it."
+- Info tooltip: "Status of every area DeeCure checks. Select a row to open it."
 
 | Icon | Label | Metric | Badge | Opens |
 | --- | --- | --- | --- | --- |

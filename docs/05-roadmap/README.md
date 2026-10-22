@@ -10,7 +10,7 @@ Durations are rough estimates for a team of 2–3 engineers.
 | **1. MVP — see and understand** | All Yes-status insights from the category list, home screen, category pages, KB for common items, health score, jobs calendar | 8–10 weeks |
 | **2. Fix safely** | Helper + polkit, Admin-status insights, fix engine with preview, verify, and undo, first 20 fixes | 6–8 weeks |
 | **3. History and trends** | What-changed timeline, trends, predictions ("disk full in N days"), notifications, weekly report | 5–6 weeks |
-| **4. Ask SysDoc** | Local AI assistant with read-only tools, "Why did my PC restart?" | 4–6 weeks |
+| **4. Ask DeeCure** | Local AI assistant with read-only tools, "Why did my PC restart?" | 4–6 weeks |
 | **5. Reach** | Fedora and Arch adapters, KDE support, server web mode, multi-PC view for small offices | Ongoing |
 
 **Launch the public beta after Phase 2.** Before that, the app can show problems but cannot fix them, and "safe fixes" is the main promise.
@@ -21,7 +21,7 @@ Build in this order. Each file lists the goal, the tasks in order, the specs to 
 
 | Phase | File | Ends with |
 | --- | --- | --- |
-| 0 | [phase-0-foundations.md](phase-0-foundations.md) | `sysdoc status` works from an installed `.deb` |
+| 0 | [phase-0-foundations.md](phase-0-foundations.md) | `deecure status` works from an installed `.deb` |
 | 1 | [phase-1-mvp.md](phase-1-mvp.md) | The desktop app shows every read-only insight |
 | 2 | [phase-2-fix-safely.md](phase-2-fix-safely.md) | Safe fixes with undo, signed APT repo, **public beta** |
 | 3 | [phase-3-history.md](phase-3-history.md) | "What changed" timeline, trends, notifications |

@@ -2,7 +2,7 @@
 
 [Docs](../README.md)
 
-Everything a developer needs to work on SysDoc.
+Everything a developer needs to work on DeeCure.
 
 | File | What it covers |
 | --- | --- |

@@ -32,11 +32,11 @@ Radio group name: `access`.
 
 | Key | Value |
 | --- | --- |
-| Service | `sysdoc-helper` |
+| Service | `deecure-helper` |
 | Status | {ok:Authorized} |
 | Activation | D-Bus, on demand |
 | Allowed actions | 24 (fixed list) |
-| Audit log | `/var/log/sysdoc/helper.log` |
+| Audit log | `/var/log/deecure/helper.log` |
 
 ## Settings › Notifications — `settings/notifications`
 
@@ -66,7 +66,7 @@ Radio group name: `access`.
 | Label | Description | Control | Initial | Control ID |
 | --- | --- | --- | --- | --- |
 | Keep history for | Metrics and change history | Select: 90 days / 1 year / 2 years | 2 years | `ret` |
-| Database size | `~/.local/share/sysdoc/sysdoc.db` | Read-only value | 74 MB | `—` |
+| Database size | `~/.local/share/deecure/deecure.db` | Read-only value | 74 MB | `—` |
 | Export report | HTML or JSON snapshot of all pages | [Export](act:toast:Report export is disabled in the prototype.) | — | `—` |
 | Delete history | Restore points are kept | [Delete…](act:toast:Prototype: nothing was deleted.) | — | `—` |
 
@@ -76,8 +76,8 @@ Radio group name: `access`.
 
 | Key | Value |
 | --- | --- |
-| Version | SysDoc 0.5 · prototype |
-| Collector | sysdoc-agent 0.5 · running |
+| Version | DeeCure 0.5 · prototype |
+| Collector | deecure-agent 0.5 · running |
 | Knowledge base | 1,240 entries · updated today |
 | Distro adapter | Ubuntu / Debian |
 | License | Apache-2.0 |

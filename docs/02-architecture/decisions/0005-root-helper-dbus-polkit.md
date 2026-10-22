@@ -9,7 +9,7 @@ Some checks and all real fixes need root rights: reading disk health, reading th
 
 ## Decision
 
-- Put every root task in a small, separate program: `sysdoc-helper`.
+- Put every root task in a small, separate program: `deecure-helper`.
 - It offers a **fixed list of actions** on the D-Bus system bus. (D-Bus is the standard Linux message bus that programs use to talk to each other.) It never runs a free-form command.
 - D-Bus starts it only when needed. It exits after 2 minutes of no use.
 - Each action has its own polkit rule. (polkit is the Ubuntu service that shows the normal password box.) Read actions keep the approval for a few minutes. Risky write actions ask every time.

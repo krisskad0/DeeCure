@@ -5,7 +5,7 @@
 
 ## Context
 
-SysDoc runs a root-level helper. Users trust it more when anyone can read the code. The license must be chosen before the first public commit.
+DeeCure runs a root-level helper. Users trust it more when anyone can read the code. The license must be chosen before the first public commit.
 
 ## Decision
 

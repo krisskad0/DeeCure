@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in SysDoc does not work as expected.
+description: Something in DeeCure does not work as expected.
 labels: [bug]
 body:
   - type: textarea
@@ -20,8 +20,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: SysDoc version
-      description: Output of `sysdoc --version`
+      label: DeeCure version
+      description: Output of `deecure --version`
     validations:
       required: true
   - type: input
@@ -34,7 +34,7 @@ body:
   - type: dropdown
     id: install
     attributes:
-      label: How did you install SysDoc?
+      label: How did you install DeeCure?
       options:
         - APT repository / install script
         - Downloaded .deb
@@ -44,5 +44,5 @@ body:
     id: logs
     attributes:
       label: Logs
-      description: Output of `journalctl --user -u sysdoc-agent -n 100`. Remove anything private.
+      description: Output of `journalctl --user -u deecure-agent -n 100`. Remove anything private.
       render: text

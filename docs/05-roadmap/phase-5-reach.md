@@ -14,7 +14,7 @@
 | Servers | Split a headless package without the GUI, plus a server web mode | [ADR 0003](../02-architecture/decisions/0003-deb-and-apt-repository.md) |
 | Many PCs | Multi-PC view for small offices (the machine picker) | [Top bar](../03-ui-design/02-shell/top-bar.md) |
 | Languages | Hindi and other languages through the KB format | [Knowledge base](../02-architecture/knowledge-base.md) |
-| Official archives | Get SysDoc into Debian, then into Ubuntu's universe | [Packaging](../06-packaging/README.md) |
+| Official archives | Get DeeCure into Debian, then into Ubuntu's universe | [Packaging](../06-packaging/README.md) |
 
 ## Done when
 

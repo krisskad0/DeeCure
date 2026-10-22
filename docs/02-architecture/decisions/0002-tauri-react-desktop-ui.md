@@ -15,7 +15,7 @@ Build the desktop app with Tauri v2. Write the UI in React and TypeScript. The T
 
 - Tauri uses the system web view (WebKitGTK on Linux), so it is much lighter than Electron.
 - The team can reuse web skills and the prototype's CSS tokens.
-- The Rust side shares types with the agent through `sysdoc-core`.
+- The Rust side shares types with the agent through `deecure-core`.
 - **Options not picked:** Electron (too heavy), GTK4 + libadwaita (native look, but the dashboard and charts are much more work), Svelte instead of React (fine, choose it if the team prefers).
 
 ## Consequences

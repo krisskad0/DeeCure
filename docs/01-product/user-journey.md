@@ -4,23 +4,23 @@
 
 ## Install
 
-1. The user finds SysDoc on the website or in a blog post.
+1. The user finds DeeCure on the website or in a blog post.
 2. They copy one command:
    ```bash
    curl -fsSL https://<site>/install.sh | sudo bash
    ```
-   This adds the SysDoc apt repository and installs the `.deb` package. A normal `.deb` download is offered too.
-3. After install, SysDoc appears in the app menu.
+   This adds the DeeCure apt repository and installs the `.deb` package. A normal `.deb` download is offered too.
+3. After install, DeeCure appears in the app menu.
 
-> **Real-life example:** Riya follows a YouTube tip, pastes one command, and enters her password once. Two minutes later SysDoc is in her app list.
+> **Real-life example:** Riya follows a YouTube tip, pastes one command, and enters her password once. Two minutes later DeeCure is in her app list.
 
 ## First launch (3 short screens)
 
-1. **Welcome:** "SysDoc checks your computer and explains problems in simple words."
+1. **Welcome:** "DeeCure checks your computer and explains problems in simple words."
 2. **Privacy promise:** "Everything stays on this computer. No account. No data sent anywhere."
 3. **Choose access level:**
    - **Basic (no password):** sees about 80% of insights.
-   - **Full (recommended):** approves the SysDoc helper once with the admin password. This unlocks disk health, firewall, all users' cron jobs, and similar items.
+   - **Full (recommended):** approves the DeeCure helper once with the admin password. This unlocks disk health, firewall, all users' cron jobs, and similar items.
 
 The user can switch the level later in Settings.
 
@@ -32,10 +32,10 @@ The user can switch the level later in Settings.
 
 ## Home screen (Overview › Summary)
 
-The app opens on a dashboard, not a list of cards. See `sysdoc-dashboard.html` for the clickable version.
+The app opens on a dashboard, not a list of cards. See `deecure-dashboard.html` for the clickable version.
 
 ```
-┌ Top bar: SysDoc · machine picker · search (Ctrl K) · 1h/24h/7d/30d · Beginner/Expert · bell ┐
+┌ Top bar: DeeCure · machine picker · search (Ctrl K) · 1h/24h/7d/30d · Beginner/Expert · bell ┐
 ├──────────┬──────────────────────────────────────────────────────────────────────────────────┤
 │ Sidebar  │ Monitoring › Overview                       [Refresh] [Export]                   │
 │ (pages + │ Summary | Issues (8) | Health Score                                             │
@@ -58,7 +58,7 @@ The app opens on a dashboard, not a list of cards. See `sysdoc-dashboard.html` f
 
 **Example:** "Disk 94% full."
 
-1. **Tap the red item.** SysDoc shows:
+1. **Tap the red item.** DeeCure shows:
    - What it means: "Your main disk is almost full. Apps may crash and updates may fail."
    - Why it happened: "Old snap versions 9 GB · Docker images 4 GB · Trash 2 GB."
 2. **Tap Fix.** A preview screen lists each step:
@@ -66,28 +66,28 @@ The app opens on a dashboard, not a list of cards. See `sysdoc-dashboard.html` f
    - "Empty Trash (2 GB). Undo: No. Files in Trash will be gone."
    - The user can untick any step.
 3. **Tap Apply.** If a step needs admin rights, the normal Ubuntu password box appears once.
-4. **SysDoc checks the result:** "Done. Disk now 79% full. Health 82 → 90."
-5. The action is saved in **Activity › SysDoc Actions**, with an Undo button where undo is possible.
+4. **DeeCure checks the result:** "Done. Disk now 79% full. Health 82 → 90."
+5. The action is saved in **Activity › DeeCure Actions**, with an Undo button where undo is possible.
 
 ## "Why is my PC slow?" (Diagnostics › Performance Check)
 
 1. The user taps the button while the PC feels slow.
-2. SysDoc takes a 10-second look at CPU, RAM, memory pressure, disk activity, temperature, and the top apps.
+2. DeeCure takes a 10-second look at CPU, RAM, memory pressure, disk activity, temperature, and the top apps.
 3. It answers in one sentence plus one action:
    - "Chrome is using 6.1 GB of your 8 GB RAM (42 tabs). Closing unused tabs will help."
    - "Your CPU is at 95 °C and slowing itself down. Check that the air vents are not blocked."
 4. Each answer has a **Show details** link for experts.
 
-## Ask SysDoc (Assistant › Chat)
+## Ask DeeCure (Assistant › Chat)
 
 1. The user types or says: "Why did my laptop restart last night?"
-2. SysDoc looks at the boot list and the last log lines before the restart.
+2. DeeCure looks at the boot list and the last log lines before the restart.
 3. It answers: "Your laptop did not shut down cleanly at 2:14 AM. The last logs show the battery at 1%. It most likely ran out of power." It also shows the 3 log lines it used.
 4. If the AI suggests a fix, the fix still goes through the normal preview → approve → undo flow. The AI can never run commands directly.
 
 ## Everyday use
 
-- SysDoc runs quietly in the background. It shows a small tray icon only if the user wants one.
+- DeeCure runs quietly in the background. It shows a small tray icon only if the user wants one.
 - **Notifications** appear only for serious things, such as "Disk will be full in about 3 days" or "SSD health dropped to 15%".
 - A **weekly report** (optional) gives the health trend, what changed, and one tip.
 
@@ -97,8 +97,8 @@ The app opens on a dashboard, not a list of cards. See `sysdoc-dashboard.html` f
 
 1. The user opens **Activity › Timeline** (the "what changed" timeline).
 2. They see: "Yesterday 6:40 PM — kernel updated 6.8 → 6.11" and "Yesterday 6:41 PM — Wi-Fi driver module changed".
-3. SysDoc suggests: "Start once with the previous kernel from the boot menu. Here is how."
-4. If SysDoc itself made a change, there is an **Undo** button right there.
+3. DeeCure suggests: "Start once with the previous kernel from the boot menu. Here is how."
+4. If DeeCure itself made a change, there is an **Undo** button right there.
 
 ## Growing into an expert
 
@@ -108,8 +108,8 @@ The app opens on a dashboard, not a list of cards. See `sysdoc-dashboard.html` f
 
 ## Uninstall
 
-- The user runs `sudo apt remove sysdoc` or clicks Uninstall in Settings.
-- SysDoc asks: "Also delete history and settings?"
+- The user runs `sudo apt remove deecure` or clicks Uninstall in Settings.
+- DeeCure asks: "Also delete history and settings?"
 - The admin helper and its permissions are removed completely.
 
 ## Journey at a glance
@@ -125,7 +125,7 @@ flowchart LR
   G --> H[Approve once]
   H --> I[Verify + save to Activity log]
   E -->|PC slow| J[10-second check + one answer]
-  E -->|Question| K[Ask SysDoc: answer + log lines used]
+  E -->|Question| K[Ask DeeCure: answer + log lines used]
   K --> G
   E -->|Something broke| L[Activity timeline + Undo]
   I --> D

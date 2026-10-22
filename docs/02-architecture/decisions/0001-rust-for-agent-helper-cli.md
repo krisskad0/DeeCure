@@ -9,7 +9,7 @@ The agent runs all the time in the background. The helper runs as root. Both mus
 
 ## Decision
 
-Write `sysdoc-agent`, `sysdoc-helper`, `sysdoc-cli`, and the shared `sysdoc-core` library in Rust, in one Cargo workspace.
+Write `deecure-agent`, `deecure-helper`, `deecure-cli`, and the shared `deecure-core` library in Rust, in one Cargo workspace.
 
 ## Why
 

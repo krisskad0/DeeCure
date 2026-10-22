@@ -7,7 +7,7 @@
 
 ## Assistant › Chat — `assistant/chat`
 
-1. **Chat ([Chat](../03-components/24-chat.md))** — "Ask SysDoc" · span 8
+1. **Chat ([Chat](../03-components/24-chat.md))** — "Ask DeeCure" · span 8
 - Subtitle: "Local model · on-device"
 
 Initial messages: user "Why did my laptop restart last night?", then the `restart` answer ([Assistant](../04-behavior/interactions.md#assistant)). Composer: input "Ask about this computer…" + primary Send. When the assistant is off, the panel body is instead a centered muted line "The assistant is turned off." + [**Turn on**](go:settings/assistant), and the subtitle reads "Off".

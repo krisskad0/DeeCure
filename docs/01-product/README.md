@@ -2,7 +2,7 @@
 
 [Docs](../README.md)
 
-What SysDoc is, who it is for, and how people use it.
+What DeeCure is, who it is for, and how people use it.
 
 | File | What it covers |
 | --- | --- |
@@ -14,4 +14,4 @@ What SysDoc is, who it is for, and how people use it.
 
 ## Missing document
 
-The plan refers to `linux-system-insights.md`: the full list of checks SysDoc can run, each marked **Yes** (no password needed), **Admin** (needs the helper), or **No** (not possible). The roadmap needs it ("all Yes-status insights"). It is not in this repo yet. Add it here as `insights-catalog.md`.
+The plan refers to `linux-system-insights.md`: the full list of checks DeeCure can run, each marked **Yes** (no password needed), **Admin** (needs the helper), or **No** (not possible). The roadmap needs it ("all Yes-status insights"). It is not in this repo yet. Add it here as `insights-catalog.md`.

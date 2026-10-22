@@ -5,15 +5,15 @@
 
 ## Context
 
-Users must install SysDoc as easily as any other Ubuntu app, and get updates the normal way. SysDoc needs deep system access: a root helper, polkit rules, D-Bus activation, and a systemd user service.
+Users must install DeeCure as easily as any other Ubuntu app, and get updates the normal way. DeeCure needs deep system access: a root helper, polkit rules, D-Bus activation, and a systemd user service.
 
 ## Decision
 
-1. Ship a `.deb` package named `sysdoc`.
+1. Ship a `.deb` package named `deecure`.
 2. Host our own signed APT repository. Add it with a one-line install script or a few manual steps.
 3. Attach the same `.deb` to every GitHub Release, for download and double-click install.
 4. Add a Launchpad PPA after the public beta.
-5. Long-term goal: get into the official Debian and Ubuntu archives, so `sudo apt install sysdoc` works with no setup.
+5. Long-term goal: get into the official Debian and Ubuntu archives, so `sudo apt install deecure` works with no setup.
 6. Until Phase 5, ship **one** package with everything inside. Split out a headless (no GUI) package for servers later.
 
 ## Why
@@ -21,7 +21,7 @@ Users must install SysDoc as easily as any other Ubuntu app, and get updates the
 - `apt` is how Ubuntu users already install and update software. Updates arrive through Software Updater.
 - Our own repo gives us full control: our CI builds it, it supports Debian too, and it supports many CPU types.
 - One package means one file to download and double-click.
-- **Options not picked for the core:** Snap and Flatpak. Their sandboxes block the system access SysDoc needs. AppImage can come later, for the UI only.
+- **Options not picked for the core:** Snap and Flatpak. Their sandboxes block the system access DeeCure needs. AppImage can come later, for the UI only.
 
 ## Consequences
 

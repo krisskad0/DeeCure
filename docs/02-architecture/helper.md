@@ -1,4 +1,4 @@
-# Admin helper (sysdoc-helper)
+# Admin helper (deecure-helper)
 
 [Docs](../README.md) › [Architecture](README.md)
 

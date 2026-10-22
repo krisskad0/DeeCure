@@ -1,4 +1,4 @@
-# Install SysDoc
+# Install DeeCure
 
 [Docs](../README.md) › [User guide](README.md)
 
@@ -15,23 +15,23 @@
 Open the Terminal (press `Ctrl` + `Alt` + `T`) and paste:
 
 ```bash
-curl -fsSL https://sysdoc.github.io/install.sh | sudo bash
+curl -fsSL https://krisskad0.github.io/DeeCure/install.sh | sudo bash
 ```
 
-This adds the SysDoc software source to your computer and installs SysDoc. You can [read the script](https://sysdoc.github.io/install.sh) before you run it.
+This adds the DeeCure software source to your computer and installs DeeCure. You can [read the script](https://krisskad0.github.io/DeeCure/install.sh) before you run it.
 
 ## Option 2: download the file
 
-1. Download `sysdoc_<version>_amd64.deb` from the [Releases page](https://github.com/sysdoc/sysdoc/releases) (provisional address).
+1. Download `deecure_<version>_amd64.deb` from the [Releases page](https://github.com/krisskad0/DeeCure/releases) (provisional address).
 2. Double-click the file. It opens in App Center. Click **Install**.
 
    Or, in the Terminal, from your Downloads folder:
 
    ```bash
-   sudo apt install ./sysdoc_*_amd64.deb
+   sudo apt install ./deecure_*_amd64.deb
    ```
 
-3. When asked "Add the SysDoc repository for updates?", choose **Yes** to get updates automatically.
+3. When asked "Add the DeeCure repository for updates?", choose **Yes** to get updates automatically.
 
 ## Option 3: step by step
 
@@ -39,19 +39,19 @@ Use this if you want to see every step. It does the same thing as Option 1.
 
 ```bash
 sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://sysdoc.github.io/apt/sysdoc-archive-keyring.asc \
-  | sudo tee /etc/apt/keyrings/sysdoc.asc > /dev/null
+curl -fsSL https://krisskad0.github.io/DeeCure/apt/deecure-archive-keyring.asc \
+  | sudo tee /etc/apt/keyrings/deecure.asc > /dev/null
 
-sudo tee /etc/apt/sources.list.d/sysdoc.sources > /dev/null <<EOF
+sudo tee /etc/apt/sources.list.d/deecure.sources > /dev/null <<EOF
 Types: deb
-URIs: https://sysdoc.github.io/apt
+URIs: https://krisskad0.github.io/DeeCure/apt
 Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
 Components: main
-Signed-By: /etc/apt/keyrings/sysdoc.asc
+Signed-By: /etc/apt/keyrings/deecure.asc
 EOF
 
 sudo apt update
-sudo apt install sysdoc
+sudo apt install deecure
 ```
 
 ## Check your download (optional)
@@ -64,18 +64,18 @@ sha256sum --check --ignore-missing SHA256SUMS
 
 You should see `OK`.
 
-## Start SysDoc
+## Start DeeCure
 
-Open the app menu and search for **SysDoc**. On first launch, SysDoc asks you to choose an access level:
+Open the app menu and search for **DeeCure**. On first launch, DeeCure asks you to choose an access level:
 
 - **Basic:** no password. About 80% of the checks.
-- **Full (recommended):** approve the SysDoc helper once with your password. All checks.
+- **Full (recommended):** approve the DeeCure helper once with your password. All checks.
 
 You can change this later in Settings › Access.
 
 ## Update
 
-SysDoc updates come with your normal Ubuntu updates, through **Software Updater**. Or run:
+DeeCure updates come with your normal Ubuntu updates, through **Software Updater**. Or run:
 
 ```bash
 sudo apt update && sudo apt upgrade
@@ -83,17 +83,17 @@ sudo apt update && sudo apt upgrade
 
 ## Uninstall
 
-1. **Optional:** to delete your SysDoc history, open SysDoc › Settings › Data › **Delete history** first. Removing the package does not touch your home folder.
+1. **Optional:** to delete your DeeCure history, open DeeCure › Settings › Data › **Delete history** first. Removing the package does not touch your home folder.
 2. Remove the app:
 
    ```bash
-   sudo apt purge sysdoc
+   sudo apt purge deecure
    ```
 
 3. Remove the software source (only if you added it):
 
    ```bash
-   sudo rm /etc/apt/sources.list.d/sysdoc.sources /etc/apt/keyrings/sysdoc.asc
+   sudo rm /etc/apt/sources.list.d/deecure.sources /etc/apt/keyrings/deecure.asc
    sudo apt update
    ```
 
@@ -102,6 +102,6 @@ sudo apt update && sudo apt upgrade
 | Problem | Try this |
 | --- | --- |
 | `apt update` shows a key error | Run Option 3's first two commands again to refresh the key. |
-| SysDoc is not in the app menu | Log out and log back in. |
+| DeeCure is not in the app menu | Log out and log back in. |
 | "Requires Full access" appears | Settings › Access › choose **Full**. |
-| Something else | Open an issue on GitHub and include the output of `sysdoc --version` and `lsb_release -a`. |
+| Something else | Open an issue on GitHub and include the output of `deecure --version` and `lsb_release -a`. |

@@ -2,21 +2,21 @@
 
 [Docs](../README.md) › [Packaging](README.md)
 
-Our own signed APT repository is the main way users install and update SysDoc.
+Our own signed APT repository is the main way users install and update DeeCure.
 
 ## Layout
 
 ```text
-https://sysdoc.github.io/apt/          (provisional address)
-├── sysdoc-archive-keyring.asc         public signing key
+https://krisskad0.github.io/DeeCure/apt/          (provisional address)
+├── deecure-archive-keyring.asc         public signing key
 ├── dists/
 │   ├── noble/                         Ubuntu 24.04
 │   │   ├── InRelease                  signed index
 │   │   ├── main/binary-amd64/         stable releases
 │   │   └── beta/binary-amd64/         pre-releases
 │   └── resolute/                      Ubuntu 26.04
-└── pool/main/s/sysdoc/
-    └── sysdoc_0.3.0-1~ubuntu24.04_amd64.deb
+└── pool/main/d/deecure/
+    └── deecure_0.3.0-1~ubuntu24.04_amd64.deb
 ```
 
 - **Suite** = the Ubuntu codename (`noble`, `resolute`).
@@ -39,19 +39,19 @@ https://sysdoc.github.io/apt/          (provisional address)
 
 ```bash
 sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://sysdoc.github.io/apt/sysdoc-archive-keyring.asc \
-  | sudo tee /etc/apt/keyrings/sysdoc.asc > /dev/null
+curl -fsSL https://krisskad0.github.io/DeeCure/apt/deecure-archive-keyring.asc \
+  | sudo tee /etc/apt/keyrings/deecure.asc > /dev/null
 
-sudo tee /etc/apt/sources.list.d/sysdoc.sources > /dev/null <<EOF
+sudo tee /etc/apt/sources.list.d/deecure.sources > /dev/null <<EOF
 Types: deb
-URIs: https://sysdoc.github.io/apt
+URIs: https://krisskad0.github.io/DeeCure/apt
 Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
 Components: main
-Signed-By: /etc/apt/keyrings/sysdoc.asc
+Signed-By: /etc/apt/keyrings/deecure.asc
 EOF
 
 sudo apt update
-sudo apt install sysdoc
+sudo apt install deecure
 ```
 
 This uses the modern `.sources` format (called deb822), the same format Ubuntu 24.04 uses for its own sources. `Signed-By` makes apt trust our key **only** for our repository.
@@ -69,7 +69,7 @@ This uses the modern `.sources` format (called deb822), the same format Ubuntu 2
 
 ## Launchpad PPA (after the beta)
 
-A PPA is Ubuntu's own way to host a third-party repository: `sudo add-apt-repository ppa:sysdoc/stable`.
+A PPA is Ubuntu's own way to host a third-party repository: `sudo add-apt-repository ppa:deecure/stable`.
 
 Launchpad builds packages from source on servers **without internet**. So the source package must include:
 

@@ -1,11 +1,12 @@
-# SysDoc
+# DeeCure
 
-**A family doctor for your Linux computer.** SysDoc checks everything, explains what it finds in plain English, and fixes problems safely with one click and an undo button.
+**See, understand, and fix everything in your Linux PC.** DeeCure gives you deep insight into your hardware, operating system, apps, and services. It explains what it finds in plain English, and fixes problems safely with one click and an undo button.
 
-> **Status:** design stage. There is no code or release yet. "SysDoc" is a working name.
+> **Status:** design stage. There is no code or release yet.
 
 ## What it does
 
+- **Deep insight into everything:** hardware, sensors, OS, kernel, apps, services, scheduled jobs, containers, storage, network, accounts, and security, in one place.
 - **One health score** for your whole computer, with the top problems first.
 - **Plain-English answers:** "Your main disk is almost full. Here is why."
 - **Safe fixes:** see the exact command first, approve once, undo when possible.
@@ -19,14 +20,14 @@
 Not released yet. From the public beta, installing will look like this on Ubuntu 24.04 and 26.04:
 
 ```bash
-curl -fsSL https://sysdoc.github.io/install.sh | sudo bash
+curl -fsSL https://krisskad0.github.io/DeeCure/install.sh | sudo bash
 ```
 
 Or download the `.deb` from Releases and double-click it. Updates come through Software Updater like any other app. Full guide: [docs/07-user-guide/install.md](docs/07-user-guide/install.md).
 
 ## Try the prototype
 
-Open [docs/03-ui-design/prototype/sysdoc-dashboard.html](docs/03-ui-design/prototype/sysdoc-dashboard.html) in a browser. It is the clickable UI with sample data.
+Open [docs/03-ui-design/prototype/deecure-dashboard.html](docs/03-ui-design/prototype/deecure-dashboard.html) in a browser. It is the clickable UI with sample data.
 
 ## Documentation
 
@@ -50,7 +51,7 @@ Rust (agent, root helper, CLI) · Tauri v2 + React + TypeScript (desktop app) ·
 
 ```
 app/          Desktop app (Tauri + React)
-crates/       Rust workspace: sysdoc-core, sysdoc-agent, sysdoc-helper, sysdoc-cli
+crates/       Rust workspace: deecure-core, deecure-agent, deecure-helper, deecure-cli
 rules/        Checks and fix actions (YAML)
 kb/           Plain-English knowledge base (YAML)
 packaging/    Debian package, desktop files, D-Bus, polkit, systemd, APT repo

@@ -1,6 +1,6 @@
 # kb
 
-The knowledge base: plain-English explanations, as YAML. This is what makes SysDoc friendly.
+The knowledge base: plain-English explanations, as YAML. This is what makes DeeCure friendly.
 
 | Folder | Explains | Example file |
 | --- | --- | --- |

@@ -27,7 +27,7 @@
 | **guest** · Guest | 1001 | ‹guest› | {off:Standard} | `/bin/bash` | 3 weeks ago | 9 months |
 
 3. **Alert banner** — "Password strength cannot be checked" · span 12
-- State: `info` · Title: "Password strength cannot be checked" · Text: "Linux stores only salted hashes. SysDoc shows password age instead."
+- State: `info` · Title: "Password strength cannot be checked" · Text: "Linux stores only salted hashes. DeeCure shows password age instead."
 
 ## Accounts › Groups — `accounts/groups`
 

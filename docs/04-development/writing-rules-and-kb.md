@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [Development](README.md)
 
-This is the easiest way to help SysDoc. You need YAML and Linux knowledge, not Rust.
+This is the easiest way to help DeeCure. You need YAML and Linux knowledge, not Rust.
 
 - A **rule** turns system data into a finding, like "Main disk is almost full". Format: [Rules engine](../02-architecture/rules-engine.md).
 - A **fix action** is a safe step that solves a finding. It points to one allowed helper call.
@@ -26,7 +26,7 @@ The file name must match the last part of the `id`.
 - Say three things: what it means, why it matters, and what to do.
 - Short sentences. Common words. No blame ("you did X wrong").
 - If a technical word is needed, explain it in the same sentence.
-- Be honest. If SysDoc cannot check something, say so. Never guess a value.
+- Be honest. If DeeCure cannot check something, say so. Never guess a value.
 - Use the user's numbers: "only 13 GB left", not "low disk space".
 
 ## Choosing severity
@@ -42,7 +42,7 @@ The file name must match the last part of the `id`.
 1. Pick an `id`: `<category>.<short_name>`.
 2. Write the YAML file. Fill in `title`, `explain`, `severity`, and `fixes`.
 3. Add a test case in `tests/fixtures/`: the input data and the finding you expect.
-4. Run the rule tests: `cargo test -p sysdoc-agent rules`.
+4. Run the rule tests: `cargo test -p deecure-agent rules`.
 5. Open a pull request using the checklist below.
 
 ## Fix actions: safety rules
@@ -50,7 +50,7 @@ The file name must match the last part of the `id`.
 - A fix action can only call a helper action from the fixed list. You cannot add a shell command in YAML.
 - Always fill in `preview_command`, `undo`, and `undo_note`. Users see them before they approve.
 - `undo: none` needs a clear warning in `undo_note`.
-- A new helper action needs Rust code in `crates/sysdoc-helper/`, a polkit entry, and two reviewers. See [Helper](../02-architecture/helper.md).
+- A new helper action needs Rust code in `crates/deecure-helper/`, a polkit entry, and two reviewers. See [Helper](../02-architecture/helper.md).
 
 ## Pull request checklist
 

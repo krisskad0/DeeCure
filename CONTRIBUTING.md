@@ -1,4 +1,4 @@
-# Contributing to SysDoc
+# Contributing to DeeCure
 
 Thank you for helping. This page explains how to contribute.
 
@@ -58,7 +58,7 @@ Add a `Signed-off-by` line to every commit with `git commit -s`. It means you ag
 
 ## Extra rules for the root helper
 
-`crates/sysdoc-helper/`, `packaging/polkit/`, and `packaging/dbus/` run with or control root rights.
+`crates/deecure-helper/`, `packaging/polkit/`, and `packaging/dbus/` run with or control root rights.
 
 - Changes here need **two** approving reviews.
 - Follow the [helper review checklist](docs/02-architecture/security-model.md#helper-review-checklist).

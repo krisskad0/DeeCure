@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [Roadmap](README.md)
 
-**Goal:** SysDoc remembers what changed and warns about problems before they happen.
+**Goal:** DeeCure remembers what changed and warns about problems before they happen.
 **Rough time:** 5–6 weeks.
 
 ## Tasks (in order)
@@ -17,7 +17,7 @@
    → [Line / area chart](../03-ui-design/03-components/12-line-area-chart.md)
 5. **Notifications:** critical alerts right away, warnings in the weekly summary, quiet hours, no repeats within 24 hours.
    → [Notifications](../02-architecture/notifications.md), [Settings page](../03-ui-design/05-pages/22-settings.md)
-6. **Weekly report** and the CLI commands `sysdoc history` and `sysdoc report --html`.
+6. **Weekly report** and the CLI commands `deecure history` and `deecure report --html`.
    → [CLI](../02-architecture/cli.md)
 7. **Optional tray icon**, off by default.
    → [User journey](../01-product/user-journey.md#everyday-use)

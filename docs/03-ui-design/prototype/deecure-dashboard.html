@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>[hidden]{display:none!important}img{max-width:100%}</style>
-<title>SysDoc Dashboard</title>
+<title>DeeCure Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400..700&family=Ubuntu+Sans+Mono:wght@400;500&display=swap">
@@ -471,7 +471,7 @@ select.sel{height:30px;border:1px solid var(--line-2);border-radius:6px;backgrou
 <div class="app" id="app">
   <header class="topbar">
     <button class="ibtn menu-btn" data-act="navtoggle" aria-label="Open navigation"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-    <div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 13h4l2.2-6 3.6 11 3-8 1.5 3H21.5"/></svg></span><span class="bn">SysDoc</span></div>
+    <div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 13h4l2.2-6 3.6 11 3-8 1.5 3H21.5"/></svg></span><span class="bn">DeeCure</span></div>
     <button class="host" data-act="pop:host" aria-haspopup="true"><span class="d"></span>riya-laptop <small>Ubuntu 24.04.1</small><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M6 9l6 6 6-6"/></svg></button>
     <span class="proto">Prototype · sample data</span>
     <button class="search-trigger" data-act="cmdk" aria-label="Search"><svg class="ic" viewBox="0 0 24 24"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5"/></svg><span>Search pages, services, packages…</span><kbd>Ctrl K</kbd></button>
@@ -608,13 +608,13 @@ const HIST = [
   ['Tue','18:41','Packages','linux-firmware upgraded','…0ubuntu2.5',''],
   ['Tue','18:40','Packages','Kernel upgraded 6.8.0-45 → 6.8.0-47','Software Updater',''],
   ['Tue','15:22','Packages','Installed snap: code 1.94.2','340 MB',''],
-  ['Tue','11:05','SysDoc','Disabled cups-browsed.service','Reversible','info'],
+  ['Tue','11:05','DeeCure','Disabled cups-browsed.service','Reversible','info'],
   ['Mon','21:30','Jobs','crontab changed (riya): +backup-photos.sh','0 21 * * *',''],
   ['Mon','16:12','Logs','OOM kill: chrome renderer (pid 30412)','RSS 1.8 GB','warn'],
   ['Mon','10:02','Devices','USB storage connected: PHOTOS (64 GB)','usb 3-2','']
 ];
-const SYSDOC_LOG = [];
-const sysdocRows = () => [...SYSDOC_LOG, {when:'Tue 11:05', time:'Tue 11:05', text:'Disabled service', target:'cups-browsed.service', undo:'cups', undone:S.cupsUndone}];
+const DEECURE_LOG = [];
+const deecureRows = () => [...DEECURE_LOG, {when:'Tue 11:05', time:'Tue 11:05', text:'Disabled service', target:'cups-browsed.service', undo:'cups', undone:S.cupsUndone}];
 
 /* ============ widget renderers ============ */
 let CH = [];
@@ -862,7 +862,7 @@ def('overview', 'Overview', 'grid', [
       K('Network', '1.2', 'MB/s', {sp:[9, .8, .6, .8, 0, 6, 1.2], k:3, sub:'↑ 0.3 MB/s · Wi-Fi', go:'performance/network'}),
       K('Battery', '64', '%', {st:'warn', bar:64, sub:'Health 71% · 3 h 10 m left', go:'power/battery'})]},
     {t:'line', s:8, h:'CPU and memory utilization', info:'How busy the processor and memory were. Change the time range at the top to zoom out.', src:'/proc/stat · /proc/meminfo', series:[{n:'CPU', g:[3, 14, 8, 6, 2, 60, 12], k:1}, {n:'Memory', g:[5, 70, 8, 3, 40, 95, 78], k:2}], y:[0, 100, '%'], height:300},
-    {t:'list', s:4, h:'Subsystems', info:'Status of every area SysDoc checks. Select a row to open it.', items:[
+    {t:'list', s:4, h:'Subsystems', info:'Status of every area DeeCure checks. Select a row to open it.', items:[
       [ic('chip') + 'Hardware', 'CPU 54 °C', B('ok', 'Healthy'), 'hardware/summary'], [ic('bat') + 'Power', 'Health 71%', B('warn', 'Warning'), 'power/battery'],
       [ic('sys') + 'System', 'Reboot required', B('info', 'Info'), 'system/overview'], [ic('cog') + 'Services', S.btRestarted ? 'Monitoring' : '1 failed', B('crit', 'Critical'), 'services/system'],
       [ic('cal') + 'Scheduled Jobs', '10 jobs', B('ok', 'Healthy'), 'jobs/calendar'], [ic('pkg') + 'Packages', S.secFixed ? '8 updates' : '12 updates', B(S.secFixed ? 'info' : 'warn', S.secFixed ? 'Info' : 'Warning'), 'packages/installed'],
@@ -875,7 +875,7 @@ def('overview', 'Overview', 'grid', [
     {t:'donut', s:4, h:'Disk usage ( / )', sub:`${S.total} GB`, src:'df -h / · du', acts:[['Open', 'go:storage/overview', 'link']], unit:'GB', center:[dPct() + '%', 'used'], data:[['Home', 128], ['Apps', 46], ['System', 22], ['Containers', 13], ...(cleanable() > .05 ? [['Reclaimable', +f1(cleanable()), 'kc']] : []), ['Free', +f1(S.total - S.used), 'kn']]},
     {t:'table', s:4, h:'Top processes', sub:'by memory', src:'ps -eo comm,%cpu,rss', acts:[['View all', 'go:processes/all', 'link']], cols:['Process', ['CPU', 'n'], ['Memory', 'n']], rows:procRows.slice(0, 6).map(p => [p[0], p[4] + '%', p[5]])},
     {t:'kv', s:4, h:'System', src:'hostnamectl', items:[['Hostname', 'riya-laptop'], ['OS', 'Ubuntu 24.04.1 LTS'], ['Kernel', M('6.8.0-47-generic')], ['Uptime', '12 h 36 m'], ['Last boot', 'Today 08:58'], ['Reboot required', B('warn', 'Yes')]]},
-    {t:'tl', s:6, h:'Recent activity', acts:[['View all', 'go:activity/timeline', 'link']], items:[...SYSDOC_LOG.map(r => [r.time, r.text, 'SysDoc · ' + r.sub, 'info']), ...HIST].slice(0, 6).map(h => h.length === 4 ? h : [`${h[0] === 'Today' ? '' : h[0] + ' '}${h[1]}`, h[3], h[4], h[5]])},
+    {t:'tl', s:6, h:'Recent activity', acts:[['View all', 'go:activity/timeline', 'link']], items:[...DEECURE_LOG.map(r => [r.time, r.text, 'DeeCure · ' + r.sub, 'info']), ...HIST].slice(0, 6).map(h => h.length === 4 ? h : [`${h[0] === 'Today' ? '' : h[0] + ' '}${h[1]}`, h[3], h[4], h[5]])},
     {t:'heat', s:6, h:'Errors and warnings by hour', sub:'last 7 days', src:'journalctl -p warning', rows:DAYS7, cols:HOURS, unit:'events', data:heatData(4, 7, 24, 4, [[6, 9, 9], [6, 21, 6], [4, 16, 7], [6, 2, 3], [3, 3, 2]])}
   ]},
   {id:'issues', l:'Issues', n:() => issues().length, crit:true, f:() => { const L = issues(); return [
@@ -972,13 +972,13 @@ def('logs', 'Logs', 'logs', [
 
 def('activity', 'Activity', 'hist', [
   {id:'timeline', l:'Timeline', f:() => [
-    {t:'kpis', items:[K('Changes', '18', '', {sub:'last 7 days'}), K('Package changes', '9', ''), K('Configuration changes', '3', ''), K('Sign-ins', '14', ''), K('SysDoc actions', String(sysdocRows().length), '')]},
-    {t:'tl', s:8, h:'Change timeline', items:[...SYSDOC_LOG.map(r => [r.time, r.text, 'SysDoc · ' + r.sub, 'info']), ...HIST.map(h => [`${h[0] === 'Today' ? '' : h[0] + ' '}${h[1]}`, h[3], `${h[2]} · ${h[4]}`, h[5]])]},
+    {t:'kpis', items:[K('Changes', '18', '', {sub:'last 7 days'}), K('Package changes', '9', ''), K('Configuration changes', '3', ''), K('Sign-ins', '14', ''), K('DeeCure actions', String(deecureRows().length), '')]},
+    {t:'tl', s:8, h:'Change timeline', items:[...DEECURE_LOG.map(r => [r.time, r.text, 'DeeCure · ' + r.sub, 'info']), ...HIST.map(h => [`${h[0] === 'Today' ? '' : h[0] + ' '}${h[1]}`, h[3], `${h[2]} · ${h[4]}`, h[5]])]},
     {t:'donut', s:4, h:'Changes by type', sub:'7 days', center:['18', 'changes'], data:[['Packages', 9], ['Configuration', 3], ['Services', 2], ['Devices', 3], ['Jobs', 1]]}
   ]},
   {id:'packages', l:'Package History', f:() => [
     {t:'table', h:'Package history', search:'Search packages', filter:{col:1, opts:['All','Install','Upgrade','Remove']}, src:'/var/log/apt/history.log · snap changes', cols:['Date','Action','Package','From','To','Source'], rows:[
-      ...(S.secFixed ? [['Today', B('info', 'Upgrade'), 'openssl, libssl3t64, sudo, linux-firmware', '—', '—', 'SysDoc']] : []),
+      ...(S.secFixed ? [['Today', B('info', 'Upgrade'), 'openssl, libssl3t64, sudo, linux-firmware', '—', '—', 'DeeCure']] : []),
       ['Today 10:40', B('info', 'Upgrade'), 'libc6', M('2.39-0ubuntu8.2'), M('2.39-0ubuntu8.3'), 'unattended-upgrades'], ['Today 10:40', B('info', 'Upgrade'), 'openssl', M('3.0.13-0ubuntu3.3'), M('3.0.13-0ubuntu3.4'), 'unattended-upgrades'],
       ['Today 10:40', B('info', 'Upgrade'), 'sudo', M('1.9.15p5-3ubuntu5'), M('1.9.15p5-3ubuntu5.1'), 'unattended-upgrades'], ['Tue 18:40', B('info', 'Upgrade'), 'linux-image-generic', M('6.8.0-45'), M('6.8.0-47'), 'Software Updater'],
       ['Tue 18:41', B('info', 'Upgrade'), 'linux-firmware', M('…0ubuntu2.4'), M('…0ubuntu2.5'), 'Software Updater'], ['Tue 15:22', B('ok', 'Install'), 'code (snap)', '—', M('1.94.2'), 'snap'],
@@ -986,8 +986,8 @@ def('activity', 'Activity', 'hist', [
   ]},
   {id:'config', l:'Config Changes', f:() => [
     {t:'table', h:'Configuration changes', src:'inotify watcher · /etc', cols:['Time','File','Change','Changed by',['', '']], rows:[
-      ...(S.battFixed ? [['Today ' + S.battTime, M('/etc/UPower/UPower.conf'), `<span class="yes">+1</span> <span class="muted">−1</span>`, 'SysDoc', BTN('View diff', 'toast:PercentageAction=2 → PercentageAction=5')]] : []),
-      ['Tue 11:05', M('/etc/systemd/system/multi-user.target.wants/cups-browsed.service'), S.cupsUndone ? 'Restored' : 'Removed (symlink)', 'SysDoc', BTN('View diff', 'toast:Symlink removed by systemctl disable cups-browsed')],
+      ...(S.battFixed ? [['Today ' + S.battTime, M('/etc/UPower/UPower.conf'), `<span class="yes">+1</span> <span class="muted">−1</span>`, 'DeeCure', BTN('View diff', 'toast:PercentageAction=2 → PercentageAction=5')]] : []),
+      ['Tue 11:05', M('/etc/systemd/system/multi-user.target.wants/cups-browsed.service'), S.cupsUndone ? 'Restored' : 'Removed (symlink)', 'DeeCure', BTN('View diff', 'toast:Symlink removed by systemctl disable cups-browsed')],
       ['Tue 15:20', M('/etc/apt/sources.list.d/vscode.list'), 'Added', 'apt', BTN('View diff', 'toast:+ deb [arch=amd64] https://packages.microsoft.com/repos/code stable main')],
       ['Mon 21:30', M('/var/spool/cron/crontabs/riya'), `<span class="yes">+1</span>`, 'riya', BTN('View diff', 'toast:+ 0 21 * * * ~/bin/backup-photos.sh')]]}
   ]},
@@ -997,8 +997,8 @@ def('activity', 'Activity', 'hist', [
       ['Mon 10:02', B('ok', 'Connected'), 'USB storage PHOTOS (64 GB)', 'USB 3.2', M('0781:5583')], ['Mon 09:44', B('warn', 'Disconnected'), 'USB storage PHOTOS (64 GB)', 'USB 3.2', M('0781:5583')],
       ['Sat 18:30', B('ok', 'Connected'), 'USB mouse', 'USB 2.0', M('046d:c077')]]}
   ]},
-  {id:'sysdoc', l:'SysDoc Actions', f:() => [
-    {t:'table', h:'Remediation log', info:'Every change SysDoc made, with undo where possible.', cols:['Time','Action','Target','Result','Undo'], rows:sysdocRows().map(r => [r.when, r.text, M(r.target), B('ok', 'Succeeded'), r.undo ? (r.undone ? '<span class="muted">Undone</span>' : BTN('Undo', 'undo:' + r.undo)) : `<span class="muted">${r.undoNote || 'Not reversible'}</span>`])}
+  {id:'deecure', l:'DeeCure Actions', f:() => [
+    {t:'table', h:'Remediation log', info:'Every change DeeCure made, with undo where possible.', cols:['Time','Action','Target','Result','Undo'], rows:deecureRows().map(r => [r.when, r.text, M(r.target), B('ok', 'Succeeded'), r.undo ? (r.undone ? '<span class="muted">Undone</span>' : BTN('Undo', 'undo:' + r.undo)) : `<span class="muted">${r.undoNote || 'Not reversible'}</span>`])}
   ]}
 ], {group:'Monitoring'});
 
@@ -1019,7 +1019,7 @@ def('system', 'System', 'sys', [
       ...(S.secFixed ? [] : [['openssl', M('3.0.13-0ubuntu3.4'), M('3.0.13-0ubuntu3.5'), B('warn', 'Security'), '1.2 MB'], ['libssl3t64', M('3.0.13-0ubuntu3.4'), M('3.0.13-0ubuntu3.5'), B('warn', 'Security'), '1.9 MB'], ['sudo', M('1.9.15p5-3ubuntu5.1'), M('1.9.15p5-3ubuntu5.2'), B('warn', 'Security'), '0.9 MB'], ['linux-firmware', M('…0ubuntu2.5'), M('…0ubuntu2.6'), B('warn', 'Security'), '298 MB']]),
       ['google-chrome-stable', M('130.0.6723.58'), M('130.0.6723.69'), OFF('Regular'), '112 MB'], ['git', M('1:2.43.0-1ubuntu7.1'), M('1:2.43.0-1ubuntu7.2'), OFF('Regular'), '3.7 MB'],
       ['docker-ce', M('5:27.3.1'), M('5:27.3.2'), OFF('Regular'), '25 MB'], ['code (snap)', M('1.94.2'), M('1.95.0'), OFF('Regular'), '106 MB']], count:S.secFixed ? 8 : 12},
-    {t:'table', h:'Update history', cols:['Date',['Packages', 'n'],'Source','Result'], rows:[...(S.secFixed ? [['Today', '4', 'SysDoc', B('ok', 'Success')]] : []), ['Today 10:40', '3', 'unattended-upgrades', B('ok', 'Success')], ['Tue 18:40', '6', 'Software Updater', B('ok', 'Success')], ['Thu 06:24', '2', 'unattended-upgrades', B('ok', 'Success')]]}
+    {t:'table', h:'Update history', cols:['Date',['Packages', 'n'],'Source','Result'], rows:[...(S.secFixed ? [['Today', '4', 'DeeCure', B('ok', 'Success')]] : []), ['Today 10:40', '3', 'unattended-upgrades', B('ok', 'Success')], ['Tue 18:40', '6', 'Software Updater', B('ok', 'Success')], ['Thu 06:24', '2', 'unattended-upgrades', B('ok', 'Success')]]}
   ], acts:() => S.secFixed ? [] : [['Install security updates', 'fix:sec', 'pri']]},
   {id:'kernel', l:'Kernel', f:() => [
     {t:'kv', s:5, h:'Running kernel', src:'uname -r · /proc/cmdline', items:[['Version', M('6.8.0-47-generic')], ['Tainted', B('ok', 'No (0)')], ['Modules loaded', '187'], ['Command line', M('BOOT_IMAGE=/vmlinuz-6.8.0-47-generic root=UUID=… ro quiet splash')]]},
@@ -1224,7 +1224,7 @@ def('backups', 'Backups', 'backup', [
     {t:'table', h:'Snapshots', cols:['Created','Type','Tool',['Size', 'n'],'Comment'], rows:[], empty:'No snapshots yet'}
   ]},
   {id:'restore', l:'Restore Points', f:() => [
-    {t:'table', h:'SysDoc restore points', info:'Saved automatically before every change SysDoc makes.', cols:['Created','Change','Target',['Size', 'n'],['', '']], rows:[...SYSDOC_LOG.filter(r => r.undo).map(r => [r.when, r.text, M(r.target), '1 KB', r.undone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:' + r.undo)]), ['Tue 11:05', 'Disabled service', M('cups-browsed.service'), '1 KB', S.cupsUndone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:cups')], ['14 Oct', 'Removed old kernel', M('linux-image-6.8.0-38'), '—', '<span class="muted">Reinstall from APT</span>']]}
+    {t:'table', h:'DeeCure restore points', info:'Saved automatically before every change DeeCure makes.', cols:['Created','Change','Target',['Size', 'n'],['', '']], rows:[...DEECURE_LOG.filter(r => r.undo).map(r => [r.when, r.text, M(r.target), '1 KB', r.undone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:' + r.undo)]), ['Tue 11:05', 'Disabled service', M('cups-browsed.service'), '1 KB', S.cupsUndone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:cups')], ['14 Oct', 'Removed old kernel', M('linux-image-6.8.0-38'), '—', '<span class="muted">Reinstall from APT</span>']]}
   ]}
 ], {group:'Software & Data'});
 
@@ -1261,7 +1261,7 @@ def('accounts', 'Accounts', 'users', [
   {id:'users', l:'Users', f:() => [
     {t:'kpis', items:[K('Human users', '2', ''), K('Administrators', '1', ''), K('System accounts', '41', ''), K('Locked', '0', ''), K('Without password', '0', '', {sub:S.access === 'full' ? 'Verified' : 'Requires Full access'})]},
     {t:'table', h:'Users', src:'getent passwd · chage -l', inspect:true, ra:[['Lock account', 'toast:Account lock requested.'], ['Reset password', 'toast:Opens the Users settings panel.']], cols:['User',['UID', 'n'],'Groups','Role','Shell','Last sign-in','Password age'], rows:[[C2('riya', 'Riya'), '1000', T('sudo', 'adm', 'docker', 'lxd'), B('info', 'Administrator'), M('/bin/bash'), 'Today 08:59', S.access === 'full' ? '14 months' : OFF('Locked')], [C2('guest', 'Guest'), '1001', T('guest'), OFF('Standard'), M('/bin/bash'), '3 weeks ago', S.access === 'full' ? '9 months' : OFF('Locked')]]},
-    {t:'alert', st:'info', h:'Password strength cannot be checked', text:'Linux stores only salted hashes. SysDoc shows password age instead.'}
+    {t:'alert', st:'info', h:'Password strength cannot be checked', text:'Linux stores only salted hashes. DeeCure shows password age instead.'}
   ]},
   {id:'groups', l:'Groups', f:() => [
     {t:'table', h:'Groups with members', src:'getent group', search:'Filter groups', cols:['Group',['GID', 'n'],'Members','Privilege'], rows:[['sudo','27','riya',B('warn', 'Admin')],['adm','4','riya, syslog',B('info', 'Read logs')],['docker','999','riya',B('warn', 'Root-equivalent')],['lxd','135','riya',B('info', 'Containers')],['plugdev','46','riya','—'],['lpadmin','114','riya','Printers'],['sambashare','117','riya','—']]}
@@ -1343,7 +1343,7 @@ const ANS = {
 S.chat = [{u:ANS.restart.q}, {a:'restart'}];
 def('assistant', 'Assistant', 'chat', [
   {id:'chat', l:'Chat', f:() => [
-    {t:'html', s:8, h:'Ask SysDoc', sub:S.ai ? 'Local model · on-device' : 'Off', flush:true, html:() => S.ai ? `<div class="chat" id="chatbox">${S.chat.map(m => m.u ? `<div class="mu">${esc(m.u)}</div>` : m.wait ? '<div class="ma"><span class="muted">Reading logs…</span></div>' : (() => { const a = ANS[m.a] || {a:'<p>This prototype answers the suggested questions only. The real assistant reads this computer’s logs and settings to answer anything.</p>'}; return `<div class="ma">${a.a}${a.src ? `<div class="srcs"><span class="lab2">Sources</span>${a.src.map(s => `<div class="logline">${esc(s)}</div>`).join('')}</div>` : ''}${a.fix ? `<div>${BTN(a.fix[0], a.fix[1], 'pri')}</div>` : ''}</div>`; })()).join('')}</div><form class="composer" id="askf"><input id="askq" placeholder="Ask about this computer…" aria-label="Question" autocomplete="off"><button class="btn pri" type="submit">Send</button></form>` : `<div class="empty">The assistant is turned off. ${BTN('Turn on', 'go:settings/assistant', 'pri')}</div>`},
+    {t:'html', s:8, h:'Ask DeeCure', sub:S.ai ? 'Local model · on-device' : 'Off', flush:true, html:() => S.ai ? `<div class="chat" id="chatbox">${S.chat.map(m => m.u ? `<div class="mu">${esc(m.u)}</div>` : m.wait ? '<div class="ma"><span class="muted">Reading logs…</span></div>' : (() => { const a = ANS[m.a] || {a:'<p>This prototype answers the suggested questions only. The real assistant reads this computer’s logs and settings to answer anything.</p>'}; return `<div class="ma">${a.a}${a.src ? `<div class="srcs"><span class="lab2">Sources</span>${a.src.map(s => `<div class="logline">${esc(s)}</div>`).join('')}</div>` : ''}${a.fix ? `<div>${BTN(a.fix[0], a.fix[1], 'pri')}</div>` : ''}</div>`; })()).join('')}</div><form class="composer" id="askf"><input id="askq" placeholder="Ask about this computer…" aria-label="Question" autocomplete="off"><button class="btn pri" type="submit">Send</button></form>` : `<div class="empty">The assistant is turned off. ${BTN('Turn on', 'go:settings/assistant', 'pri')}</div>`},
     {t:'html', s:4, h:'Suggested questions', flush:true, html:`<div class="qlist">${Object.keys(ANS).map(k => `<button data-act="ask:${k}">${ic('chat')}${ANS[k].q}</button>`).join('')}</div>`},
     {t:'kv', s:4, h:'Assistant', items:[['Model', 'Local · 3B parameters'], ['Runtime', 'Ollama'], ['Data access', 'Read-only'], ['Can run commands', 'No · suggests fixes only'], ['Cloud fallback', S.aiCloud ? B('info', 'On · redacted') : OFF('Off')]]}
   ]}
@@ -1357,7 +1357,7 @@ def('settings', 'Settings', 'sliders', [
   ]},
   {id:'access', l:'Access', f:() => [
     {t:'html', s:8, h:'Access level', flush:true, html:() => `<div class="radios"><label class="rad"><input type="radio" name="access" value="basic" ${S.access === 'basic' ? 'checked' : ''}><span><b>Basic</b><small>No password · about 80% of checks</small></span></label><label class="rad"><input type="radio" name="access" value="full" ${S.access === 'full' ? 'checked' : ''}><span><b>Full</b><small>Admin helper approved once · all checks</small></span></label></div>`},
-    {t:'kv', s:4, h:'Admin helper', items:[['Service', M('sysdoc-helper')], ['Status', S.access === 'full' ? B('ok', 'Authorized') : OFF('Not authorized')], ['Activation', 'D-Bus, on demand'], ['Allowed actions', '24 (fixed list)'], ['Audit log', M('/var/log/sysdoc/helper.log')]]}
+    {t:'kv', s:4, h:'Admin helper', items:[['Service', M('deecure-helper')], ['Status', S.access === 'full' ? B('ok', 'Authorized') : OFF('Not authorized')], ['Activation', 'D-Bus, on demand'], ['Allowed actions', '24 (fixed list)'], ['Audit log', M('/var/log/deecure/helper.log')]]}
   ]},
   {id:'notifications', l:'Notifications', f:() => [
     {t:'html', s:8, h:'Notifications', flush:true, html:() => sw('n1', true, 'Critical issues', 'Disk almost full, SSD failing, overheating') + sw('n2', false, 'Warnings', 'Included in the weekly summary when off') + sw('n3', true, 'Weekly summary', 'Sunday 18:00') + selr('n4', 'Quiet hours', '', ['Off','22:00–07:00','23:00–08:00'], '22:00–07:00')}
@@ -1366,10 +1366,10 @@ def('settings', 'Settings', 'sliders', [
     {t:'html', s:8, h:'Assistant', flush:true, html:() => sw('set-ai', S.ai, 'Enable assistant', 'Runs a local model on this computer') + selr('set-model', 'Model', '', ['Local · 3B (fast)','Local · 8B (better answers)'], 'Local · 3B (fast)') + sw('set-cloud', S.aiCloud, 'Cloud fallback', 'Removes names, hostnames, IPs and serials before sending')}
   ]},
   {id:'data', l:'Data', f:() => [
-    {t:'html', s:8, h:'Data retention', flush:true, html:() => selr('ret', 'Keep history for', 'Metrics and change history', ['90 days','1 year','2 years'], '2 years') + `<div class="fieldrow"><div><b>Database size</b><small>${M('~/.local/share/sysdoc/sysdoc.db')}</small></div><span class="num">74 MB</span></div><div class="fieldrow"><div><b>Export report</b><small>HTML or JSON snapshot of all pages</small></div>${BTN('Export', 'toast:Report export is disabled in the prototype.')}</div><div class="fieldrow"><div><b>Delete history</b><small>Restore points are kept</small></div>${BTN('Delete…', 'toast:Prototype: nothing was deleted.', 'danger')}</div>`}
+    {t:'html', s:8, h:'Data retention', flush:true, html:() => selr('ret', 'Keep history for', 'Metrics and change history', ['90 days','1 year','2 years'], '2 years') + `<div class="fieldrow"><div><b>Database size</b><small>${M('~/.local/share/deecure/deecure.db')}</small></div><span class="num">74 MB</span></div><div class="fieldrow"><div><b>Export report</b><small>HTML or JSON snapshot of all pages</small></div>${BTN('Export', 'toast:Report export is disabled in the prototype.')}</div><div class="fieldrow"><div><b>Delete history</b><small>Restore points are kept</small></div>${BTN('Delete…', 'toast:Prototype: nothing was deleted.', 'danger')}</div>`}
   ]},
   {id:'about', l:'About', f:() => [
-    {t:'kv', s:6, h:'About', items:[['Version', 'SysDoc 0.5 · prototype'], ['Collector', 'sysdoc-agent 0.5 · running'], ['Knowledge base', '1,240 entries · updated today'], ['Distro adapter', 'Ubuntu / Debian'], ['License', 'Apache-2.0']]}
+    {t:'kv', s:6, h:'About', items:[['Version', 'DeeCure 0.5 · prototype'], ['Collector', 'deecure-agent 0.5 · running'], ['Knowledge base', '1,240 entries · updated today'], ['Distro adapter', 'Ubuntu / Debian'], ['License', 'Apache-2.0']]}
   ]}
 ]);
 
@@ -1467,15 +1467,15 @@ function drawerHTML(){
       body = `<div class="dsec"><h4>Steps</h4>${steps.map(s => `<label class="fstep" for="fx-${s.id}"><input type="checkbox" id="fx-${s.id}" data-fx="${s.id}" ${d.sel[s.id] ? 'checked' : ''}><span><b>${s.l}</b><span class="muted" style="display:block;font-size:12.5px">${s.d}</span><span class="meta">${B(...UNDO[s.undo])}${s.admin ? OFF('Admin') : ''}</span><code class="cmd">${esc(s.cmd)}</code></span><span class="sz">${s.size ? f1(s.size) + ' GB' : ''}</span></label>`).join('')}</div>`;
       foot = `<span class="fn" id="fxnote">${fxNote(chosen)}</span><button class="btn" data-act="close">Cancel</button><button class="btn pri" id="fxapply" data-act="fx:apply" ${chosen.length ? '' : 'disabled'}>${applyLabel(d, chosen)}</button>`;
     } else if(d.phase === 'auth'){
-      body = `<div class="auth"><span class="lk">${ic('lock')}</span><b>Authentication required</b><span class="muted">sysdoc-helper wants to run ${chosen.filter(s => s.admin).length} privileged action(s)</span><div class="pw" aria-hidden="true">••••••••</div><small>Simulated polkit prompt. In the real app Ubuntu shows this window and SysDoc never sees the password.</small></div>`;
+      body = `<div class="auth"><span class="lk">${ic('lock')}</span><b>Authentication required</b><span class="muted">deecure-helper wants to run ${chosen.filter(s => s.admin).length} privileged action(s)</span><div class="pw" aria-hidden="true">••••••••</div><small>Simulated polkit prompt. In the real app Ubuntu shows this window and DeeCure never sees the password.</small></div>`;
       foot = '<button class="btn" data-act="fx:back">Back</button><button class="btn pri" data-act="fx:auth">Authenticate</button>';
     } else if(d.phase === 'run'){
       body = `<ol class="runl">${d.steps.map((s, i) => `<li class="${i < d.done ? 'done' : ''}">${i < d.done ? `<span class="okc">${ic('check')}</span>` : i === d.done ? '<span class="spin" style="margin:3px"></span>' : '<span class="dot" style="margin:6px"></span>'}<span>${s.l}</span>${i < d.done ? `<code class="cmd">${esc(s.cmd)}</code>` : ''}</li>`).join('')}</ol>`;
       foot = '<span class="fn">Stops on the first error</span>';
     } else {
       const r = d.result;
-      body = `<div class="alert ok" style="padding:0;border:0"><span class="ai">${ic('check')}</span><div class="at"><b>${r.title}</b><small>Logged in Activity › SysDoc Actions at ${r.time}</small></div></div><div class="res">${r.cells.map(c => `<div><small>${c[0]}</small><b>${c[1]}</b></div>`).join('')}</div>${r.note ? `<div class="alert info"><span class="ai">${ic('info')}</span><div class="at"><small style="color:var(--ink-2)">${r.note}</small></div></div>` : ''}`;
-      foot = '<button class="btn" data-act="close-go:activity/sysdoc">View log</button><button class="btn pri" data-act="close">Done</button>';
+      body = `<div class="alert ok" style="padding:0;border:0"><span class="ai">${ic('check')}</span><div class="at"><b>${r.title}</b><small>Logged in Activity › DeeCure Actions at ${r.time}</small></div></div><div class="res">${r.cells.map(c => `<div><small>${c[0]}</small><b>${c[1]}</b></div>`).join('')}</div>${r.note ? `<div class="alert info"><span class="ai">${ic('info')}</span><div class="at"><small style="color:var(--ink-2)">${r.note}</small></div></div>` : ''}`;
+      foot = '<button class="btn" data-act="close-go:activity/deecure">View log</button><button class="btn pri" data-act="close">Done</button>';
     }
   } else if(d.type === 'bt'){
     title = 'bluetooth.service'; subt = 'Bluetooth service · crash loop';
@@ -1511,16 +1511,16 @@ function applyFix(d){
     const p0 = dPct(); let freed = 0; d.steps.forEach(s => { S.cleaned[s.id] = true; freed += s.size; }); S.used -= freed;
     if(S.TS.cleanup) S.TS.cleanup.sel = {};
     d.result = {title:`${f1(freed)} GB freed`, time, cells:[['Root filesystem', `${p0}% → ${dPct()}%`], ['Health score', `${s0} → ${score()}`], ['Free space', `${f1(S.total - S.used)} GB`], ['Full in', `~${daysFull()} days`]], note:dPct() >= 85 ? `Still above 85%. ~/Videos uses 52 GB; moving it to external storage brings / to about ${Math.round((S.used - 52) / S.total * 100)}%.` : ''};
-    SYSDOC_LOG.unshift({when:'Today ' + time, time, text:`Freed ${f1(freed)} GB`, sub:d.steps.map(s => s.l).join(' · '), target:'/', undoNote:'Not reversible'});
+    DEECURE_LOG.unshift({when:'Today ' + time, time, text:`Freed ${f1(freed)} GB`, sub:d.steps.map(s => s.l).join(' · '), target:'/', undoNote:'Not reversible'});
   } else if(d.id === 'sec'){
     S.secFixed = true; const n = d.steps.some(s => s.id === 'other') ? 12 : 4;
     if(S.TS.pending) S.TS.pending.sel = {};
     d.result = {title:`${n} updates installed`, time, cells:[['Security updates pending', '4 → 0'], ['Health score', `${s0} → ${score()}`], ['Known CVEs', '3 → 0'], ['Reboot', 'Required']], note:'Restart when convenient to load the updated libraries.'};
-    SYSDOC_LOG.unshift({when:'Today ' + time, time, text:`Installed ${n} updates`, sub:'apt-get install --only-upgrade', target:'apt', undoNote:'Not reversible'});
+    DEECURE_LOG.unshift({when:'Today ' + time, time, text:`Installed ${n} updates`, sub:'apt-get install --only-upgrade', target:'apt', undoNote:'Not reversible'});
   } else {
     S.battFixed = true; S.battTime = time;
-    d.result = {title:'Low-battery action configured', time, cells:[['At 10%', 'Warning'], ['At 5%', 'Clean power-off']], note:'Reversible from Activity › SysDoc Actions or Backups › Restore Points.'};
-    SYSDOC_LOG.unshift({when:'Today ' + time, time, text:'Configured low-battery action', sub:'PercentageAction=5', target:'/etc/UPower/UPower.conf', undo:'batt'});
+    d.result = {title:'Low-battery action configured', time, cells:[['At 10%', 'Warning'], ['At 5%', 'Clean power-off']], note:'Reversible from Activity › DeeCure Actions or Backups › Restore Points.'};
+    DEECURE_LOG.unshift({when:'Today ' + time, time, text:'Configured low-battery action', sub:'PercentageAction=5', target:'/etc/UPower/UPower.conf', undo:'batt'});
   }
 }
 
@@ -1567,7 +1567,7 @@ function act(a){
     case 'ask': ask(v); break;
     case 'undo':
       if(v === 'cups'){ S.cupsUndone = true; toast('Undone · cups-browsed.service enabled and started.'); }
-      if(v === 'batt'){ S.battFixed = false; const r = SYSDOC_LOG.find(x => x.undo === 'batt' && !x.undone); if(r) r.undone = true; toast('Undone · UPower.conf restored from the restore point.'); }
+      if(v === 'batt'){ S.battFixed = false; const r = DEECURE_LOG.find(x => x.undo === 'batt' && !x.undone); if(r) r.undone = true; toast('Undone · UPower.conf restored from the restore point.'); }
       render(true); break;
     case 'track': S.tracked[v] = true; render(true); toast('Job wrapped · results are recorded from the next run.'); break;
     case 'diag': case 'net': {

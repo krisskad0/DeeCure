@@ -5,19 +5,19 @@
 What every folder is for. Items marked *(planned)* do not exist yet.
 
 ```
-sysdoc/
+deecure/
 ├── .github/                 # Issue and pull request templates; CI workflows (planned)
 ├── app/                     # Desktop app: Tauri v2 + React + TypeScript
 │   ├── src/                 #   React UI (planned)
 │   └── src-tauri/           #   Tauri Rust side, talks to the agent (planned)
 ├── crates/                  # Rust workspace
-│   ├── sysdoc-core/         #   Shared types: findings, metrics, IPC messages, rule schema
-│   ├── sysdoc-agent/        #   Collectors, rules engine, fix planner, storage, socket API
-│   ├── sysdoc-helper/       #   Root helper: D-Bus service with a fixed list of actions
-│   └── sysdoc-cli/          #   The `sysdoc` command
+│   ├── deecure-core/         #   Shared types: findings, metrics, IPC messages, rule schema
+│   ├── deecure-agent/        #   Collectors, rules engine, fix planner, storage, socket API
+│   ├── deecure-helper/       #   Root helper: D-Bus service with a fixed list of actions
+│   └── deecure-cli/          #   The `deecure` command
 ├── rules/                   # Rule and fix-action YAML files, by category
 ├── kb/                      # Knowledge base YAML: services, errors, ports, packages
-├── packaging/               # Everything needed to ship SysDoc
+├── packaging/               # Everything needed to ship DeeCure
 │   ├── debian/              #   Debian packaging files (copied to debian/ at build time)
 │   ├── desktop/             #   .desktop file, AppStream metainfo, icons
 │   ├── dbus/                #   D-Bus activation and policy files for the helper
@@ -41,12 +41,12 @@ sysdoc/
 
 | You are changing… | Put it in… |
 | --- | --- |
-| How data is read from the system | `crates/sysdoc-agent/src/collectors/` |
-| Distro-specific reading (Ubuntu, Fedora, Arch) | `crates/sysdoc-agent/src/adapters/` |
+| How data is read from the system | `crates/deecure-agent/src/collectors/` |
+| Distro-specific reading (Ubuntu, Fedora, Arch) | `crates/deecure-agent/src/adapters/` |
 | A check or its severity | `rules/<category>/` (YAML) |
 | A plain-English explanation | `kb/<type>/` (YAML) |
-| An admin action | `crates/sysdoc-helper/` + `packaging/polkit/` (needs two reviewers) |
-| A type shared by agent, CLI, and app | `crates/sysdoc-core/` |
+| An admin action | `crates/deecure-helper/` + `packaging/polkit/` (needs two reviewers) |
+| A type shared by agent, CLI, and app | `crates/deecure-core/` |
 | A screen or component | `app/src/` |
 | What gets installed where | `packaging/` |
 
@@ -55,6 +55,6 @@ sysdoc/
 The plan sketched a simpler tree (`agent/`, `helper/`, `cli/` at the top). This layout follows common Rust practice instead:
 
 - All Rust crates sit under `crates/`, in one Cargo workspace.
-- A new `sysdoc-core` crate holds shared types, so the agent, CLI, helper, and app never drift apart.
+- A new `deecure-core` crate holds shared types, so the agent, CLI, helper, and app never drift apart.
 - System files (D-Bus, polkit, systemd, desktop) have their own folders under `packaging/`. Every package format can reuse them.
 - `debian/` lives in `packaging/debian/`, not at the root. Debian asks upstream projects not to ship a root `debian/` folder in release tarballs.

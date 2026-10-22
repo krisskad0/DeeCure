@@ -1,6 +1,6 @@
 # app
 
-The SysDoc desktop app: Tauri v2 + React + TypeScript.
+The DeeCure desktop app: Tauri v2 + React + TypeScript.
 
 | Path (planned) | What |
 | --- | --- |

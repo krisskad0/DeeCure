@@ -2,14 +2,14 @@
 
 [Docs](../README.md) › [Roadmap](README.md)
 
-**Goal:** users can fix problems with a preview, one password prompt, and an undo button. Then SysDoc goes public.
+**Goal:** users can fix problems with a preview, one password prompt, and an undo button. Then DeeCure goes public.
 **Rough time:** 6–8 weeks.
 
 ## Tasks (in order)
 
 1. **Root helper:** D-Bus service, fixed action list, input checks, audit log, exit after 2 idle minutes.
    → [Helper](../02-architecture/helper.md), [ADR 0005](../02-architecture/decisions/0005-root-helper-dbus-polkit.md)
-2. **System files:** polkit policy, D-Bus policy and activation file, `sysdoc-helper.service`. Add them to the `.deb`.
+2. **System files:** polkit policy, D-Bus policy and activation file, `deecure-helper.service`. Add them to the `.deb`.
    → [Files on disk](../02-architecture/overview.md#files-on-disk)
 3. **Access level:** Basic / Full choice in onboarding and in Settings › Access.
    → [Settings page](../03-ui-design/05-pages/22-settings.md)
@@ -21,7 +21,7 @@
    → [Overlays](../03-ui-design/02-shell/overlays.md), [Fixes](../03-ui-design/04-behavior/fixes.md)
 7. **First 20 fixes.** Each one passes apply → verify → undo in a VM.
    → [Writing rules](../04-development/writing-rules-and-kb.md)
-8. **Undo screens:** Activity › SysDoc Actions and Backups › Restore Points.
+8. **Undo screens:** Activity › DeeCure Actions and Backups › Restore Points.
    → [Activity page](../03-ui-design/05-pages/04-activity.md), [Backups page](../03-ui-design/05-pages/15-backups.md)
 9. **Security review of the helper:** two reviewers on every helper change, plus one full review before the beta.
    → [Security model](../02-architecture/security-model.md)
@@ -37,7 +37,7 @@
 - [ ] 80% or more of beginners finish "free up space" without help.
 - [ ] 95% or more of fixes verify as successful in the VM matrix.
 - [ ] `piuparts` passes: install → upgrade → remove → purge leaves nothing behind.
-- [ ] A new user installs SysDoc with one command on clean Ubuntu 24.04 and 26.04 VMs.
+- [ ] A new user installs DeeCure with one command on clean Ubuntu 24.04 and 26.04 VMs.
 
 ---
 

@@ -1,4 +1,4 @@
-# Phase 4 — Ask SysDoc
+# Phase 4 — Ask DeeCure
 
 [Docs](../README.md) › [Roadmap](README.md)
 
@@ -20,8 +20,8 @@
 
 ## Done when
 
-- [ ] The journey "Ask SysDoc" works fully offline.
-  → [User journey](../01-product/user-journey.md#ask-sysdoc-assistant--chat)
+- [ ] The journey "Ask DeeCure" works fully offline.
+  → [User journey](../01-product/user-journey.md#ask-deecure-assistant--chat)
 - [ ] A test proves the AI cannot run any command or call the helper.
 - [ ] The question test set passes at the agreed rate.
 

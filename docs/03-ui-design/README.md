@@ -2,9 +2,9 @@
 
 [Docs](../README.md)
 
-The full spec for the SysDoc desktop UI, split into small files. With these files, a developer can rebuild every screen exactly.
+The full spec for the DeeCure desktop UI, split into small files. With these files, a developer can rebuild every screen exactly.
 
-- **Source of truth:** the clickable prototype [prototype/sysdoc-dashboard.html](prototype/sysdoc-dashboard.html). Open it in a browser.
+- **Source of truth:** the clickable prototype [prototype/deecure-dashboard.html](prototype/deecure-dashboard.html). Open it in a browser.
 - The page specs were generated from the prototype's code, so their data matches the HTML exactly.
 
 ## Build order
@@ -34,7 +34,7 @@ These are the screen types the UI team builds. The full page tree is in [05-page
 | 7 | Fix drawer | Steps, commands, undo type, password, progress, result | Storage › Free up space |
 | 8 | Diagnostics runner | Step-by-step check with a result | Diagnostics › Performance Check |
 | 9 | Assistant chat | Questions with sources shown | Assistant › Chat |
-| 10 | Activity timeline | Changes in order, with Undo | Activity › Timeline, SysDoc Actions |
+| 10 | Activity timeline | Changes in order, with Undo | Activity › Timeline, DeeCure Actions |
 | 11 | Scheduled jobs calendar | Next 24 hours lanes + run heatmap | Scheduled Jobs › Calendar |
 | 12 | Settings forms | Toggles, selects, radio cards | Settings |
 | 13 | Command palette | Search across everything | Ctrl K |

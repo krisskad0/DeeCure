@@ -1,6 +1,6 @@
 # packaging
 
-Everything needed to install SysDoc on a system.
+Everything needed to install DeeCure on a system.
 
 | Folder | What goes here |
 | --- | --- |
@@ -8,7 +8,7 @@ Everything needed to install SysDoc on a system.
 | `desktop/` | `.desktop` file, AppStream metainfo, icons |
 | `dbus/` | D-Bus activation and policy files for the helper |
 | `polkit/` | polkit action policy: one action per helper action |
-| `systemd/` | `sysdoc-agent.socket`, `sysdoc-agent.service`, `sysdoc-helper.service` |
+| `systemd/` | `deecure-agent.socket`, `deecure-agent.service`, `deecure-helper.service` |
 | `apt-repo/` | `reprepro` config and publish scripts for the APT repository |
 | `install.sh` | One-line installer *(planned)* |
 

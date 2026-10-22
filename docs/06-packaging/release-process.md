@@ -37,7 +37,7 @@ The `~` makes a release candidate sort **before** the final release, so apt upgr
    3. Create `SHA256SUMS` and sign it.
    4. Create a draft GitHub Release with the files.
    5. Publish to the `beta` component of the APT repository.
-7. Smoke test on clean Ubuntu 24.04 and 26.04 VMs: install, open the app, run `sysdoc status`, upgrade from the last version.
+7. Smoke test on clean Ubuntu 24.04 and 26.04 VMs: install, open the app, run `deecure status`, upgrade from the last version.
 8. Promote to the `main` component and publish the GitHub Release.
 9. Upload to the PPA (when it exists).
 10. Post the release notes.

@@ -3,7 +3,7 @@
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
 - Group: Monitoring · Icon: `hist` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Timeline, Package History, Config Changes, Device Events, SysDoc Actions
+- Sub-pages: Timeline, Package History, Config Changes, Device Events, DeeCure Actions
 
 ## Activity › Timeline — `activity/timeline`
 
@@ -15,7 +15,7 @@
 | Package changes | 9 |  | — |   | — | — |
 | Configuration changes | 3 |  | — |   | — | — |
 | Sign-ins | 14 |  | — |   | — | — |
-| SysDoc actions | 1 |  | — |   | — | — |
+| DeeCure actions | 1 |  | — |   | — | — |
 
 2. **Activity timeline** — "Change timeline" · span 8
 
@@ -28,7 +28,7 @@
 | Tue 18:41 | linux-firmware upgraded | Packages · …0ubuntu2.5 | default |
 | Tue 18:40 | Kernel upgraded 6.8.0-45 → 6.8.0-47 | Packages · Software Updater | default |
 | Tue 15:22 | Installed snap: code 1.94.2 | Packages · 340 MB | default |
-| Tue 11:05 | Disabled cups-browsed.service | SysDoc · Reversible | info |
+| Tue 11:05 | Disabled cups-browsed.service | DeeCure · Reversible | info |
 | Mon 21:30 | crontab changed (riya): +backup-photos.sh | Jobs · 0 21 * * * | default |
 | Mon 16:12 | OOM kill: chrome renderer (pid 30412) | Logs · RSS 1.8 GB | warn |
 | Mon 10:02 | USB storage connected: PHOTOS (64 GB) | Devices · usb 3-2 | default |
@@ -71,7 +71,7 @@
 
 | Time | File | Change | Changed by | (action) |
 | --- | --- | --- | --- | --- |
-| Tue 11:05 | `/etc/systemd/system/multi-user.target.wants/cups-browsed.service` | Removed (symlink) | SysDoc | [View diff](act:toast:Symlink removed by systemctl disable cups-browsed) |
+| Tue 11:05 | `/etc/systemd/system/multi-user.target.wants/cups-browsed.service` | Removed (symlink) | DeeCure | [View diff](act:toast:Symlink removed by systemctl disable cups-browsed) |
 | Tue 15:20 | `/etc/apt/sources.list.d/vscode.list` | Added | apt | [View diff](act:toast:+ deb [arch=amd64] https://packages.microsoft.com/repos/code stable main) |
 | Mon 21:30 | `/var/spool/cron/crontabs/riya` | ✓ | riya | [View diff](act:toast:+ 0 21 * * * ~/bin/backup-photos.sh) |
 
@@ -88,10 +88,10 @@
 | Mon 09:44 | {warn:Disconnected} | USB storage PHOTOS (64 GB) | USB 3.2 | `0781:5583` |
 | Sat 18:30 | {ok:Connected} | USB mouse | USB 2.0 | `046d:c077` |
 
-## Activity › SysDoc Actions — `activity/sysdoc`
+## Activity › DeeCure Actions — `activity/deecure`
 
 1. **Data table** — "Remediation log" · span 12
-- Info tooltip: "Every change SysDoc made, with undo where possible."
+- Info tooltip: "Every change DeeCure made, with undo where possible."
 
 | Time | Action | Target | Result | Undo |
 | --- | --- | --- | --- | --- |

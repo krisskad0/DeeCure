@@ -9,7 +9,7 @@
 | Monitoring | Overview | `overview` | `grid` | {crit:Critical} | Count pill (9) | `summary`: Summary · `issues`: Issues (count 9, red) · `score`: Health Score |
 | Monitoring | Performance | `performance` | `perf` | {ok:Healthy} | — | `cpu`: CPU · `memory`: Memory · `disk`: Disk I/O · `network`: Network · `gpu`: GPU · `pressure`: Pressure (PSI) |
 | Monitoring | Logs | `logs` | `logs` | {warn:Warning} | Yellow dot | `journal`: Journal · `errors`: Errors (count 37) · `crashes`: Crashes · `kernel`: Kernel · `boots`: Boots |
-| Monitoring | Activity | `activity` | `hist` | {ok:Healthy} | — | `timeline`: Timeline · `packages`: Package History · `config`: Config Changes · `devices`: Device Events · `sysdoc`: SysDoc Actions |
+| Monitoring | Activity | `activity` | `hist` | {ok:Healthy} | — | `timeline`: Timeline · `packages`: Package History · `config`: Config Changes · `devices`: Device Events · `deecure`: DeeCure Actions |
 | System | System | `system` | `sys` | {info:Info} | — | `overview`: Overview · `boot`: Boot · `updates`: Updates (count 12) · `kernel`: Kernel · `time`: Time & Locale |
 | System | Hardware | `hardware` | `chip` | {ok:Healthy} | — | `summary`: Summary · `processor`: Processor · `memory`: Memory · `storage`: Storage Devices · `graphics`: Graphics · `sensors`: Sensors · `peripherals`: Peripherals · `firmware`: Firmware |
 | System | Power | `power` | `bat` | {warn:Warning} | Yellow dot | `battery`: Battery · `profile`: Power Profile · `sleep`: Sleep |

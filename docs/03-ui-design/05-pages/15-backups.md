@@ -47,8 +47,8 @@
 
 ## Backups › Restore Points — `backups/restore`
 
-1. **Data table** — "SysDoc restore points" · span 12
-- Info tooltip: "Saved automatically before every change SysDoc makes."
+1. **Data table** — "DeeCure restore points" · span 12
+- Info tooltip: "Saved automatically before every change DeeCure makes."
 
 | Created | Change | Target | Size [n] | (action) |
 | --- | --- | --- | --- | --- |

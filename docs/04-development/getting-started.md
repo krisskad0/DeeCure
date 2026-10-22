@@ -42,8 +42,8 @@ Install the current Node.js LTS release (for example with `nvm`). The desktop ap
 ## 5. Build and run
 
 ```bash
-git clone https://github.com/<org>/sysdoc.git
-cd sysdoc
+git clone https://github.com/krisskad0/DeeCure.git
+cd deecure
 
 make build        # build all Rust crates and the web UI
 make test         # run all tests
@@ -63,8 +63,8 @@ The `Makefile` gives short names to the real commands:
 ## 6. Try the CLI
 
 ```bash
-cargo run -p sysdoc-cli -- status
-cargo run -p sysdoc-cli -- status --json
+cargo run -p deecure-cli -- status
+cargo run -p deecure-cli -- status --json
 ```
 
 ## 7. Work on the root helper (Phase 2 and later)
@@ -80,7 +80,7 @@ Do helper work in a VM, not on your main computer.
 
 ## 8. Look at the prototype
 
-Open `docs/03-ui-design/prototype/sysdoc-dashboard.html` in a browser. It shows what every screen should look like.
+Open `docs/03-ui-design/prototype/deecure-dashboard.html` in a browser. It shows what every screen should look like.
 
 ## Editor setup
 

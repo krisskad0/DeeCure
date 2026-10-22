@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [Architecture](README.md)
 
-The knowledge base is plain YAML files, organized by type. These files are what make SysDoc friendlier than Cockpit.
+The knowledge base is plain YAML files, organized by type. These files are what make DeeCure friendlier than Cockpit.
 
 ```yaml
 # kb/services/cups.yaml
