@@ -13,6 +13,9 @@ import { PerformanceMemory } from "./pages/performance/Memory";
 import { PerformanceNetwork } from "./pages/performance/Network";
 import { PerformancePressure } from "./pages/performance/Pressure";
 import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
+import { JobsAnacron, JobsAt, JobsCalendar, JobsCron, JobsTimers } from "./pages/jobs/Jobs";
+import { ServicesStartup, ServicesUser } from "./pages/services/OtherServices";
+import { StorageCleanup, StorageFilesystems, StorageOverview, StorageUsage } from "./pages/storage/Storage";
 import { HardwareFirmware } from "./pages/hardware/Firmware";
 import { HardwareGraphics } from "./pages/hardware/Graphics";
 import { HardwareMemory } from "./pages/hardware/Memory";
@@ -70,6 +73,9 @@ const TABS: Record<string, Record<string, Tab>> = {
   },
   power: { battery: PowerBattery, profile: PowerProfile, sleep: PowerSleep },
   display: { displays: DisplayDisplays, audio: DisplayAudio },
+  storage: { overview: StorageOverview, filesystems: StorageFilesystems, usage: StorageUsage, cleanup: StorageCleanup },
+  services: { user: ServicesUser, startup: ServicesStartup },
+  jobs: { calendar: JobsCalendar, cron: JobsCron, timers: JobsTimers, anacron: JobsAnacron, at: JobsAt },
   system: { overview: SystemOverview, boot: SystemBoot, updates: SystemUpdates, kernel: SystemKernel, time: SystemTime },
 };
 

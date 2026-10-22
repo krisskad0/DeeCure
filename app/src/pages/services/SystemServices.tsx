@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Services › System Services (docs/03-ui-design/05-pages/10-services.md), with real data.
-// Memory per service is not collected yet, so that column is left out rather than faked.
+// The unit list comes from the 5-minute snapshot; memory is read live.
 
-import { type UnitState, getSnapshot } from "../../api";
+import { type UnitState, getInventory, getSnapshot } from "../../api";
+import { bytes } from "../../metrics";
 import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KpiRow } from "../../components/KpiTile";
@@ -12,10 +13,13 @@ import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 
 const loadServices = () => getSnapshot<UnitState[]>("services");
+const loadMemory = () => getInventory("service_memory");
+
+type Row = UnitState & { memory?: number };
 
 const ACTIVE: Record<string, StatusVariant> = { active: "ok", failed: "crit", inactive: "off", activating: "info", deactivating: "info" };
 
-const COLUMNS: Column<UnitState>[] = [
+const COLUMNS: Column<Row>[] = [
   {
     key: "unit",
     label: "Unit",
@@ -35,7 +39,8 @@ const COLUMNS: Column<UnitState>[] = [
     text: (u) => u.enabled ?? "—",
     render: (u) => (u.enabled === "enabled" ? <StatusBadge variant="info" label="enabled" /> : (u.enabled ?? "—")),
   },
-  { key: "restarts", label: "Restarts", text: (u) => (u.restarts === undefined ? "—" : String(u.restarts)), numeric: true },
+  { key: "memory", label: "Memory", text: (u) => (u.memory === undefined ? "—" : bytes(u.memory)), numeric: true },
+  { key: "restarts", label: "Restarts", text: (u) => (u.restarts === undefined ? "—" : String(u.restarts)), numeric: true, expert: true },
 ];
 
 /** Failed first, then by name. */
@@ -46,6 +51,7 @@ function byConcern(a: UnitState, b: UnitState): number {
 
 export function SystemServices() {
   const { data: snapshot, error } = useLive(loadServices);
+  const memory = useLive(loadMemory, 30_000).data;
   if (!snapshot) {
     return (
       <Panel title="Units" span={12} flush>
@@ -53,7 +59,7 @@ export function SystemServices() {
       </Panel>
     );
   }
-  const units = [...snapshot.data].sort(byConcern);
+  const units: Row[] = [...snapshot.data].sort(byConcern).map((u) => ({ ...u, memory: memory?.[u.name] }));
   const count = (test: (u: UnitState) => boolean) => units.filter(test).length;
   const failed = units.filter((u) => u.active === "failed");
   const restarts = units.reduce((sum, u) => sum + (u.restarts ?? 0), 0);

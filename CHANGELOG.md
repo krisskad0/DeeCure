@@ -40,6 +40,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Power pages with real data: battery charge, health, capacity, cycles, charge limit, and trends; power mode and battery policies; sleep history from the journal.
 - Display & Audio pages with real data: every screen with resolution, refresh, scale, and primary (from GNOME); sound devices, volumes, defaults, and streams (from PipeWire).
 - The agent asks D-Bus services only when they already run, and never starts one.
+- Storage pages with real data: used, free, inodes, encryption, a 30-day trend with a "full in" forecast, mount points, fstab checks, a background folder-size scan (largest folders and files), and cleanup candidates (Trash, thumbnails, apt cache, old snap revisions, journal, unused Docker images and build cache). Nothing is deleted yet.
+- Services pages: memory per system service, user services, and startup applications.
+- Scheduled Jobs pages: next-24-hours swim lanes, runs by hour for 7 days, cron (plain-English schedules and next run in local time), systemd timers with results, anacron, and at jobs.
+- Fix: the .deb test counts the shipped rules instead of expecting 3.
 - Data table (search, filter chips, unit-aware sorting, paging with totals, row selection with a bulk action, Expert-only columns, empty text) and form controls (switch, select, radio cards, field rows, state tiles).
 - First real page: Services › System Services, with a KPI row, an alert per failed service, and a searchable, filterable units table. The services collector now also records each service's enabled-at-boot state and restarts since boot.
 - Pinned Rust 1.99.1 (`rust-toolchain.toml`), shared lints, `Makefile` (`build`, `test`, `lint`, `fmt`), and a GitHub Actions CI workflow.

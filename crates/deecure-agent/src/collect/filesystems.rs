@@ -31,7 +31,7 @@ pub struct Mount {
 }
 
 /// Space on one filesystem, in bytes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct FsUsage {
     /// Total size.
     pub size: u64,
@@ -39,6 +39,10 @@ pub struct FsUsage {
     pub used: u64,
     /// Space a normal user can still write (the root-only reserve is not counted).
     pub free: u64,
+    /// File slots (inodes). Zero for filesystems without a fixed count, such as btrfs.
+    pub inodes: u64,
+    /// File slots still free.
+    pub inodes_free: u64,
 }
 
 impl FsUsage {
@@ -112,6 +116,8 @@ pub fn statvfs(mount_point: &Path) -> io::Result<FsUsage> {
             .saturating_sub(stat.f_bfree)
             .saturating_mul(block),
         free: stat.f_bavail.saturating_mul(block),
+        inodes: stat.f_files,
+        inodes_free: stat.f_ffree,
     })
 }
 
@@ -176,6 +182,24 @@ impl Collector for Filesystems {
                 Unit::Bytes,
                 now,
             ));
+            sample.metrics.push(metric(
+                "disk.used",
+                subject,
+                usage.used as f64,
+                Unit::Bytes,
+                now,
+            ));
+            // btrfs and others have no fixed inode count; they report 0.
+            if usage.inodes > 0 {
+                let used = usage.inodes.saturating_sub(usage.inodes_free) as f64;
+                sample.metrics.push(metric(
+                    "disk.inodes_percent",
+                    subject,
+                    used * 100.0 / usage.inodes as f64,
+                    Unit::Percent,
+                    now,
+                ));
+            }
             inventory.push(InventoryEntry {
                 mount,
                 size: usage.size,
@@ -229,13 +253,15 @@ server:/share /mnt/nas nfs4 rw,relatime 0 0
             size: 1000,
             used: 900,
             free: 50,
+            ..FsUsage::default()
         };
         assert!((usage.used_percent() - 94.736).abs() < 0.001);
         assert_eq!(
             FsUsage {
                 size: 0,
                 used: 0,
-                free: 0
+                free: 0,
+                ..FsUsage::default()
             }
             .used_percent(),
             0.0
@@ -250,11 +276,13 @@ server:/share /mnt/nas nfs4 rw,relatime 0 0
                 size: 238_000,
                 used: 224_200,
                 free: 13_800,
+                ..FsUsage::default()
             }),
             Some("/boot/efi") => Ok(FsUsage {
                 size: 500,
                 used: 50,
                 free: 450,
+                ..FsUsage::default()
             }),
             _ => Err(io::Error::from(io::ErrorKind::PermissionDenied)),
         });

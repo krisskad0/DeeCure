@@ -298,6 +298,64 @@ export interface SleepEvent {
   failed: boolean;
 }
 
+export interface StorageInfo {
+  encrypted: boolean;
+  root_chain: string[];
+  root_reserved: number;
+  fstab_entries: number;
+  fstab_problems: { line: number; problem: string }[];
+  candidates: { action: string; title: string; details: string; size: number; undo: "irreversible" | "regenerates"; needs_password: boolean }[];
+}
+
+export interface SizedPath {
+  path: string;
+  size: number;
+  modified?: number;
+}
+
+export interface UsageAnswer {
+  scanning: boolean;
+  scan?: { scanned_at: number; seconds: number; home: SizedPath[]; system: SizedPath[]; files: SizedPath[]; unreadable: number; partial: boolean };
+}
+
+export interface UserService {
+  name: string;
+  description: string;
+  active: string;
+  sub: string;
+  enabled?: string;
+  memory?: number;
+  restarts?: number;
+}
+
+export interface StartupApp {
+  id: string;
+  name: string;
+  command: string;
+  scope: "User" | "System";
+  enabled: boolean;
+}
+
+export interface Timer {
+  name: string;
+  scope: "system" | "user";
+  activates: string;
+  schedule: string[];
+  next?: number;
+  last?: number;
+  result?: string;
+  persistent: boolean;
+}
+
+export interface JobsInfo {
+  cron: { schedule: string; command: string; user: string; source: string }[];
+  timers: Timer[];
+  anacron: { id: string; period: string; delay: number; command: string; last_run?: number }[];
+  at: { id: string; when: string; queue: string; user: string }[];
+  at_installed: boolean;
+  runs: { at: number; job: string; failed: boolean }[];
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
@@ -313,6 +371,12 @@ export function getInventory(kind: "audio"): Promise<AudioInfo>;
 export function getInventory(kind: "bluetooth"): Promise<BluetoothInfo>;
 export function getInventory(kind: "firmware"): Promise<FirmwareInfo>;
 export function getInventory(kind: "sleep"): Promise<SleepEvent[]>;
+export function getInventory(kind: "storage"): Promise<StorageInfo>;
+export function getInventory(kind: "disk_usage"): Promise<UsageAnswer>;
+export function getInventory(kind: "user_services"): Promise<UserService[]>;
+export function getInventory(kind: "service_memory"): Promise<Record<string, number>>;
+export function getInventory(kind: "startup"): Promise<StartupApp[]>;
+export function getInventory(kind: "jobs"): Promise<JobsInfo>;
 export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }

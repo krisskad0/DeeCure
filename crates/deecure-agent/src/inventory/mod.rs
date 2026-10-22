@@ -11,13 +11,17 @@ mod firmware;
 mod gpu;
 mod hardware;
 mod history;
+mod jobs;
 mod kernel;
 mod network;
 mod os;
 mod power;
 mod processes;
 mod sleep;
+mod storage;
 mod system;
+mod units;
+mod usage;
 
 use serde_json::Value;
 
@@ -25,6 +29,7 @@ use crate::context::Agent;
 
 pub use processes::{Process, ProcessSampler};
 pub use system::SystemInfo;
+pub use usage::UsageScan;
 
 /// The inventories the agent can read.
 pub const KINDS: &[&str] = &[
@@ -42,6 +47,12 @@ pub const KINDS: &[&str] = &[
     "bluetooth",
     "firmware",
     "sleep",
+    "storage",
+    "disk_usage",
+    "user_services",
+    "service_memory",
+    "startup",
+    "jobs",
 ];
 
 /// Reads one inventory. `Err` holds a plain-English reason.
@@ -66,6 +77,17 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "bluetooth" => serde_json::to_value(bluetooth::read(agent).await),
         "firmware" => serde_json::to_value(firmware::read(agent).await),
         "sleep" => serde_json::to_value(sleep::read().await),
+        "storage" => serde_json::to_value(storage::read(&agent.root).await),
+        "disk_usage" => serde_json::to_value(disk_usage(agent)),
+        "user_services" => serde_json::to_value(units::user_services(agent).await?),
+        "service_memory" => serde_json::to_value(units::service_memory(agent).await?),
+        "startup" => serde_json::to_value(units::startup(
+            &agent.root,
+            std::env::var_os("HOME")
+                .map(std::path::PathBuf::from)
+                .as_deref(),
+        )),
+        "jobs" => serde_json::to_value(jobs::read(agent).await),
         other => {
             return Err(format!(
                 "unknown inventory '{other}' (known: {})",
@@ -74,4 +96,50 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         }
     };
     value.map_err(|e| e.to_string())
+}
+
+/// The last scan, and whether a new one is running.
+#[derive(Debug, Default)]
+pub struct UsageState {
+    last: Option<(std::time::Instant, UsageScan)>,
+    scanning: bool,
+}
+
+/// What `disk_usage` answers.
+#[derive(Debug, serde::Serialize)]
+struct UsageAnswer {
+    /// True while a scan runs; ask again in a few seconds.
+    scanning: bool,
+    /// The newest finished scan, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    scan: Option<UsageScan>,
+}
+
+/// Returns the last scan, and starts a new one in the background when it is old or missing.
+fn disk_usage(agent: &Agent) -> UsageAnswer {
+    let state = agent.usage.clone();
+    let mut guard = state
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let stale = guard
+        .last
+        .as_ref()
+        .is_none_or(|(at, _)| at.elapsed() >= usage::FRESH);
+    if stale && !guard.scanning {
+        guard.scanning = true;
+        let shared = state.clone();
+        let home = std::env::var_os("HOME").map(std::path::PathBuf::from);
+        tokio::task::spawn_blocking(move || {
+            let result = usage::scan(home.as_deref());
+            let mut guard = shared
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            guard.last = Some((std::time::Instant::now(), result));
+            guard.scanning = false;
+        });
+    }
+    UsageAnswer {
+        scanning: guard.scanning,
+        scan: guard.last.as_ref().map(|(_, s)| s.clone()),
+    }
 }

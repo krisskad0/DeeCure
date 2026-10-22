@@ -5,7 +5,7 @@
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use crate::collect::SystemRoot;
-use crate::inventory::ProcessSampler;
+use crate::inventory::{ProcessSampler, UsageState};
 use crate::store::SharedStore;
 
 /// The running agent.
@@ -16,6 +16,8 @@ pub struct Agent {
     pub root: SystemRoot,
     /// Remembers the last process reading, so CPU use is measured between requests.
     processes: Mutex<ProcessSampler>,
+    /// The last folder-size scan, shared with the thread that runs a new one.
+    pub usage: Arc<Mutex<UsageState>>,
     /// D-Bus connections, opened on first use and dropped after an error.
     system_bus: tokio::sync::Mutex<Option<zbus::Connection>>,
     session_bus: tokio::sync::Mutex<Option<zbus::Connection>>,
@@ -37,6 +39,7 @@ impl Agent {
             store,
             root,
             processes: Mutex::new(ProcessSampler::default()),
+            usage: Arc::new(Mutex::new(UsageState::default())),
             system_bus: tokio::sync::Mutex::new(None),
             session_bus: tokio::sync::Mutex::new(None),
         })

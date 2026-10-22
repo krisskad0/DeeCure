@@ -61,6 +61,12 @@ Safety rules for live reads:
 | `bluetooth` | BlueZ (system D-Bus) | Adapters, whether one is on, and paired or connected devices with battery level |
 | `firmware` | fwupd (system D-Bus) | Devices with firmware, their version, and updates fwupd's local metadata offers |
 | `sleep` | `journalctl` (systemd-sleep) | Suspends and hibernates of the last 30 days, how long each lasted, and failures |
+| `storage` | `/proc/mounts`, `/sys/class/block` (device-mapper layers), `statvfs`, `/etc/fstab`, Trash, thumbnail cache, `/var/cache/apt/archives`, `snap list --all`, `journalctl --disk-usage`, `docker system df` (only when Docker runs) | Root encryption (LUKS anywhere below `/`), the root-only reserve, `/etc/fstab` problems, and cleanup candidates with size, undo note, and whether the admin password is needed. Docker volumes are never offered: they hold data. |
+| `disk_usage` | A walk of home and `/` (one filesystem), like `du` | Top folders of home and the system disk, and the 25 biggest files in home. Runs on a background thread only when asked, at most once an hour; while it runs the answer says `scanning`. Stops after 3 million entries. |
+| `user_services` | user systemd (session D-Bus) | The user's services with state, enabled state, memory, and restarts |
+| `service_memory` | systemd (system D-Bus) `MemoryCurrent` | Memory of each running system service |
+| `startup` | `~/.config/autostart`, `/etc/xdg/autostart` | Apps started at a GNOME login, user files overriding system ones, with on/off state. GNOME's own settings daemons are left out. |
+| `jobs` | `crontab -l`, `/etc/crontab`, `/etc/cron.d`, systemd timers (system and user D-Bus), `/etc/anacrontab`, `/var/spool/anacron`, `atq`, journal (CRON and unit start/fail messages, 7 days) | Cron lines, timers with schedule, last and next run, and result, anacron jobs with last run, at jobs, and every job run of the last 7 days |
 | `gpu` | `/sys/class/drm/card*`, `pci.ids` | Each graphics card's maker and model, PCI ID, driver, whether it is the main card, and load, video memory, and temperature when the driver reports them without admin rights |
 
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.
@@ -88,6 +94,8 @@ The 2-second rate while the app is open comes with the app in Phase 1. The colle
 | `swap.total` | — | bytes | All swap |
 | `disk.used_percent` | mount point | percent | Space used, computed like `df` |
 | `disk.free` | mount point | bytes | Space a normal user can still write |
+| `disk.used` | mount point | bytes | Space in use |
+| `disk.inodes_percent` | mount point | percent | File slots in use; missing for filesystems without a fixed count (btrfs) |
 | `battery.charge` | battery, such as `BAT0` | percent | Charge level |
 | `battery.health` | battery | percent | Capacity now compared with when new |
 | `battery.power` | battery | watts | Power going in or out right now |

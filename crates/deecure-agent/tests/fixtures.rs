@@ -91,6 +91,7 @@ fn run(dir: &Path, rules: &[Rule]) -> Vec<Expected> {
                 size: u.size,
                 used: u.used,
                 free: u.free,
+                ..FsUsage::default()
             })
             .ok_or_else(|| io::Error::from(io::ErrorKind::PermissionDenied))
     };
