@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 // Top bar (docs/03-ui-design/02-shell/top-bar.md).
-// Search (Ctrl K), the notifications list, and the machine list are overlays; they
-// arrive with the overlays step, so those buttons say so for now.
 
 import type { AppError, Machine, StatusReport } from "../api";
 import { Icon } from "../components/Icon";
@@ -23,8 +21,6 @@ const MODES = [
   { value: "expert", label: "Expert" },
 ] as const;
 
-const LATER = "Coming in the overlays step of Phase 1";
-
 export function TopBar(props: {
   machine: Machine | null;
   report: StatusReport | null;
@@ -36,6 +32,9 @@ export function TopBar(props: {
   onMode: (mode: Mode) => void;
   alerts: number;
   onMenu: () => void;
+  onSearch: () => void;
+  onBell: (anchor: HTMLElement) => void;
+  onMachine: (anchor: HTMLElement) => void;
 }) {
   const { machine, report, error, now } = props;
   return (
@@ -51,14 +50,14 @@ export function TopBar(props: {
         </span>
         <span className="wordmark">DeeCure</span>
       </div>
-      <button className="machine" type="button" title={`This computer. More machines: ${LATER.toLowerCase()}.`}>
+      <button className="machine" type="button" aria-label="Machines" onClick={(e) => props.onMachine(e.currentTarget)}>
         <span className="dot" />
         <span className="machine-name">{machine?.hostname ?? "…"}</span>
         <span className="machine-os">{machine?.os}</span>
         <Icon name="chevdown" size={14} />
       </button>
 
-      <button className="search" type="button" title={LATER}>
+      <button className="search" type="button" aria-label="Search (Ctrl K)" onClick={props.onSearch}>
         <Icon name="search" size={15} />
         <span className="search-text">Search pages, services, packages…</span>
         <kbd>Ctrl K</kbd>
@@ -70,7 +69,12 @@ export function TopBar(props: {
         {error ? "Agent not reachable" : report?.checked_at ? `Live · checked ${ago(report.checked_at, now)}` : "Connecting…"}
       </span>
       <Segmented label="Mode" options={MODES} value={props.mode} onChange={props.onMode} />
-      <button className="ibtn bell" type="button" aria-label={`Notifications: ${props.alerts} open`} title={LATER}>
+      <button
+        className="ibtn bell"
+        type="button"
+        aria-label={`Notifications: ${props.alerts} open`}
+        onClick={(e) => props.onBell(e.currentTarget)}
+      >
         <Icon name="bell" size={18} />
         {props.alerts > 0 && <span className="bell-count">{props.alerts}</span>}
       </button>

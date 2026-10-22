@@ -8,8 +8,11 @@ import { IssuesPanel } from "./pages/IssuesPanel";
 import { NotBuilt } from "./pages/NotBuilt";
 import { usePref } from "./prefs";
 import { useRoute } from "./route";
+import { CommandPalette } from "./shell/CommandPalette";
 import { PageHeader } from "./shell/PageHeader";
+import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
 import { Sidebar } from "./shell/Sidebar";
+import { useToast } from "./shell/Toast";
 import { type Mode, type Range, TopBar } from "./shell/TopBar";
 import { findingsFor, pageStatus } from "./status";
 
@@ -25,6 +28,9 @@ export default function App() {
   const [mode, setMode] = usePref<Mode>("mode", "beginner");
   const [range, setRange] = usePref<Range>("range", "24h");
   const [drawer, setDrawer] = useState(false);
+  const [palette, setPalette] = useState(false);
+  const [popover, setPopover] = useState<{ kind: "bell" | "machine"; anchor: HTMLElement } | null>(null);
+  const toast = useToast();
 
   const refresh = useCallback(async () => {
     try {
@@ -51,7 +57,14 @@ export default function App() {
   }, [route.page.label]);
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setDrawer(false);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDrawer(false);
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPopover(null);
+        setPalette((open) => !open);
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
@@ -85,7 +98,25 @@ export default function App() {
         onMode={setMode}
         alerts={alerts}
         onMenu={() => setDrawer(true)}
+        onSearch={() => setPalette(true)}
+        onBell={(anchor) => setPopover({ kind: "bell", anchor })}
+        onMachine={(anchor) => setPopover({ kind: "machine", anchor })}
       />
+      {palette && <CommandPalette onClose={() => setPalette(false)} />}
+      {popover?.kind === "bell" && (
+        <NotificationsPopover anchor={popover.anchor} findings={all} now={now} onClose={() => setPopover(null)} />
+      )}
+      {popover?.kind === "machine" && (
+        <MachinesPopover
+          anchor={popover.anchor}
+          machine={machine}
+          onClose={() => setPopover(null)}
+          onPlanned={() => {
+            setPopover(null);
+            toast("Multi-machine view is planned for a later phase.");
+          }}
+        />
+      )}
       {drawer && <div className="scrim" onClick={() => setDrawer(false)} />}
       <Sidebar
         route={route}

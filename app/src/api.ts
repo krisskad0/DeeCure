@@ -42,6 +42,24 @@ export function getStatus(): Promise<StatusReport> {
   return invoke<StatusReport>("status");
 }
 
+export interface Snapshot<T = unknown> {
+  kind: string;
+  taken_at: number;
+  data: T;
+}
+
+export interface UnitState {
+  name: string;
+  description: string;
+  load: string;
+  active: string;
+  sub: string;
+}
+
+export function getSnapshot<T>(kind: "services" | "filesystems"): Promise<Snapshot<T> | null> {
+  return invoke<Snapshot<T> | null>("snapshot", { kind });
+}
+
 export function getMachine(): Promise<Machine> {
   return invoke<Machine>("machine");
 }

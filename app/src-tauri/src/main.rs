@@ -7,6 +7,7 @@
 
 use std::path::PathBuf;
 
+use deecure_core::Snapshot;
 use deecure_core::client::{self, ClientError};
 use deecure_core::rpc::{StatusReport, default_socket_path, method};
 use serde::Serialize;
@@ -54,6 +55,22 @@ async fn status() -> Result<StatusReport, AppError> {
         .map_err(AppError::from)
 }
 
+/// The newest inventory of one kind (such as `services`), or `None` if there is none yet.
+#[tauri::command]
+async fn snapshot(kind: String) -> Result<Option<Snapshot>, AppError> {
+    let socket = socket()?;
+    let params = serde_json::json!({ "kind": kind });
+    tauri::async_runtime::spawn_blocking(move || {
+        client::call(&socket, method::SNAPSHOT, Some(params))
+    })
+    .await
+    .map_err(|e| AppError {
+        kind: "other",
+        message: e.to_string(),
+    })?
+    .map_err(AppError::from)
+}
+
 /// This computer, for the top bar's machine picker.
 #[derive(Debug, Serialize)]
 struct Machine {
@@ -91,7 +108,7 @@ fn machine() -> Machine {
 
 fn main() {
     let result = tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![status, machine])
+        .invoke_handler(tauri::generate_handler![status, snapshot, machine])
         .run(tauri::generate_context!());
     if let Err(e) = result {
         eprintln!("deecure-desktop: could not start: {e}");
