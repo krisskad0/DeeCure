@@ -1,0 +1,29 @@
+#!/usr/bin/make -f
+# Builds the deecure package. Run through scripts/build-deb.sh (make deb).
+# The Rust toolchain comes from rustup (rust-toolchain.toml), not from Debian.
+
+CARGO_TARGET_DIR ?= target
+export CARGO_TARGET_DIR
+BIN := $(CARGO_TARGET_DIR)/release
+DEST := debian/deecure
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+
+override_dh_auto_build:
+	cargo build --release --locked --bin deecure --bin deecure-agent
+
+# Tests run in CI with `make test`, not while packaging.
+override_dh_auto_test:
+
+# Keep the shared Cargo cache between builds.
+override_dh_auto_clean:
+
+override_dh_auto_install:
+	install -D -m 0755 $(BIN)/deecure $(DEST)/usr/bin/deecure
+	install -D -m 0755 $(BIN)/deecure-agent $(DEST)/usr/libexec/deecure/deecure-agent
+	install -D -m 0644 packaging/systemd/deecure-agent.socket $(DEST)/usr/lib/systemd/user/deecure-agent.socket
+	install -D -m 0644 packaging/systemd/deecure-agent.service $(DEST)/usr/lib/systemd/user/deecure-agent.service
+	cd rules && find . -name '*.yaml' -exec install -D -m 0644 {} ../$(DEST)/usr/share/deecure/rules/{} \;

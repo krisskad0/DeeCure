@@ -1,6 +1,7 @@
 [Unit]
 Description=DeeCure agent socket
 Documentation=https://github.com/krisskad0/DeeCure
+ConditionUser=!@system
 
 [Socket]
 ListenStream=%t/deecure/agent.sock

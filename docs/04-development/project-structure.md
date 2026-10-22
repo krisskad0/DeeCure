@@ -23,6 +23,7 @@ deecure/
 │   ├── dbus/                #   D-Bus activation and policy files for the helper
 │   ├── polkit/              #   polkit action policy for the helper
 │   ├── systemd/             #   systemd units for the agent and the helper
+│   ├── man/                 #   Man pages
 │   ├── apt-repo/            #   Config and scripts to publish the signed APT repository
 │   └── install.sh           #   One-line installer (planned)
 ├── scripts/                 # Developer scripts: build-deb, bump-version, dev helper install

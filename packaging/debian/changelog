@@ -1,0 +1,6 @@
+deecure (0.1.0-1) noble; urgency=medium
+
+  * First package: the agent (collectors, history, rules), the deecure
+    command, the first three rules, and systemd user units.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Fri, 23 Oct 2026 02:00:00 +0530

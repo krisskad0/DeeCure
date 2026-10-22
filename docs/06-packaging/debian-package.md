@@ -2,80 +2,75 @@
 
 [Docs](../README.md) › [Packaging](README.md)
 
-How the `deecure` `.deb` is built and checked.
+How the `deecure` `.deb` is built, checked, and tested.
+
+## Build and test it
+
+```bash
+make deb        # build target/deb/deecure_<version>_amd64.deb and check it with lintian
+make deb-test   # install, use, and purge it in a clean Ubuntu 24.04 container (needs Docker)
+```
+
+CI does both on every push (job "Build and test the .deb") and keeps the `.deb` as a download. To get it: GitHub → **Actions** → the latest run → **Artifacts** → `deecure-deb`.
+
+## What is inside (Phase 0)
+
+| Path | What |
+| --- | --- |
+| `/usr/bin/deecure` | The command |
+| `/usr/libexec/deecure/deecure-agent` | The agent |
+| `/usr/lib/systemd/user/deecure-agent.{socket,service}` | User units, turned on for every user |
+| `/usr/share/deecure/rules/` | The rules |
+| `/usr/share/man/man1/deecure.1.gz` | Man page |
+| `/usr/share/doc/deecure/` | Copyright and changelog |
+
+The desktop app, the root helper, and their system files join in Phases 1 and 2. The full list is in [Files on disk](../02-architecture/overview.md#files-on-disk).
 
 ## Where the files live
 
-The Debian files live in `packaging/debian/`. The build script copies them to `debian/` at build time. Debian asks upstream projects not to ship a `debian/` folder at the root of their release tarballs.
+The Debian files live in `packaging/debian/`. `scripts/build-deb.sh` copies the source (every tracked file, plus new files that are not ignored) into `target/deb/build/`, adds `debian/`, and runs `dpkg-buildpackage` there. Debian asks upstream projects not to ship a root `debian/` folder in release tarballs, and building in a copy keeps build files out of your checkout.
 
 | File in `packaging/debian/` | What it does |
 | --- | --- |
 | `control` | Package name, dependencies, description |
-| `rules` | Build steps (a Makefile that calls `dh`) |
+| `rules` | Build steps: `cargo build --release --locked`, then install the files |
 | `changelog` | Version history in Debian format (edit it with `dch`) |
 | `copyright` | License info in Debian's machine-readable format |
 | `source/format` | `3.0 (quilt)` |
-| `deecure.install` | Which built file goes where |
-| `deecure.postinst`, `deecure.postrm` | Scripts that run after install and after removal |
-| `deecure.templates` | The debconf question: "Add the DeeCure repository for updates?" |
-| `tests/control` | `autopkgtest` smoke tests |
+| `deecure.manpages` | Installs `packaging/man/deecure.1` |
+| `deecure.lintian-overrides` | `initial-upload-closes-no-bugs`: only applies to uploads to the Debian archive |
 
-## `control` sketch
+Planned later: `deecure.postinst`/`postrm` and a debconf question (offer to add the APT repository), and `tests/control` for `autopkgtest`.
 
-```text
-Source: deecure
-Section: admin
-Priority: optional
-Maintainer: DeeCure maintainers <maintainers@example.org>
-Build-Depends: debhelper-compat (= 13), cargo, rustc, nodejs, pkgconf,
- libwebkit2gtk-4.1-dev, libxdo-dev, libssl-dev, libsystemd-dev, librsvg2-dev,
- libsqlite3-dev
-Standards-Version: 4.7.0
-Homepage: https://github.com/krisskad0/DeeCure
+## Decisions in the package
 
-Package: deecure
-Architecture: amd64 arm64
-Depends: ${shlibs:Depends}, ${misc:Depends}, dbus, polkitd
-Recommends: smartmontools
-Description: friendly health checks and safe fixes for your Linux computer
- DeeCure checks your computer, explains what it finds in plain English,
- and fixes problems safely with a preview and an undo button.
-```
+| Decision | Why |
+| --- | --- |
+| Rust comes from `rustup` (pinned in `rust-toolchain.toml`), so `cargo` and `rustc` are not in `Build-Depends` | Ubuntu 24.04's Rust is older than ours. A Launchpad PPA build will need the archive's versioned `rustc-1.xx` packages instead. |
+| Dependencies are found automatically (`${shlibs:Depends}`) | Today: `libc6`, `libgcc-s1`, `libsqlite3-0`, `init-system-helpers` |
+| Both user units are enabled for every user | Data is collected from login, which matches the "Start at login: On" default. A per-user switch comes with Settings. |
+| `ConditionUser=!@system` in both units | The agent does not run for system accounts, such as the login screen's user |
+| `Standards-Version: 4.6.2` | The newest version that Ubuntu 24.04's lintian knows |
+| Maintainer: `DeeCure maintainers <krisskad0@users.noreply.github.com>` | A placeholder until the contact address is decided ([open decision 11](../01-product/open-decisions.md)) |
+| Version `0.1.0-1`, distribution `noble` | Per-release suffixes (`~ubuntu24.04`) come with the APT repository ([release process](release-process.md)) |
 
-`${shlibs:Depends}` fills in library dependencies by itself. Replace the maintainer address before the first release.
+Before the first public release, `copyright` must also list the licenses of the Rust crates built into the binaries (for example, generated with `cargo-about` or checked with `cargo-deny`).
 
-## Build it
+## What `make deb-test` checks
 
-```bash
-make deb
-```
+`scripts/test-deb.sh --throwaway <deb>` runs as root on a throwaway system:
 
-What `make deb` does (through `scripts/build-deb.sh`):
+1. `apt install` works and pulls in the dependencies.
+2. The user units are enabled for every user.
+3. `deecure --version`, the agent, and the man page are in place.
+4. As a normal user, the agent starts, loads the installed rules, keeps its database private (mode `0600`), and `deecure status` and `--json` answer.
+5. `apt purge` removes everything, including the "enabled for every user" links.
 
-1. Builds the web UI: `npm ci && npm run build` in `app/`.
-2. Copies `packaging/debian/` to `debian/`.
-3. Runs `dpkg-buildpackage -us -uc -b` (build, no signing).
-4. Runs `lintian` on the result and fails on errors and warnings.
-
-Release builds run in a clean container for each release (`ubuntu:24.04`, `ubuntu:26.04`). Never ship a package built on a developer's own machine.
-
-## What the install scripts do
-
-| When | What | How |
-| --- | --- | --- |
-| Install | Turn on the agent socket for all users | `dh_installsystemduser` |
-| Install | Load the helper's D-Bus policy | D-Bus picks it up through its package trigger |
-| Install from a downloaded `.deb` | Ask to add the APT repository | debconf question, default Yes |
-| Purge | Remove `/var/log/deecure/` and the repository files the package added | `postrm purge` |
-
-The package **never** touches users' home folders. That is Debian policy. To delete a user's history, use Settings › Data in the app before removing the package.
-
-## Quality checks before every release
+## More checks before the public beta
 
 | Check | What it proves |
 | --- | --- |
-| `lintian` | The package follows Debian rules |
-| `piuparts` | Install → upgrade → remove → purge works and leaves nothing behind |
-| `autopkgtest` | The installed package runs: `deecure --version`, `deecure status --json` |
-| `desktop-file-validate` | The `.desktop` file is correct |
-| `appstreamcli validate` | The app store listing is correct |
+| `piuparts` | Install → upgrade → remove → purge works across versions |
+| `autopkgtest` | The installed package runs on the build infrastructure |
+| `desktop-file-validate` | The `.desktop` file is correct (Phase 1) |
+| `appstreamcli validate` | The app store listing is correct (Phase 1) |

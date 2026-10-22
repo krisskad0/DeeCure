@@ -1,0 +1,69 @@
+.TH DEECURE 1 "October 2026" "DeeCure 0.1.0" "User Commands"
+.SH NAME
+deecure \- explains your Linux computer and helps fix it safely
+.SH SYNOPSIS
+.B deecure
+.RB [ \-\-socket
+.IR PATH ]
+.B status
+.RB [ \-\-json ]
+.br
+.B deecure
+.RB [ \-\-version | \-\-help ]
+.SH DESCRIPTION
+.B deecure
+asks the DeeCure agent what it found on this computer and shows it in plain
+English. The agent runs in the background as a systemd user service, reads
+the system every minute, keeps a short history, and runs rules that turn the
+data into findings.
+.SH COMMANDS
+.TP
+.B status
+Shows the open problems, most serious first. Each one has a severity
+(Critical, Warning, or Info), a short title, an explanation, and the rule
+that found it. If the agent has not checked the computer yet, it says so.
+.TP
+.B status \-\-json
+Prints the same report as JSON, for scripts and servers.
+.SH OPTIONS
+.TP
+.BI \-\-socket " PATH"
+Talk to the agent at
+.I PATH
+instead of
+.IR $XDG_RUNTIME_DIR/deecure/agent.sock .
+.TP
+.BR \-V ", " \-\-version
+Prints the version.
+.TP
+.BR \-h ", " \-\-help
+Prints help.
+.SH ENVIRONMENT
+.TP
+.B NO_COLOR
+When set and not empty, output has no colors. Colors are also off when the
+output is not a terminal.
+.SH EXIT STATUS
+.TP
+.B 0
+The report was shown, whatever it contains.
+.TP
+.B 1
+No answer, for example because the agent is not running.
+.TP
+.B 2
+Wrong options.
+.SH FILES
+.TP
+.I $XDG_RUNTIME_DIR/deecure/agent.sock
+The agent's private socket.
+.TP
+.I ~/.local/share/deecure/deecure.db
+The history and findings database.
+.TP
+.I /usr/share/deecure/rules/
+The rules.
+.SH SEE ALSO
+.BR systemctl (1)
+.PP
+https://github.com/krisskad0/DeeCure

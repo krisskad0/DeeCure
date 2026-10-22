@@ -19,7 +19,8 @@
 | 8. Rules engine | ✅ Done. YAML rules, condition language, finding lifecycle; 3 rules shipped. |
 | 9. CLI | ✅ Done. `deecure status` (plain English) and `--json`; friendly message when the agent is not running. |
 | 10. Fixture tests | ✅ Done. Capture script; 3 machines (1 real, 2 made up); exact expected findings. More real machines welcome. |
-| 11–12 | Not started |
+| 11. First `.deb` | ✅ Done. `make deb` (lintian clean), `make deb-test` (install, use, purge in a container); CI builds and tests it and keeps the file. |
+| 12 | Not started |
 
 ## Tasks (in order)
 

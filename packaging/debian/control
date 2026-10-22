@@ -1,0 +1,24 @@
+Source: deecure
+Section: admin
+Priority: optional
+Maintainer: DeeCure maintainers <krisskad0@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), libsqlite3-dev, pkgconf
+Standards-Version: 4.6.2
+Homepage: https://github.com/krisskad0/DeeCure
+Vcs-Browser: https://github.com/krisskad0/DeeCure
+Vcs-Git: https://github.com/krisskad0/DeeCure.git
+Rules-Requires-Root: no
+
+Package: deecure
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: explains your Linux computer and helps fix it safely
+ DeeCure checks your computer and explains what it finds in plain
+ English: disk space, memory, CPU, battery health, and system services.
+ .
+ A small background agent collects data every minute, keeps a short
+ history, and runs simple rules that turn the data into findings such as
+ "Main disk is almost full". The deecure command shows those findings in
+ the terminal, and as JSON for scripts.
+ .
+ Everything stays on this computer. Nothing is sent anywhere.

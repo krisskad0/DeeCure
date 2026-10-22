@@ -64,7 +64,8 @@ The `Makefile` gives short names to the real commands:
 | `make status` | Runs `deecure status` against the running agent |
 | `make help` | Lists all commands |
 | `make dev` *(planned)* | Runs the agent, then `npm run tauri dev` in `app/` |
-| `make deb` *(planned)* | Builds the `.deb` (see [Debian package](../06-packaging/debian-package.md)) |
+| `make deb` | Builds the `.deb` into `target/deb/` and checks it with lintian (see [Debian package](../06-packaging/debian-package.md)) |
+| `make deb-test` | Installs, uses, and purges the `.deb` in a clean Ubuntu container (needs Docker) |
 
 ## 6. Run the agent
 

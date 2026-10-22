@@ -1,6 +1,7 @@
 [Unit]
 Description=DeeCure agent
 Documentation=https://github.com/krisskad0/DeeCure
+ConditionUser=!@system
 Requires=deecure-agent.socket
 After=deecure-agent.socket
 
