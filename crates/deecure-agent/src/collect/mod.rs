@@ -6,6 +6,7 @@
 //! copies of `/proc` and `/sys` from real machines (`tests/fixtures/`).
 //! Metric names and units: `docs/02-architecture/collectors.md`.
 
+mod backup;
 mod battery;
 mod boot;
 mod cpu;
@@ -28,6 +29,7 @@ use tokio::time::{MissedTickBehavior, interval};
 
 use crate::store::{self, SharedStore, Store};
 
+pub use backup::Backups;
 pub use battery::Battery;
 pub use boot::{Boot, BootInfo};
 pub use cpu::Cpu;
@@ -109,6 +111,7 @@ pub async fn run(
     let mut services = Services::default();
     let mut boot = Boot::default();
     let mut updates = Updates::default();
+    let mut backups = Backups::default();
     // Collectors that are failing right now, so each failure is logged once, not every minute.
     let mut failing = HashSet::new();
     let mut timer = interval(EVERY);
@@ -132,6 +135,8 @@ pub async fn run(
         }
         let result = updates.collect(&root, now).await;
         merge(&mut sample, &mut failing, Updates::NAME, result);
+        let result = backups.collect(&root, now).await;
+        merge(&mut sample, &mut failing, Backups::NAME, result);
         save(&store, &sample, now, &mut after_save);
         run_number = run_number.wrapping_add(1);
     }

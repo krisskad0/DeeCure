@@ -1,0 +1,10 @@
+id: backups.overdue
+category: backups
+title: "The last backup is old"
+explain: >
+  The newest backup or snapshot is {backup.age_days} days old. Anything changed
+  since then is not protected. Connect the backup drive, or check why the
+  scheduled backup did not run.
+severity:
+  warning: "backup.configured == 1 and backup.age_days > 35"
+learn_more: kb/backups/overdue.md

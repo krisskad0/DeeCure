@@ -1,0 +1,11 @@
+id: backups.none
+category: backups
+title: "No backups are set up"
+explain: >
+  Neither Déjà Dup (Ubuntu Backups) nor Timeshift backs up this computer on a
+  schedule. A broken disk, a theft, or a mistake could lose your files for
+  good. Set up Ubuntu Backups to copy your home folder to another drive or a
+  cloud account.
+severity:
+  warning: "backup.configured == 0"
+learn_more: kb/backups/set-up.md

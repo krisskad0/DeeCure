@@ -50,6 +50,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Accounts pages: users and admins, groups and what they allow, sessions, sign-ins and sudo use, and SSH keys and server settings.
 - Security pages: a posture checklist, packages with security fixes, kernel hardening settings, SUID programs and their packages, and malware signs. New rule `security.firewall_off` (a warning only when ports are open to every network).
 - Privacy pages: apps using the microphone, camera, or screen now, snap and Flatpak permissions, and desktop privacy settings.
+- Packages pages: every package from APT, snap, Flatpak, and AppImages with size and who installed it, software sources with signature checks, and what could be removed (from a simulation).
+- Containers pages: Docker containers with ports open to every network flagged, images, volumes (never offered for deletion), and virtual machines.
+- Backups pages: Déjà Dup and Timeshift status and snapshots. New rules `backups.none` and `backups.overdue`.
 - Data table (search, filter chips, unit-aware sorting, paging with totals, row selection with a bulk action, Expert-only columns, empty text) and form controls (switch, select, radio cards, field rows, state tiles).
 - First real page: Services › System Services, with a KPI row, an alert per failed service, and a searchable, filterable units table. The services collector now also records each service's enabled-at-boot state and restarts since boot.
 - Pinned Rust 1.99.1 (`rust-toolchain.toml`), shared lints, `Makefile` (`build`, `test`, `lint`, `fmt`), and a GitHub Actions CI workflow.

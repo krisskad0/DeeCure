@@ -16,6 +16,9 @@ import { AccountsGroups, AccountsLogins, AccountsSessions, AccountsSsh, Accounts
 import { NetworkConnections, NetworkDns, NetworkFirewall, NetworkInterfaces, NetworkPorts, NetworkTraffic } from "./pages/network/Network";
 import { PrivacyAccess, PrivacyPermissions, PrivacySettings } from "./pages/privacy/Privacy";
 import { SecurityHardening, SecurityIntegrity, SecurityMalware, SecurityOverview, SecurityVulns } from "./pages/security/Security";
+import { BackupsJobs, BackupsRestore, BackupsSnapshots } from "./pages/backups/Backups";
+import { ContainersImages, ContainersList, ContainersVms, ContainersVolumes } from "./pages/containers/Containers";
+import { PackagesCleanup, PackagesInstalled, PackagesPermissions, PackagesSources } from "./pages/packages/Packages";
 import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "./pages/activity/Activity";
 import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
 import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel } from "./pages/logs/Logs";
@@ -85,6 +88,9 @@ const TABS: Record<string, Record<string, Tab>> = {
   accounts: { users: AccountsUsers, groups: AccountsGroups, sessions: AccountsSessions, logins: AccountsLogins, ssh: AccountsSsh },
   security: { overview: SecurityOverview, vulns: SecurityVulns, hardening: SecurityHardening, integrity: SecurityIntegrity, malware: SecurityMalware },
   privacy: { access: PrivacyAccess, perms: PrivacyPermissions, settings: PrivacySettings },
+  packages: { installed: PackagesInstalled, sources: PackagesSources, cleanup: PackagesCleanup, permissions: PackagesPermissions },
+  containers: { containers: ContainersList, images: ContainersImages, volumes: ContainersVolumes, vms: ContainersVms },
+  backups: { jobs: BackupsJobs, snapshots: BackupsSnapshots, restore: BackupsRestore },
   storage: { overview: StorageOverview, filesystems: StorageFilesystems, usage: StorageUsage, cleanup: StorageCleanup },
   services: { user: ServicesUser, startup: ServicesStartup },
   jobs: { calendar: JobsCalendar, cron: JobsCron, timers: JobsTimers, anacron: JobsAnacron, at: JobsAt },

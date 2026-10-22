@@ -472,6 +472,35 @@ export interface PrivacyInfo {
   settings: { label: string; description: string; on: boolean }[];
 }
 
+export interface PackageInfo {
+  name: string;
+  version: string;
+  source: "apt" | "snap" | "flatpak" | "appimage";
+  size: number;
+  manual: boolean;
+  summary?: string;
+  section?: string;
+}
+
+export interface PackagesInfo {
+  packages: PackageInfo[];
+  sources: { line: string; kind: "Official" | "PPA" | "Third-party"; signed: boolean; own_key: boolean; enabled: boolean; file: string }[];
+  removable: { action: string; title: string; count: number; size: number; names: string[]; undo: "reinstallable" | "irreversible" }[];
+}
+
+export interface ContainersInfo {
+  docker: "running" | "not running" | "no access" | "not installed";
+  containers: { name: string; image: string; status: string; state: string; ports: string[]; cpu?: string; memory?: string }[];
+  images: { repository: string; tag: string; size: string; created: string; containers: number }[];
+  volumes: { name: string; size: string; links: number }[];
+  vms: { name: string; engine: string; running: boolean }[];
+}
+
+export interface BackupsInfo {
+  deja_dup: { installed: boolean; scheduled: boolean; every_days?: number; last_backup?: number; backend?: string };
+  timeshift: { installed: boolean; configured: boolean; mode?: string; schedule: string[]; snapshots: { created: number; kind: string; comment?: string }[] };
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
@@ -506,6 +535,9 @@ export function getInventory(kind: "sockets"): Promise<SocketInfo[]>;
 export function getInventory(kind: "accounts"): Promise<AccountsInfo>;
 export function getInventory(kind: "security"): Promise<SecurityInfo>;
 export function getInventory(kind: "privacy"): Promise<PrivacyInfo>;
+export function getInventory(kind: "packages"): Promise<PackagesInfo>;
+export function getInventory(kind: "containers"): Promise<ContainersInfo>;
+export function getInventory(kind: "backups"): Promise<BackupsInfo>;
 export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }

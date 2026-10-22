@@ -5,8 +5,10 @@
 
 mod accounts;
 mod audio;
+pub(crate) mod backups;
 mod bluetooth;
 mod command;
+mod containers;
 mod display;
 mod firmware;
 mod gpu;
@@ -18,6 +20,7 @@ mod logs;
 mod net;
 mod network;
 mod os;
+mod packages;
 mod power;
 mod privacy;
 mod processes;
@@ -72,6 +75,9 @@ pub const KINDS: &[&str] = &[
     "accounts",
     "security",
     "privacy",
+    "packages",
+    "containers",
+    "backups",
 ];
 
 /// Reads one inventory. `Err` holds a plain-English reason.
@@ -125,6 +131,9 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
             security::read(&agent.root, &processes::user_names(&agent.root)).await,
         ),
         "privacy" => serde_json::to_value(privacy::read(&agent.root).await),
+        "packages" => serde_json::to_value(packages::read(&agent.root).await),
+        "containers" => serde_json::to_value(containers::read(&agent.root).await),
+        "backups" => serde_json::to_value(backups::read(&agent.root).await),
         other => {
             return Err(format!(
                 "unknown inventory '{other}' (known: {})",

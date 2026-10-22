@@ -34,6 +34,7 @@ The code is in `crates/deecure-agent/src/collect/`. Every file collector reads t
 | Pressure | `/proc/pressure/{cpu,memory,io}` | Every minute | The "some" 10-second average. Missing on kernels without PSI. |
 | Boot | systemd over D-Bus (`Manager` and unit timestamps) | Once per boot, after it finished | Phase times and the 15 slowest units, like `systemd-analyze`. Saves `boot.time` at the moment of boot, so the history shows one point per boot. |
 | Updates | `apt list --upgradable` | Every hour; the last answer is repeated every minute | Read-only: no admin rights, no lock, changes nothing. Also reads `/etc/apt/apt.conf.d/20auto-upgrades` and `/run/reboot-required`. |
+| Backups | Déjà Dup settings (`gsettings`), `/etc/timeshift/timeshift.json`, Timeshift snapshot folders | Every hour; repeated every minute | Whether backups run on a schedule, and the age of the newest backup or snapshot |
 | Sensors | `/sys/class/hwmon/*` | Every minute | Every temperature and fan the kernel exposes. `temp.cpu` comes from the best CPU sensor (`coretemp` package, `k10temp`, …). |
 
 ### Live inventories
@@ -80,6 +81,9 @@ Safety rules for live reads:
 | `accounts` | `/etc/passwd`, `/etc/group`, logind (system D-Bus), `last`, journal (sudo), `~/.ssh`, `ssh-keygen -lf`, `/etc/ssh/sshd_config` | People who can sign in with groups and admin rights, groups with members and what they allow, open sessions, sign-ins and sudo use (30 days), SSH server settings and keys. `/etc/shadow` is never read. |
 | `security` | `/proc/sys`, `/sys/module/apparmor`, SUID files and `dpkg -S`, scanner programs, ClamAV signature files, autostart and cron files, `/sys/module/*/taint`, `gsettings` | Kernel hardening settings, AppArmor, SUID programs and their packages, malware scanners, simple malware signs, and the screen lock |
 | `privacy` | `pw-dump`, `snap connections`, `flatpak info --show-permissions`, `gsettings`, `/etc/popularity-contest.conf` | Apps using the microphone, camera, or screen now; what snap and Flatpak apps may use; desktop privacy settings |
+| `packages` | `/var/lib/dpkg/status`, `/var/lib/apt/extended_states`, `snap list --all`, `flatpak list`, AppImages in home folders, apt sources (`.list` and deb822 `.sources`), `apt-get -s autoremove` (a simulation) | Every installed package with source, version, size, and whether a person asked for it; software sources with type, signature checking, and own key; packages no longer needed, disabled snap revisions, and leftover settings |
+| `containers` | `docker ps -a`, `docker stats --no-stream`, `docker system df -v` (only when Docker's socket exists), `virsh list --all` (system and user), `VBoxManage list` | Containers with state, ports, CPU, and memory; images and whether a container uses them; volumes and links; virtual machines |
+| `backups` | `gsettings org.gnome.DejaDup`, `/etc/timeshift/timeshift.json`, `/timeshift/snapshots` | Déjà Dup schedule and last backup; Timeshift setup, schedule, and snapshots |
 | `gpu` | `/sys/class/drm/card*`, `pci.ids` | Each graphics card's maker and model, PCI ID, driver, whether it is the main card, and load, video memory, and temperature when the driver reports them without admin rights |
 
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.
@@ -128,6 +132,8 @@ The 2-second rate while the app is open comes with the app in Phase 1. The colle
 | `system.reboot_required` | — | count | 1 when an update asks for a restart, else 0 |
 | `net.listening_all` | — | count | TCP ports listening on every network |
 | `firewall.enabled` | — | count | 1 when ufw is on, 0 when off; missing when ufw is not installed |
+| `backup.configured` | — | count | 1 when Déjà Dup or Timeshift runs on a schedule |
+| `backup.age_days` | — | count | Days since the newest backup or snapshot |
 | `health.score` | — | count | The [health score](health-score.md), saved after every check |
 | `services.running` | — | count | Services that are running |
 | `services.failed` | — | count | Services that failed |
