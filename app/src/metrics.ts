@@ -64,3 +64,34 @@ export function when(ms: number, now = Date.now()): string {
 export function scoreTone(score: number): "ok" | "warn" | "crit" {
   return score >= 90 ? "ok" : score >= 75 ? "warn" : "crit";
 }
+
+const DAY_MS = 86_400_000;
+
+/** Day × hour counts for the last `days` days (oldest first), for the heatmap. */
+export function heatRows(times: number[], now = Date.now(), days = 7): { label: string; values: number[] }[] {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const first = start.getTime() - (days - 1) * DAY_MS;
+  const rows = Array.from({ length: days }, (_, i) => ({
+    label: new Date(first + i * DAY_MS + 12 * 3_600_000).toLocaleDateString(undefined, { weekday: "short" }),
+    values: Array<number>(24).fill(0),
+  }));
+  for (const t of times) {
+    const d = new Date(t);
+    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const i = Math.round((day - first) / DAY_MS);
+    if (i >= 0 && i < days) rows[i].values[d.getHours()]++;
+  }
+  return rows;
+}
+
+/** systemd writes "-" in unit names as a backslash and x2d. */
+export function unescapeUnit(name: string): string {
+  return name.replace(/\\x([0-9a-f]{2})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+/** apt writes local time as "2026-10-23  00:34:58". */
+export function aptTime(start: string): number {
+  return new Date(start.replace(/\s+/, "T")).getTime();
+}
+

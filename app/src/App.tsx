@@ -12,7 +12,9 @@ import { PerformanceGpu } from "./pages/performance/Gpu";
 import { PerformanceMemory } from "./pages/performance/Memory";
 import { PerformanceNetwork } from "./pages/performance/Network";
 import { PerformancePressure } from "./pages/performance/Pressure";
+import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "./pages/activity/Activity";
 import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
+import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel } from "./pages/logs/Logs";
 import { JobsAnacron, JobsAt, JobsCalendar, JobsCron, JobsTimers } from "./pages/jobs/Jobs";
 import { ServicesStartup, ServicesUser } from "./pages/services/OtherServices";
 import { StorageCleanup, StorageFilesystems, StorageOverview, StorageUsage } from "./pages/storage/Storage";
@@ -73,6 +75,8 @@ const TABS: Record<string, Record<string, Tab>> = {
   },
   power: { battery: PowerBattery, profile: PowerProfile, sleep: PowerSleep },
   display: { displays: DisplayDisplays, audio: DisplayAudio },
+  logs: { journal: LogsJournal, errors: LogsErrors, crashes: LogsCrashes, kernel: LogsKernel, boots: LogsBoots },
+  activity: { timeline: ActivityTimelinePage, packages: ActivityPackages, config: ActivityConfig, devices: ActivityDevices, deecure: ActivityDeeCure },
   storage: { overview: StorageOverview, filesystems: StorageFilesystems, usage: StorageUsage, cleanup: StorageCleanup },
   services: { user: ServicesUser, startup: ServicesStartup },
   jobs: { calendar: JobsCalendar, cron: JobsCron, timers: JobsTimers, anacron: JobsAnacron, at: JobsAt },

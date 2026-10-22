@@ -356,6 +356,71 @@ export interface JobsInfo {
   runs: { at: number; job: string; failed: boolean }[];
 }
 
+export interface LogEntry {
+  at: number;
+  /** 0 emergency … 3 error, 4 warning, 5 notice, 6 info, 7 debug. */
+  priority: number;
+  unit: string;
+  message: string;
+}
+
+export interface JournalInfo {
+  volume: number[];
+  entries: LogEntry[];
+  total: number;
+}
+
+export interface ErrorsInfo {
+  total: number;
+  groups: { message: string; unit: string; count: number; last_seen: number; class: "attention" | "harmless" | "review" }[];
+  times: number[];
+}
+
+export interface KernelLine {
+  at: number;
+  priority: number;
+  subsystem: string;
+  message: string;
+}
+
+export interface Crash {
+  at: number;
+  app: string;
+  signal: string;
+  source: "kernel" | "systemd" | "apport";
+  count: number;
+}
+
+export interface BootRecord {
+  started: number;
+  ended: number;
+  shutdown: "running" | "clean" | "unclean";
+  kernel?: string;
+}
+
+export interface DeviceEvent {
+  at: number;
+  event: "connected" | "disconnected";
+  device: string;
+  id?: string;
+}
+
+export interface ConfigChange {
+  path: string;
+  modified: number;
+  owner: string;
+}
+
+export interface PackageChange {
+  /** Local time as apt wrote it: `YYYY-MM-DD  HH:MM:SS`. */
+  start: string;
+  action: "install" | "upgrade" | "remove" | "purge" | "downgrade" | "reinstall";
+  name: string;
+  from?: string;
+  to?: string;
+  source: string;
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
@@ -377,6 +442,14 @@ export function getInventory(kind: "user_services"): Promise<UserService[]>;
 export function getInventory(kind: "service_memory"): Promise<Record<string, number>>;
 export function getInventory(kind: "startup"): Promise<StartupApp[]>;
 export function getInventory(kind: "jobs"): Promise<JobsInfo>;
+export function getInventory(kind: "journal"): Promise<JournalInfo>;
+export function getInventory(kind: "errors"): Promise<ErrorsInfo>;
+export function getInventory(kind: "kernel_log"): Promise<KernelLine[]>;
+export function getInventory(kind: "crashes"): Promise<Crash[]>;
+export function getInventory(kind: "boots"): Promise<BootRecord[]>;
+export function getInventory(kind: "device_events"): Promise<DeviceEvent[]>;
+export function getInventory(kind: "config_changes"): Promise<ConfigChange[]>;
+export function getInventory(kind: "package_history"): Promise<PackageChange[]>;
 export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }

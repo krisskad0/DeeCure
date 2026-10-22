@@ -13,6 +13,7 @@ mod hardware;
 mod history;
 mod jobs;
 mod kernel;
+mod logs;
 mod network;
 mod os;
 mod power;
@@ -53,6 +54,14 @@ pub const KINDS: &[&str] = &[
     "service_memory",
     "startup",
     "jobs",
+    "journal",
+    "errors",
+    "kernel_log",
+    "crashes",
+    "boots",
+    "device_events",
+    "config_changes",
+    "package_history",
 ];
 
 /// Reads one inventory. `Err` holds a plain-English reason.
@@ -88,6 +97,17 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
                 .as_deref(),
         )),
         "jobs" => serde_json::to_value(jobs::read(agent).await),
+        "journal" => serde_json::to_value(logs::read_journal().await),
+        "errors" => serde_json::to_value(logs::read_errors().await),
+        "kernel_log" => serde_json::to_value(logs::read_kernel_log().await),
+        "crashes" => serde_json::to_value(logs::read_crashes(&agent.root).await),
+        "boots" => serde_json::to_value(logs::read_boots().await),
+        "device_events" => serde_json::to_value(logs::read_device_events().await),
+        "config_changes" => serde_json::to_value(logs::config_changes(
+            &agent.root,
+            &processes::user_names(&agent.root),
+        )),
+        "package_history" => serde_json::to_value(history::read_changes(&agent.root)),
         other => {
             return Err(format!(
                 "unknown inventory '{other}' (known: {})",

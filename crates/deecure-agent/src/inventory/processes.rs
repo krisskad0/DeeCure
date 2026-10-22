@@ -176,7 +176,7 @@ fn kilobytes(value: Option<&str>) -> u64 {
 }
 
 /// User IDs to names, from `/etc/passwd`.
-fn user_names(root: &SystemRoot) -> HashMap<u32, String> {
+pub(crate) fn user_names(root: &SystemRoot) -> HashMap<u32, String> {
     root.read("/etc/passwd")
         .unwrap_or_default()
         .lines()

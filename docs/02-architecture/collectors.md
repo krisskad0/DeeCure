@@ -67,6 +67,14 @@ Safety rules for live reads:
 | `service_memory` | systemd (system D-Bus) `MemoryCurrent` | Memory of each running system service |
 | `startup` | `~/.config/autostart`, `/etc/xdg/autostart` | Apps started at a GNOME login, user files overriding system ones, with on/off state. GNOME's own settings daemons are left out. |
 | `jobs` | `crontab -l`, `/etc/crontab`, `/etc/cron.d`, systemd timers (system and user D-Bus), `/etc/anacrontab`, `/var/spool/anacron`, `atq`, journal (CRON and unit start/fail messages, 7 days) | Cron lines, timers with schedule, last and next run, and result, anacron jobs with last run, at jobs, and every job run of the last 7 days |
+| `journal` | `journalctl --since -24h` | The newest 500 entries of the last 24 hours (time, priority, unit, message) and entries per hour |
+| `errors` | `journalctl -p err --since -7d` | Errors grouped by message with numbers taken out, each marked "needs attention", "worth a look", or "harmless", and every error time for the heatmap |
+| `kernel_log` | `journalctl -k --since -7d` | The newest 500 kernel messages with their subsystem |
+| `crashes` | journal (segfaults, out-of-memory kills, services that dumped core), `/var/crash` (apport) | Crashes of the last 7 days, grouped by program and signal |
+| `boots` | `journalctl --list-boots`, then each boot's first kernel line and last lines | The last 10 boots with start, end, kernel, and whether the shutdown was clean |
+| `device_events` | kernel log (`usb …` lines) | USB devices plugged in and out in the last 30 days |
+| `config_changes` | `/etc` (file times) | Files in `/etc` changed in the last 30 days, with their owner |
+| `package_history` | `/var/log/apt/history.log` | Every package installed, upgraded, or removed, with versions and who started it |
 | `gpu` | `/sys/class/drm/card*`, `pci.ids` | Each graphics card's maker and model, PCI ID, driver, whether it is the main card, and load, video memory, and temperature when the driver reports them without admin rights |
 
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.

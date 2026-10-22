@@ -35,7 +35,13 @@ vi.mock("../../api", () => ({
     Promise.resolve(
       kind === "system"
         ? { hostname: "riya-laptop", os: "Ubuntu 24.04.1 LTS", kernel: "6.8.0-47-generic", arch: "x86_64", cpu_threads: 12, uptime_seconds: 45_360, reboot_required: true, reboot_packages: ["libc6"] }
-        : [{ pid: 1, name: "firefox", user: "riya", state: "S", cpu_percent: 4.2, memory_bytes: 842_000_000, threads: 80, command: "firefox" }],
+        : kind === "processes"
+          ? [{ pid: 1, name: "firefox", user: "riya", state: "S", cpu_percent: 4.2, memory_bytes: 842_000_000, threads: 80, command: "firefox" }]
+          : kind === "errors"
+            ? { total: 1, groups: [], times: [Date.now()] }
+            : kind === "boots"
+              ? [{ started: Date.now() - 3_600_000, ended: Date.now(), shutdown: "running", kernel: "6.8.0-47-generic" }]
+              : [],
     ),
   toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
 }));
@@ -65,6 +71,7 @@ describe("Overview pages", () => {
     expect(screen.getByText("firefox")).toBeTruthy();
     expect(screen.getByText("−15")).toBeTruthy();
     expect(screen.getByText("Main disk is almost full")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Computer started")).toBeTruthy());
   });
 
   it("issues counts findings by severity", () => {

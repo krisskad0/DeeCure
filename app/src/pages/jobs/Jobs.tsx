@@ -12,7 +12,7 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { Heatmap } from "../../components/charts/Heatmap";
 import { type Lane, SwimLanes } from "../../components/charts/SwimLanes";
 import { describeCron, nextRun, parseCron, runsBetween } from "../../cron";
-import { when } from "../../metrics";
+import { heatRows, when } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 
@@ -61,15 +61,6 @@ export function JobsCalendar() {
   ].filter((n): n is { name: string; at: number } => n.at !== null && n.at >= now);
   const soonest = nexts.sort((a, b) => a.at - b.at)[0];
   const failed = jobs.runs.filter((r) => r.failed);
-  // Day × hour counts for the last 7 days, oldest day first.
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  const days = Array.from({ length: 7 }, (_, i) => new Date(start.getTime() - (6 - i) * DAY));
-  const heat = days.map((d) => ({ label: d.toLocaleDateString(undefined, { weekday: "short" }), values: Array<number>(24).fill(0) }));
-  for (const r of jobs.runs) {
-    const i = Math.floor((r.at - days[0].getTime()) / DAY);
-    if (i >= 0 && i < 7) heat[i].values[new Date(r.at).getHours()]++;
-  }
   const minutes = soonest ? Math.max(0, Math.round((soonest.at - now) / 60_000)) : 0;
   return (
     <>
@@ -85,7 +76,7 @@ export function JobsCalendar() {
         {lanes.length ? <SwimLanes lanes={lanes.slice(0, 14)} now={new Date(now)} /> : <div className="empty muted">Nothing runs in the next 24 hours.</div>}
       </Panel>
       <Panel title="Job runs by hour" subtitle="last 7 days" source="journal: CRON · systemd" span={12}>
-        <Heatmap rows={heat} unit="runs" />
+        <Heatmap rows={heatRows(jobs.runs.map((r) => r.at))} unit="runs" />
       </Panel>
     </>
   );

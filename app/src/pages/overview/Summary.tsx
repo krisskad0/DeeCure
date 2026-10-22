@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Overview › Summary (docs/03-ui-design/05-pages/01-overview.md), with real data.
-// Not shown yet: the disk breakdown by folder (needs a disk-use scan), recent activity, and
-// the error heatmap. They join when the Storage, Activity, and Logs pages exist.
 
 import { type Finding, type Metric, type Process, type SystemInfo, getInventory, getLatest, getMetrics, getSnapshot } from "../../api";
+import { ActivityTimeline } from "../../components/ActivityTimeline";
 import { LinkButton } from "../../components/Button";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -14,8 +13,10 @@ import { type StatusRow, StatusList } from "../../components/StatusList";
 import { BarList } from "../../components/charts/BarList";
 import { Donut } from "../../components/charts/Donut";
 import { Gauge } from "../../components/charts/Gauge";
+import { Heatmap } from "../../components/charts/Heatmap";
 import { LineChart } from "../../components/charts/LineChart";
-import { RANGE_MS, align, bytes, duration, pick, rate, scoreTone, when } from "../../metrics";
+import { RANGE_MS, align, bytes, duration, heatRows, pick, rate, scoreTone, when } from "../../metrics";
+import { useChanges } from "../activity/Activity";
 import { href } from "../../route";
 import { pageStatus } from "../../status";
 import { type Range, useUi } from "../../ui";
@@ -35,6 +36,7 @@ const loadLatest = () => getLatest();
 const loadSystem = () => getInventory("system");
 const loadProcesses = () => getInventory("processes");
 const loadDisks = () => getSnapshot<FsEntry[]>("filesystems");
+const loadErrors = () => getInventory("errors");
 
 async function loadHistory(range: Range) {
   const until = Date.now();
@@ -96,6 +98,8 @@ export function OverviewSummary({ report, error, now }: PageProps) {
       <DiskPanel latest={latest} disks={disks?.data} />
       <TopProcesses processes={processes} />
       <SystemPanel system={system} now={now} />
+      <RecentActivity />
+      <ErrorHeatmap />
     </>
   );
 }
@@ -332,3 +336,28 @@ function SystemPanel({ system, now }: { system: SystemInfo | undefined; now: num
     </Panel>
   );
 }
+
+function RecentActivity() {
+  const changes = useChanges();
+  return (
+    <Panel title="Recent activity" actions={<LinkButton to={href("activity", "timeline")}>View all</LinkButton>} span={6} flush>
+      {!changes ? (
+        <div className="empty muted">Loading…</div>
+      ) : changes.length ? (
+        <ActivityTimeline rows={changes.slice(0, 6).map((c) => ({ time: when(c.at), title: c.title, detail: c.detail, tone: c.tone }))} />
+      ) : (
+        <div className="empty muted">No changes in the last 7 days.</div>
+      )}
+    </Panel>
+  );
+}
+
+function ErrorHeatmap() {
+  const errors = useLive(loadErrors, 300_000).data;
+  return (
+    <Panel title="Errors by hour" subtitle="last 7 days" source="journalctl -p err" actions={<LinkButton to={href("logs", "errors")}>View all</LinkButton>} span={6}>
+      {errors ? <Heatmap rows={heatRows(errors.times)} unit="errors" /> : <div className="empty muted">Loading…</div>}
+    </Panel>
+  );
+}
+

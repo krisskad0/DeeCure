@@ -80,9 +80,88 @@ pub fn parse(text: &str) -> Vec<AptRun> {
     runs
 }
 
+/// One package change, with versions.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PackageChange {
+    pub start: String,
+    /// install, upgrade, remove, purge, downgrade, or reinstall.
+    pub action: String,
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub to: Option<String>,
+    pub source: String,
+}
+
+/// Every package change in the log, newest first.
+pub fn changes(text: &str) -> Vec<PackageChange> {
+    let mut out = Vec::new();
+    for block in text.split("\n\n") {
+        let (mut start, mut commandline) = (String::new(), String::new());
+        let mut items = Vec::new();
+        for line in block.lines() {
+            let Some((key, value)) = line.split_once(": ") else {
+                continue;
+            };
+            match key {
+                "Start-Date" => start = value.trim().to_owned(),
+                "Commandline" => commandline = value.trim().to_owned(),
+                "Install" | "Upgrade" | "Remove" | "Purge" | "Downgrade" | "Reinstall" => {
+                    for item in value.split("), ") {
+                        // "pkg:amd64 (old, new" or "pkg:amd64 (ver, automatic" or "pkg:amd64 (ver"
+                        let (name, versions) = item.split_once(" (").unwrap_or((item, ""));
+                        let name = name.split(':').next().unwrap_or(name).trim().to_owned();
+                        let v: Vec<&str> = versions
+                            .trim_end_matches(')')
+                            .split(", ")
+                            .filter(|x| !x.is_empty() && *x != "automatic")
+                            .collect();
+                        let (from, to) = match (key, v.as_slice()) {
+                            ("Upgrade" | "Downgrade", [a, b, ..]) => {
+                                (Some((*a).to_owned()), Some((*b).to_owned()))
+                            }
+                            ("Install" | "Reinstall", [a, ..]) => (None, Some((*a).to_owned())),
+                            (_, [a, ..]) => (Some((*a).to_owned()), None),
+                            _ => (None, None),
+                        };
+                        if !name.is_empty() {
+                            items.push((key.to_lowercase(), name, from, to));
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        if !start.is_empty() {
+            let source = source(&commandline);
+            out.extend(
+                items
+                    .into_iter()
+                    .map(|(action, name, from, to)| PackageChange {
+                        start: start.clone(),
+                        action,
+                        name,
+                        from,
+                        to,
+                        source: source.clone(),
+                    }),
+            );
+        }
+    }
+    out.reverse();
+    out.truncate(2000);
+    out
+}
+
 /// Reads the current log. Rotated, compressed logs are not read.
 pub fn read(root: &SystemRoot) -> Vec<AptRun> {
     parse(&root.read("/var/log/apt/history.log").unwrap_or_default())
+}
+
+/// Every package change in the current log, newest first.
+pub fn read_changes(root: &SystemRoot) -> Vec<PackageChange> {
+    changes(&root.read("/var/log/apt/history.log").unwrap_or_default())
 }
 
 #[cfg(test)]
@@ -107,6 +186,25 @@ Requested-By: riya (1000)
 Install: htop:amd64 (3.3.0-4build1)
 End-Date: 2026-10-23  09:00:02
 ";
+
+    #[test]
+    fn lists_each_package_change_with_versions() {
+        let c = changes(LOG);
+        assert_eq!(c.len(), 4);
+        assert_eq!(
+            (c[0].action.as_str(), c[0].name.as_str(), c[0].to.as_deref()),
+            ("install", "htop", Some("3.3.0-4build1"))
+        );
+        assert_eq!(
+            (c[1].name.as_str(), c[1].from.as_deref(), c[1].to.as_deref()),
+            (
+                "openssl",
+                Some("3.0.13-0ubuntu3.4"),
+                Some("3.0.13-0ubuntu3.5")
+            )
+        );
+        assert_eq!(c[3].source, "Software Updater");
+    }
 
     #[test]
     fn reads_runs_newest_first() {
