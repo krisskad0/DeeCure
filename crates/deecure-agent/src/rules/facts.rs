@@ -126,10 +126,14 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
                     subject: text(unit, "name")?,
                     ..Item::default()
                 };
-                for field in ["name", "description", "load", "active", "sub"] {
+                for field in ["name", "description", "load", "active", "sub", "enabled"] {
                     if let Some(value) = text(unit, field) {
                         item.fields.insert(field.into(), Value::Text(value));
                     }
+                }
+                if let Some(restarts) = unit.get("restarts").and_then(Json::as_f64) {
+                    item.fields
+                        .insert("restarts".into(), Value::Number(restarts));
                 }
                 Some(item)
             })

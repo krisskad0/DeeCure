@@ -54,6 +54,10 @@ export interface UnitState {
   load: string;
   active: string;
   sub: string;
+  /** `enabled`, `disabled`, `static`, … Missing when systemd does not say. */
+  enabled?: string;
+  /** Restarts since boot. */
+  restarts?: number;
 }
 
 export function getSnapshot<T>(kind: "services" | "filesystems"): Promise<Snapshot<T> | null> {

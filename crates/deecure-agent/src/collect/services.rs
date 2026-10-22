@@ -6,7 +6,7 @@ use std::io;
 
 use deecure_core::{Snapshot, SnapshotKind, Timestamp, Unit};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::OwnedObjectPath;
+use zbus::zvariant::{OwnedObjectPath, OwnedValue};
 
 use super::{Sample, metric};
 
@@ -37,7 +37,16 @@ pub struct UnitState {
     pub active: String,
     /// The detailed state, such as `running`, `exited`, or `dead`.
     pub sub: String,
+    /// Whether it starts at boot: `enabled`, `disabled`, `static`, `masked`, …
+    /// Missing when systemd does not say (for example, transient units).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<String>,
+    /// How many times systemd restarted it since boot.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub restarts: Option<u32>,
 }
+
+const SYSTEMD: &str = "org.freedesktop.systemd1";
 
 /// Counts running and failed services, and keeps an inventory of their states.
 ///
@@ -73,7 +82,7 @@ impl Services {
         };
         let reply = bus
             .call_method(
-                Some("org.freedesktop.systemd1"),
+                Some(SYSTEMD),
                 "/org/freedesktop/systemd1",
                 Some("org.freedesktop.systemd1.Manager"),
                 "ListUnits",
@@ -82,17 +91,56 @@ impl Services {
             .await?;
         let body = reply.body();
         let rows: Vec<UnitRow> = body.deserialize()?;
-        Ok(rows
-            .into_iter()
-            .map(|(name, description, load, active, sub, ..)| UnitState {
+        let mut units = Vec::new();
+        for (name, description, load, active, sub, _, path, ..) in rows {
+            // Only services get the extra properties; other units are dropped later anyway.
+            let (enabled, restarts) = if name.ends_with(".service") {
+                let enabled: Option<String> = property(
+                    &bus,
+                    &path,
+                    "org.freedesktop.systemd1.Unit",
+                    "UnitFileState",
+                )
+                .await;
+                let restarts =
+                    property(&bus, &path, "org.freedesktop.systemd1.Service", "NRestarts").await;
+                (enabled.filter(|state| !state.is_empty()), restarts)
+            } else {
+                (None, None)
+            };
+            units.push(UnitState {
                 name,
                 description,
                 load,
                 active,
                 sub,
-            })
-            .collect())
+                enabled,
+                restarts,
+            });
+        }
+        Ok(units)
     }
+}
+
+/// Reads one property of a systemd unit, or `None` if it is missing or of another type.
+async fn property<T: TryFrom<OwnedValue>>(
+    bus: &zbus::Connection,
+    path: &OwnedObjectPath,
+    interface: &str,
+    name: &str,
+) -> Option<T> {
+    let reply = bus
+        .call_method(
+            Some(SYSTEMD),
+            path.as_str(),
+            Some("org.freedesktop.DBus.Properties"),
+            "Get",
+            &(interface, name),
+        )
+        .await
+        .ok()?;
+    let value: OwnedValue = reply.body().deserialize().ok()?;
+    T::try_from(value).ok()
 }
 
 /// Turns the unit list into counts and a sorted inventory of `.service` units.
@@ -130,6 +178,8 @@ mod tests {
             load: "loaded".into(),
             active: active.into(),
             sub: sub.into(),
+            enabled: None,
+            restarts: None,
         }
     }
 

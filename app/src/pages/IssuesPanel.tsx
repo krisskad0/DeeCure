@@ -4,6 +4,7 @@
 import type { AppError, Finding, StatusReport } from "../api";
 import { Panel, type Span } from "../components/Panel";
 import { StatusBadge } from "../components/StatusBadge";
+import { NoData } from "./NoData";
 import { severityVariant } from "../status";
 import { ago } from "../time";
 
@@ -24,26 +25,7 @@ export function IssuesPanel(props: {
 }
 
 function Body({ findings, report, error, now }: { findings: Finding[]; report: StatusReport | null; error: AppError | null; now: number }) {
-  if (error?.kind === "agent_not_running") {
-    return (
-      <div className="empty">
-        <StatusBadge variant="off" label="Agent not running" />
-        <p>DeeCure's background agent is not running, so there is nothing to show yet.</p>
-        <p>Start it with:</p>
-        <pre className="cmd">systemctl --user start deecure-agent.socket</pre>
-        <p>Working from a source checkout? Run:</p>
-        <pre className="cmd">make agent</pre>
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="empty">
-        <StatusBadge variant="crit" label="Error" />
-        <p>{error.message}</p>
-      </div>
-    );
-  }
+  if (error) return <NoData error={error} waiting="" />;
   if (!report) return <div className="empty muted">Loading…</div>;
   if (!report.checked_at) {
     return <div className="empty muted">DeeCure is checking this computer for the first time. This takes a few seconds.</div>;

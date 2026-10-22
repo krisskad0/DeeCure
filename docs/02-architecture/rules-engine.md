@@ -95,7 +95,7 @@ Lists for `for_each`, used as `item.<field>`:
 | --- | --- | --- |
 | `filesystems` | Mount point | `mount_point`, `used_percent`, `free_gb`, `size_gb`, `fs_type`, `device` |
 | `batteries` | Battery, such as `BAT0` | `name`, `charge`, `health`, `power` |
-| `services` | `.service` unit | `name`, `description`, `load`, `active`, `sub` |
+| `services` | `.service` unit | `name`, `description`, `load`, `active`, `sub`, `enabled`, `restarts` |
 
 A list that is not known (no battery, for example) means "unknown", not "empty".
 

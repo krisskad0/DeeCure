@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { type AppError, type Machine, type StatusReport, getMachine, getStatus, toAppError } from "./api";
 import { IssuesPanel } from "./pages/IssuesPanel";
 import { NotBuilt } from "./pages/NotBuilt";
+import { SystemServices } from "./pages/services/SystemServices";
 import { usePref } from "./prefs";
 import { useRoute } from "./route";
 import { CommandPalette } from "./shell/CommandPalette";
@@ -74,8 +75,13 @@ export default function App() {
   const all = report?.findings ?? [];
   const pageFindings = findingsFor(route.page.id, report);
   const alerts = all.filter((f) => f.severity !== "info").length;
+  const failedServices = all.filter((f) => f.rule === "services.unit_failed").length;
   const tabCounts: Record<string, { count: number; critical: boolean }> =
-    route.page.id === "overview" ? { issues: { count: all.length, critical: all.some((f) => f.severity === "critical") } } : {};
+    route.page.id === "overview"
+      ? { issues: { count: all.length, critical: all.some((f) => f.severity === "critical") } }
+      : route.page.id === "services"
+        ? { system: { count: failedServices, critical: true } }
+        : {};
   const shared = { report, error, now };
 
   let content;
@@ -83,6 +89,8 @@ export default function App() {
     content = <Gallery />;
   } else if (route.page.id === "overview" && route.tab.id === "summary") {
     content = <IssuesPanel title="Active issues" subtitle="Most serious first" findings={all} {...shared} />;
+  } else if (route.page.id === "services" && route.tab.id === "system") {
+    content = <SystemServices />;
   } else if (route.page.id === "overview" && route.tab.id === "issues") {
     content = <IssuesPanel title="All open issues" subtitle="Everything DeeCure found, most serious first" findings={all} {...shared} />;
   } else {

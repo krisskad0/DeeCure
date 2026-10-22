@@ -60,5 +60,5 @@ Stored only when they change, so they take little space.
 | Kind | Contents |
 | --- | --- |
 | `filesystems` | Mount point, device, type, and size of each local filesystem |
-| `services` | Name, description, and load, active, and sub state of each service |
+| `services` | Name, description, load, active, and sub state, enabled-at-boot state (`UnitFileState`), and restarts since boot (`NRestarts`) of each service |
 
