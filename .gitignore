@@ -1,0 +1,26 @@
+# Rust
+/target/
+**/*.rs.bk
+
+# Desktop app (Node / Tauri)
+node_modules/
+/app/dist/
+/app/src-tauri/target/
+/app/src-tauri/gen/
+
+# Debian build output (packaging/debian/ is copied to debian/ at build time)
+/debian/
+/vendor/
+*.deb
+*.ddeb
+*.buildinfo
+*.changes
+
+# Editors and OS
+.idea/
+*.swp
+.DS_Store
+
+# Local secrets and settings
+.env
+*.local

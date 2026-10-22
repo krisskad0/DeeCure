@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest a new check, fix, explanation, or feature.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation. Example — "My laptop gets hot and I don't know why."
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should SysDoc do?
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type
+      options:
+        - New check (rule)
+        - New fix
+        - New plain-English explanation (KB)
+        - UI change
+        - Other

@@ -1,0 +1,1634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>SysDoc Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400..700&family=Ubuntu+Sans+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-height admin dashboard. Top bar, collapsible sidebar tree (page > sub-pages), sticky page header with tabs, 12-column panel grid. */
+:root{
+  --bg:#f3f4f6; --panel:#ffffff; --panel-2:#f7f8fa; --hover:#eef1f5; --track:#e8ebf0;
+  --line:#e2e5ea; --line-2:#cfd4dc; --ink:#111620; --ink-2:#465061; --muted:#768092;
+  --accent:#2563c9; --accent-ink:#ffffff; --accent-soft:#e8f0fc;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --good:#0ca30c; --good-ink:#14742b; --good-soft:#e4f4e6;
+  --warn:#fab219; --warn-ink:#8a5900; --warn-soft:#fdf2da;
+  --crit:#d03b3b; --crit-ink:#b42525; --crit-soft:#fbe7e7;
+  --info-ink:#2457ad; --info-soft:#e8f0fc; --neutral-soft:#eceef2;
+  --grid:#eceef2; --axis:#c9ced6;
+  --h1:#e3edfb; --h2:#b7d3f6; --h3:#6da7ec; --h4:#2a78d6; --h5:#184f95;
+  --scrim:rgba(17,22,32,.42); --shadow:0 12px 32px -8px rgba(17,22,32,.25), 0 2px 6px rgba(17,22,32,.08);
+  --font:"Ubuntu Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Ubuntu Sans Mono",ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0d11; --panel:#14171c; --panel-2:#191d23; --hover:#1f242b; --track:#262c35;
+    --line:#252a32; --line-2:#343b46; --ink:#e8ebef; --ink-2:#aab2bf; --muted:#7d8695;
+    --accent:#5f9df0; --accent-ink:#0b0d11; --accent-soft:#16243a;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --good:#0ca30c; --good-ink:#5fcf6a; --good-soft:#12261a;
+    --warn:#fab219; --warn-ink:#f6c457; --warn-soft:#2c2411;
+    --crit:#d03b3b; --crit-ink:#f08585; --crit-soft:#331919;
+    --info-ink:#8fb8f6; --info-soft:#16243a; --neutral-soft:#222831;
+    --grid:#1f242b; --axis:#384049;
+    --h1:#17202d; --h2:#1c3a63; --h3:#255da0; --h4:#3987e5; --h5:#86b6ef;
+    --scrim:rgba(0,0,0,.6); --shadow:0 12px 32px -8px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0d11; --panel:#14171c; --panel-2:#191d23; --hover:#1f242b; --track:#262c35;
+  --line:#252a32; --line-2:#343b46; --ink:#e8ebef; --ink-2:#aab2bf; --muted:#7d8695;
+  --accent:#5f9df0; --accent-ink:#0b0d11; --accent-soft:#16243a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --good:#0ca30c; --good-ink:#5fcf6a; --good-soft:#12261a;
+  --warn:#fab219; --warn-ink:#f6c457; --warn-soft:#2c2411;
+  --crit:#d03b3b; --crit-ink:#f08585; --crit-soft:#331919;
+  --info-ink:#8fb8f6; --info-soft:#16243a; --neutral-soft:#222831;
+  --grid:#1f242b; --axis:#384049;
+  --h1:#17202d; --h2:#1c3a63; --h3:#255da0; --h4:#3987e5; --h5:#86b6ef;
+  --scrim:rgba(0,0,0,.6); --shadow:0 12px 32px -8px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:13.5px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mono{font-family:var(--mono);font-size:12.5px}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* app shell */
+.app{height:100%;display:grid;grid-template-columns:var(--sbw,240px) minmax(0,1fr);grid-template-rows:52px minmax(0,1fr)}
+.app.rail{--sbw:60px}
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--panel);border-bottom:1px solid var(--line);min-width:0;position:relative;z-index:12}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+.logo{width:28px;height:28px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.logo .ic{width:18px;height:18px;stroke-width:2.2}
+.host{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:1px solid var(--line);border-radius:7px;background:var(--panel);margin-left:10px;white-space:nowrap}
+.host .d{width:8px;height:8px;border-radius:50%;background:var(--good)}
+.host small{color:var(--muted)}
+.proto{font-size:11.5px;color:var(--warn-ink);background:var(--warn-soft);padding:2px 8px;border-radius:4px;white-space:nowrap}
+.search-trigger{flex:1;max-width:420px;margin-left:auto;display:flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:1px solid var(--line);border-radius:7px;background:var(--panel-2);color:var(--muted);text-align:left;min-width:0}
+.search-trigger span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--ink-2);background:var(--panel)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;padding:2px;background:var(--panel-2);flex:none}
+.seg button{border:0;background:none;height:26px;padding:0 10px;border-radius:5px;font-size:12.5px;font-weight:500;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--line-2)}
+.tb-r{display:flex;align-items:center;gap:6px;flex:none;min-width:0}
+.ibtn{position:relative;width:32px;height:32px;border:0;background:none;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);flex:none}
+.ibtn:hover{background:var(--hover);color:var(--ink)}
+.ibtn .cnt{position:absolute;top:3px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--crit);color:#fff;font-size:10.5px;font-weight:700;line-height:16px;text-align:center}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;display:grid;place-items:center;font-size:12.5px;flex:none}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px var(--good-soft)}
+.menu-btn{display:none}
+
+.sidebar{background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column;padding-block:8px 10px;padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:10px;min-height:0}
+.nav-g{margin-top:12px}
+.nav-g:first-child{margin-top:4px}
+.nav-gl{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 10px 5px;white-space:nowrap}
+.ni{display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 8px 0 10px;border:0;background:none;border-radius:6px;color:var(--ink-2);font-weight:500;text-align:left;white-space:nowrap}
+.ni:hover{background:var(--hover);color:var(--ink)}
+.ni.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.ni .ic{width:17px;height:17px}
+.ni .lab{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ni .chev{width:14px;height:14px;color:var(--muted);transition:transform .15s}
+.ni.open .chev{transform:rotate(90deg)}
+.ndot{width:7px;height:7px;border-radius:50%;flex:none}
+.ndot.warn{background:var(--warn)}.ndot.crit{background:var(--crit)}.ndot.info{background:var(--s1)}
+.ncnt{font-size:11px;font-weight:700;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:var(--crit-soft);color:var(--crit-ink);line-height:18px;text-align:center}
+.sub{margin:1px 0 4px 18px;padding-left:10px;border-left:1px solid var(--line)}
+.si{display:block;width:100%;text-align:left;border:0;background:none;padding:4px 8px;border-radius:5px;color:var(--ink-2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si:hover{color:var(--ink);background:var(--hover)}
+.si.on{color:var(--accent);font-weight:600}
+.sb-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.app.rail .lab,.app.rail .nav-gl,.app.rail .sub,.app.rail .chev,.app.rail .ncnt{display:none}
+.app.rail .ni{justify-content:center;padding:0;position:relative}
+.app.rail .ndot{position:absolute;top:6px;right:8px}
+.app.rail .nav-g{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.app.rail .nav-g:first-child{border-top:0;padding-top:0}
+
+/* main */
+.main{overflow:auto;min-width:0;min-height:0;padding-right:max(20px,env(safe-area-inset-right,0px))}
+.phead{position:sticky;top:0;z-index:6;background:var(--bg);padding:14px 0 0 20px}
+.crumbs{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.crumbs button{border:0;background:none;padding:0;color:var(--muted)}
+.crumbs button:hover{color:var(--accent)}
+.crumbs .ic{width:12px;height:12px}
+.ph-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;flex-wrap:wrap}
+.ph-title{display:flex;align-items:center;gap:10px;min-width:0}
+.ph-title .pic{width:32px;height:32px;border-radius:8px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-2);flex:none}
+.ph-title h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em;white-space:nowrap}
+.ph-acts{display:flex;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);margin-top:10px;scrollbar-width:none}
+.tab{border:0;background:none;padding:8px 12px 9px;font-weight:500;color:var(--ink-2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tcnt{font-size:11px;font-weight:600;padding:0 6px;border-radius:9px;background:var(--neutral-soft);color:var(--ink-2);line-height:17px}
+.tcnt.crit{background:var(--crit-soft);color:var(--crit-ink)}
+.content{padding:16px 0 28px 20px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.s-3{grid-column:span 3}.s-4{grid-column:span 4}.s-5{grid-column:span 5}.s-6{grid-column:span 6}.s-7{grid-column:span 7}.s-8{grid-column:span 8}.s-9{grid-column:span 9}.s-12{grid-column:1/-1}
+
+/* panels */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;min-width:0}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px 0 14px;min-height:42px;border-bottom:1px solid var(--line)}
+.ph-t{display:flex;align-items:center;gap:6px;min-width:0}
+.ph-t h3{font-size:13.5px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-t .phs{font-size:12px;color:var(--muted);white-space:nowrap}
+.ph-a{display:flex;align-items:center;gap:6px;flex:none}
+.pb{padding:12px 14px 14px;flex:1;min-width:0}
+.pb.flush{padding:0}
+.src{display:none;font-family:var(--mono);font-size:11.5px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:0 6px;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.expert .src{display:inline-block}
+.tipi{position:relative;display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;color:var(--muted);border:0;background:none;padding:0;cursor:help;flex:none}
+.tipi .ic{width:14px;height:14px}
+.tipi:hover::after,.tipi:focus-visible::after{content:attr(data-tip);position:absolute;left:-8px;top:calc(100% + 6px);width:max-content;max-width:260px;white-space:normal;background:var(--ink);color:var(--panel);font-size:12px;font-weight:400;line-height:1.4;padding:7px 9px;border-radius:6px;z-index:40;text-align:left;box-shadow:var(--shadow)}
+
+/* kpis */
+.kpis{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px 10px;display:flex;flex-direction:column;gap:1px;min-width:0;text-align:left;color:inherit}
+button.kpi:hover{border-color:var(--line-2);background:var(--panel-2)}
+.kpi-l{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;color:var(--ink-2);font-weight:500;min-height:20px}
+.kpi-l span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-v{font-size:24px;font-weight:600;letter-spacing:-.015em;line-height:1.2;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-v small{font-size:13px;color:var(--muted);font-weight:500;margin-left:3px;letter-spacing:0}
+.kpi-s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spark{display:block;width:100%;height:28px;margin-top:6px}
+.spark path.l{fill:none;stroke-width:1.6}
+.spark path.a{stroke:none;opacity:.12}
+.kbar{height:6px;border-radius:3px;background:var(--track);margin-top:10px;overflow:hidden;margin-bottom:8px}
+.kbar b{display:block;height:100%;border-radius:3px;background:var(--s1)}
+.kbar.warn b{background:var(--warn)}.kbar.crit b{background:var(--crit)}
+
+/* badges & buttons */
+.b{display:inline-flex;align-items:center;gap:4px;padding:0 7px 0 5px;border-radius:4px;font-size:11.5px;font-weight:600;line-height:20px;white-space:nowrap;background:var(--neutral-soft);color:var(--ink-2)}
+.b .ic{width:12px;height:12px;stroke-width:2.6}
+.b.ok{background:var(--good-soft);color:var(--good-ink)}
+.b.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.b.crit{background:var(--crit-soft);color:var(--crit-ink)}
+.b.info{background:var(--info-soft);color:var(--info-ink)}
+.b.off{background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--muted)}
+.tag{display:inline-block;padding:0 6px;border-radius:4px;font-size:11.5px;line-height:19px;background:var(--neutral-soft);color:var(--ink-2);white-space:nowrap;margin:1px 2px 1px 0}
+.tag.mono{font-family:var(--mono)}
+.btn{height:30px;padding:0 12px;border-radius:6px;border:1px solid var(--line-2);background:var(--panel);font-weight:500;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;color:var(--ink)}
+.btn:hover{background:var(--hover)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.sm{height:26px;padding:0 9px;font-size:12.5px}
+.btn.link{border-color:transparent;background:none;color:var(--accent);padding:0 6px}
+.btn.link:hover{text-decoration:underline}
+.btn.danger{color:var(--crit-ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--good)}.dot.warn{background:var(--warn)}.dot.crit{background:var(--crit)}.dot.info{background:var(--s1)}
+
+/* tables */
+.tbl-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line)}
+.sbox{display:flex;align-items:center;gap:6px;height:28px;padding:0 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);min-width:180px;flex:0 1 260px}
+.sbox input{border:0;background:none;outline:none;flex:1;min-width:0;font-size:13px}
+.sbox .ic{color:var(--muted);width:14px;height:14px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{height:26px;padding:0 10px;border-radius:13px;border:1px solid var(--line);background:var(--panel);font-size:12.5px;color:var(--ink-2)}
+.chip:hover{border-color:var(--line-2)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.selbar{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2)}
+.tbl-wrap{overflow-x:auto;min-width:0}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th{background:var(--panel-2);text-align:left;font-weight:600;font-size:12px;color:var(--ink-2);padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap;user-select:none}
+.t th.sortable{cursor:pointer}
+.t th.sortable:hover{color:var(--ink)}
+.t th .ar{display:inline-block;width:10px;margin-left:3px;color:var(--accent)}
+.t td{padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+.t tbody tr:last-child td{border-bottom:0}
+.t tbody tr:hover td{background:var(--hover)}
+.t tr.click{cursor:pointer}
+.t .n{text-align:right;font-variant-numeric:tabular-nums}
+.t td.w{white-space:normal;min-width:260px}
+.t .cb{width:34px;padding-right:0}
+.t input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);margin:0;vertical-align:middle}
+.c2l b{display:block;font-weight:600}
+.c2l small{display:block;color:var(--muted);font-size:12px}
+.xc{display:none}
+.expert .xc{display:table-cell}
+.tbl-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.pager{display:flex;gap:4px}
+.empty{padding:28px 14px;text-align:center;color:var(--muted)}
+.mb{display:inline-flex;align-items:center;gap:8px;min-width:130px}
+.mb i{flex:1;height:6px;border-radius:3px;background:var(--track);overflow:hidden;display:block;min-width:56px}
+.mb i b{display:block;height:100%;background:var(--s1);border-radius:3px}
+.mb.warn i b{background:var(--warn)}.mb.crit i b{background:var(--crit)}
+.mb span{min-width:38px;text-align:right;font-variant-numeric:tabular-nums}
+.yes{color:var(--good-ink)}.no{color:var(--muted)}
+.yes .ic,.no .ic{width:15px;height:15px;stroke-width:2.4}
+
+/* kv, lists */
+.kv{display:grid;grid-template-columns:minmax(120px,40%) minmax(0,1fr);margin:0}
+.kv dt,.kv dd{padding:7px 0;border-bottom:1px solid var(--line);margin:0;min-width:0}
+.kv dt{color:var(--muted);padding-right:12px}
+.kv dd{overflow-wrap:anywhere}
+.kv > :nth-last-child(-n+2){border-bottom:0}
+.slist{display:flex;flex-direction:column}
+.sl{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px 14px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;width:100%}
+.sl:last-child{border-bottom:0}
+button.sl:hover{background:var(--hover)}
+.sl .lbl{display:flex;align-items:center;gap:8px;font-weight:500;min-width:0;white-space:nowrap;overflow:hidden}
+.sl .lbl .ic{color:var(--muted)}
+.sl .met{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.hb{display:grid;grid-template-columns:minmax(90px,38%) minmax(0,1fr) 70px;gap:10px;align-items:center;padding:5px 0}
+.hb .hl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb .ht{height:10px;border-radius:0 4px 4px 0;background:var(--track);overflow:hidden}
+.hb .ht b{display:block;height:100%;background:var(--s1);border-radius:0 4px 4px 0}
+.hb .ht b.warn{background:var(--warn)}
+.hb .hv{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.checks{display:flex;flex-direction:column}
+.ck{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line)}
+.ck:last-child{border-bottom:0}
+.ck small{display:block;color:var(--muted);font-size:12px}
+.cki{width:20px;height:20px;border-radius:50%;display:grid;place-items:center}
+.cki .ic{width:12px;height:12px;stroke-width:2.8}
+.cki.pass{background:var(--good-soft);color:var(--good-ink)}.cki.fail{background:var(--crit-soft);color:var(--crit-ink)}.cki.warn{background:var(--warn-soft);color:var(--warn-ink)}.cki.na{background:var(--neutral-soft);color:var(--muted)}
+.tl{list-style:none;margin:0;padding:4px 14px 8px}
+.tl li{display:grid;grid-template-columns:62px 14px minmax(0,1fr);gap:8px;padding:7px 0;position:relative}
+.tl li::before{content:"";position:absolute;left:74px;top:22px;bottom:-8px;width:1px;background:var(--line)}
+.tl li:last-child::before{display:none}
+.tl .tt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:1px;white-space:nowrap}
+.tl .td{width:9px;height:9px;border-radius:50%;margin-top:5px;background:var(--line-2);box-shadow:0 0 0 2px var(--panel)}
+.tl .td.crit{background:var(--crit)}.tl .td.warn{background:var(--warn)}.tl .td.ok{background:var(--good)}.tl .td.info{background:var(--s1)}
+.tl b{font-weight:600}
+.tl small{display:block;color:var(--muted);font-size:12px}
+.alert{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--panel)}
+.alert .ai{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none}
+.alert.warn .ai{background:var(--warn-soft);color:var(--warn-ink)}.alert.crit .ai{background:var(--crit-soft);color:var(--crit-ink)}.alert.info .ai{background:var(--info-soft);color:var(--info-ink)}.alert.ok .ai{background:var(--good-soft);color:var(--good-ink)}
+.alert .at{flex:1;min-width:0}
+.alert .at b{font-weight:600}
+.alert .at small{display:block;color:var(--muted);font-size:12.5px}
+
+/* charts */
+.chart{position:relative}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--font)}
+.gl{stroke:var(--grid);stroke-width:1}
+.axl{stroke:var(--axis);stroke-width:1}
+.k1{stroke:var(--s1);fill:var(--s1);background:var(--s1)}.k2{stroke:var(--s2);fill:var(--s2);background:var(--s2)}.k3{stroke:var(--s3);fill:var(--s3);background:var(--s3)}.k4{stroke:var(--s4);fill:var(--s4);background:var(--s4)}.k5{stroke:var(--s5);fill:var(--s5);background:var(--s5)}
+.kw{fill:var(--warn);background:var(--warn)}.kc{fill:var(--crit);background:var(--crit)}.kn{fill:var(--track);background:var(--track)}
+.chart .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .fa{stroke:none;fill-opacity:.1}
+.chart .stk .fa{fill-opacity:.2}
+.chart .thr{stroke:var(--muted);stroke-dasharray:4 4;stroke-width:1}
+.chart .fc{stroke:var(--crit);stroke-dasharray:5 4;stroke-width:2;fill:none}
+.chart .lbl{fill:var(--ink-2);font-weight:600}
+.chart .dotm{stroke:var(--panel);stroke-width:2}
+.chart .xh{stroke:var(--line-2);stroke-width:1}
+.chart .hit{fill:transparent;stroke:none}
+.legend{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin-bottom:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px}
+.ctip{position:absolute;pointer-events:none;background:var(--ink);color:var(--panel);font-size:12px;padding:7px 9px;border-radius:7px;white-space:nowrap;z-index:5;box-shadow:var(--shadow);transform:translate(-50%,calc(-100% - 12px))}
+.ctip .r{display:flex;align-items:center;gap:7px}
+.ctip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.ctip .h{opacity:.75;margin-bottom:3px}
+.donut{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.donut svg{width:150px;height:150px;flex:none}
+.donut .dl{flex:1;min-width:150px;display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.donut .dl div{display:grid;grid-template-columns:10px minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.donut .dl i{width:10px;height:10px;border-radius:3px}
+.donut .dl span:nth-child(3){font-variant-numeric:tabular-nums}
+.donut .dl span:nth-child(4){color:var(--muted);min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
+.dn-c{font-size:20px;font-weight:600;fill:var(--ink)}
+.dn-s{font-size:11px;fill:var(--muted)}
+.gauge{display:flex;flex-direction:column;align-items:center}
+.gauge svg{width:100%;max-width:220px}
+.g-v{font-size:30px;font-weight:600;fill:var(--ink)}
+.g-s{font-size:11.5px;fill:var(--muted)}
+.gtrack{stroke:var(--track)}
+.gval{stroke:var(--s1)}
+.gval.warn{stroke:var(--warn)}.gval.crit{stroke:var(--crit)}.gval.ok{stroke:var(--good)}
+.gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:4px 12px}
+.gauges .gauge small{font-size:12px;color:var(--ink-2);margin-top:-6px;text-align:center}
+.heat{display:grid;gap:2px;font-size:11px;color:var(--muted)}
+.heat .hc{height:18px;border-radius:3px;background:var(--h1)}
+.heat .hc.l1{background:var(--h1)}.heat .hc.l2{background:var(--h2)}.heat .hc.l3{background:var(--h3)}.heat .hc.l4{background:var(--h4)}.heat .hc.l5{background:var(--h5)}
+.heat .hr{white-space:nowrap;padding-right:6px;align-self:center}
+.heat .hx{text-align:center}
+.hlegend{display:flex;align-items:center;gap:4px;justify-content:flex-end;font-size:11px;color:var(--muted);margin-top:8px}
+.hlegend i{width:14px;height:10px;border-radius:2px}
+.diskmap{display:flex;gap:2px;height:26px;border-radius:6px;overflow:hidden}
+.diskmap span{display:block;height:100%}
+.diskmap .free{background:var(--track)}
+.diskmap .recl{background:repeating-linear-gradient(135deg,var(--crit) 0 4px,var(--crit-soft) 4px 8px)}
+.dmleg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px}
+.dmleg span{display:inline-flex;align-items:center;gap:6px}
+.dmleg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.dmleg b{font-weight:600;font-variant-numeric:tabular-nums}
+.lanes{overflow-x:auto}
+.lanes-in{min-width:620px}
+.lane{display:grid;grid-template-columns:160px minmax(0,1fr);gap:10px;align-items:center;height:28px}
+.lane-n{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.lane-t{position:relative;height:100%;border-left:1px solid var(--line)}
+.lane-t::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--grid)}
+.tk{position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--s1);box-shadow:0 0 0 2px var(--panel);z-index:1}
+.tk.sm{width:6px;height:6px;margin:-3px 0 0 -3px;box-shadow:none}
+.lane-ax{position:relative;height:18px;font-size:11px;color:var(--muted)}
+.lane-ax span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.lane-ax span:first-child{transform:none}
+.life{position:relative;height:10px;border-radius:5px;background:var(--track);margin:26px 0 8px}
+.life b{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--s1)}
+.life i{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink)}
+.life span{position:absolute;top:-24px;transform:translateX(-50%);font-size:11.5px;font-weight:600;white-space:nowrap}
+.life-ax{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted)}
+.state-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stile{border:1px solid var(--line);border-radius:7px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.stile .si2{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--neutral-soft);color:var(--ink-2)}
+.stile b{display:block;font-weight:600}
+.stile small{color:var(--muted);font-size:12px}
+.fieldrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.fieldrow:last-child{border-bottom:0}
+.fieldrow small{display:block;color:var(--muted);font-size:12px}
+.switch{position:relative;display:inline-block;width:36px;height:20px;flex:none;vertical-align:middle}
+.switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
+.switch span{position:absolute;inset:0;border-radius:10px;background:var(--line-2);transition:background .15s}
+.switch span::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.switch input:checked + span{background:var(--accent)}
+.switch input:checked + span::after{transform:translateX(16px)}
+.switch input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+select.sel{height:30px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);padding:0 8px}
+.radios{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;padding:12px 14px}
+.rad{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:7px;cursor:pointer}
+.rad input{accent-color:var(--accent);margin-top:3px}
+.rad:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.rad small{display:block;color:var(--muted);font-size:12px}
+.logline{font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);padding:6px 9px;border-radius:5px;overflow-x:auto;white-space:pre;color:var(--ink)}
+.cmd{font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);padding:4px 8px;border-radius:5px;white-space:pre;overflow-x:auto;display:block;color:var(--ink)}
+.cmd::before{content:"$ ";color:var(--muted)}
+
+/* runner, chat */
+.runner{display:flex;flex-direction:column;gap:12px}
+.prog{height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.prog b{display:block;height:100%;background:var(--accent);transition:width .35s}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.step{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.step.done{color:var(--ink)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-2);border-top-color:var(--accent);animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.chat{display:flex;flex-direction:column;gap:12px;padding:14px;overflow-y:auto;max-height:520px;min-height:360px}
+.mu{align-self:flex-end;background:var(--accent);color:var(--accent-ink);padding:8px 12px;border-radius:12px 12px 3px 12px;max-width:78%}
+.ma{align-self:flex-start;max-width:92%;border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--panel-2)}
+.ma p{margin:0}
+.ma .srcs{display:flex;flex-direction:column;gap:4px;border-top:1px dashed var(--line-2);padding-top:8px}
+.ma .lab2{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.composer{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+.composer input{flex:1;min-width:0;height:34px;border:1px solid var(--line-2);border-radius:7px;padding:0 10px;background:var(--panel)}
+.qlist{display:flex;flex-direction:column}
+.qlist button{border:0;border-bottom:1px solid var(--line);background:none;text-align:left;padding:9px 14px;display:flex;gap:8px;align-items:center;color:var(--ink)}
+.qlist button:last-child{border-bottom:0}
+.qlist button:hover{background:var(--hover)}
+
+/* overlays */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:41;display:flex;flex-direction:column;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.dh{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dh h2{font-size:16px;margin:0;font-weight:700;overflow-wrap:anywhere}
+.dh .dsub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.dh .ibtn{margin-left:auto}
+.db{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.df{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line);background:var(--panel-2)}
+.df .fn{margin-right:auto;font-size:12px;color:var(--muted)}
+.dsec h4{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.fstep{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.fstep:first-of-type{border-top:0}
+.fstep input{accent-color:var(--accent);width:16px;height:16px;margin-top:2px}
+.fstep b{font-weight:600}
+.fstep .meta{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0}
+.fstep .sz{font-weight:600;font-variant-numeric:tabular-nums}
+.auth{border:1px solid var(--line);border-radius:10px;padding:18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--panel-2)}
+.auth .lk{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--neutral-soft)}
+.auth .pw{width:100%;max-width:260px;height:32px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);text-align:left;padding:0 10px;line-height:32px;letter-spacing:.2em;color:var(--muted)}
+.auth small{color:var(--muted);max-width:36ch}
+.runl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.runl li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start;color:var(--muted)}
+.runl li.done{color:var(--ink)}
+.runl .cmd{grid-column:2}
+.okc{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--good-soft);color:var(--good-ink);flex:none}
+.okc .ic{width:12px;height:12px;stroke-width:2.8}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.res div{border:1px solid var(--line);border-radius:7px;padding:9px 11px}
+.res small{display:block;color:var(--muted);font-size:12px}
+.res b{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.pop{position:fixed;z-index:30;background:var(--panel);border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);width:min(360px,calc(100vw - 24px));overflow:hidden}
+.pop-h{padding:10px 14px;border-bottom:1px solid var(--line);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.pop-i{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:9px 14px;border:0;border-bottom:1px solid var(--line);background:none;width:100%;text-align:left}
+.pop-i:hover{background:var(--hover)}
+.pop-i small{display:block;color:var(--muted);font-size:12px}
+.cmdk{position:fixed;left:50%;top:12vh;transform:translateX(-50%);width:min(560px,calc(100% - 32px));background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:45;overflow:hidden}
+.cmdk-in{display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--line)}
+.cmdk-in input{flex:1;min-width:0;height:48px;border:0;background:none;outline:none;font-size:15px}
+.cmdk-l{max-height:min(380px,60vh);overflow-y:auto;padding:6px}
+.cmdk-l button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:8px 10px;border-radius:6px;text-align:left;color:var(--ink)}
+.cmdk-l button small{margin-left:auto;color:var(--muted)}
+.cmdk-l button.act,.cmdk-l button:hover{background:var(--accent-soft)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:9px 14px;border-radius:8px;font-size:13px;z-index:60;box-shadow:var(--shadow);max-width:min(520px,calc(100% - 32px))}
+
+@media (max-width:1240px){
+  .s-3{grid-column:span 6}.s-4{grid-column:span 6}.s-5,.s-7,.s-8,.s-9{grid-column:1/-1}
+  .live,.proto{display:none}
+}
+@media (max-width:900px){
+  .app,.app.rail{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(290px,86vw);z-index:44;transform:translateX(-105%);transition:transform .2s;padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow)}
+  .app.navopen .sidebar{transform:none}
+  .app.rail .lab,.app.rail .nav-gl,.app.rail .sub,.app.rail .chev,.app.rail .ncnt{display:revert}
+  .menu-btn{display:grid}
+  .search-trigger span,.search-trigger kbd,.host small,#rangeSeg,.rail-btn{display:none}
+  .search-trigger{flex:0 0 auto;margin-left:auto}
+  .main{padding-right:max(16px,env(safe-area-inset-right,0px));padding-left:max(16px,env(safe-area-inset-left,0px))}
+  .phead,.content{padding-left:0}
+  .s-3,.s-4,.s-6{grid-column:1/-1}
+  .ph-acts .btn span{display:none}
+}
+@media (max-width:560px){
+  .host,.avatar,.brand .bn{display:none}
+  #modeSeg button{padding:0 7px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .res{grid-template-columns:1fr}
+  .hb{grid-template-columns:minmax(80px,40%) minmax(0,1fr) 56px}
+}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header class="topbar">
+    <button class="ibtn menu-btn" data-act="navtoggle" aria-label="Open navigation"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 13h4l2.2-6 3.6 11 3-8 1.5 3H21.5"/></svg></span><span class="bn">SysDoc</span></div>
+    <button class="host" data-act="pop:host" aria-haspopup="true"><span class="d"></span>riya-laptop <small>Ubuntu 24.04.1</small><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M6 9l6 6 6-6"/></svg></button>
+    <span class="proto">Prototype · sample data</span>
+    <button class="search-trigger" data-act="cmdk" aria-label="Search"><svg class="ic" viewBox="0 0 24 24"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5"/></svg><span>Search pages, services, packages…</span><kbd>Ctrl K</kbd></button>
+    <div class="tb-r">
+      <div class="seg" id="rangeSeg" role="group" aria-label="Time range"></div>
+      <span class="live"><i></i>Live · 21:34</span>
+      <div class="seg" id="modeSeg" role="group" aria-label="View mode"><button data-act="mode:b" aria-pressed="true">Beginner</button><button data-act="mode:e" aria-pressed="false">Expert</button></div>
+      <button class="ibtn" data-act="pop:notes" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg><span class="cnt" id="noteCnt"></span></button>
+      <span class="avatar" aria-label="Signed in as riya">R</span>
+    </div>
+  </header>
+  <nav class="sidebar" id="nav" aria-label="Main"></nav>
+  <main class="main" id="main"></main>
+</div>
+<div id="overlay"></div>
+<div id="toast" aria-live="polite"></div>
+
+<script>
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const strip = s => String(s).replace(/<[^>]*>/g, '').trim();
+const f1 = n => (Math.round(n * 10) / 10).toFixed(1);
+const IP = {
+  grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', perf:'M3 12h4l3-7 4 14 3-7h4', logs:'M5 6h14M5 10h14M5 14h10M5 18h7',
+  hist:'M12 8v4l3 2M3.5 12a8.5 8.5 0 1 0 2.4-5.9M3 3.5v4h4', sys:'M3.5 5h17v14h-17zM7.5 10l2.5 2-2.5 2M12 14h4.5',
+  chip:'M7 7h10v10H7zM10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4', bat:'M3 8h15v8H3zM21 10.5v3M6 11v2M9 11v2',
+  mon:'M3 4.5h18v11.5H3zM8 20h8M12 16v4', layers:'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', cog:'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1',
+  cal:'M4 5.5h16V20H4zM4 10h16M8.5 3v4M15.5 3v4', cube:'M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5', pkg:'M3.5 4h17v4h-17zM5 8v12h14V8M10 12h4',
+  db:'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3', backup:'M7 18.5a4.5 4.5 0 0 1-.6-9A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9.5zM12 11.5v6M9.5 14l2.5-2.5 2.5 2.5',
+  wifi:'M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01', users:'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 7.5M22 21v-1a6 6 0 0 0-4-5.6',
+  shield:'M12 3l8 3v6c0 4.5-3.4 8.4-8 9-4.6-.6-8-4.5-8-9V6zM9 12l2 2 4-4', eye:'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+  gauge:'M4 17a8 8 0 1 1 16 0M12 17l4-5', chat:'M4 5h16v11H9l-5 4z', sliders:'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
+  chev:'M9 6l6 6-6 6', search:'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5', x:'M6 6l12 12M18 6L6 18', check:'M5 12.5l4.2 4L19 7',
+  excl:'M12 6.5v7M12 17.5h.01', info:'M12 11v6M12 7h.01', minus:'M6 12h12', i:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 11v5M12 8h.01',
+  play:'M7 5l12 7-12 7z', dl:'M12 4v11M7 10l5 5 5-5M5 20h14', ref:'M20 11a8 8 0 0 0-14.7-4M4 3.5V8h4.5M4 13a8 8 0 0 0 14.7 4M20 20.5V16h-4.5',
+  rail:'M4 4h16v16H4zM9 4v16', ext:'M14 4h6v6M20 4l-9 9M18 14v6H4V6h6', lock:'M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3',
+  mic:'M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3', cam:'M3 7h12v10H3zM15 10.5l6-3.5v10l-6-3.5',
+  screen:'M3 4.5h18v12H3zM8 20h8', pin:'M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  fan:'M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 10c0-4 1-7 4-7 2 0 3 2 1 4M14 12c4 0 7 1 7 4 0 2-2 3-4 1M12 14c0 4-1 7-4 7-2 0-3-2-1-4M10 12c-4 0-7-1-7-4 0-2 2-3 4-1',
+  bolt:'M13 3L5 13.5h6L10 21l8-10.5h-6z', usb:'M12 3v14M9 6l3-3 3 3M7 10v3l5 3 5-3v-3M12 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'
+};
+const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${IP[n] || ''}"/></svg>`;
+const BI = {ok:'check', warn:'excl', crit:'x', info:'info', off:'minus'};
+const SW = {ok:'Healthy', warn:'Warning', crit:'Critical', info:'Info', off:'Unknown'};
+const B = (st, t) => `<span class="b ${st}">${ic(BI[st] || 'minus')}${t}</span>`;
+const OFF = t => `<span class="b off">${t}</span>`;
+const SEV = {crit:'Critical', warn:'Warning', info:'Info'};
+const M = t => `<span class="mono">${esc(t)}</span>`;
+const C2 = (a, b) => `<span class="c2l"><b>${a}</b>${b ? `<small>${b}</small>` : ''}</span>`;
+const BAR = (p, st, lab) => `<span class="mb ${st || (p >= 90 ? 'crit' : p >= 80 ? 'warn' : '')}"><i><b style="width:${Math.min(100, p)}%"></b></i><span>${lab ?? Math.round(p) + '%'}</span></span>`;
+const BTN = (l, a, cls = '') => `<button class="btn sm ${cls}" data-act="${a}">${l}</button>`;
+const YES = `<span class="yes" title="Yes">${ic('check')}</span>`, NO = `<span class="no" title="No">${ic('minus')}</span>`;
+const T = (...tags) => tags.map(t => `<span class="tag">${t}</span>`).join('');
+const SWT = (l, on = true) => `<span class="switch"><input type="checkbox" ${on ? 'checked' : ''} aria-label="${l}"><span></span></span>`;
+function rng(seed){ let s = (seed * 9301 + 49297) % 2147483647; if(s <= 0) s += 2147483646; return () => (s = s * 16807 % 2147483647) / 2147483647; }
+
+/* ============ state ============ */
+const S = {
+  page:'overview', tab:'summary', range:'24h', expert:false, rail:false, access:'full', ai:true, aiCloud:false,
+  used:224.2, total:238, cleaned:{}, secFixed:false, battFixed:false, battTime:'', btRestarted:false, btTime:'',
+  open:{}, drawer:null, pop:null, cmdk:null, TS:{}, clock:34,
+  diag:{phase:'idle', n:0}, net:{phase:'idle', n:0}, cupsUndone:false, tracked:{}
+};
+const NOW = new Date(2026, 9, 21, 21, 34);
+const pct = () => S.used / S.total * 100;
+const dPct = () => Math.round(pct());
+const diskSt = () => pct() >= 93 ? 'crit' : pct() >= 85 ? 'warn' : 'ok';
+const clockTick = () => { S.clock++; return `${21 + Math.floor(S.clock / 60)}:${String(S.clock % 60).padStart(2, '0')}`; };
+const daysFull = () => Math.max(1, Math.round((100 - pct()) / .69));
+
+/* ============ time series ============ */
+const RANGES = {'1h':{n:60, step:1/60}, '24h':{n:96, step:.25}, '7d':{n:168, step:1}, '30d':{n:120, step:6}};
+const tAt = (i, n, step) => new Date(NOW - (n - 1 - i) * step * 3600e3);
+function gen(sp){
+  const [seed, b, a, z, lo = 0, hi = 100, end] = sp, R = RANGES[S.range], r = rng(seed * 31 + R.n), out = [];
+  let w = 0;
+  for(let i = 0; i < R.n; i++){
+    const t = tAt(i, R.n, R.step), hr = t.getHours() + t.getMinutes() / 60;
+    w = w * .72 + (r() - .5) * z;
+    out.push(Math.max(lo, Math.min(hi, b + a * Math.sin((hr - 9) / 24 * 2 * Math.PI) + w)));
+  }
+  if(end != null){ out[R.n - 1] = end; out[R.n - 2] = (out[R.n - 2] + end) / 2; }
+  return out;
+}
+function tLab(i, n, tip){
+  const d = tAt(i, n, RANGES[S.range].step);
+  const hh = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const wd = d.toLocaleDateString('en-GB', {weekday:'short'}), dm = d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+  if(S.range === '1h') return hh;
+  if(S.range === '24h') return tip ? `${wd} ${hh}` : hh;
+  if(S.range === '7d') return tip ? `${wd} ${hh}` : wd;
+  return tip ? `${dm} ${hh}` : dm;
+}
+
+/* ============ domain data ============ */
+const FIXES = {
+  storage:{title:'Free up disk space', sub:'Root filesystem ( / )', steps:[
+    {id:'snap', l:'Remove disabled snap revisions', d:'6 old revisions kept after updates', size:8.7, admin:true, undo:'none', cmd:'snap remove firefox --revision=4793  # +5 more'},
+    {id:'docker', l:'Prune unused Docker images', d:'7 images not used by any container', size:4.0, admin:false, undo:'regen', cmd:'docker image prune -a'},
+    {id:'trash', l:'Empty Trash', d:'312 files', size:2.1, admin:false, undo:'none', cmd:'gio trash --empty'},
+    {id:'apt', l:'Clean APT package cache', d:'Downloaded .deb files', size:0.4, admin:true, undo:'regen', cmd:'sudo apt-get clean'}]},
+  sec:{title:'Install updates', sub:'APT · noble-security', steps:[
+    {id:'secu', l:'Install 4 security updates', d:'openssl, libssl3t64, sudo, linux-firmware', admin:true, undo:'none', cmd:'sudo apt-get install --only-upgrade openssl libssl3t64 sudo linux-firmware'},
+    {id:'other', l:'Install 8 regular updates', d:'google-chrome-stable, git and 6 more', admin:true, undo:'none', off:true, cmd:'sudo apt-get upgrade'}]},
+  batt:{title:'Configure low-battery action', sub:'UPower · /etc/UPower/UPower.conf', steps:[
+    {id:'up', l:'Warn at 10%, power off cleanly at 5%', d:'Prevents unclean shutdowns like today at 02:14', admin:true, undo:'full', cmd:"sudo sed -i 's/^PercentageAction=.*/PercentageAction=5/' /etc/UPower/UPower.conf"}]}
+};
+const cleanable = () => FIXES.storage.steps.filter(s => !S.cleaned[s.id]).reduce((a, s) => a + s.size, 0);
+const UNDO = {full:['ok','Reversible'], regen:['info','Regenerates'], none:['warn','Irreversible']};
+
+function issues(){
+  const L = [], p = dPct();
+  if(pct() >= 93) L.push({sev:'crit', t:'Root filesystem almost full', d:`/ at ${p}% · ${f1(cleanable())} GB reclaimable`, cat:'Storage', first:'14 Oct', cnt:'—', act:['Resolve','fix:storage']});
+  else if(pct() >= 85) L.push({sev:'warn', t:'Root filesystem above 85%', d:`/ at ${p}% · largest: ~/Videos 52 GB`, cat:'Storage', first:'14 Oct', cnt:'—', act:['View','go:storage/usage']});
+  L.push({sev:'crit', t:'bluetooth.service crash loop', d:S.btRestarted ? `Restarted at ${S.btTime} · monitoring` : '14 restarts today · SIGSEGV', cat:'Services', first:'Today 09:12', cnt:'14', act:['Inspect','bt']});
+  if(!S.secFixed) L.push({sev:'warn', t:'Security updates pending', d:'4 packages · 2 high-severity CVEs', cat:'Security', first:'Today 06:21', cnt:'4', act:['Install','fix:sec']});
+  L.push({sev:'warn', t:'Battery health degraded', d:'71% of design capacity', cat:'Power', first:'02 Sep', cnt:'—', act:['View','go:power/battery']});
+  L.push({sev:'warn', t:'Backup overdue', d:'Last successful backup 21 days ago', cat:'Backups', first:'07 Oct', cnt:'—', act:['View','go:backups/jobs']});
+  L.push({sev:'warn', t:'Out-of-memory kill', d:'chrome renderer · Mon 16:12', cat:'Logs', first:'Mon 16:12', cnt:'1', act:['View','go:logs/kernel']});
+  L.push({sev:'info', t:'Reboot required', d:'libc6, openssl, sudo updated', cat:'System', first:'Today 10:40', cnt:'—', act:['Details','go:system/updates']});
+  if(!S.battFixed) L.push({sev:'info', t:'Low-battery action not set', d:'Unclean shutdown at 02:14 today', cat:'Power', first:'Today 02:14', cnt:'1', act:['Configure','fix:batt']});
+  L.push({sev:'info', t:'Missed timer run', d:'e2scrub_all.timer · Sun 03:10', cat:'Scheduled Jobs', first:'Sun 03:10', cnt:'1', act:['View','go:jobs/timers']});
+  return L;
+}
+const deductions = () => [['Storage', pct() >= 93 ? 8 : pct() >= 85 ? 2 : 0], ['Services', 5], ['Security', S.secFixed ? 0 : 3], ['Power', 1], ['Backups', 1]];
+const score = () => 100 - deductions().reduce((a, d) => a + d[1], 0);
+
+const HIST = [
+  ['Today','10:40','System','Unattended upgrade: libc6, openssl, sudo','Reboot required','info'],
+  ['Today','09:12','Services','bluetooth.service entered crash loop','SIGSEGV · 14 restarts','crit'],
+  ['Today','08:58','System','Boot completed in 41.2 s','Kernel 6.8.0-47-generic','ok'],
+  ['Today','02:14','Power','Unclean shutdown','Battery depleted','warn'],
+  ['Tue','18:41','Packages','linux-firmware upgraded','…0ubuntu2.5',''],
+  ['Tue','18:40','Packages','Kernel upgraded 6.8.0-45 → 6.8.0-47','Software Updater',''],
+  ['Tue','15:22','Packages','Installed snap: code 1.94.2','340 MB',''],
+  ['Tue','11:05','SysDoc','Disabled cups-browsed.service','Reversible','info'],
+  ['Mon','21:30','Jobs','crontab changed (riya): +backup-photos.sh','0 21 * * *',''],
+  ['Mon','16:12','Logs','OOM kill: chrome renderer (pid 30412)','RSS 1.8 GB','warn'],
+  ['Mon','10:02','Devices','USB storage connected: PHOTOS (64 GB)','usb 3-2','']
+];
+const SYSDOC_LOG = [];
+const sysdocRows = () => [...SYSDOC_LOG, {when:'Tue 11:05', time:'Tue 11:05', text:'Disabled service', target:'cups-browsed.service', undo:'cups', undone:S.cupsUndone}];
+
+/* ============ widget renderers ============ */
+let CH = [];
+const REG = {};
+function panel(w, body){
+  const acts = (w.acts || []).map(a => `<button class="btn sm ${a[2] || ''}" data-act="${a[1]}">${a[0]}</button>`).join('');
+  return `<section class="panel s-${w.s || 12}">
+    ${w.h ? `<header class="ph"><div class="ph-t"><h3>${w.h}</h3>${w.sub ? `<span class="phs">${w.sub}</span>` : ''}${w.info ? `<button class="tipi" data-tip="${esc(w.info)}" aria-label="${esc(w.info)}">${ic('i')}</button>` : ''}</div><div class="ph-a">${w.src ? `<span class="src" title="${esc(w.src)}">${esc(w.src)}</span>` : ''}${acts}</div></header>` : ''}
+    <div class="pb${w.flush ? ' flush' : ''}">${body}</div></section>`;
+}
+function spark(sp, k = 1){
+  const d = gen(sp), lo = Math.min(...d), hi = Math.max(...d), rg = (hi - lo) || 1;
+  const l = d.map((v, i) => (i ? 'L' : 'M') + (i / (d.length - 1) * 100).toFixed(2) + ' ' + (27 - (v - lo) / rg * 24).toFixed(2)).join(' ');
+  return `<svg class="spark" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><path class="a k${k}" d="${l} L100 28 L0 28Z"/><path class="l k${k}" vector-effect="non-scaling-stroke" d="${l}"/></svg>`;
+}
+function kpi(k){
+  const tag = k.go ? 'button' : 'div';
+  return `<${tag} class="kpi" ${k.go ? `data-go="${k.go}"` : ''}>
+    <div class="kpi-l"><span>${k.l}</span>${k.st && k.st !== 'ok' ? B(k.st, SW[k.st]) : ''}</div>
+    <div class="kpi-v">${k.v}${k.u ? `<small>${k.u}</small>` : ''}</div>
+    <div class="kpi-s">${k.sub || '&nbsp;'}</div>
+    ${k.sp ? spark(k.sp, k.k || 1) : k.bar != null ? `<div class="kbar ${k.st || ''}"><b style="width:${Math.min(100, k.bar)}%"></b></div>` : ''}
+  </${tag}>`;
+}
+function donut(w){
+  const tot = w.data.reduce((a, d) => a + d[1], 0) || 1, R = 60, r = 42, cx = 75, cy = 75;
+  let a0 = -Math.PI / 2, segs = '';
+  w.data.forEach((d, i) => {
+    const a1 = a0 + d[1] / tot * Math.PI * 2, gap = .02, s = a0 + gap / 2, e = a1 - gap / 2, large = (e - s) > Math.PI ? 1 : 0;
+    const p = (ang, rad) => [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)].map(v => v.toFixed(2)).join(' ');
+    const cls = d[2] || 'k' + (i + 1);
+    if(e > s) segs += `<path class="${cls}" style="stroke:none" d="M${p(s, R)} A${R} ${R} 0 ${large} 1 ${p(e, R)} L${p(e, r)} A${r} ${r} 0 ${large} 0 ${p(s, r)}Z"><title>${d[0]}: ${d[3] || d[1] + ' ' + (w.unit || '')}</title></path>`;
+    a0 = a1;
+  });
+  return `<div class="donut"><svg viewBox="0 0 150 150" role="img" aria-label="${esc(w.h || '')}">${segs}<text class="dn-c" x="75" y="78" text-anchor="middle">${w.center[0]}</text><text class="dn-s" x="75" y="95" text-anchor="middle">${w.center[1]}</text></svg>
+    <div class="dl">${w.data.map((d, i) => `<div><i class="${d[2] || 'k' + (i + 1)}"></i><span>${d[0]}</span><span>${d[3] || d[1] + (w.unit ? ' ' + w.unit : '')}</span><span>${Math.round(d[1] / tot * 100)}%</span></div>`).join('')}</div></div>`;
+}
+function gauge(v, max, st, val, sub){
+  const p = Math.max(0.001, Math.min(1, v / max)), R = 80, cx = 100, cy = 96;
+  const ang = Math.PI * (1 - p), x = cx + R * Math.cos(ang), y = cy - R * Math.sin(ang);
+  return `<div class="gauge"><svg viewBox="0 0 200 112" role="img" aria-label="${esc(strip(String(val)))} ${esc(sub)}">
+    <path class="gtrack" d="M20 96 A80 80 0 0 1 180 96" fill="none" stroke-width="14" stroke-linecap="round"/>
+    <path class="gval ${st || ''}" d="M20 96 A80 80 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}" fill="none" stroke-width="14" stroke-linecap="round"/>
+    <text class="g-v" x="100" y="86" text-anchor="middle">${val}</text><text class="g-s" x="100" y="106" text-anchor="middle">${sub}</text></svg></div>`;
+}
+function heat(w){
+  const max = Math.max(...w.data.flat()) || 1, cols = w.cols.length;
+  const lvl = v => v === 0 ? 1 : Math.min(5, 2 + Math.floor(v / max * 3.99));
+  let h = `<div class="heat" style="grid-template-columns:auto repeat(${cols},minmax(5px,1fr))"><span></span>${w.cols.map((c, i) => `<span class="hx">${i % (w.every || 3) === 0 ? c : ''}</span>`).join('')}`;
+  w.rows.forEach((r, ri) => { h += `<span class="hr">${r}</span>` + w.data[ri].map((v, ci) => `<span class="hc l${lvl(v)}" title="${r} ${w.cols[ci]}:00 · ${v} ${w.unit || ''}"></span>`).join(''); });
+  return h + `</div><div class="hlegend">Less ${[1, 2, 3, 4, 5].map(i => `<i style="background:var(--h${i})"></i>`).join('')} More</div>`;
+}
+function hbars(w){
+  const max = w.max || Math.max(...w.data.map(d => d[1])) || 1;
+  return w.data.map(d => `<div class="hb"><span class="hl" title="${esc(strip(d[0]))}">${d[0]}</span><span class="ht"><b class="${d[3] || ''}" style="width:${d[1] / max * 100}%"></b></span><span class="hv">${d[2] ?? d[1] + (w.unit || '')}</span></div>`).join('');
+}
+function tableHTML(w){
+  const id = w.id, st = S.TS[id] || (S.TS[id] = {q:'', f:'All', sort:null, dir:1, pg:0, sel:{}});
+  let rows = w.rows.map((r, i) => ({r:Array.isArray(r) ? r : r.c, o:Array.isArray(r) ? {} : r, i}));
+  if(st.q){ const q = st.q.toLowerCase(); rows = rows.filter(x => x.r.some(c => strip(c).toLowerCase().includes(q))); }
+  if(w.filter && st.f !== 'All'){ const f = st.f.toLowerCase(); rows = rows.filter(x => strip(x.r[w.filter.col]).toLowerCase().startsWith(f)); }
+  if(st.sort != null){
+    const key = v => { const t = strip(v).replace(/,/g, ''); const m = t.match(/^(-?[\d.]+)\s*(KB|kB|MB|GB|TB|K|ms|s|%|h|m|W)?/); if(!m) return t.toLowerCase(); return parseFloat(m[1]) * ({KB:1e-3, kB:1e-3, K:1e-3, MB:1, GB:1e3, TB:1e6}[m[2]] || 1); };
+    rows.sort((a, b) => { const x = key(a.r[st.sort]), y = key(b.r[st.sort]); return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))) * st.dir; });
+  }
+  const ps = w.page || 12, total = rows.length, pages = Math.max(1, Math.ceil(total / ps));
+  if(st.pg >= pages) st.pg = 0;
+  const view = rows.slice(st.pg * ps, st.pg * ps + ps);
+  const cols = w.cols.map(c => typeof c === 'string' ? [c, ''] : c);
+  const cc = ci => { const f = (cols[ci] || ['', ''])[1]; return `${f.includes('n') ? 'n' : ''} ${f.includes('x') ? 'xc' : ''} ${f.includes('w') ? 'w' : ''}`; };
+  const selN = Object.values(st.sel).filter(Boolean).length;
+  const tools = (w.search || w.filter || w.sel) ? `<div class="tbl-tools">${w.search ? `<label class="sbox">${ic('search')}<input type="search" data-tsearch="${id}" value="${esc(st.q)}" placeholder="${w.search}" aria-label="${w.search}"></label>` : ''}${w.filter ? `<div class="chips" role="group" aria-label="Filter">${w.filter.opts.map(o => `<button class="chip" data-tfilter="${id}|${o}" aria-pressed="${st.f === o}">${o}</button>`).join('')}</div>` : ''}${w.sel ? `<div class="selbar">${selN ? `${selN} selected` : 'Select rows'}${BTN(w.sel[0], w.sel[1], selN ? 'pri' : '')}</div>` : ''}</div>` : '';
+  const head = `<tr>${w.sel ? `<th class="cb"><input type="checkbox" data-tselall="${id}" aria-label="Select all" ${view.length && view.every(x => st.sel[x.i]) ? 'checked' : ''}></th>` : ''}${cols.map((c, ci) => `<th class="${cc(ci)} ${c[0] ? 'sortable' : ''}" ${c[0] ? `data-tsort="${id}|${ci}"` : ''}>${c[0]}${st.sort === ci ? `<span class="ar">${st.dir > 0 ? '↑' : '↓'}</span>` : ''}</th>`).join('')}</tr>`;
+  const body = view.length ? view.map(x => `<tr class="${x.o.a || w.inspect ? 'click' : ''}" ${x.o.a ? `data-act="${x.o.a}"` : w.inspect ? `data-tinsp="${id}|${x.i}"` : ''}>${w.sel ? `<td class="cb"><input type="checkbox" data-tsel="${id}|${x.i}" aria-label="Select row" ${st.sel[x.i] ? 'checked' : ''}></td>` : ''}${x.r.map((c, ci) => `<td class="${cc(ci)}">${c}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length + (w.sel ? 1 : 0)}" class="empty">${w.empty || 'No matching rows'}</td></tr>`;
+  const foot = (total > ps || w.count) ? `<div class="tbl-foot"><span>${total ? `${st.pg * ps + 1}–${Math.min(total, st.pg * ps + ps)} of ${w.count && !st.q && st.f === 'All' ? w.count : total}` : '0 rows'}</span>${pages > 1 ? `<span class="pager"><button class="btn sm" data-tpage="${id}|-1" ${st.pg ? '' : 'disabled'}>Previous</button><button class="btn sm" data-tpage="${id}|1" ${st.pg < pages - 1 ? '' : 'disabled'}>Next</button></span>` : ''}</div>` : '';
+  return `${tools}<div class="tbl-wrap"><table class="t"><thead>${head}</thead><tbody>${body}</tbody></table></div>${foot}`;
+}
+function widget(w, idx){
+  switch(w.t){
+    case 'kpis': return `<div class="kpis">${w.items.map(kpi).join('')}</div>`;
+    case 'alert': return `<div class="alert ${w.st}"><span class="ai">${ic(BI[w.st])}</span><div class="at"><b>${w.h}</b>${w.text ? `<small>${w.text}</small>` : ''}</div>${(w.acts || []).map(a => `<button class="btn sm ${a[2] || ''}" data-act="${a[1]}">${a[0]}</button>`).join('')}</div>`;
+    case 'line': case 'bars': { const n = CH.length; CH.push(w); return panel(w, `${w.series && w.series.length > 1 ? `<div class="legend">${w.series.map(s => `<span><i class="k${s.k || 1}"></i>${s.n}</span>`).join('')}</div>` : ''}<div class="chart" data-ch="${n}" style="height:${w.height || 200}px"></div>`); }
+    case 'table': { w.id = w.id || `${S.page}-${S.tab}-${idx}`; REG[w.id] = w; return panel({...w, flush:true}, `<div data-tbl="${w.id}">${tableHTML(w)}</div>`); }
+    case 'kv': return panel(w, `<dl class="kv">${w.items.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`);
+    case 'donut': return panel(w, donut(w));
+    case 'gauge': return panel(w, gauge(w.v, w.max, w.st, w.val, w.gsub) + (w.after || ''));
+    case 'gauges': return panel(w, `<div class="gauges">${w.items.map(g => `<div class="gauge">${gauge(g.v, g.max, g.st, g.val, g.sub)}<small>${g.l}</small></div>`).join('')}</div>`);
+    case 'heat': return panel(w, heat(w));
+    case 'hbars': return panel(w, hbars(w));
+    case 'list': return panel({...w, flush:true}, `<div class="slist">${w.items.map(it => `<${it[3] ? 'button' : 'div'} class="sl" ${it[3] ? `data-go="${it[3]}"` : ''}><span class="lbl">${it[0]}</span><span class="met">${it[1]}</span>${it[2]}</${it[3] ? 'button' : 'div'}>`).join('')}</div>`);
+    case 'checks': return panel({...w, flush:true}, `<div class="checks">${w.items.map(c => `<div class="ck"><span class="cki ${c[0]}">${ic(c[0] === 'pass' ? 'check' : c[0] === 'fail' ? 'x' : c[0] === 'warn' ? 'excl' : 'minus')}</span><div>${c[1]}${c[2] ? `<small>${c[2]}</small>` : ''}</div><div>${c[3] || ''}</div></div>`).join('')}</div>`);
+    case 'tl': return panel({...w, flush:true}, `<ul class="tl">${w.items.map(e => `<li><span class="tt">${e[0]}</span><span class="td ${e[3] || ''}"></span><div><b>${e[1]}</b>${e[2] ? `<small>${e[2]}</small>` : ''}</div></li>`).join('')}</ul>`);
+    case 'html': return panel(w, typeof w.html === 'function' ? w.html() : w.html);
+  }
+  return '';
+}
+
+/* ---- charts ---- */
+function niceMax(v){ const p = Math.pow(10, Math.floor(Math.log10(v || 1))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+function drawLine(el, w){
+  const W = Math.max(260, el.clientWidth), H = w.height || 200, m = {l:46, r:w.fc ? 74 : 12, t:8, b:22};
+  const ser = w.series.map(s => ({n:s.n, k:s.k || 1, d:s.d ? s.d.slice() : gen(s.g)}));
+  const N = Math.max(...ser.map(s => s.d.length));
+  const xMax = w.fc ? N - 1 + w.fc[0] : N - 1;
+  const tops = ser.map(s => s.d.slice());
+  if(w.stack) for(let k = 1; k < tops.length; k++) tops[k] = tops[k].map((v, i) => v + tops[k - 1][i]);
+  const yMin = w.y[0], yMax = w.y[1] === 'auto' ? niceMax(Math.max(...tops.flat()) * 1.15) : w.y[1], unit = w.y[2] || '';
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const X = i => m.l + i / xMax * iw, Y = v => m.t + (1 - (v - yMin) / (yMax - yMin)) * ih;
+  const fmt = v => (Math.abs(v) >= 10 || Number.isInteger(v) ? Math.round(v) : v.toFixed(1)) + unit;
+  let g = '';
+  for(let k = 0; k <= 4; k++){ const v = yMin + (yMax - yMin) * k / 4; g += `<line class="${k ? 'gl' : 'axl'}" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${m.l - 7}" y="${Y(v) + 3.5}" text-anchor="end">${fmt(v)}</text>`; }
+  const xt = w.labels ? w.labels.map((l, i) => [i, l]).filter((_, i, a) => i % Math.ceil(a.length / 6) === 0 || i === a.length - 1) : [0, .25, .5, .75, 1].map(f => { const i = Math.round(f * (N - 1)); return [i, f === 1 ? 'Now' : tLab(i, N)]; });
+  xt.forEach(([i, l]) => { const x = X(i), a = x < m.l + 24 ? 'start' : x > W - m.r - 24 ? 'end' : 'middle'; g += `<text x="${x}" y="${H - 5}" text-anchor="${a}">${l}</text>`; });
+  for(let k = tops.length - 1; k >= 0; k--){
+    const top = tops[k], bot = w.stack && k ? tops[k - 1] : null;
+    const line = top.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
+    const back = bot ? bot.map((v, i) => [X(i), Y(v)]).reverse().map(p => 'L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ') : `L${X(top.length - 1).toFixed(1)} ${Y(yMin)} L${X(0)} ${Y(yMin)}`;
+    g += `<path class="fa k${ser[k].k}" d="${line} ${back} Z"/><path class="ln k${ser[k].k}" d="${line}"/>`;
+  }
+  if(w.thr) g += `<line class="thr" x1="${m.l}" x2="${W - m.r}" y1="${Y(w.thr[0])}" y2="${Y(w.thr[0])}"/><text x="${W - m.r - 4}" y="${Y(w.thr[0]) - 5}" text-anchor="end">${w.thr[1]}</text>`;
+  if(w.fc){ const last = tops[0][N - 1]; g += `<path class="fc" d="M${X(N - 1)} ${Y(last)} L${X(xMax)} ${Y(w.fc[1])}"/><circle cx="${X(xMax)}" cy="${Y(w.fc[1])}" r="4.5" class="kc dotm"/><text class="lbl" x="${X(xMax) + 8}" y="${Y(w.fc[1]) + 4}">${w.fc[2]}</text>`; }
+  ser.forEach((s, k) => { g += `<circle class="k${s.k} dotm" cx="${X(N - 1)}" cy="${Y(tops[k][N - 1])}" r="4"/>`; });
+  g += `<line class="xh" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" visibility="hidden"/>${ser.map((s, k) => `<circle class="k${s.k} dotm hv" data-k="${k}" r="4.5" visibility="hidden"/>`).join('')}<rect class="hit" x="${m.l}" y="${m.t}" width="${iw}" height="${ih}"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(w.h || 'chart')}">${g}</svg><div class="ctip" hidden></div>`;
+  const svg = el.querySelector('svg'), tip = el.querySelector('.ctip'), xh = svg.querySelector('.xh'), hv = svg.querySelectorAll('.hv');
+  const tf = v => (Math.abs(v) >= 100 ? Math.round(v) : v.toFixed(1)) + unit;
+  const move = e => {
+    const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(N - 1, Math.round((x - m.l) / iw * xMax)));
+    xh.setAttribute('x1', X(i)); xh.setAttribute('x2', X(i)); xh.setAttribute('visibility', 'visible');
+    hv.forEach(c => { const k = +c.dataset.k; c.setAttribute('cx', X(i)); c.setAttribute('cy', Y(tops[k][i])); c.setAttribute('visibility', 'visible'); });
+    tip.innerHTML = `<div class="h">${w.labels ? w.labels[i] : tLab(i, N, true)}</div>` + ser.map(s => `<div class="r"><i class="k${s.k}"></i>${ser.length > 1 ? s.n + ': ' : ''}<b>${tf(s.d[i])}</b></div>`).join('');
+    tip.hidden = false; tip.style.left = Math.max(70, Math.min(r.width - 70, X(i) * r.width / W)) + 'px'; tip.style.top = (Math.min(...tops.map(t => Y(t[i]))) * r.height / H) + 'px';
+  };
+  const hide = () => { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); hv.forEach(c => c.setAttribute('visibility', 'hidden')); };
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide);
+}
+function drawBars(el, w){
+  const W = Math.max(260, el.clientWidth), H = w.height || 180, m = {l:42, r:8, t:18, b:22}, n = w.data.length;
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, yMax = w.max || niceMax(Math.max(...w.data.map(d => d[1])) * 1.1);
+  const Y = v => m.t + (1 - v / yMax) * ih, bw = iw / n, unit = w.unit || '';
+  let g = '';
+  for(let k = 0; k <= 4; k++){ const v = yMax * k / 4; g += `<line class="${k ? 'gl' : 'axl'}" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${m.l - 7}" y="${Y(v) + 3.5}" text-anchor="end">${Number.isInteger(v) ? v : v.toFixed(1)}${unit}</text>`; }
+  const every = Math.ceil(n / Math.max(4, Math.floor(iw / 46)));
+  w.data.forEach((d, i) => {
+    const bwid = Math.min(24, bw - 2), x = m.l + i * bw + (bw - bwid) / 2, y = Y(d[1]), r = Math.min(4, bwid / 2, Y(0) - y);
+    const cls = d[2] || (w.hi && w.hi.includes(i) ? 'kw' : 'k' + (w.k || 1));
+    g += `<path class="${cls}" style="stroke:none" d="M${x} ${Y(0)} V${y + r} Q${x} ${y} ${x + r} ${y} H${x + bwid - r} Q${x + bwid} ${y} ${x + bwid} ${y + r} V${Y(0)} Z"/>`;
+    if(i % every === 0 || i === n - 1) g += `<text x="${x + bwid / 2}" y="${H - 5}" text-anchor="middle">${d[0]}</text>`;
+    if(w.hi && w.hi.includes(i)) g += `<text class="lbl" x="${x + bwid / 2}" y="${y - 5}" text-anchor="middle">${d[1]}${unit}</text>`;
+    g += `<rect class="hit" data-i="${i}" x="${m.l + i * bw}" y="${m.t}" width="${bw}" height="${ih}"/>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(w.h || 'chart')}">${g}</svg><div class="ctip" hidden></div>`;
+  const svg = el.querySelector('svg'), tip = el.querySelector('.ctip');
+  const show = e => { const t = e.target.closest('[data-i]'); if(!t){ tip.hidden = true; return; } const i = +t.dataset.i, r = svg.getBoundingClientRect(), d = w.data[i];
+    tip.innerHTML = `<div class="h">${d[3] || d[0]}</div><b>${d[1]}${unit}</b>`; tip.hidden = false;
+    tip.style.left = Math.max(50, Math.min(r.width - 50, (m.l + (i + .5) * bw) * r.width / W)) + 'px'; tip.style.top = (Y(d[1]) * r.height / H) + 'px'; };
+  svg.addEventListener('pointermove', show); svg.addEventListener('pointerdown', show); svg.addEventListener('pointerleave', () => tip.hidden = true);
+}
+function mountCharts(){ document.querySelectorAll('[data-ch]').forEach(el => { const w = CH[+el.dataset.ch]; if(w) (w.t === 'bars' ? drawBars : drawLine)(el, w); }); }
+
+/* ============ data tables ============ */
+const K = (l, v, u, o = {}) => ({l, v, u, ...o});
+const procRows = [
+  ['chrome','4121','riya','Sleeping','4.2','842 MB','38','08:59'],['chrome (renderer)','4388','riya','Sleeping','2.6','612 MB','19','09:01'],
+  ['gnome-shell','1874','riya','Running','3.8','410 MB','24','08:59'],['code','5102','riya','Sleeping','1.9','486 MB','31','15:24'],
+  ['telegram-desktop','2230','riya','Sleeping','0.4','280 MB','22','08:59'],['dropbox','2301','riya','Sleeping','0.3','210 MB','61','08:59'],
+  ['postgres','2811','999','Sleeping','0.2','142 MB','1','09:00'],['dockerd','1320','root','Sleeping','0.3','96 MB','18','08:58'],
+  ['tracker-miner-fs-3','2051','riya','Sleeping','0.2','96 MB','5','08:59'],['Xwayland','1990','riya','Sleeping','0.6','88 MB','6','08:59'],
+  ['gnome-terminal-server','6012','riya','Sleeping','0.3','64 MB','5','20:12'],['containerd','1288','root','Sleeping','0.1','52 MB','14','08:58'],
+  ['snapd','1043','root','Sleeping','0.1','44 MB','16','08:58'],['systemd-journald','412','root','Sleeping','0.1','38 MB','1','08:58'],
+  ['NetworkManager','1011','root','Sleeping','0.1','22 MB','4','08:58'],['pipewire','1702','riya','Sleeping','0.5','18 MB','3','08:59'],
+  ['redis-server','2840','999','Sleeping','0.1','12 MB','5','09:00'],['systemd','1','root','Sleeping','0.0','14 MB','1','08:58'],
+  ['bluetoothd','7740','root','Running','0.1','6 MB','1','21:20'],['bash','6024','riya','Sleeping','0.0','5 MB','1','20:12'],
+  ['top','6110','riya','Running','0.3','4 MB','1','21:30'],['cron','1036','root','Sleeping','0.0','3 MB','1','08:58']
+];
+const svc = (u, d, a, sub, en, rs, mem) => [C2(u, d), a === 'active' ? B('ok', a) : a === 'failed' ? B('crit', a) : OFF(a), `<span class="muted">${sub}</span>`, en === 'enabled' ? B('info', en) : `<span class="muted">${en}</span>`, rs, mem];
+const SVC = () => [
+  {c:svc('bluetooth.service', 'Bluetooth service', S.btRestarted ? 'active' : 'failed', S.btRestarted ? 'running' : 'auto-restart', 'enabled', '14', S.btRestarted ? '6 MB' : '—'), a:'bt'},
+  svc('NetworkManager.service','Network Manager','active','running','enabled','0','22 MB'), svc('docker.service','Docker Application Container Engine','active','running','enabled','0','96 MB'),
+  svc('containerd.service','containerd container runtime','active','running','enabled','0','52 MB'), svc('snapd.service','Snap Daemon','active','running','enabled','0','44 MB'),
+  svc('gdm.service','GNOME Display Manager','active','running','enabled','0','9 MB'), svc('systemd-journald.service','Journal Service','active','running','static','0','38 MB'),
+  svc('systemd-resolved.service','Network Name Resolution','active','running','enabled','0','8 MB'), svc('systemd-timesyncd.service','Network Time Synchronization','active','running','enabled','0','4 MB'),
+  svc('cups.service','CUPS Scheduler','active','running','enabled','0','7 MB'), svc('cups-browsed.service','Make remote CUPS printers available locally', S.cupsUndone ? 'active' : 'inactive', S.cupsUndone ? 'running' : 'dead', S.cupsUndone ? 'enabled' : 'disabled', '0', S.cupsUndone ? '5 MB' : '—'),
+  svc('ufw.service','Uncomplicated firewall','active','exited','enabled','0','—'), svc('apparmor.service','Load AppArmor profiles','active','exited','enabled','0','—'),
+  svc('unattended-upgrades.service','Unattended Upgrades Shutdown','active','running','enabled','0','12 MB'), svc('power-profiles-daemon.service','Power Profiles daemon','active','running','enabled','0','6 MB'),
+  svc('thermald.service','Thermal Daemon Service','active','running','enabled','0','5 MB'), svc('avahi-daemon.service','Avahi mDNS/DNS-SD Stack','active','running','enabled','0','3 MB'),
+  svc('ModemManager.service','Modem Manager','active','running','enabled','0','8 MB'), svc('packagekit.service','PackageKit Daemon','active','running','static','0','28 MB'),
+  svc('accounts-daemon.service','Accounts Service','active','running','enabled','0','6 MB'), svc('polkit.service','Authorization Manager','active','running','static','0','9 MB'),
+  svc('rsyslog.service','System Logging Service','active','running','enabled','0','5 MB'), svc('cron.service','Regular background program processing daemon','active','running','enabled','0','3 MB'),
+  svc('anacron.service','Run anacron jobs','inactive','dead','enabled','0','—'), svc('wpa_supplicant.service','WPA supplicant','active','running','enabled','0','7 MB'),
+  svc('fwupd.service','Firmware update daemon','inactive','dead','static','0','—'), svc('kerneloops.service','Collects kernel crash signatures','active','running','enabled','0','2 MB')
+];
+const PKGS = [
+  ['firefox','131.0.3','snap','286 MB','System','Today'],['code','1.94.2','snap','340 MB','User','Today'],['google-chrome-stable','130.0.6723.58','apt · third-party','352 MB','User','Today'],
+  ['telegram-desktop','5.6.1','snap','182 MB','User','Today'],['docker-ce','27.3.1','apt · third-party','108 MB','User','Today'],['zoom-client','6.2.3','snap','452 MB','User','6 days ago'],
+  ['com.spotify.Client','1.2.45','flatpak','310 MB','User','Yesterday'],['com.obsproject.Studio','30.2.3','flatpak','480 MB','User','9 days ago'],['virtualbox','7.0.16','apt','190 MB','User','12 days ago'],
+  ['vlc','3.0.20','apt','12 MB','User','3 days ago'],['vlc','3.0.21','snap','320 MB','User','Never'],['gimp','2.10.36','apt','98 MB','User','124 days ago'],
+  ['shotwell','0.32.6','apt','8 MB','System','201 days ago'],['git','2.43.0','apt','42 MB','User','Today'],['python3','3.12.3','apt','—','System','Today'],
+  ['libreoffice-writer','24.2.6','apt','64 MB','System','18 days ago'],['balenaEtcher','1.19.21','AppImage','98 MB','User','42 days ago'],['dropbox','2024.04.17','apt · third-party','38 MB','User','Today'],
+  ['httpie','3.2.2','pip','2 MB','User','30 days ago'],['typescript','5.6.3','npm','22 MB','User','2 days ago'],['ripgrep','14.1.1','cargo','6 MB','User','Today']
+];
+const srcB = s => s === 'snap' ? B('info', 'snap') : s === 'flatpak' ? B('ok', 'flatpak') : s === 'AppImage' ? B('warn', 'AppImage') : /pip|npm|cargo/.test(s) ? `<span class="tag mono">${s}</span>` : s.includes('third') ? OFF('apt · 3rd-party') : OFF('apt');
+const JOURNAL = [
+  ['21:31:02','info','NetworkManager','device (wlp0s20f3): state change: activated'],['21:20:15','info','systemd','bluetooth.service: Scheduled restart job, restart counter is at 14.'],
+  ['21:20:14','warning','systemd','bluetooth.service: Main process exited, code=dumped, status=11/SEGV'],['21:20:14','error','kernel','bluetoothd[7702]: segfault at 0 ip 000055d1c2a4 sp 00007ffd error 4'],
+  ['21:05:44','info','gnome-shell','Overwriting existing binding of keysym 31 with keysym 31'],['20:12:03','info','systemd','Started gnome-terminal-server.service'],
+  ['18:52:10','info','systemd','Starting apt-daily.service - Daily apt download activities...'],['15:22:31','info','snapd','Installed "code" snap'],
+  ['10:40:02','info','unattended-upgrades','Packages that were upgraded: libc6 openssl sudo'],['09:12:44','error','kernel','bluetoothd[1342]: segfault at 0 ip 000055d1c2a4 error 4'],
+  ['09:00:17','error','kernel','ACPI BIOS Error (bug): Could not resolve symbol [\\_SB.PC00.LPCB.EC0], AE_NOT_FOUND'],['08:58:41','info','systemd','Startup finished in 8.1s (firmware) + 2.4s (loader) + 3.9s (kernel) + 26.8s (userspace) = 41.2s.'],
+  ['08:58:05','info','kernel','Linux version 6.8.0-47-generic (buildd@lcy02-amd64-061)'],['02:13:58','warning','upowerd','battery BAT0 at 1%, critical action not configured'],
+  ['02:09:12','warning','upowerd','battery BAT0 is critically low (2%)'],['Mon 16:12:31','error','kernel','Out of memory: Killed process 30412 (chrome) anon-rss:1843212kB'],
+  ['Mon 16:12:30','warning','systemd-oomd','Memory pressure for user@1000.service is high'],['Mon 10:02:11','info','kernel','usb 3-2: new SuperSpeed USB device number 4 using xhci_hcd'],
+  ['Mon 09:44:09','info','kernel','usb 3-2: USB disconnect, device number 3'],['Sun 03:10:00','notice','systemd','e2scrub_all.timer: skipped, system suspended']
+];
+const prioB = p => p === 'error' ? B('crit', 'error') : p === 'warning' ? B('warn', 'warning') : OFF(p);
+const heatData = (seed, rows, cols, base, spikes) => { const r = rng(seed); return Array.from({length:rows}, (_, ri) => Array.from({length:cols}, (_, ci) => { let v = Math.max(0, Math.round((r() - .55) * base)); (spikes || []).forEach(s => { if(s[0] === ri && s[1] === ci) v = s[2]; }); return v; })); };
+const HOURS = Array.from({length:24}, (_, i) => String(i).padStart(2, '0'));
+const DAYS7 = ['Thu','Fri','Sat','Sun','Mon','Tue','Wed'];
+const BOOTS = [['8 Oct',29],['10 Oct',28],['12 Oct',31],['13 Oct',27],['14 Oct',28],['15 Oct',30],['16 Oct',29],['17 Oct',28],['19 Oct',28],['Today',41.2]];
+const DISK30 = (() => { const r = rng(11), a = []; for(let i = 0; i < 30; i++) a.push(74 + i * .69 + (r() - .5) * 1.1); a[29] = 224.2 / 238 * 100; return a; })();
+const D30L = Array.from({length:30}, (_, i) => new Date(2026, 8, 22 + i).toLocaleDateString('en-GB', {day:'numeric', month:'short'}));
+
+/* ============ pages ============ */
+const PAGES = {};
+const def = (id, title, icon, tabs, o = {}) => PAGES[id] = {id, title, icon, tabs, ...o};
+const GROUPS = [
+  ['Monitoring', ['overview','performance','logs','activity']],
+  ['System', ['system','hardware','power','display']],
+  ['Workloads', ['processes','services','jobs','containers']],
+  ['Software & Data', ['packages','storage','backups']],
+  ['Network & Access', ['network','accounts','security','privacy']],
+  ['Tools', ['diagnostics','assistant']]
+];
+const scoreSt = () => score() >= 90 ? 'ok' : score() >= 75 ? 'warn' : 'crit';
+
+def('overview', 'Overview', 'grid', [
+  {id:'summary', l:'Summary', f:() => [
+    {t:'kpis', items:[
+      K('Health score', score(), '/100', {st:scoreSt(), sub:`${issues().length} open issues`, bar:score(), go:'overview/score'}),
+      K('CPU', '12', '%', {sp:[3, 14, 8, 6, 2, 60, 12], sub:'Load 0.84 · 12 threads', go:'performance/cpu'}),
+      K('Memory', '5.9', 'GB', {sp:[5, 70, 8, 3, 40, 95, 78], k:2, sub:'78% of 7.6 GB', go:'performance/memory'}),
+      K('Disk ( / )', dPct(), '%', {st:diskSt(), bar:pct(), sub:`${f1(S.total - S.used)} GB free of ${S.total} GB`, go:'storage/overview'}),
+      K('Network', '1.2', 'MB/s', {sp:[9, .8, .6, .8, 0, 6, 1.2], k:3, sub:'↑ 0.3 MB/s · Wi-Fi', go:'performance/network'}),
+      K('Battery', '64', '%', {st:'warn', bar:64, sub:'Health 71% · 3 h 10 m left', go:'power/battery'})]},
+    {t:'line', s:8, h:'CPU and memory utilization', info:'How busy the processor and memory were. Change the time range at the top to zoom out.', src:'/proc/stat · /proc/meminfo', series:[{n:'CPU', g:[3, 14, 8, 6, 2, 60, 12], k:1}, {n:'Memory', g:[5, 70, 8, 3, 40, 95, 78], k:2}], y:[0, 100, '%'], height:300},
+    {t:'list', s:4, h:'Subsystems', info:'Status of every area SysDoc checks. Select a row to open it.', items:[
+      [ic('chip') + 'Hardware', 'CPU 54 °C', B('ok', 'Healthy'), 'hardware/summary'], [ic('bat') + 'Power', 'Health 71%', B('warn', 'Warning'), 'power/battery'],
+      [ic('sys') + 'System', 'Reboot required', B('info', 'Info'), 'system/overview'], [ic('cog') + 'Services', S.btRestarted ? 'Monitoring' : '1 failed', B('crit', 'Critical'), 'services/system'],
+      [ic('cal') + 'Scheduled Jobs', '10 jobs', B('ok', 'Healthy'), 'jobs/calendar'], [ic('pkg') + 'Packages', S.secFixed ? '8 updates' : '12 updates', B(S.secFixed ? 'info' : 'warn', S.secFixed ? 'Info' : 'Warning'), 'packages/installed'],
+      [ic('cube') + 'Containers', '1 exposed port', B('warn', 'Warning'), 'containers/containers'], [ic('db') + 'Storage', `${dPct()}% used`, B(diskSt(), SW[diskSt()]), 'storage/overview'],
+      [ic('backup') + 'Backups', '21 days ago', B('warn', 'Warning'), 'backups/jobs'], [ic('wifi') + 'Network', 'Wi-Fi −52 dBm', B('ok', 'Healthy'), 'network/interfaces'],
+      [ic('users') + 'Accounts', '2 users', B('ok', 'Healthy'), 'accounts/users'], [ic('shield') + 'Security', S.secFixed ? 'Checks passing' : '4 updates', B(S.secFixed ? 'ok' : 'warn', S.secFixed ? 'Healthy' : 'Warning'), 'security/overview'],
+      [ic('eye') + 'Privacy', 'No active access', B('ok', 'Healthy'), 'privacy/access']]},
+    {t:'table', s:8, h:'Active issues', sub:`${issues().length} open`, acts:[['View all', 'go:overview/issues', 'link']], cols:['Severity','Issue','Category','Detected',['', '']], rows:issues().slice(0, 6).map(i => [B(i.sev, SEV[i.sev]), C2(i.t, i.d), i.cat, `<span class="muted">${i.first}</span>`, BTN(i.act[0], i.act[1], i.sev === 'crit' ? 'pri' : '')])},
+    {t:'html', s:4, h:'Health score', info:'Starts at 100. Each open issue removes points from its area.', acts:[['Details', 'go:overview/score', 'link']], html:() => gauge(score(), 100, scoreSt(), score(), 'out of 100') + `<div style="margin-top:6px">${hbars({data:deductions().filter(d => d[1]).map(d => [d[0], d[1], '−' + d[1], 'warn']), max:10})}</div>`},
+    {t:'donut', s:4, h:'Disk usage ( / )', sub:`${S.total} GB`, src:'df -h / · du', acts:[['Open', 'go:storage/overview', 'link']], unit:'GB', center:[dPct() + '%', 'used'], data:[['Home', 128], ['Apps', 46], ['System', 22], ['Containers', 13], ...(cleanable() > .05 ? [['Reclaimable', +f1(cleanable()), 'kc']] : []), ['Free', +f1(S.total - S.used), 'kn']]},
+    {t:'table', s:4, h:'Top processes', sub:'by memory', src:'ps -eo comm,%cpu,rss', acts:[['View all', 'go:processes/all', 'link']], cols:['Process', ['CPU', 'n'], ['Memory', 'n']], rows:procRows.slice(0, 6).map(p => [p[0], p[4] + '%', p[5]])},
+    {t:'kv', s:4, h:'System', src:'hostnamectl', items:[['Hostname', 'riya-laptop'], ['OS', 'Ubuntu 24.04.1 LTS'], ['Kernel', M('6.8.0-47-generic')], ['Uptime', '12 h 36 m'], ['Last boot', 'Today 08:58'], ['Reboot required', B('warn', 'Yes')]]},
+    {t:'tl', s:6, h:'Recent activity', acts:[['View all', 'go:activity/timeline', 'link']], items:[...SYSDOC_LOG.map(r => [r.time, r.text, 'SysDoc · ' + r.sub, 'info']), ...HIST].slice(0, 6).map(h => h.length === 4 ? h : [`${h[0] === 'Today' ? '' : h[0] + ' '}${h[1]}`, h[3], h[4], h[5]])},
+    {t:'heat', s:6, h:'Errors and warnings by hour', sub:'last 7 days', src:'journalctl -p warning', rows:DAYS7, cols:HOURS, unit:'events', data:heatData(4, 7, 24, 4, [[6, 9, 9], [6, 21, 6], [4, 16, 7], [6, 2, 3], [3, 3, 2]])}
+  ]},
+  {id:'issues', l:'Issues', n:() => issues().length, crit:true, f:() => { const L = issues(); return [
+    {t:'kpis', items:[K('Critical', L.filter(i => i.sev === 'crit').length, '', {st:'crit'}), K('Warning', L.filter(i => i.sev === 'warn').length, '', {st:'warn'}), K('Info', L.filter(i => i.sev === 'info').length, ''), K('Resolved', '11', '', {sub:'last 30 days'}), K('Mean time to resolve', '1.8', 'days')]},
+    {t:'table', id:'issues-all', h:'All issues', search:'Search issues', filter:{col:0, opts:['All','Critical','Warning','Info']}, cols:['Severity','Issue','Category','First seen',['Count', 'n'],'Status',['', '']], rows:L.map(i => [B(i.sev, SEV[i.sev]), C2(i.t, i.d), i.cat, `<span class="muted">${i.first}</span>`, i.cnt, OFF('Open'), BTN(i.act[0], i.act[1], i.sev === 'crit' ? 'pri' : '')])}
+  ]; }},
+  {id:'score', l:'Health Score', f:() => [
+    {t:'line', s:8, h:'Health score trend', sub:'30 days', series:[{n:'Score', d:Array.from({length:30}, (_, i) => i === 29 ? score() : Math.round(96 - i * .45 - (i > 22 ? 4 : 0))), k:1}], labels:D30L, y:[60, 100, ''], height:240},
+    {t:'html', s:4, h:'Current score', html:() => gauge(score(), 100, scoreSt(), score(), 'out of 100') + `<p class="muted" style="text-align:center;margin:6px 0 0">90+ Healthy · 75–89 Fair · below 75 At risk</p>`},
+    {t:'table', h:'Score breakdown', cols:['Category',['Weight', 'n'],['Deduction', 'n'],'Open findings','Status'], rows:[
+      ['Storage', '15', deductions()[0][1] ? '−' + deductions()[0][1] : '0', pct() >= 93 ? 'Root filesystem almost full' : pct() >= 85 ? 'Root filesystem above 85%' : '—', B(diskSt(), SW[diskSt()])],
+      ['Services', '15', '−5', 'bluetooth.service crash loop', B('crit', 'Critical')], ['Security', '15', S.secFixed ? '0' : '−3', S.secFixed ? '—' : '4 security updates pending', B(S.secFixed ? 'ok' : 'warn', S.secFixed ? 'Healthy' : 'Warning')],
+      ['Power', '10', '−1', 'Battery health 71%', B('warn', 'Warning')], ['Backups', '10', '−1', 'Last backup 21 days ago', B('warn', 'Warning')],
+      ['Hardware', '10', '0', '—', B('ok', 'Healthy')], ['Network', '10', '0', '—', B('ok', 'Healthy')], ['Accounts', '5', '0', '—', B('ok', 'Healthy')], ['Privacy', '5', '0', '—', B('ok', 'Healthy')], ['Packages', '5', '0', '—', B('ok', 'Healthy')]]}
+  ]}
+], {group:'Monitoring'});
+
+def('performance', 'Performance', 'perf', [
+  {id:'cpu', l:'CPU', f:() => [
+    {t:'kpis', items:[K('Utilization', '12', '%', {sp:[3, 14, 8, 6, 2, 60, 12]}), K('Load average', '0.84', '', {sub:'5 min 0.92 · 15 min 1.10'}), K('Frequency', '1.3', 'GHz', {sub:'Max 4.4 GHz'}), K('Temperature', '54', '°C', {sp:[21, 52, 6, 3, 35, 90, 54], k:2}), K('Processes', '312', '', {sub:'1,204 threads'}), K('Context switches', '6.2K', '/s', {sub:'Interrupts 3.1K/s'})]},
+    {t:'line', h:'CPU utilization by type', info:'User = your apps. System = the kernel. I/O wait = waiting for the disk.', src:'/proc/stat', stack:true, series:[{n:'User', g:[3, 8, 5, 4, 0, 60], k:1}, {n:'System', g:[13, 3, 2, 2, 0, 30], k:2}, {n:'I/O wait', g:[17, .8, .6, 1, 0, 15], k:3}], y:[0, 50, '%'], height:240},
+    {t:'bars', s:6, h:'Per-core utilization', sub:'now', src:'mpstat -P ALL', data:[['P0',18],['P1',9],['P2',14],['P3',6],['E0',22],['E1',11],['E2',4],['E3',7],['E4',16],['E5',3],['E6',8],['E7',5]].map(d => [d[0], d[1], null, `Thread ${d[0]}`]), unit:'%', max:100, height:200},
+    {t:'table', s:6, h:'Top CPU consumers', src:'ps --sort=-%cpu', cols:['Process',['PID', 'n'],'User',['CPU', 'n']], rows:procRows.slice().sort((a, b) => b[4] - a[4]).slice(0, 7).map(p => [p[0], p[1], p[2], BAR(+p[4] * 5, '', p[4] + '%')])}
+  ]},
+  {id:'memory', l:'Memory', f:() => [
+    {t:'kpis', items:[K('Used', '5.9', 'GB', {sp:[5, 70, 8, 3, 40, 95, 78], k:2, sub:'78% of 7.6 GB'}), K('Available', '1.7', 'GB'), K('Cache and buffers', '1.6', 'GB'), K('Swap', '1.2', 'GB', {bar:60, sub:'of 2.0 GB'}), K('Pressure', '0.4', '%', {sub:'some avg10'}), K('OOM kills', '1', '', {st:'warn', sub:'last 7 days'})]},
+    {t:'line', s:8, h:'Memory usage', src:'/proc/meminfo', stack:true, series:[{n:'Used', g:[5, 4.6, .9, .5, 2.5, 6.4, 5.9], k:1}, {n:'Cache', g:[7, 1.4, .3, .2, .5, 2.5, 1.6], k:2}], y:[0, 8, ' GB'], thr:[7.6, 'Total 7.6 GB'], height:240},
+    {t:'donut', s:4, h:'Composition', sub:'now', unit:'GB', center:['7.6', 'GB total'], data:[['Used', 5.9], ['Cache', 1.6], ['Free', .1, 'kn', '0.1 GB']]},
+    {t:'table', h:'Top memory consumers', src:'ps --sort=-rss', cols:['Process',['PID', 'n'],'User',['Resident', 'n'],['Share of total', 'n'],['Swap', 'n x']], rows:procRows.slice(0, 8).map((p, i) => [p[0], p[1], p[2], p[5], BAR(parseFloat(p[5]) / 7600 * 100 * 4, '', (parseFloat(p[5]) / 7600 * 100).toFixed(1) + '%'), ['120 MB','84 MB','0','62 MB','0','0','0','0'][i]])}
+  ]},
+  {id:'disk', l:'Disk I/O', f:() => [
+    {t:'kpis', items:[K('Read', '2.4', 'MB/s', {sp:[31, 2, 2, 3, 0, 40, 2.4]}), K('Write', '0.8', 'MB/s', {sp:[32, 1, 1, 1.5, 0, 30, .8], k:2}), K('IOPS', '142', ''), K('Utilization', '6', '%'), K('Avg latency', '0.4', 'ms'), K('Queue depth', '0.02', '')]},
+    {t:'line', h:'Throughput', src:'/proc/diskstats', series:[{n:'Read', g:[31, 2, 2, 3, 0, 40, 2.4], k:1}, {n:'Write', g:[32, 1, 1, 1.5, 0, 30, .8], k:2}], y:[0, 'auto', ' MB/s'], height:220},
+    {t:'table', s:6, h:'Devices', src:'iostat -x', cols:['Device',['Read/s', 'n'],['Write/s', 'n'],['Util', 'n'],['Await', 'n']], rows:[[M('nvme0n1'), '2.4 MB', '0.8 MB', '6%', '0.4 ms'], [M('loop0–loop13'), '0', '0', '0%', '0 ms']]},
+    {t:'table', s:6, h:'Top I/O processes', src:'iotop -b -n1', cols:['Process',['Read', 'n'],['Write', 'n']], rows:S.access === 'full' ? [['chrome', '1.1 MB/s', '0.4 MB/s'], ['tracker-miner-fs-3', '0.8 MB/s', '0.1 MB/s'], ['code', '0.2 MB/s', '0.1 MB/s'], ['postgres', '0.1 MB/s', '0.1 MB/s']] : [], empty:'Requires Full access · Settings › Access'}
+  ]},
+  {id:'network', l:'Network', f:() => [
+    {t:'kpis', items:[K('Download', '1.2', 'MB/s', {sp:[9, .8, .6, .8, 0, 6, 1.2]}), K('Upload', '0.3', 'MB/s', {sp:[10, .2, .2, .3, 0, 3, .3], k:2}), K('Data today', '4.2', 'GB'), K('Connections', '68', '', {sub:'5 listening'}), K('Packet loss', '0', '%'), K('Latency', '18', 'ms', {sub:'to 1.1.1.1'})]},
+    {t:'line', h:'Throughput', src:'/proc/net/dev', series:[{n:'Download', g:[9, .8, .6, .8, 0, 6, 1.2], k:1}, {n:'Upload', g:[10, .2, .2, .3, 0, 3, .3], k:2}], y:[0, 'auto', ' MB/s'], height:220},
+    {t:'bars', s:6, h:'Daily data usage', sub:'14 days', src:'vnstat -d', data:[['8',3.1],['9',4.4],['10',2.2],['11',1.9],['12',5.8],['13',3.6],['14',4.1],['15',3.3],['16',6.2],['17',2.8],['18',1.5],['19',4.9],['20',5.1],['21',4.2]].map(d => [d[0], d[1], null, `${d[0]} Oct`]), unit:' GB', height:200},
+    {t:'table', s:6, h:'Interfaces', src:'ip -s link', cols:['Interface','Type','State',['RX/s', 'n'],['TX/s', 'n']], rows:[[M('wlp0s20f3'), 'Wi-Fi', B('ok', 'up'), '1.2 MB', '0.3 MB'], [M('docker0'), 'Bridge', B('ok', 'up'), '12 KB', '9 KB'], [M('lo'), 'Loopback', B('ok', 'up'), '4 KB', '4 KB'], [M('enx00e04c68'), 'Ethernet (USB)', OFF('down'), '0', '0']]}
+  ]},
+  {id:'gpu', l:'GPU', f:() => [
+    {t:'kpis', items:[K('Device', 'Iris Xe', '', {sub:'Intel · Alder Lake-UP3 GT2'}), K('Utilization', '8', '%', {sp:[41, 7, 5, 4, 0, 80, 8]}), K('Memory', 'Shared', '', {sub:'Uses system RAM'}), K('Temperature', 'N/A', '', {sub:'Not reported by i915'}), K('Driver', 'i915', '', {sub:'Mesa 24.0.9'})]},
+    {t:'line', h:'GPU utilization', src:'intel_gpu_top (admin)', series:[{n:'Render', g:[41, 7, 5, 4, 0, 80, 8], k:1}], y:[0, 100, '%'], height:220},
+    {t:'alert', st:'info', h:'GPU temperature is not exposed', text:'The Intel i915 driver shares the CPU package sensor. See Hardware › Sensors.', acts:[['Open sensors', 'go:hardware/sensors']]}
+  ]},
+  {id:'pressure', l:'Pressure (PSI)', f:() => [
+    {t:'kpis', items:[K('CPU some', '1.2', '%'), K('Memory some', '0.4', '%'), K('Memory full', '0.1', '%'), K('I/O some', '0.8', '%'), K('I/O full', '0.2', '%')]},
+    {t:'line', h:'Pressure stall information', info:'Share of time tasks waited for CPU, memory or disk. The most reliable sign of a slow system.', src:'/proc/pressure/{cpu,memory,io}', series:[{n:'CPU', g:[51, 1.4, 1, 1.5, 0, 40, 1.2], k:1}, {n:'Memory', g:[52, .6, .5, 1.2, 0, 40, .4], k:2}, {n:'I/O', g:[53, .9, .6, 1, 0, 40, .8], k:3}], y:[0, 'auto', '%'], height:240},
+    {t:'kv', h:'Thresholds', items:[['Healthy', 'below 5% (avg10)'], ['Noticeable slowdown', '5–20%'], ['Severe', 'above 20%'], ['Peak in range', B('warn', 'Memory 23.4% · Mon 16:12')]]}
+  ]}
+], {group:'Monitoring'});
+
+def('logs', 'Logs', 'logs', [
+  {id:'journal', l:'Journal', f:() => [
+    {t:'bars', h:'Log volume', sub:'events per hour, last 24 h', src:'journalctl --since -24h', data:HOURS.map((h, i) => [h, [14, 9, 41, 22, 6, 4, 5, 6, 88, 64, 31, 18, 22, 19, 16, 34, 21, 14, 26, 19, 31, 46, 12, 8][i], null, `${h}:00`]), hi:[8], height:150},
+    {t:'table', id:'journal', h:'Journal entries', search:'Filter messages', filter:{col:1, opts:['All','error','warning','info']}, page:12, cols:['Time','Priority','Unit',['Message', 'w']], rows:JOURNAL.map(j => [`<span class="mono muted">${j[0]}</span>`, prioB(j[1]), M(j[2]), `<span class="mono">${esc(j[3])}</span>`])}
+  ]},
+  {id:'errors', l:'Errors', n:() => 37, f:() => [
+    {t:'kpis', items:[K('Errors', '37', '', {sub:'last 7 days', st:'warn'}), K('Unique messages', '6', ''), K('Needs attention', '2', '', {st:'crit'}), K('Known harmless', '29', '', {sub:'ACPI, gnome-shell'})]},
+    {t:'table', h:'Grouped errors', cols:['Message','Unit',['Count', 'n'],'Last seen','Classification'], rows:[
+      {c:[C2('Segmentation fault (SIGSEGV)', 'bluetoothd'), M('bluetooth.service'), '14', 'Today 21:20', B('crit', 'Needs attention')], a:'bt'},
+      [C2('Out of memory: Killed process', 'chrome renderer'), M('kernel'), '1', 'Mon 16:12', B('warn', 'Needs attention')],
+      [C2('ACPI BIOS Error (AE_NOT_FOUND)', 'Firmware table bug'), M('kernel'), '18', 'Today 09:00', OFF('Harmless')],
+      [C2('Overwriting existing binding of keysym', 'Keyboard shortcut'), M('gnome-shell'), '11', 'Today 21:05', OFF('Harmless')],
+      [C2('USB disconnect', 'usb 3-2'), M('kernel'), '2', 'Mon 09:44', B('info', 'Review')],
+      [C2('Failed to start Network Time Synchronization', 'Retried successfully'), M('systemd'), '1', 'Sat 08:12', OFF('Harmless')]]},
+    {t:'heat', h:'Errors by day and hour', src:'journalctl -p err', rows:DAYS7, cols:HOURS, unit:'errors', data:heatData(8, 7, 24, 3, [[6, 9, 9], [6, 21, 5], [4, 16, 3], [6, 0, 2]])}
+  ]},
+  {id:'crashes', l:'Crashes', f:() => [
+    {t:'kpis', items:[K('Crashes', '16', '', {sub:'last 7 days'}), K('Applications', '3', ''), K('Core dumps stored', '420', 'MB')]},
+    {t:'table', h:'Crash reports', src:'coredumpctl list · /var/crash', cols:['Time','Application','Signal','Source',['Count', 'n'],'Status'], rows:[
+      {c:['Today 21:20', M('bluetoothd'), 'SIGSEGV', 'systemd-coredump', '14', B('crit', 'Recurring')], a:'bt'},
+      ['Mon 16:12', M('chrome (renderer)'), 'SIGKILL (OOM)', 'kernel', '1', B('warn', 'Resolved')], ['Mon 11:47', M('gnome-calculator'), 'SIGABRT', 'apport', '1', OFF('Reported')]]}
+  ]},
+  {id:'kernel', l:'Kernel', f:() => [
+    {t:'table', h:'Kernel messages', search:'Filter kernel log', src:'journalctl -k', cols:['Time','Level','Subsystem',['Message', 'w']], rows:[
+      ['21:20:14', B('crit', 'err'), 'traps', M('bluetoothd[7702]: segfault at 0 ip 000055d1c2a4 error 4')],
+      ['Mon 16:12', B('crit', 'err'), 'oom', M('Out of memory: Killed process 30412 (chrome)')],
+      ['09:00:17', B('crit', 'err'), 'ACPI', M('ACPI BIOS Error (bug): AE_NOT_FOUND')],
+      ['08:58:07', OFF('info'), 'iwlwifi', M('loaded firmware version 89.202a2f7b.0 so-a0-gf-a0-89.ucode')],
+      ['08:58:06', OFF('info'), 'nvme', M('nvme0: 8/0/0 default/read/poll queues')],
+      ['Mon 10:02', OFF('info'), 'usb', M('usb 3-2: new SuperSpeed USB device number 4')],
+      ['Mon 09:44', B('warn', 'warn'), 'usb', M('usb 3-2: USB disconnect, device number 3')]]}
+  ]},
+  {id:'boots', l:'Boots', f:() => [
+    {t:'bars', s:6, h:'Boot duration', sub:'last 10 boots', src:'systemd-analyze', data:BOOTS.map(b => [b[0], b[1]]), unit:' s', hi:[9], height:200},
+    {t:'table', s:6, h:'Boot history', src:'journalctl --list-boots', cols:['Started','Ended','Duration','Shutdown','Kernel'], rows:[
+      ['Today 08:58', '—', '12 h 36 m', B('info', 'Running'), M('6.8.0-47')], ['Mon 08:41', 'Today 02:14', '1 d 17 h', B('crit', 'Unclean'), M('6.8.0-45')],
+      ['Sat 10:12', 'Mon 08:40', '1 d 22 h', B('ok', 'Clean'), M('6.8.0-45')], ['Thu 09:01', 'Sat 10:11', '2 d 1 h', B('ok', 'Clean'), M('6.8.0-45')]]}
+  ]}
+], {group:'Monitoring'});
+
+def('activity', 'Activity', 'hist', [
+  {id:'timeline', l:'Timeline', f:() => [
+    {t:'kpis', items:[K('Changes', '18', '', {sub:'last 7 days'}), K('Package changes', '9', ''), K('Configuration changes', '3', ''), K('Sign-ins', '14', ''), K('SysDoc actions', String(sysdocRows().length), '')]},
+    {t:'tl', s:8, h:'Change timeline', items:[...SYSDOC_LOG.map(r => [r.time, r.text, 'SysDoc · ' + r.sub, 'info']), ...HIST.map(h => [`${h[0] === 'Today' ? '' : h[0] + ' '}${h[1]}`, h[3], `${h[2]} · ${h[4]}`, h[5]])]},
+    {t:'donut', s:4, h:'Changes by type', sub:'7 days', center:['18', 'changes'], data:[['Packages', 9], ['Configuration', 3], ['Services', 2], ['Devices', 3], ['Jobs', 1]]}
+  ]},
+  {id:'packages', l:'Package History', f:() => [
+    {t:'table', h:'Package history', search:'Search packages', filter:{col:1, opts:['All','Install','Upgrade','Remove']}, src:'/var/log/apt/history.log · snap changes', cols:['Date','Action','Package','From','To','Source'], rows:[
+      ...(S.secFixed ? [['Today', B('info', 'Upgrade'), 'openssl, libssl3t64, sudo, linux-firmware', '—', '—', 'SysDoc']] : []),
+      ['Today 10:40', B('info', 'Upgrade'), 'libc6', M('2.39-0ubuntu8.2'), M('2.39-0ubuntu8.3'), 'unattended-upgrades'], ['Today 10:40', B('info', 'Upgrade'), 'openssl', M('3.0.13-0ubuntu3.3'), M('3.0.13-0ubuntu3.4'), 'unattended-upgrades'],
+      ['Today 10:40', B('info', 'Upgrade'), 'sudo', M('1.9.15p5-3ubuntu5'), M('1.9.15p5-3ubuntu5.1'), 'unattended-upgrades'], ['Tue 18:40', B('info', 'Upgrade'), 'linux-image-generic', M('6.8.0-45'), M('6.8.0-47'), 'Software Updater'],
+      ['Tue 18:41', B('info', 'Upgrade'), 'linux-firmware', M('…0ubuntu2.4'), M('…0ubuntu2.5'), 'Software Updater'], ['Tue 15:22', B('ok', 'Install'), 'code (snap)', '—', M('1.94.2'), 'snap'],
+      ['Sat 19:03', B('ok', 'Install'), 'com.spotify.Client', '—', M('1.2.45'), 'flatpak'], ['Fri 12:20', B('crit', 'Remove'), 'thunderbird (snap)', M('128.3.1'), '—', 'snap'], ['Thu 09:30', B('ok', 'Install'), 'httpie', '—', M('3.2.2'), 'pip']]}
+  ]},
+  {id:'config', l:'Config Changes', f:() => [
+    {t:'table', h:'Configuration changes', src:'inotify watcher · /etc', cols:['Time','File','Change','Changed by',['', '']], rows:[
+      ...(S.battFixed ? [['Today ' + S.battTime, M('/etc/UPower/UPower.conf'), `<span class="yes">+1</span> <span class="muted">−1</span>`, 'SysDoc', BTN('View diff', 'toast:PercentageAction=2 → PercentageAction=5')]] : []),
+      ['Tue 11:05', M('/etc/systemd/system/multi-user.target.wants/cups-browsed.service'), S.cupsUndone ? 'Restored' : 'Removed (symlink)', 'SysDoc', BTN('View diff', 'toast:Symlink removed by systemctl disable cups-browsed')],
+      ['Tue 15:20', M('/etc/apt/sources.list.d/vscode.list'), 'Added', 'apt', BTN('View diff', 'toast:+ deb [arch=amd64] https://packages.microsoft.com/repos/code stable main')],
+      ['Mon 21:30', M('/var/spool/cron/crontabs/riya'), `<span class="yes">+1</span>`, 'riya', BTN('View diff', 'toast:+ 0 21 * * * ~/bin/backup-photos.sh')]]}
+  ]},
+  {id:'devices', l:'Device Events', f:() => [
+    {t:'table', h:'Device events', src:'udev · journal', cols:['Time','Event','Device','Bus','ID'], rows:[
+      ['Today 21:20', B('warn', 'Disconnected'), 'Wireless earbuds', 'Bluetooth', M('A4:C1:38:..:5E')], ['Today 21:20', B('ok', 'Connected'), 'Wireless earbuds', 'Bluetooth', M('A4:C1:38:..:5E')],
+      ['Mon 10:02', B('ok', 'Connected'), 'USB storage PHOTOS (64 GB)', 'USB 3.2', M('0781:5583')], ['Mon 09:44', B('warn', 'Disconnected'), 'USB storage PHOTOS (64 GB)', 'USB 3.2', M('0781:5583')],
+      ['Sat 18:30', B('ok', 'Connected'), 'USB mouse', 'USB 2.0', M('046d:c077')]]}
+  ]},
+  {id:'sysdoc', l:'SysDoc Actions', f:() => [
+    {t:'table', h:'Remediation log', info:'Every change SysDoc made, with undo where possible.', cols:['Time','Action','Target','Result','Undo'], rows:sysdocRows().map(r => [r.when, r.text, M(r.target), B('ok', 'Succeeded'), r.undo ? (r.undone ? '<span class="muted">Undone</span>' : BTN('Undo', 'undo:' + r.undo)) : `<span class="muted">${r.undoNote || 'Not reversible'}</span>`])}
+  ]}
+], {group:'Monitoring'});
+
+def('system', 'System', 'sys', [
+  {id:'overview', l:'Overview', f:() => [
+    {t:'kv', s:6, h:'Operating system', src:'/etc/os-release · uname -a', items:[['Distribution', 'Ubuntu 24.04.1 LTS (Noble Numbat)'], ['Kernel', M('6.8.0-47-generic')], ['Architecture', 'x86_64'], ['Desktop', 'GNOME 46 · Wayland'], ['Init system', 'systemd 255'], ['Hostname', 'riya-laptop'], ['Virtualization', 'None (bare metal)'], ['Machine ID', M('4f1c9d…a72e')]]},
+    {t:'kv', s:6, h:'Status', items:[['Uptime', '12 h 36 m'], ['Last boot', 'Today 08:58 · 41.2 s'], ['Reboot required', B('warn', 'Yes · libc6, openssl, sudo')], ['Load average', M('0.84 0.92 1.10')], ['Users logged in', '1'], ['Running services', '142'], ['Ubuntu Pro', OFF('Not attached')], ['Livepatch', OFF('Disabled')]]},
+    {t:'html', h:'Release lifecycle', sub:'Ubuntu 24.04 LTS', info:'How long this Ubuntu version gets security updates.', html:`<div class="life"><b style="width:50.4%"></b><i style="left:50.4%"></i><span style="left:50.4%">Today</span></div><div class="life-ax"><span>Released · Apr 2024</span><span>Standard support ends · Apr 2029</span></div>`}
+  ]},
+  {id:'boot', l:'Boot', f:() => [
+    {t:'kpis', items:[K('Last boot', '41.2', 's', {st:'warn', sub:'Average 28.6 s'}), K('Firmware', '8.1', 's'), K('Loader', '2.4', 's'), K('Kernel', '3.9', 's'), K('Userspace', '26.8', 's')]},
+    {t:'hbars', s:6, h:'Slowest units', src:'systemd-analyze blame', data:[[M('snapd.service'), 6.2, '6.2 s'], [M('NetworkManager-wait-online.service'), 5.1, '5.1 s'], [M('plymouth-quit-wait.service'), 4.4, '4.4 s'], [M('docker.service'), 3.1, '3.1 s'], [M('dev-nvme0n1p2.device'), 2.2, '2.2 s'], [M('apt-daily.service'), 1.7, '1.7 s'], [M('systemd-udev-settle.service'), 1.2, '1.2 s']]},
+    {t:'bars', s:6, h:'Boot time history', sub:'last 10 boots', data:BOOTS.map(b => [b[0], b[1]]), unit:' s', hi:[9], height:220}
+  ]},
+  {id:'updates', l:'Updates', n:() => S.secFixed ? 8 : 12, f:() => [
+    {t:'kpis', items:[K('Pending', S.secFixed ? '8' : '12', '', {st:S.secFixed ? 'info' : 'warn'}), K('Security', S.secFixed ? '0' : '4', '', {st:S.secFixed ? 'ok' : 'warn'}), K('Last check', '2', 'h ago'), K('Automatic security updates', 'On', ''), K('Reboot required', 'Yes', '', {st:'info'})]},
+    {t:'table', id:'pending', h:'Pending updates', src:'apt list --upgradable', sel:['Install selected', 'fix:sec'], cols:['Package',['Installed', 'x'],'Candidate','Priority',['Size', 'n']], rows:[
+      ...(S.secFixed ? [] : [['openssl', M('3.0.13-0ubuntu3.4'), M('3.0.13-0ubuntu3.5'), B('warn', 'Security'), '1.2 MB'], ['libssl3t64', M('3.0.13-0ubuntu3.4'), M('3.0.13-0ubuntu3.5'), B('warn', 'Security'), '1.9 MB'], ['sudo', M('1.9.15p5-3ubuntu5.1'), M('1.9.15p5-3ubuntu5.2'), B('warn', 'Security'), '0.9 MB'], ['linux-firmware', M('…0ubuntu2.5'), M('…0ubuntu2.6'), B('warn', 'Security'), '298 MB']]),
+      ['google-chrome-stable', M('130.0.6723.58'), M('130.0.6723.69'), OFF('Regular'), '112 MB'], ['git', M('1:2.43.0-1ubuntu7.1'), M('1:2.43.0-1ubuntu7.2'), OFF('Regular'), '3.7 MB'],
+      ['docker-ce', M('5:27.3.1'), M('5:27.3.2'), OFF('Regular'), '25 MB'], ['code (snap)', M('1.94.2'), M('1.95.0'), OFF('Regular'), '106 MB']], count:S.secFixed ? 8 : 12},
+    {t:'table', h:'Update history', cols:['Date',['Packages', 'n'],'Source','Result'], rows:[...(S.secFixed ? [['Today', '4', 'SysDoc', B('ok', 'Success')]] : []), ['Today 10:40', '3', 'unattended-upgrades', B('ok', 'Success')], ['Tue 18:40', '6', 'Software Updater', B('ok', 'Success')], ['Thu 06:24', '2', 'unattended-upgrades', B('ok', 'Success')]]}
+  ], acts:() => S.secFixed ? [] : [['Install security updates', 'fix:sec', 'pri']]},
+  {id:'kernel', l:'Kernel', f:() => [
+    {t:'kv', s:5, h:'Running kernel', src:'uname -r · /proc/cmdline', items:[['Version', M('6.8.0-47-generic')], ['Tainted', B('ok', 'No (0)')], ['Modules loaded', '187'], ['Command line', M('BOOT_IMAGE=/vmlinuz-6.8.0-47-generic root=UUID=… ro quiet splash')]]},
+    {t:'table', s:7, h:'Installed kernels', cols:['Version','Status',['Size', 'n'],'Installed',['', '']], rows:[[M('6.8.0-47-generic'), B('ok', 'Running'), '312 MB', 'Tue 18:40', ''], [M('6.8.0-45-generic'), B('info', 'Fallback'), '310 MB', '12 Sep', ''], [M('6.8.0-41-generic'), OFF('Old'), '320 MB', '14 Aug', BTN('Remove', 'toast:Old kernel queued for removal.')]]},
+    {t:'table', h:'Kernel modules', search:'Search modules', page:8, src:'lsmod', cols:['Module',['Size', 'n'],'Used by'], rows:[['i915','4.2 MB','34'],['iwlmvm','704 KB','1'],['iwlwifi','598 KB','iwlmvm'],['btusb','77 KB','0'],['bluetooth','1.0 MB','btusb, btrtl, btintel'],['nvme','61 KB','2'],['snd_hda_intel','61 KB','3'],['kvm_intel','487 KB','0'],['overlay','212 KB','2'],['xt_conntrack','12 KB','2']].map(r => [M(r[0]), r[1], r[2]]), count:'187'}
+  ]},
+  {id:'time', l:'Time & Locale', f:() => [
+    {t:'kv', s:6, h:'Date and time', src:'timedatectl', items:[['Local time', 'Wed 21 Oct 2026 21:34 IST'], ['Time zone', 'Asia/Kolkata (IST, +0530)'], ['NTP synchronized', B('ok', 'Yes')], ['Time server', 'ntp.ubuntu.com'], ['RTC in local time', 'No']]},
+    {t:'kv', s:6, h:'Locale', src:'localectl', items:[['System locale', M('LANG=en_IN.UTF-8')], ['Keyboard layout', 'us'], ['Input method', 'IBus'], ['Units', 'Metric · °C']]}
+  ]}
+], {group:'System'});
+
+def('hardware', 'Hardware', 'chip', [
+  {id:'summary', l:'Summary', f:() => [
+    {t:'kv', s:6, h:'Machine', src:'/sys/class/dmi/id', items:[['Vendor', 'Lenovo'], ['Model', 'IdeaPad 5 14IAL7'], ['Chassis', 'Laptop'], ['Serial number', S.access === 'full' ? M('PF3K9X2M') : OFF('Requires Full access')], ['BIOS', 'JHCN52WW · 11 Mar 2024'], ['Secure Boot', B('ok', 'Enabled')]]},
+    {t:'list', s:6, h:'Components', items:[[ic('chip') + 'Processor', 'i5-1235U · 54 °C', B('ok', 'Healthy'), 'hardware/processor'], [ic('layers') + 'Memory', '8 GB LPDDR4X', B('ok', 'Healthy'), 'hardware/memory'], [ic('db') + 'Storage', 'NVMe 256 GB · SMART passed', B('ok', 'Healthy'), 'hardware/storage'], [ic('bat') + 'Battery', '71% of design', B('warn', 'Degraded'), 'power/battery'], [ic('mon') + 'Graphics', 'Iris Xe · i915', B('ok', 'Healthy'), 'hardware/graphics'], [ic('fan') + 'Fans', 'Not reported', OFF('Unknown'), 'hardware/sensors'], [ic('usb') + 'Peripherals', '11 devices · 0 missing drivers', B('crit', '1 unstable'), 'hardware/peripherals'], [ic('bolt') + 'Firmware', '1 update available', B('info', 'Update'), 'hardware/firmware']]}
+  ]},
+  {id:'processor', l:'Processor', f:() => [
+    {t:'gauges', s:6, h:'Live', items:[{v:12, max:100, val:'12%', sub:'utilization', l:'Load'}, {v:54, max:100, val:'54 °C', sub:'package', l:'Temperature'}, {v:1.3, max:4.4, val:'1.3 GHz', sub:'of 4.4 GHz', l:'Frequency'}]},
+    {t:'kv', s:6, h:'Specifications', src:'lscpu', items:[['Model', '12th Gen Intel Core i5-1235U'], ['Cores', '10 (2 performance + 8 efficient)'], ['Threads', '12'], ['Base / max frequency', '1.3 / 4.4 GHz'], ['L3 cache', '12 MB'], ['Microcode', M('0x4123')], ['Features', T('VT-x', 'AES-NI', 'AVX2', 'SHA')]]},
+    {t:'table', h:'Cores', src:'/sys/devices/system/cpu', cols:['Core','Type',['Frequency', 'n'],['Utilization', 'n'],['Temperature', 'n']], rows:['P0','P1','E0','E1','E2','E3','E4','E5','E6','E7'].map((c, i) => [c, c[0] === 'P' ? 'Performance · 2 threads' : 'Efficient', [1640, 1320, 1180, 980, 1210, 1050, 1400, 920, 1100, 1010][i] + ' MHz', BAR([16, 10, 22, 11, 4, 7, 16, 3, 8, 5][i]), [56, 55, 52, 52, 52, 52, 53, 53, 53, 53][i] + ' °C'])}
+  ]},
+  {id:'memory', l:'Memory', f:() => [
+    {t:'kv', s:6, h:'Modules', src:'dmidecode -t memory', items:[['Total', '8 GB (7.6 GB usable)'], ['Type', S.access === 'full' ? 'LPDDR4X · 4266 MT/s' : OFF('Requires Full access')], ['Form factor', 'Soldered on board'], ['Slots', '0 free · not upgradeable'], ['ECC', 'No']]},
+    {t:'checks', s:6, h:'Health', items:[['pass', 'No memory pressure stalls above 20% today'], ['warn', '1 out-of-memory kill in 7 days', 'Mon 16:12 · chrome renderer', BTN('View', 'go:logs/kernel')], ['na', 'Error correction (ECC) reporting', 'Not available on this memory type'], ['na', 'Full memory test', 'Needs a reboot into memtest86+', BTN('How to run', 'toast:Restart → hold Shift → Memory test (memtest86+).')]]}
+  ]},
+  {id:'storage', l:'Storage Devices', f:() => [
+    {t:'table', h:'Disks', src:'lsblk · smartctl', cols:['Device','Model','Type',['Size', 'n'],'Interface','SMART',['Life left', 'n'],['Temperature', 'n']], rows:[[M('nvme0n1'), 'Samsung PM991a', 'SSD (NVMe)', '256 GB', 'PCIe 3.0 x4', S.access === 'full' ? B('ok', 'Passed') : OFF('Locked'), BAR(88, 'ok', '88%'), '38 °C']]},
+    {t:'kpis', items:[K('Percentage used', '12', '%', {sub:'of rated endurance'}), K('Data written', '18.4', 'TB'), K('Power-on hours', '6,120', 'h'), K('Unsafe shutdowns', '41', '', {sub:'+1 today'}), K('Media errors', '0', ''), K('Spare capacity', '100', '%')]},
+    {t:'line', h:'Drive temperature', src:'nvme smart-log', series:[{n:'NVMe', g:[61, 37, 3, 2, 30, 70, 38], k:1}], y:[20, 70, ' °C'], height:180}
+  ]},
+  {id:'graphics', l:'Graphics', f:() => [
+    {t:'kv', s:6, h:'Adapter', src:'lspci -k · glxinfo -B', items:[['GPU', 'Intel Iris Xe (Alder Lake-UP3 GT2)'], ['Kernel driver', M('i915')], ['OpenGL', 'Mesa 24.0.9 · 4.6'], ['Vulkan', '1.3'], ['Video decode', 'VA-API (iHD)']]},
+    {t:'checks', s:6, h:'Driver checks', items:[['pass', 'Recommended driver installed', 'ubuntu-drivers reports no alternatives'], ['pass', 'Hardware acceleration active'], ['na', 'GPU temperature', 'Not exposed by i915']]}
+  ]},
+  {id:'sensors', l:'Sensors', f:() => [
+    {t:'gauges', h:'Temperatures', src:'sensors · /sys/class/hwmon', items:[{v:54, max:100, val:'54 °C', sub:'CPU package', l:'coretemp'}, {v:56, max:100, val:'56 °C', sub:'core max', l:'coretemp'}, {v:38, max:85, val:'38 °C', sub:'NVMe', l:'nvme'}, {v:31, max:60, val:'31 °C', sub:'battery', l:'BAT0'}, {v:42, max:100, val:'42 °C', sub:'Wi-Fi', l:'iwlwifi'}, {v:50, max:100, val:'50 °C', sub:'ACPI zone', l:'acpitz'}]},
+    {t:'line', h:'Temperature history', src:'sensors', series:[{n:'CPU', g:[21, 52, 6, 3, 35, 92, 54], k:1}, {n:'NVMe', g:[61, 37, 3, 2, 30, 70, 38], k:2}, {n:'Battery', g:[71, 31, 2, 1, 25, 45, 31], k:3}], y:[20, 100, ' °C'], thr:[95, 'Throttle 95 °C'], height:220},
+    {t:'alert', st:'info', h:'Fan speed not reported', text:'This laptop’s embedded controller does not expose fan RPM to Linux.'}
+  ]},
+  {id:'peripherals', l:'Peripherals', f:() => [
+    {t:'kpis', items:[K('USB devices', '3', ''), K('PCI devices', '18', ''), K('Bluetooth', '2', '', {sub:'1 connected'}), K('Missing drivers', '0', '')]},
+    {t:'table', h:'Devices', search:'Search devices', filter:{col:1, opts:['All','USB','PCI','Bluetooth','Input']}, src:'lsusb · lspci -k · bluetoothctl', cols:['Device','Bus','Vendor','Driver','Status'], rows:[
+      ['USB mouse', 'USB', 'Logitech', M('usbhid'), B('ok', 'Connected')], ['Integrated camera', 'USB', 'Chicony', M('uvcvideo'), B('ok', 'Idle')], {c:['Bluetooth adapter', 'USB', 'Intel', M('btusb'), B('crit', 'Unstable')], a:'bt'},
+      ['Wi-Fi 6 AX201', 'PCI', 'Intel', M('iwlwifi'), B('ok', 'Active')], ['NVMe controller', 'PCI', 'Samsung', M('nvme'), B('ok', 'Active')], ['Smart Sound audio', 'PCI', 'Intel', M('snd_hda_intel'), B('ok', 'Active')],
+      ['Thunderbolt 4 controller', 'PCI', 'Intel', M('thunderbolt'), B('ok', 'Active')], ['Wireless earbuds', 'Bluetooth', '—', M('bluez'), B('warn', 'Reconnecting')], ['Phone', 'Bluetooth', '—', M('bluez'), OFF('Paired')],
+      ['Touchpad', 'Input', 'ELAN', M('i2c_hid'), B('ok', 'Active')], ['Keyboard', 'Input', 'AT Translated', M('atkbd'), B('ok', 'Active')]]}
+  ]},
+  {id:'firmware', l:'Firmware', f:() => [
+    {t:'kv', s:5, h:'Platform firmware', src:'/sys/class/dmi/id · mokutil', items:[['BIOS vendor', 'LENOVO'], ['Version', M('JHCN52WW')], ['Release date', '11 Mar 2024'], ['Boot mode', 'UEFI'], ['Secure Boot', B('ok', 'Enabled')], ['TPM', '2.0 · present']]},
+    {t:'table', s:7, h:'Firmware updates', src:'fwupdmgr get-updates', cols:['Device','Current','Available','Vendor',['', '']], rows:[['Touchpad', M('1.4'), M('1.6'), 'Synaptics', BTN('Update', 'toast:Firmware update scheduled for next reboot.', 'pri')], ['System firmware', M('JHCN52WW'), '—', 'Lenovo', '<span class="muted">Up to date</span>'], ['NVMe SSD', M('3L1QFXV7'), '—', 'Samsung', '<span class="muted">Not on LVFS</span>']]}
+  ]}
+], {group:'System'});
+
+def('power', 'Power', 'bat', [
+  {id:'battery', l:'Battery', f:() => [
+    {t:'kpis', items:[K('Charge', '64', '%', {bar:64, sub:'Discharging'}), K('Health', '71', '%', {st:'warn', sub:'of design capacity'}), K('Time remaining', '3 h 10 m', '', {sub:'Estimate'}), K('Power draw', '8.4', 'W', {sp:[81, 8, 3, 2, 3, 25, 8.4], k:2}), K('Capacity', '40.5', 'Wh', {sub:'Design 57 Wh'}), K('Cycle count', 'N/A', '', {sub:'Not reported'})]},
+    {t:'line', s:8, h:'Charge level', src:'upower history', series:[{n:'Charge', g:[91, 60, 30, 8, 1, 100, 64], k:1}], y:[0, 100, '%'], thr:[10, 'Low 10%'], height:220},
+    {t:'gauge', s:4, h:'Battery health', info:'How much charge the battery holds compared with when it was new.', v:71, max:100, st:'warn', val:'71%', gsub:'40.5 of 57 Wh', after:'<p class="muted" style="text-align:center;margin:4px 0 0">Replace below 60%</p>'},
+    {t:'line', s:6, h:'Health trend', sub:'12 months', series:[{n:'Health', d:[83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 72, 71], k:1}], labels:['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'], y:[50, 100, '%'], height:180},
+    {t:'table', s:6, h:'Top power consumers', sub:'estimate', src:'powertop', cols:['Process',['Power', 'n'],['Share', 'n']], rows:S.access === 'full' ? [['chrome', '2.9 W', BAR(35)], ['Display backlight', '1.9 W', BAR(23)], ['gnome-shell', '1.4 W', BAR(17)], ['code', '0.8 W', BAR(10)], ['Wi-Fi', '0.7 W', BAR(8)]] : [], empty:'Requires Full access'}
+  ]},
+  {id:'profile', l:'Power Profile', f:() => [
+    {t:'html', s:6, h:'Power mode', src:'powerprofilesctl', flush:true, html:`<div class="radios"><label class="rad"><input type="radio" name="pp" id="pp1"><span><b>Power Saver</b><small>Longer battery life</small></span></label><label class="rad"><input type="radio" name="pp" id="pp2" checked><span><b>Balanced</b><small>Default</small></span></label><label class="rad"><input type="radio" name="pp" id="pp3"><span><b>Performance</b><small>Plugged in only</small></span></label></div>`},
+    {t:'kv', s:6, h:'Battery policies', src:'/etc/UPower/UPower.conf', items:[['Low battery warning', '10%'], ['Critical action', S.battFixed ? B('ok', 'Power off at 5%') : `${B('warn', 'Not configured')} ${BTN('Configure', 'fix:batt')}`], ['Charge threshold', 'Supported · Off'], ['Screen blank', '5 min'], ['Automatic suspend', '20 min on battery']]}
+  ]},
+  {id:'sleep', l:'Sleep', f:() => [
+    {t:'kpis', items:[K('Suspends', '9', '', {sub:'last 7 days'}), K('Failures', '0', ''), K('Avg resume time', '1.8', 's'), K('Time asleep', '41', 'h')]},
+    {t:'table', h:'Sleep events', src:'journalctl -u systemd-suspend', cols:['Time','Event','Duration','Wake source','Result'], rows:[['Mon 23:40', 'Suspend', '7 h 48 m', 'Lid open', B('ok', 'Success')], ['Mon 13:10', 'Suspend', '42 m', 'Power button', B('ok', 'Success')], ['Sun 22:55', 'Suspend', '9 h 12 m', 'Not recorded', B('ok', 'Success')], ['Sat 18:05', 'Suspend', '1 h 30 m', 'USB', B('ok', 'Success')]]}
+  ]}
+], {group:'System'});
+
+def('display', 'Display & Audio', 'mon', [
+  {id:'displays', l:'Displays', f:() => [
+    {t:'kv', s:4, h:'Session', src:'$XDG_SESSION_TYPE', items:[['Display server', 'Wayland'], ['Compositor', 'Mutter (GNOME 46)'], ['Fractional scaling', 'Off']]},
+    {t:'table', s:8, h:'Connected displays', cols:['Output','Resolution','Refresh','Scale','Primary','Status'], rows:[[M('eDP-1'), '1920 × 1080', '60 Hz', '100%', YES, B('ok', 'Connected')], [M('HDMI-A-1'), '—', '—', '—', NO, OFF('Disconnected')]]}
+  ]},
+  {id:'audio', l:'Audio', f:() => [
+    {t:'kpis', items:[K('Output', 'Speakers', '', {sub:'Volume 45%'}), K('Input', 'Internal mic', '', {sub:'Not muted'}), K('Sound server', 'PipeWire', '', {sub:'1.0.5'}), K('Active streams', '1', '', {sub:'chrome'})]},
+    {t:'table', s:6, h:'Output devices', src:'pactl list sinks', cols:['Device','Volume','Default'], rows:[['Laptop speakers', BAR(45, 'ok'), YES], ['Wireless earbuds (A2DP)', BAR(60, 'ok'), NO], ['HDMI output', BAR(100, 'ok'), NO]]},
+    {t:'table', s:6, h:'Input devices', src:'pactl list sources', cols:['Device','Level','Default'], rows:[['Internal microphone', BAR(70, 'ok'), YES], ['Earbuds microphone (HFP)', BAR(50, 'ok'), NO]]}
+  ]}
+], {group:'System'});
+
+def('processes', 'Processes', 'layers', [
+  {id:'all', l:'All Processes', f:() => [
+    {t:'kpis', items:[K('Total', '312', ''), K('Running', '3', ''), K('Sleeping', '309', ''), K('Zombie', '0', ''), K('Threads', '1,204', '')]},
+    {t:'table', id:'procs', h:'Processes', search:'Filter by name, PID or user', filter:{col:2, opts:['All','riya','root']}, inspect:true, ra:[['End process', 'kill'], ['Open Performance', 'go:performance/cpu']], page:14, src:'ps aux', cols:['Name',['PID', 'n'],'User','State',['CPU', 'n'],['Memory', 'n'],['Threads', 'n x'],['Started', 'x']], rows:procRows.map(p => [p[0], p[1], p[2], p[3] === 'Running' ? B('ok', 'Running') : `<span class="muted">${p[3]}</span>`, p[4] + '%', p[5], p[6], p[7]]), count:'312'}
+  ]},
+  {id:'top', l:'Top Consumers', f:() => [
+    {t:'hbars', s:6, h:'By CPU', sub:'now', data:procRows.slice().sort((a, b) => b[4] - a[4]).slice(0, 8).map(p => [p[0], +p[4], p[4] + '%'])},
+    {t:'hbars', s:6, h:'By memory', sub:'resident', data:procRows.slice(0, 8).map(p => [p[0], parseFloat(p[5]), p[5]])}
+  ]}
+], {group:'Workloads'});
+
+def('services', 'Services', 'cog', [
+  {id:'system', l:'System Services', n:() => S.btRestarted ? 0 : 1, crit:true, f:() => [
+    {t:'kpis', items:[K('Running', S.btRestarted ? '143' : '142', ''), K('Failed', S.btRestarted ? '0' : '1', '', {st:S.btRestarted ? 'ok' : 'crit', sub:S.btRestarted ? 'Monitoring bluetooth' : 'bluetooth.service'}), K('Inactive', '38', ''), K('Enabled at boot', '61', ''), K('Restarts today', '14', '', {st:'warn'})]},
+    ...(S.btRestarted ? [] : [{t:'alert', st:'crit', h:'bluetooth.service is in a crash loop', text:'14 restarts since 09:12 · exit status 11 (SIGSEGV)', acts:[['Inspect', 'bt', 'pri']]}]),
+    {t:'table', id:'svcs', h:'Units', search:'Filter units', filter:{col:1, opts:['All','active','failed','inactive']}, inspect:true, ra:[['Restart', 'svc'], ['Stop', 'svc'], ['Disable', 'svc']], page:14, src:'systemctl list-units --type=service --all', cols:['Unit','Active','Sub','Enabled',['Restarts', 'n'],['Memory', 'n']], rows:SVC(), count:'181'}
+  ]},
+  {id:'user', l:'User Services', f:() => [
+    {t:'table', h:'User units', sub:'riya', src:'systemctl --user', cols:['Unit','Active','Sub',['Memory', 'n']], rows:[['pipewire.service','PipeWire Multimedia Service'],['pipewire-pulse.service','PipeWire PulseAudio'],['wireplumber.service','Multimedia Service Session Manager'],['xdg-desktop-portal.service','Portal service'],['tracker-miner-fs-3.service','Tracker file system data miner'],['gvfs-daemon.service','Virtual filesystem service'],['gnome-keyring-daemon.service','GNOME Keyring'],['org.gnome.Shell@wayland.service','GNOME Shell on Wayland'],['snap.telegram-desktop.service','Telegram (snap)']].map((u, i) => [C2(u[0], u[1]), B('ok', 'active'), '<span class="muted">running</span>', ['18 MB','9 MB','12 MB','7 MB','96 MB','6 MB','8 MB','410 MB','—'][i]])}
+  ]},
+  {id:'startup', l:'Startup Applications', f:() => [
+    {t:'table', h:'Started at login', src:'~/.config/autostart · /etc/xdg/autostart', cols:['Name','Scope',['Command', 'x'],['Startup impact', 'n'],'Enabled'], rows:[['Telegram Desktop','User',M('telegram-desktop -startintray'),BAR(57, 'ok', '1.2 s'),SWT('Telegram Desktop')],['Dropbox','User',M('dropbox start -i'),BAR(43, 'ok', '0.9 s'),SWT('Dropbox')],['Google Chrome','User',M('google-chrome --no-startup-window'),BAR(100, 'warn', '2.1 s'),SWT('Google Chrome')],['GNOME Software','System',M('gnome-software --gapplication-service'),BAR(29, 'ok', '0.6 s'),SWT('GNOME Software')],['Snap user daemon','System',M('snap userd --autostart'),BAR(10, 'ok', '0.2 s'),SWT('Snap user daemon')]]}
+  ]}
+], {group:'Workloads'});
+
+const jobRes = (r, id) => r === 'ok' ? B('ok', 'Success') : r === 'missed' ? B('warn', 'Missed') : S.tracked[id] ? B('info', 'Tracking') : `${OFF('Not recorded')} ${BTN('Track', 'track:' + id, 'link')}`;
+def('jobs', 'Scheduled Jobs', 'cal', [
+  {id:'calendar', l:'Calendar', f:() => [
+    {t:'kpis', items:[K('Total jobs', '10', '', {sub:'cron · timer · anacron · at'}), K('Next run', '26', 'min', {sub:'sync-notes.sh'}), K('Failed', '0', '', {sub:'last 7 days'}), K('Missed', '1', '', {st:'warn', sub:'e2scrub_all.timer'})]},
+    {t:'html', h:'Next 24 hours', src:'crontab -l · systemctl list-timers', html:() => { const pos = h => (h / 24 * 100).toFixed(2) + '%'; const L = [['sync-notes.sh', Array.from({length:47}, (_, k) => .433 + k * .5), 'sm'], ['logrotate.timer', [2.43]], ['apt-daily-upgrade', [8.78]], ['apt-daily.timer', [9.1, 21.3]], ['tmpfiles-clean', [11.65]], ['backup-photos.sh', [23.43]]]; return `<div class="lanes"><div class="lanes-in">${L.map(([n, hs, c]) => `<div class="lane"><span class="lane-n mono">${n}</span><div class="lane-t">${hs.map(h => `<span class="tk ${c || ''}" style="left:${pos(h)}" title="${n}"></span>`).join('')}</div></div>`).join('')}<div class="lane"><span></span><div class="lane-ax">${[[0, 'Now 21:34'], [2.43, '00:00'], [8.43, '06:00'], [14.43, '12:00'], [20.43, '18:00']].map(([h, t]) => `<span style="left:${pos(h)}">${t}</span>`).join('')}</div></div></div></div>`; }},
+    {t:'heat', h:'Job runs by hour', sub:'last 7 days', rows:DAYS7, cols:HOURS, unit:'runs', data:Array.from({length:7}, (_, d) => HOURS.map((h, i) => Math.max(0, (i >= 9 && i <= 23 ? 2 : 0) + (i === 0 ? 1 : 0) + (i === 6 ? 2 : 0) + (i === 18 ? 1 : 0) + (i === 21 && d >= 5 ? 1 : 0) - (d === 6 && i > 21 ? 2 : 0))))}
+  ]},
+  {id:'cron', l:'Cron', f:() => [
+    {t:'table', h:'Cron jobs', src:'crontab -l · /etc/crontab · /etc/cron.d', cols:['Schedule','Command','User','Source','Next run','Last result'], rows:[[C2(M('*/30 * * * *'), 'Every 30 minutes'), M('~/bin/sync-notes.sh'), 'riya', M('crontab (riya)'), '22:00', jobRes('unknown', 'sync')], [C2(M('0 21 * * *'), 'Every day at 21:00'), M('~/bin/backup-photos.sh'), 'riya', M('crontab (riya)'), 'Tomorrow 21:00', jobRes('unknown', 'backup')], [C2(M('17 * * * *'), 'Hourly at :17'), M('run-parts --report /etc/cron.hourly'), 'root', M('/etc/crontab'), '22:17', B('ok', 'Success')], [C2(M('30 3 * * 0'), 'Sundays 03:30'), M('e2scrub_all_cron'), 'root', M('/etc/cron.d/e2scrub_all'), 'Sun 25 Oct', OFF('Skipped (systemd)')]]},
+    {t:'alert', st:'info', h:'Cron does not record job results', text:'Track wraps a job so its exit code and output are saved from the next run.'}
+  ]},
+  {id:'timers', l:'Systemd Timers', f:() => [
+    {t:'table', h:'Timers', src:'systemctl list-timers --all', cols:['Timer','Activates','Schedule','Last trigger','Next','Result','Persistent'], rows:[
+      [M('logrotate.timer'), M('logrotate.service'), M('daily'), 'Today 00:00', '00:00', B('ok', 'Success'), YES], [M('apt-daily-upgrade.timer'), M('apt-daily-upgrade.service'), M('*-*-* 6:00'), 'Today 10:40', '06:21', B('ok', 'Success'), YES],
+      [M('apt-daily.timer'), M('apt-daily.service'), M('*-*-* 6,18:00'), 'Today 18:52', '06:40', B('ok', 'Success'), YES], [M('systemd-tmpfiles-clean.timer'), M('systemd-tmpfiles-clean.service'), M('OnUnitActiveSec=1d'), 'Today 09:13', 'Tomorrow 09:13', B('ok', 'Success'), NO],
+      [M('fstrim.timer'), M('fstrim.service'), M('weekly'), 'Mon 09:00', 'Mon 26 Oct', B('ok', 'Success'), YES], [M('e2scrub_all.timer'), M('e2scrub_all.service'), M('Sun *-*-* 03:10'), 'Sun 18 Oct', 'Sun 25 Oct', B('warn', 'Missed'), NO],
+      [M('anacron.timer'), M('anacron.service'), M('hourly'), 'Today 21:07', '22:07', B('ok', 'Success'), YES], [M('snapd.snap-repair.timer'), M('snapd.snap-repair.service'), M('random 6h'), 'Today 17:40', 'Tomorrow 01:12', B('ok', 'Success'), NO]]}
+  ]},
+  {id:'anacron', l:'Anacron', f:() => [
+    {t:'table', h:'Anacron jobs', src:'/etc/anacrontab · /var/spool/anacron', cols:['Job','Period',['Delay', 'n'],'Command','Last run'], rows:[[M('cron.daily'), '1 day', '5 min', M('run-parts /etc/cron.daily'), 'Today 09:05'], [M('cron.weekly'), '7 days', '10 min', M('run-parts /etc/cron.weekly'), 'Mon 09:10'], [M('cron.monthly'), '1 month', '15 min', M('run-parts /etc/cron.monthly'), '01 Oct']]}
+  ]},
+  {id:'at', l:'At Jobs', f:() => [
+    {t:'table', h:'One-time jobs', src:'atq', cols:['Job','Run at','Command','User',['', '']], rows:[[M('#4'), 'Fri 23 Oct 09:00', M('notify-send "Submit the form"'), 'riya', BTN('Cancel', 'toast:Job #4 removed (atrm 4).')]]}
+  ]}
+], {group:'Workloads'});
+
+def('containers', 'Containers', 'cube', [
+  {id:'containers', l:'Containers', f:() => [
+    {t:'kpis', items:[K('Running', '2', ''), K('Stopped', '1', ''), K('Images', '11', '', {sub:'9.0 GB'}), K('Volumes', '3', '', {sub:'1.1 GB'}), K('Exposed ports', '1', '', {st:'warn', sub:'5432 on all interfaces'})]},
+    {t:'table', h:'Docker containers', src:'docker ps -a', inspect:true, ra:[['Restart', 'toast:Container restart requested.'], ['Stop', 'toast:Container stop requested.'], ['Logs', 'go:logs/journal']], cols:['Name','Image','Status','Ports',['CPU', 'n'],['Memory', 'n']], rows:[['pg-dev', M('postgres:16'), B('ok', 'Up 12 hours'), `${M('0.0.0.0:5432→5432')} ${B('warn', 'LAN')}`, '0.2%', '142 MB'], ['redis-dev', M('redis:7-alpine'), B('ok', 'Up 12 hours'), M('127.0.0.1:6379→6379'), '0.1%', '12 MB'], ['api-test', M('node:20-alpine'), OFF('Exited (0) 2 days ago'), '—', '—', '—']]},
+    {t:'alert', st:'warn', h:'Port 5432 bypasses the UFW firewall', text:'Docker publishes ports with its own iptables rules. Bind to 127.0.0.1 to keep it local.', acts:[['View firewall', 'go:network/firewall']]}
+  ]},
+  {id:'images', l:'Images', f:() => [
+    {t:'donut', s:4, h:'Image storage', unit:'GB', center:['9.0', 'GB'], data:[['In use', 5.0], ['Unused', 4.0, 'kw']]},
+    {t:'table', s:8, h:'Images', src:'docker images', acts:S.cleaned.docker ? [] : [['Prune unused · 4.0 GB', 'fix:storage']], cols:['Repository','Tag',['Size', 'n'],'Created','In use'], rows:[['postgres','16','432 MB','3 weeks ago',YES],['redis','7-alpine','41 MB','1 month ago',YES],['node','20-alpine','135 MB','2 weeks ago',YES],...(S.cleaned.docker ? [] : [['node','18','1.1 GB','4 months ago',NO],['python','3.11','1.0 GB','5 months ago',NO],['mongo','7','760 MB','3 months ago',NO],['nginx','alpine','48 MB','2 months ago',NO],['&lt;none&gt;','&lt;none&gt;','1.1 GB','dangling',NO]])]}
+  ]},
+  {id:'volumes', l:'Volumes', f:() => [
+    {t:'table', h:'Volumes', src:'docker volume ls · docker system df -v', cols:['Name','Driver',['Size', 'n'],'Used by'], rows:[[M('pgdata'), 'local', '980 MB', 'pg-dev'], [M('redisdata'), 'local', '64 MB', 'redis-dev'], [M('api-node-modules'), 'local', '86 MB', 'api-test']]}
+  ]},
+  {id:'vms', l:'Virtual Machines', f:() => [
+    {t:'table', h:'Virtual machines', src:'VBoxManage list vms · virsh list --all', cols:['Name','Engine','Guest OS','State',['vCPU', 'n'],['Memory', 'n'],['Disk', 'n']], rows:[['win11-test', 'VirtualBox 7.0', 'Windows 11', OFF('Powered off'), '2', '4 GB', '2.9 GB']]}
+  ]}
+], {group:'Workloads'});
+
+def('packages', 'Packages', 'pkg', [
+  {id:'installed', l:'Installed', f:() => [
+    {t:'kpis', items:[K('APT', '1,842', '', {sub:'212 installed by you'}), K('Snap', '14', '', {sub:'3.9 GB'}), K('Flatpak', '6', '', {sub:'2.2 GB'}), K('AppImage', '2', '', {sub:'found in ~/Downloads'}), K('Language packages', '29', '', {sub:'pip · npm · cargo'}), K('Updates', S.secFixed ? '8' : '12', '', {st:S.secFixed ? 'info' : 'warn', go:'system/updates'})]},
+    {t:'donut', s:4, h:'Disk usage by source', unit:'GB', center:['12.4', 'GB'], data:[['APT', 5.8], ['Snap', 3.9], ['Flatpak', 2.2], ['AppImage', .1, '', '0.1 GB'], ['Other', .4]]},
+    {t:'table', id:'pkgs', s:8, h:'Packages', search:'Search packages', filter:{col:2, opts:['All','apt','snap','flatpak','AppImage']}, inspect:true, ra:[['Remove', 'toast:Package queued for removal.'], ['Show files', 'toast:Opens the file list (dpkg -L).']], page:10, cols:['Name','Version','Source',['Size', 'n'],'Installed by','Last used'], rows:PKGS.map(p => [p[0], M(p[1]), srcB(p[2]), p[3], p[4], p[5].includes('days ago') && parseInt(p[5]) > 90 ? `${p[5]} ${B('warn', 'Unused')}` : p[5]]), count:'1,893'}
+  ]},
+  {id:'sources', l:'Sources', f:() => [
+    {t:'table', h:'Software sources', src:'/etc/apt/sources.list.d', cols:['Repository','Type','Signed',['Packages', 'n'],'Status'], rows:[[M('archive.ubuntu.com noble main restricted universe multiverse'), 'Official', YES, '1,689', B('ok', 'OK')], [M('security.ubuntu.com noble-security'), 'Official', YES, '312', B('ok', 'OK')], [M('download.docker.com/linux/ubuntu noble stable'), 'Third-party', YES, '6', B('ok', 'OK')], [M('dl.google.com/linux/chrome/deb stable'), 'Third-party', YES, '1', B('ok', 'OK')], [M('packages.microsoft.com/repos/code stable'), 'Third-party', YES, '0', B('info', 'Unused')], [M('ppa:git-core/ppa'), 'PPA', YES, '4', B('ok', 'OK')], [M('ppa:deadsnakes/ppa'), 'PPA', YES, '0', B('info', 'Unused')], [M('ppa:obsproject/obs-studio'), 'PPA', YES, '0', B('info', 'Unused')]]}
+  ]},
+  {id:'cleanup', l:'Cleanup', f:() => [
+    {t:'table', h:'Reclaimable', cols:['Item',['Count', 'n'],['Size', 'n'],'Undo',['', '']], rows:[['Packages no longer needed (autoremove)', '48', '310 MB', B('info', 'Reinstallable'), BTN('Remove', 'toast:48 packages removed · 310 MB freed.')], ['Disabled snap revisions', S.cleaned.snap ? '0' : '6', S.cleaned.snap ? '0' : '8.7 GB', B('warn', 'Irreversible'), S.cleaned.snap ? '' : BTN('Clean', 'fix:storage')], ['Duplicate app: VLC (apt + snap)', '1', '320 MB', B('info', 'Reinstallable'), BTN('Review', 'toast:Keep one VLC to save 320 MB.')], ['Unused Flatpak runtimes', '2', '640 MB', B('info', 'Regenerates'), BTN('Remove', 'toast:flatpak uninstall --unused')], ['Apps not used in 90+ days', '2', '106 MB', OFF('Review'), BTN('Review', 'go:packages/installed')], ['Old kernel 6.8.0-41', '1', '320 MB', B('info', 'Reinstallable'), BTN('Remove', 'toast:Old kernel queued for removal.')]]}
+  ]},
+  {id:'permissions', l:'Permissions', f:() => [
+    {t:'table', h:'Sandboxed app permissions', src:'snap connections · flatpak info --show-permissions', cols:['App','Source','Camera','Microphone','Home folder','Network','Location'], rows:[['zoom-client', srcB('snap'), YES, YES, YES, YES, NO], ['code', srcB('snap'), NO, NO, YES, YES, NO], ['telegram-desktop', srcB('snap'), YES, YES, YES, YES, NO], ['firefox', srcB('snap'), YES, YES, YES, YES, YES], ['com.spotify.Client', srcB('flatpak'), NO, NO, NO, YES, NO], ['com.obsproject.Studio', srcB('flatpak'), YES, YES, YES, YES, NO]]}
+  ]}
+], {group:'Software & Data'});
+
+def('storage', 'Storage', 'db', [
+  {id:'overview', l:'Overview', f:() => { const cl = cleanable(), free = S.total - S.used; return [
+    {t:'kpis', items:[K('Used', f1(S.used), 'GB', {st:diskSt(), bar:pct(), sub:`${dPct()}% of ${S.total} GB`}), K('Free', f1(free), 'GB'), K('Reclaimable', f1(cl), 'GB', {sub:'Safe to clean'}), K('Full in', '~' + daysFull(), 'days', {st:daysFull() < 14 ? 'crit' : 'ok', sub:'at 0.69% per day'}), K('Inodes used', '21', '%'), K('Encryption', 'Off', '', {sub:'LUKS not used'})]},
+    ...(cl > .05 && pct() >= 93 ? [{t:'alert', st:'crit', h:`Root filesystem is ${dPct()}% full`, text:`${f1(cl)} GB can be reclaimed safely. Personal files are not touched.`, acts:[['Free up space', 'fix:storage', 'pri']]}] : []),
+    {t:'html', h:'Space allocation', sub:'/dev/nvme0n1p2 · ext4', src:'du -xh --max-depth=1', html:() => { const seg = [['Home', 128, 'k1'], ['Apps', 46, 'k2'], ['System', 22, 'k3'], ['Containers', S.cleaned.docker ? 9 : 13, 'k4'], ['Reclaimable', cl, 'recl'], ['Free', free - (S.cleaned.docker ? 4 : 0), 'free']].filter(s => s[1] > .05); return `<div class="diskmap" role="img" aria-label="Disk allocation">${seg.map(s => `<span class="${s[2]}" style="width:${s[1] / S.total * 100}%" title="${s[0]}: ${f1(s[1])} GB"></span>`).join('')}</div><div class="dmleg">${seg.map(s => `<span><i class="${s[2]}" style="${s[2] === 'recl' ? 'background:var(--crit)' : s[2] === 'free' ? 'background:var(--track)' : ''}"></i>${s[0]} <b>${f1(s[1])} GB</b></span>`).join('')}</div>`; }},
+    {t:'line', s:8, h:'Usage trend and forecast', sub:'30 days', info:'The dashed line shows when the disk fills at the current rate.', series:[{n:'Used', d:pct() < 93 ? [...DISK30, pct()] : DISK30.slice(0, 29).concat([pct()]), k:1}], labels:pct() < 93 ? [...D30L, 'Now'] : D30L, y:[60, 100, '%'], fc:[daysFull(), 100, `Full ~${new Date(2026, 9, 21 + daysFull()).toLocaleDateString('en-GB', {day:'numeric', month:'short'})}`], thr:[85, 'Warning 85%'], height:220},
+    {t:'table', s:4, h:'Mount points', src:'findmnt', cols:['Mount',['Size', 'n'],'Used'], rows:[[M('/'), '238 GB', BAR(pct())], [M('/boot/efi'), '1 GB', BAR(6)], [M('/run'), '780 MB', BAR(1)], [M('/dev/shm'), '3.8 GB', BAR(2)]]}
+  ]; }},
+  {id:'filesystems', l:'Filesystems', f:() => [
+    {t:'table', h:'Filesystems', src:'df -hT · df -i', cols:['Device','Mount','Type',['Size', 'n'],['Used', 'n'],['Available', 'n'],'Use',['Inodes', 'n x']], rows:[[M('/dev/nvme0n1p2'), M('/'), 'ext4', '238 GB', f1(S.used) + ' GB', f1(S.total - S.used) + ' GB', BAR(pct()), '21%'], [M('/dev/nvme0n1p1'), M('/boot/efi'), 'vfat', '1.0 GB', '61 MB', '963 MB', BAR(6), '—'], [M('tmpfs'), M('/run'), 'tmpfs', '780 MB', '2.3 MB', '778 MB', BAR(1), '1%'], [M('tmpfs'), M('/dev/shm'), 'tmpfs', '3.8 GB', '84 MB', '3.7 GB', BAR(2), '1%'], [M('squashfs ×14'), M('/snap/*'), 'squashfs', '3.9 GB', '3.9 GB', '0', BAR(100, 'ok'), '100%']]},
+    {t:'checks', h:'Filesystem checks', items:[['pass', 'fstab entries valid', 'findmnt --verify: 0 errors'], ['pass', 'No ext4 errors in kernel log'], ['pass', 'Reserved blocks 5% (11.9 GB) for root'], ['warn', 'Disk encryption off', 'Files are readable if the laptop is stolen · needs reinstall to enable'], ['na', 'Full filesystem check (fsck)', 'Runs at boot when needed · last check 34 days ago']]}
+  ]},
+  {id:'usage', l:'Disk Usage', f:() => [
+    {t:'hbars', s:6, h:'Largest folders', sub:'home', src:'du -h --max-depth=1 ~', data:[[M('~/Videos'), 52, '52 GB'], [M('~/Documents'), 41, '41 GB'], [M('~/Downloads'), 22, '22 GB'], [M('~/.local/share'), 5.2, '5.2 GB'], [M('~/.cache'), 3.8, '3.8 GB'], [M('~/snap'), 2.4, '2.4 GB'], [M('~/Pictures'), 1.6, '1.6 GB']]},
+    {t:'hbars', s:6, h:'Largest system folders', src:'du -xh --max-depth=1 /', data:S.access === 'full' ? [[M('/usr'), 14, '14 GB'], [M('/var/lib/docker'), S.cleaned.docker ? 9 : 13, (S.cleaned.docker ? 9 : 13) + ' GB'], [M('/var/lib/snapd'), S.cleaned.snap ? 3.9 : 12.6, (S.cleaned.snap ? 3.9 : 12.6) + ' GB'], [M('/var/log'), 1.4, '1.4 GB'], [M('/opt'), .9, '0.9 GB'], [M('/boot'), .3, '0.3 GB']] : [['Requires Full access', 0, '—']]},
+    {t:'table', h:'Largest files', search:'Filter files', src:'find ~ -size +500M', cols:['File',['Size', 'n'],'Type','Modified'], rows:[[M('~/Downloads/ubuntu-24.04.1-desktop-amd64.iso'), '5.8 GB', 'Disk image', '4 months ago'], [M('~/Videos/screen-2026-09-12.mp4'), '4.1 GB', 'Video', '1 month ago'], [M('~/VirtualBox VMs/win11-test/win11-test.vdi'), '2.9 GB', 'Virtual disk', '3 weeks ago'], [M('~/Downloads/dataset-q3.zip'), '2.2 GB', 'Archive', '2 months ago'], [M('~/Videos/meeting-recording-0918.mkv'), '1.8 GB', 'Video', '1 month ago'], [M('~/Documents/thesis-backup.tar.gz'), '1.2 GB', 'Archive', '6 months ago']]}
+  ]},
+  {id:'cleanup', l:'Cleanup', f:() => [
+    {t:'kpis', items:[K('Reclaimable', f1(cleanable()), 'GB', {st:cleanable() > 5 ? 'warn' : 'ok'}), K('Cleaned this month', f1(15.2 - cleanable()), 'GB')]},
+    {t:'table', id:'cleanup', h:'Cleanup candidates', sel:['Clean selected', 'fix:storage'], cols:['Item','Details',['Size', 'n'],'Undo','Password'], rows:FIXES.storage.steps.filter(s => !S.cleaned[s.id]).map(s => [s.l, `<span class="muted">${s.d}</span>`, f1(s.size) + ' GB', B(...UNDO[s.undo]), s.admin ? `<span title="Admin password required">${ic('lock')}</span>` : '<span class="muted">—</span>']), empty:'Nothing to clean right now'}
+  ], acts:() => cleanable() > .05 ? [[`Free ${f1(cleanable())} GB`, 'fix:storage', 'pri']] : []}
+], {group:'Software & Data', acts:() => cleanable() > .05 ? [['Free up space', 'fix:storage', 'pri']] : []});
+
+def('backups', 'Backups', 'backup', [
+  {id:'jobs', l:'Backup Jobs', f:() => [
+    {t:'kpis', items:[K('Last backup', '21', 'days ago', {st:'warn', sub:'30 Sep 21:12'}), K('Tool', 'Déjà Dup', '', {sub:'Ubuntu Backups'}), K('Destination', 'BACKUP-1TB', '', {sub:'USB drive · not connected'}), K('Backup size', '96', 'GB'), K('Schedule', 'Weekly', '', {sub:'when drive is connected'})]},
+    {t:'bars', s:6, h:'Backup history', sub:'size per run', data:[['26 Aug', 4.2], ['2 Sep', 3.1], ['9 Sep', 5.6], ['16 Sep', 2.8], ['23 Sep', 3.9], ['30 Sep', 4.4], ['7 Oct', 0], ['14 Oct', 0], ['21 Oct', 0]].map(d => [d[0], d[1], d[1] ? null : 'kn', d[1] ? `${d[0]} · incremental` : `${d[0]} · skipped (drive missing)`]), unit:' GB', height:200},
+    {t:'table', s:6, h:'Runs', src:'deja-dup', cols:['Date','Type',['Size', 'n'],'Duration','Result'], rows:[['21 Oct', 'Scheduled', '—', '—', B('warn', 'Skipped · drive missing')], ['30 Sep', 'Incremental', '4.4 GB', '9 m', B('ok', 'Success')], ['23 Sep', 'Incremental', '3.9 GB', '8 m', B('ok', 'Success')], ['16 Sep', 'Incremental', '2.8 GB', '6 m', B('ok', 'Success')], ['9 Sep', 'Full', '91 GB', '1 h 42 m', B('ok', 'Success')]]}
+  ]},
+  {id:'snapshots', l:'System Snapshots', f:() => [
+    {t:'alert', st:'warn', h:'No system snapshots', text:'Timeshift is not installed. Snapshots let you roll back the system after a bad update.', acts:[['Install Timeshift', 'toast:sudo apt install timeshift', 'pri']]},
+    {t:'table', h:'Snapshots', cols:['Created','Type','Tool',['Size', 'n'],'Comment'], rows:[], empty:'No snapshots yet'}
+  ]},
+  {id:'restore', l:'Restore Points', f:() => [
+    {t:'table', h:'SysDoc restore points', info:'Saved automatically before every change SysDoc makes.', cols:['Created','Change','Target',['Size', 'n'],['', '']], rows:[...SYSDOC_LOG.filter(r => r.undo).map(r => [r.when, r.text, M(r.target), '1 KB', r.undone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:' + r.undo)]), ['Tue 11:05', 'Disabled service', M('cups-browsed.service'), '1 KB', S.cupsUndone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:cups')], ['14 Oct', 'Removed old kernel', M('linux-image-6.8.0-38'), '—', '<span class="muted">Reinstall from APT</span>']]}
+  ]}
+], {group:'Software & Data'});
+
+def('network', 'Network', 'wifi', [
+  {id:'interfaces', l:'Interfaces', f:() => [
+    {t:'table', h:'Interfaces', src:'ip -br addr · nmcli device', cols:['Interface','Type','State','IPv4',['MAC', 'x'],'Speed',['RX', 'n'],['TX', 'n']], rows:[[M('wlp0s20f3'), 'Wi-Fi', B('ok', 'connected'), M('192.168.1.24/24'), M('3c:a9:f4:..:1b'), '866 Mb/s', '4.0 GB', '0.6 GB'], [M('docker0'), 'Bridge', B('ok', 'connected'), M('172.17.0.1/16'), M('02:42:..:9a'), '—', '210 MB', '140 MB'], [M('lo'), 'Loopback', OFF('unmanaged'), M('127.0.0.1/8'), '—', '—', '88 MB', '88 MB'], [M('enx00e04c68'), 'Ethernet', OFF('unavailable'), '—', M('00:e0:4c:..:68'), '—', '0', '0']]},
+    {t:'kv', s:6, h:'Wi-Fi', src:'nmcli -f all dev wifi', items:[['Network', 'HomeNet-5G'], ['Signal', BAR(78, 'ok', '−52 dBm')], ['Band / channel', '5 GHz · 44'], ['Security', B('ok', 'WPA2-PSK')], ['Link rate', '866 Mb/s']]},
+    {t:'kv', s:6, h:'Connectivity', items:[['Internet', B('ok', 'Online')], ['Gateway', M('192.168.1.1') + ' · 2 ms'], ['Public IP', `<span class="muted">Hidden</span> ${BTN('Reveal', 'toast:Looking up the public IP contacts an outside service. Off in the prototype.', 'link')}`], ['IPv6', 'Link-local only'], ['Captive portal', 'None']]}
+  ]},
+  {id:'connections', l:'Connections', f:() => [
+    {t:'table', h:'Active connections', search:'Filter connections', filter:{col:3, opts:['All','ESTAB','LISTEN','UNCONN']}, src:'ss -tunp', page:12, cols:['Proto','Local','Remote','State','Process'], rows:[['tcp','192.168.1.24:51432','142.250.183.14:443','ESTAB','chrome'],['tcp','192.168.1.24:51438','142.250.77.110:443','ESTAB','chrome'],['tcp','192.168.1.24:42210','149.154.167.51:443','ESTAB','telegram-desktop'],['tcp','192.168.1.24:39812','162.125.21.3:443','ESTAB','dropbox'],['tcp','192.168.1.24:50114','13.107.6.158:443','ESTAB','code'],['tcp','0.0.0.0:5432','*:*','LISTEN','docker-proxy'],['tcp','127.0.0.1:6379','*:*','LISTEN','docker-proxy'],['tcp','127.0.0.1:631','*:*','LISTEN','cupsd'],['udp','127.0.0.53:53','*:*','UNCONN','systemd-resolved'],['udp','0.0.0.0:5353','*:*','UNCONN','avahi-daemon'],['tcp','192.168.1.24:51900','185.125.190.20:443','TIME-WAIT','—']].map(r => [r[0], M(r[1]), M(r[2]), r[3] === 'ESTAB' ? B('ok', r[3]) : r[3] === 'LISTEN' ? B('info', r[3]) : OFF(r[3]), r[4]]), count:'68'}
+  ]},
+  {id:'ports', l:'Open Ports', f:() => [
+    {t:'kpis', items:[K('Listening', '5', ''), K('Local only', '3', ''), K('Network-exposed', '2', '', {st:'warn'}), K('Reachable from internet', 'Unknown', '', {sub:'Needs outside test'})]},
+    {t:'table', h:'Listening ports', src:'ss -tulpn', cols:['Port','Protocol','Bind address','Exposure','Process','Firewall'], rows:[[M('5432'), 'TCP', M('0.0.0.0'), B('warn', 'LAN'), 'docker-proxy (pg-dev)', B('warn', 'Bypassed')], [M('5353'), 'UDP', M('0.0.0.0'), B('info', 'LAN'), 'avahi-daemon', B('ok', 'Allowed (mDNS)')], [M('6379'), 'TCP', M('127.0.0.1'), OFF('Local'), 'docker-proxy (redis-dev)', '—'], [M('631'), 'TCP', M('127.0.0.1'), OFF('Local'), 'cupsd', '—'], [M('53'), 'UDP', M('127.0.0.53'), OFF('Local'), 'systemd-resolved', '—']]},
+    {t:'alert', st:'info', h:'External reachability is not tested', text:'Whether the router forwards a port can only be checked from outside your network.', acts:[['Run external test', 'toast:Opt-in: this sends your public IP to a test server. Off in the prototype.']]}
+  ]},
+  {id:'firewall', l:'Firewall', f:() => [
+    {t:'kpis', items:[K('Status', 'Active', '', {sub:'ufw'}), K('Incoming', 'Deny', '', {sub:'default'}), K('Outgoing', 'Allow', '', {sub:'default'}), K('Rules', '2', ''), K('Blocked today', '37', '', {sub:'packets'})]},
+    {t:'table', h:'Rules', src:'sudo ufw status numbered', cols:[['#', 'n'],'To','Action','From','Comment'], rows:S.access === 'full' ? [['1', M('5353/udp'), B('ok', 'ALLOW IN'), 'Anywhere', 'mDNS'], ['2', M('1714:1764/tcp'), B('ok', 'ALLOW IN'), M('192.168.1.0/24'), 'GSConnect']] : [], empty:'Requires Full access'},
+    {t:'alert', st:'warn', h:'Docker rules are not managed by ufw', text:'Port 5432 (pg-dev) is reachable from the LAN even though ufw denies incoming traffic.', acts:[['View container', 'go:containers/containers']]}
+  ]},
+  {id:'dns', l:'DNS & VPN', f:() => [
+    {t:'kv', s:6, h:'DNS', src:'resolvectl status', items:[['Resolver', 'systemd-resolved'], ['Servers', M('192.168.1.1')], ['Search domain', '—'], ['DNSSEC', 'No'], ['DNS over TLS', 'No'], ['/etc/hosts entries', '3']]},
+    {t:'table', s:6, h:'VPN connections', src:'nmcli connection show', cols:['Name','Type','State',['', '']], rows:[['Office', 'WireGuard', OFF('Disconnected'), BTN('Connect', 'toast:Connecting to Office (WireGuard)…')], ['Tailscale', 'tailscale', B('ok', 'Connected'), '']]}
+  ]},
+  {id:'traffic', l:'Traffic', f:() => [
+    {t:'line', h:'Throughput', src:'/proc/net/dev', series:[{n:'Download', g:[9, .8, .6, .8, 0, 6, 1.2], k:1}, {n:'Upload', g:[10, .2, .2, .3, 0, 3, .3], k:2}], y:[0, 'auto', ' MB/s'], height:220},
+    {t:'table', h:'Traffic by application', sub:'today', src:'nethogs (admin)', cols:['Application',['Downloaded', 'n'],['Uploaded', 'n'],'Share'], rows:S.access === 'full' ? [['chrome', '2.6 GB', '210 MB', BAR(62)], ['snapd', '620 MB', '4 MB', BAR(15)], ['dropbox', '310 MB', '280 MB', BAR(13)], ['telegram-desktop', '180 MB', '40 MB', BAR(5)], ['code', '90 MB', '12 MB', BAR(2)]] : [], empty:'Requires Full access'}
+  ]}
+], {group:'Network & Access'});
+
+def('accounts', 'Accounts', 'users', [
+  {id:'users', l:'Users', f:() => [
+    {t:'kpis', items:[K('Human users', '2', ''), K('Administrators', '1', ''), K('System accounts', '41', ''), K('Locked', '0', ''), K('Without password', '0', '', {sub:S.access === 'full' ? 'Verified' : 'Requires Full access'})]},
+    {t:'table', h:'Users', src:'getent passwd · chage -l', inspect:true, ra:[['Lock account', 'toast:Account lock requested.'], ['Reset password', 'toast:Opens the Users settings panel.']], cols:['User',['UID', 'n'],'Groups','Role','Shell','Last sign-in','Password age'], rows:[[C2('riya', 'Riya'), '1000', T('sudo', 'adm', 'docker', 'lxd'), B('info', 'Administrator'), M('/bin/bash'), 'Today 08:59', S.access === 'full' ? '14 months' : OFF('Locked')], [C2('guest', 'Guest'), '1001', T('guest'), OFF('Standard'), M('/bin/bash'), '3 weeks ago', S.access === 'full' ? '9 months' : OFF('Locked')]]},
+    {t:'alert', st:'info', h:'Password strength cannot be checked', text:'Linux stores only salted hashes. SysDoc shows password age instead.'}
+  ]},
+  {id:'groups', l:'Groups', f:() => [
+    {t:'table', h:'Groups with members', src:'getent group', search:'Filter groups', cols:['Group',['GID', 'n'],'Members','Privilege'], rows:[['sudo','27','riya',B('warn', 'Admin')],['adm','4','riya, syslog',B('info', 'Read logs')],['docker','999','riya',B('warn', 'Root-equivalent')],['lxd','135','riya',B('info', 'Containers')],['plugdev','46','riya','—'],['lpadmin','114','riya','Printers'],['sambashare','117','riya','—']]}
+  ]},
+  {id:'sessions', l:'Sessions', f:() => [
+    {t:'table', h:'Active sessions', src:'loginctl list-sessions', cols:['Session','User','Seat','Type','Since','State'], rows:[[M('2'), 'riya', 'seat0', 'wayland', 'Today 08:59', B('ok', 'active')], [M('c1'), 'gdm', 'seat0', 'wayland', 'Today 08:58', OFF('online')]]}
+  ]},
+  {id:'logins', l:'Login History', f:() => [
+    {t:'bars', s:5, h:'Sign-ins per day', data:[['Thu',2],['Fri',3],['Sat',1],['Sun',1],['Mon',3],['Tue',2],['Wed',2]], height:180},
+    {t:'table', s:7, h:'Events', src:'last · journalctl _COMM=sudo', cols:['Time','User','Event','Source','Result'], rows:[['Today 21:12', 'riya', 'sudo', M('apt update'), B('ok', 'Success')], ['Today 08:59', 'riya', 'Sign-in', 'gdm-password', B('ok', 'Success')], ['Tue 18:39', 'riya', 'sudo', M('apt upgrade'), B('ok', 'Success')], ['Mon 08:42', 'riya', 'Sign-in', 'gdm-password', B('ok', 'Success')], ['Sat 10:13', 'riya', 'Sign-in', 'gdm-password', B('warn', 'Failed ×1')], ['30 Sep', 'guest', 'Sign-in', 'gdm-password', B('ok', 'Success')]]}
+  ]},
+  {id:'ssh', l:'SSH Keys', f:() => [
+    {t:'kpis', items:[K('OpenSSH server', 'Not installed', ''), K('Authorized keys', '0', ''), K('Client keys', '1', '', {sub:'ed25519'})]},
+    {t:'table', h:'Client keys', sub:'~/.ssh', cols:['File','Type','Fingerprint','Created'], rows:[[M('id_ed25519'), 'ED25519', M('SHA256:k3F…Qw8'), '12 Aug 2025']]}
+  ]}
+], {group:'Network & Access'});
+
+def('security', 'Security', 'shield', [
+  {id:'overview', l:'Overview', f:() => [
+    {t:'kpis', items:[K('Security updates', S.secFixed ? '0' : '4', '', {st:S.secFixed ? 'ok' : 'warn', go:'system/updates'}), K('Known vulnerabilities', S.secFixed ? '0' : '3', '', {st:S.secFixed ? 'ok' : 'warn', sub:'2 high · 1 medium'}), K('Firewall', 'Active', ''), K('AppArmor', '112', 'profiles', {sub:'enforcing'}), K('Secure Boot', 'On', ''), K('Disk encryption', 'Off', '', {st:'info'})]},
+    {t:'checks', s:8, h:'Security posture', items:[[S.secFixed ? 'pass' : 'fail', 'Security updates installed', S.secFixed ? 'Up to date' : '4 pending', S.secFixed ? '' : BTN('Install', 'fix:sec', 'pri')], ['pass', 'Firewall enabled', 'ufw · default deny incoming'], ['pass', 'Secure Boot enabled'], ['pass', 'CPU vulnerability mitigations active', 'Spectre v1/v2, Retbleed, MDS'], ['pass', 'AppArmor enforcing'], ['pass', 'Screen locks after 5 minutes'], ['pass', 'No remote login (SSH) exposed'], ['warn', 'Docker port 5432 exposed to LAN', 'Bypasses ufw', BTN('View', 'go:network/ports')], ['warn', 'Disk encryption off', 'Requires reinstall to enable'], ['na', 'Malware scanner', 'Not installed', BTN('View', 'go:security/malware')]]},
+    {t:'donut', s:4, h:'Checks', center:[S.secFixed ? '7/10' : '6/10', 'passing'], data:[['Pass', S.secFixed ? 7 : 6, 'k3'], ['Warning', 2, 'kw'], ['Fail', S.secFixed ? 0 : 1, 'kc'], ['Not applicable', 1, 'kn']].filter(d => d[1])}
+  ]},
+  {id:'vulns', l:'Vulnerabilities', n:() => S.secFixed ? 0 : 3, f:() => [
+    {t:'table', h:'Known vulnerabilities', sub:'sample data', src:'pro fix · OVAL', cols:['CVE','Package','Severity','Installed','Fixed in','Action'], rows:S.secFixed ? [] : [[M('CVE-2026-10421'), 'openssl', B('crit', 'High'), M('3.0.13-0ubuntu3.4'), M('3.0.13-0ubuntu3.5'), BTN('Fix', 'fix:sec', 'pri')], [M('CVE-2026-10388'), 'sudo', B('crit', 'High'), M('1.9.15p5-3ubuntu5.1'), M('1.9.15p5-3ubuntu5.2'), BTN('Fix', 'fix:sec', 'pri')], [M('CVE-2026-09917'), 'linux-firmware', B('warn', 'Medium'), M('…0ubuntu2.5'), M('…0ubuntu2.6'), BTN('Fix', 'fix:sec')]], empty:'No known vulnerabilities in installed packages'}
+  ]},
+  {id:'hardening', l:'Hardening', f:() => [
+    {t:'table', h:'Hardening checks', cols:['Check','Result','Value','Recommendation'], rows:[['Kernel ASLR', B('ok', 'Pass'), M('kernel.randomize_va_space = 2'), '—'], ['Unprivileged user namespaces', B('ok', 'Pass'), M('restricted by AppArmor'), '—'], ['kptr_restrict', B('ok', 'Pass'), M('1'), '—'], ['dmesg_restrict', B('ok', 'Pass'), M('1'), '—'], ['Home directory permissions', B('ok', 'Pass'), M('drwxr-x---'), '—'], ['Automatic security updates', B('ok', 'Pass'), M('Unattended-Upgrade "1"'), '—'], ['Docker group membership', B('warn', 'Review'), 'riya', 'docker group equals root access'], ['Disk encryption', B('warn', 'Fail'), 'None', 'Enable LUKS at next reinstall']]}
+  ]},
+  {id:'integrity', l:'File Integrity', f:() => [
+    {t:'kpis', items:[K('Files verified', '284,112', ''), K('Modified', '0', ''), K('Missing', '0', ''), K('Last scan', 'Today', '', {sub:'03:00'})]},
+    {t:'table', h:'Programs with SUID bit', info:'These programs run with their owner’s rights (usually root). All match their packages.', src:'find / -perm -4000', cols:['Path','Owner','Package','Verified'], rows:[['/usr/bin/sudo', 'root', 'sudo', YES], ['/usr/bin/passwd', 'root', 'passwd', YES], ['/usr/bin/mount', 'root', 'mount', YES], ['/usr/bin/pkexec', 'root', 'pkexec', YES], ['/usr/lib/openssh/ssh-keysign', 'root', 'openssh-client', YES], ['/usr/bin/fusermount3', 'root', 'fuse3', YES]].map(r => [M(r[0]), r[1], r[2], r[3]])}
+  ]},
+  {id:'malware', l:'Malware Scan', f:() => [
+    {t:'alert', st:'info', h:'No malware scanner installed', text:'Optional on Ubuntu. Signature scans reduce risk but cannot prove a system is clean.', acts:[['Install ClamAV', 'toast:sudo apt install clamav', 'pri']]},
+    {t:'checks', h:'Heuristic checks', items:[['pass', 'No startup items running from /tmp or ~/Downloads'], ['pass', 'No cron jobs that download and execute scripts'], ['pass', 'No unknown kernel modules'], ['pass', 'No hidden processes']]}
+  ]}
+], {group:'Network & Access'});
+
+def('privacy', 'Privacy', 'eye', [
+  {id:'access', l:'Device Access', f:() => [
+    {t:'html', h:'Right now', html:`<div class="state-tiles">${[['mic', 'Microphone', 'Not in use'], ['cam', 'Camera', 'Not in use'], ['screen', 'Screen sharing', 'Off'], ['pin', 'Location', 'Off']].map(s => `<div class="stile"><span class="si2">${ic(s[0])}</span><div><b>${s[1]}</b><small>${s[2]}</small></div></div>`).join('')}</div>`},
+    {t:'table', h:'Recent access', sub:'7 days', src:'PipeWire · xdg-desktop-portal', cols:['Time','Device','Application','Duration'], rows:[['Tue 16:00', 'Camera', 'zoom-client', '48 min'], ['Tue 16:00', 'Microphone', 'zoom-client', '48 min'], ['Mon 11:30', 'Microphone', 'chrome', '12 min'], ['Mon 11:30', 'Screen share', 'chrome', '9 min']]}
+  ]},
+  {id:'perms', l:'App Permissions', f:() => [
+    {t:'table', h:'Permissions by app', src:'snap connections · flatpak permissions', cols:['App','Camera','Microphone','Location','Files','Network'], rows:[['zoom-client', YES, YES, NO, YES, YES], ['chrome', YES, YES, NO, YES, YES], ['telegram-desktop', YES, YES, NO, YES, YES], ['firefox', YES, YES, YES, YES, YES], ['com.spotify.Client', NO, NO, NO, NO, YES]]}
+  ]},
+  {id:'settings', l:'Privacy Settings', f:() => [
+    {t:'html', s:8, h:'Settings', flush:true, html:[['Location services', 'Apps can request your location', false], ['Usage reporting to Ubuntu', 'ubuntu-report · popularity-contest', false], ['Problem reporting', 'Send crash reports to Canonical', true], ['Recent files history', 'Remember files you opened', true], ['Remove old temporary files', 'After 30 days', true]].map(r => `<div class="fieldrow"><div><b>${r[0]}</b><small>${r[1]}</small></div>${SWT(r[0], r[2])}</div>`).join('')}
+  ]}
+], {group:'Network & Access'});
+
+const DIAG_STEPS = ['CPU load', 'Memory', 'Memory pressure', 'Disk I/O', 'Temperature', 'Top processes'];
+const NET_STEPS = ['Gateway', 'DNS resolution', 'Internet latency', 'Packet loss', 'IPv6'];
+const runnerHTML = (d, steps, key, label, done) => d.phase === 'idle' ? `<div class="runner"><div class="steps">${steps.map(s => `<div class="step"><span class="dot"></span>${s}</div>`).join('')}</div><div><button class="btn pri" data-act="${key}:run">${ic('play')}${label}</button></div></div>` : d.phase === 'run' ? `<div class="runner"><div class="prog"><b style="width:${d.n / steps.length * 100}%"></b></div><div class="steps">${steps.map((s, i) => `<div class="step ${i < d.n ? 'done' : ''}">${i < d.n ? `<span class="okc">${ic('check')}</span>` : i === d.n ? '<span class="spin"></span>' : '<span class="dot"></span>'}${s}</div>`).join('')}</div></div>` : done;
+def('diagnostics', 'Diagnostics', 'gauge', [
+  {id:'performance', l:'Performance Check', f:() => { const d = S.diag; return [
+    {t:'html', h:'Performance check', info:'Run while the computer feels slow. Finds the main cause in about 10 seconds.', acts:d.phase === 'done' ? [['Run again', 'diag:run']] : [], html:() => runnerHTML(d, DIAG_STEPS, 'diag', 'Run check', `<div class="alert crit" style="border:0;padding:0"><span class="ai">${ic('x')}</span><div class="at"><b>Primary cause: memory saturation</b><small>chrome uses 6.1 GB of 7.6 GB (42 tabs) · swap active · memory pressure 23%</small></div></div>`)},
+    ...(d.phase === 'done' ? [
+      {t:'kpis', items:[K('Memory used', '7.6', 'GB', {st:'crit', sub:'99% of 7.6 GB'}), K('Memory pressure', '23.4', '%', {st:'crit', sub:'some avg10'}), K('Swap activity', '18', 'MB/s', {st:'warn'}), K('CPU', '23', '%', {sub:'normal'}), K('Temperature', '61', '°C', {sub:'normal'})]},
+      {t:'table', s:7, h:'Contributing processes', cols:['Process',['Memory', 'n'],['CPU', 'n'],'Impact'], rows:[['chrome (42 tabs)', '6.1 GB', '14%', B('crit', 'High')], ['code', '640 MB', '4%', OFF('Low')], ['gnome-shell', '410 MB', '3%', OFF('Low')], ['telegram-desktop', '280 MB', '1%', OFF('Low')]]},
+      {t:'checks', s:5, h:'Recommendations', items:[['warn', 'Close unused browser tabs', 'Or enable Memory Saver in Chrome'], ['warn', 'Increase swap to 4 GB', 'Reduces freezes when memory fills', BTN('Configure', 'toast:Swap resize opens a guided fix in the real app.')], ['pass', 'CPU and temperature are normal']]}] : [])
+  ]; }},
+  {id:'network', l:'Network Test', f:() => { const d = S.net; return [
+    {t:'html', h:'Network test', acts:d.phase === 'done' ? [['Run again', 'net:run']] : [], html:() => runnerHTML(d, NET_STEPS, 'net', 'Run test', `<div class="alert ok" style="border:0;padding:0"><span class="ai">${ic('check')}</span><div class="at"><b>Network is healthy</b><small>All 5 checks passed</small></div></div>`)},
+    ...(d.phase === 'done' ? [{t:'kpis', items:[K('Gateway', '2', 'ms'), K('DNS lookup', '14', 'ms'), K('Latency', '18', 'ms', {sub:'1.1.1.1'}), K('Jitter', '3', 'ms'), K('Packet loss', '0', '%'), K('IPv6', 'Link-local', '')]}] : [])
+  ]; }},
+  {id:'hardware', l:'Hardware Tests', f:() => [
+    {t:'table', h:'Available tests', cols:['Test','Duration','Last run','Result',['', '']], rows:[['SMART short self-test (NVMe)', '2 min', '7 days ago', B('ok', 'Passed'), BTN('Run', 'toast:SMART short self-test started.')], ['Memory test (memtest86+)', '30–60 min', 'Never', OFF('—'), BTN('Schedule', 'toast:Runs at next restart from the boot menu.')], ['Battery capacity report', '1 min', 'Today', B('warn', '71% health'), BTN('Open', 'go:power/battery')], ['Sensor check', '10 s', 'Today', B('ok', 'Passed'), BTN('Open', 'go:hardware/sensors')], ['Speaker and microphone test', '30 s', 'Never', OFF('—'), BTN('Run', 'toast:Plays a test tone and records 3 seconds.')]]}
+  ]}
+], {group:'Tools'});
+
+const ANS = {
+  restart:{q:'Why did my laptop restart last night?', a:'<p>It did not restart. <b>The battery ran out at 02:14</b>, so the laptop powered off without a clean shutdown. You started it again at 08:58.</p><p>No low-battery action is configured, so this can happen again.</p>', src:['02:09:12 upowerd: battery BAT0 is critically low (2%)', '02:13:58 upowerd: battery BAT0 at 1%, critical action not configured', '-- boot ended without clean shutdown --'], fix:['Configure low-battery action', 'fix:batt']},
+  bt:{q:'Why is Bluetooth crashing?', a:'<p><b>bluetoothd crashes with SIGSEGV each time the earbuds connect.</b> It started at 09:12 today, after yesterday’s kernel upgrade 6.8.0-45 → 6.8.0-47.</p><p>Restart the service first. If it keeps crashing, boot once with 6.8.0-45 to confirm the regression.</p>', src:['09:12:44 kernel: bluetoothd[1342]: segfault at 0 … error 4', 'systemd: bluetooth.service: Main process exited, status=11/SEGV', 'Tue 18:40 apt: upgrade linux-image-6.8.0-47-generic'], fix:['Inspect bluetooth.service', 'bt']},
+  ssd:{q:'Is my SSD healthy?', a:'<p><b>Yes.</b> SMART passed, 88% life left, 0 media errors. At your write rate that is many years.</p>', src:['SMART overall-health self-assessment: PASSED', 'Percentage Used: 12%', 'Media and Data Integrity Errors: 0']},
+  disk:{q:'What is filling my disk?', a:'<p><b>~/Videos (52 GB) and ~/Documents (41 GB)</b> are the largest folders. System leftovers worth 15.2 GB can also be removed safely.</p>', src:['du -h --max-depth=1 ~', 'snap list --all | grep disabled'], fix:['Free up space', 'fix:storage']}
+};
+S.chat = [{u:ANS.restart.q}, {a:'restart'}];
+def('assistant', 'Assistant', 'chat', [
+  {id:'chat', l:'Chat', f:() => [
+    {t:'html', s:8, h:'Ask SysDoc', sub:S.ai ? 'Local model · on-device' : 'Off', flush:true, html:() => S.ai ? `<div class="chat" id="chatbox">${S.chat.map(m => m.u ? `<div class="mu">${esc(m.u)}</div>` : m.wait ? '<div class="ma"><span class="muted">Reading logs…</span></div>' : (() => { const a = ANS[m.a] || {a:'<p>This prototype answers the suggested questions only. The real assistant reads this computer’s logs and settings to answer anything.</p>'}; return `<div class="ma">${a.a}${a.src ? `<div class="srcs"><span class="lab2">Sources</span>${a.src.map(s => `<div class="logline">${esc(s)}</div>`).join('')}</div>` : ''}${a.fix ? `<div>${BTN(a.fix[0], a.fix[1], 'pri')}</div>` : ''}</div>`; })()).join('')}</div><form class="composer" id="askf"><input id="askq" placeholder="Ask about this computer…" aria-label="Question" autocomplete="off"><button class="btn pri" type="submit">Send</button></form>` : `<div class="empty">The assistant is turned off. ${BTN('Turn on', 'go:settings/assistant', 'pri')}</div>`},
+    {t:'html', s:4, h:'Suggested questions', flush:true, html:`<div class="qlist">${Object.keys(ANS).map(k => `<button data-act="ask:${k}">${ic('chat')}${ANS[k].q}</button>`).join('')}</div>`},
+    {t:'kv', s:4, h:'Assistant', items:[['Model', 'Local · 3B parameters'], ['Runtime', 'Ollama'], ['Data access', 'Read-only'], ['Can run commands', 'No · suggests fixes only'], ['Cloud fallback', S.aiCloud ? B('info', 'On · redacted') : OFF('Off')]]}
+  ]}
+], {group:'Tools'});
+
+const sw = (id, on, l, d) => `<div class="fieldrow"><div><b>${l}</b>${d ? `<small>${d}</small>` : ''}</div><span class="switch"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} aria-label="${l}"><span></span></span></div>`;
+const selr = (id, l, d, opts, v) => `<div class="fieldrow"><div><b>${l}</b>${d ? `<small>${d}</small>` : ''}</div><select class="sel" id="${id}" aria-label="${l}">${opts.map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('')}</select></div>`;
+def('settings', 'Settings', 'sliders', [
+  {id:'general', l:'General', f:() => [
+    {t:'html', s:8, h:'General', flush:true, html:() => sw('set-expert', S.expert, 'Expert mode', 'Show data sources, commands and raw columns') + selr('set-range', 'Default time range', '', ['1h','24h','7d','30d'], S.range) + selr('set-refresh', 'Refresh interval', 'Live metrics', ['2 s','5 s','15 s','Manual'], '5 s') + selr('set-temp', 'Temperature unit', '', ['Celsius','Fahrenheit'], 'Celsius') + sw('set-start', true, 'Start at login', 'Collector runs in the background')}
+  ]},
+  {id:'access', l:'Access', f:() => [
+    {t:'html', s:8, h:'Access level', flush:true, html:() => `<div class="radios"><label class="rad"><input type="radio" name="access" value="basic" ${S.access === 'basic' ? 'checked' : ''}><span><b>Basic</b><small>No password · about 80% of checks</small></span></label><label class="rad"><input type="radio" name="access" value="full" ${S.access === 'full' ? 'checked' : ''}><span><b>Full</b><small>Admin helper approved once · all checks</small></span></label></div>`},
+    {t:'kv', s:4, h:'Admin helper', items:[['Service', M('sysdoc-helper')], ['Status', S.access === 'full' ? B('ok', 'Authorized') : OFF('Not authorized')], ['Activation', 'D-Bus, on demand'], ['Allowed actions', '24 (fixed list)'], ['Audit log', M('/var/log/sysdoc/helper.log')]]}
+  ]},
+  {id:'notifications', l:'Notifications', f:() => [
+    {t:'html', s:8, h:'Notifications', flush:true, html:() => sw('n1', true, 'Critical issues', 'Disk almost full, SSD failing, overheating') + sw('n2', false, 'Warnings', 'Included in the weekly summary when off') + sw('n3', true, 'Weekly summary', 'Sunday 18:00') + selr('n4', 'Quiet hours', '', ['Off','22:00–07:00','23:00–08:00'], '22:00–07:00')}
+  ]},
+  {id:'assistant', l:'Assistant', f:() => [
+    {t:'html', s:8, h:'Assistant', flush:true, html:() => sw('set-ai', S.ai, 'Enable assistant', 'Runs a local model on this computer') + selr('set-model', 'Model', '', ['Local · 3B (fast)','Local · 8B (better answers)'], 'Local · 3B (fast)') + sw('set-cloud', S.aiCloud, 'Cloud fallback', 'Removes names, hostnames, IPs and serials before sending')}
+  ]},
+  {id:'data', l:'Data', f:() => [
+    {t:'html', s:8, h:'Data retention', flush:true, html:() => selr('ret', 'Keep history for', 'Metrics and change history', ['90 days','1 year','2 years'], '2 years') + `<div class="fieldrow"><div><b>Database size</b><small>${M('~/.local/share/sysdoc/sysdoc.db')}</small></div><span class="num">74 MB</span></div><div class="fieldrow"><div><b>Export report</b><small>HTML or JSON snapshot of all pages</small></div>${BTN('Export', 'toast:Report export is disabled in the prototype.')}</div><div class="fieldrow"><div><b>Delete history</b><small>Restore points are kept</small></div>${BTN('Delete…', 'toast:Prototype: nothing was deleted.', 'danger')}</div>`}
+  ]},
+  {id:'about', l:'About', f:() => [
+    {t:'kv', s:6, h:'About', items:[['Version', 'SysDoc 0.5 · prototype'], ['Collector', 'sysdoc-agent 0.5 · running'], ['Knowledge base', '1,240 entries · updated today'], ['Distro adapter', 'Ubuntu / Debian'], ['License', 'Apache-2.0']]}
+  ]}
+]);
+
+/* ============ page status ============ */
+function pageSt(id){
+  switch(id){
+    case 'overview': return issues().some(i => i.sev === 'crit') ? 'crit' : 'warn';
+    case 'storage': return diskSt();
+    case 'services': return S.btRestarted ? 'warn' : 'crit';
+    case 'security': return S.secFixed ? 'ok' : 'warn';
+    case 'packages': return S.secFixed ? 'info' : 'warn';
+    case 'power': case 'backups': case 'logs': case 'containers': return 'warn';
+    case 'system': return 'info';
+    default: return 'ok';
+  }
+}
+
+/* ============ render ============ */
+function navHTML(){
+  const item = id => { const p = PAGES[id], on = S.page === id, open = S.open[id] ?? on, st = pageSt(id), many = p.tabs.length > 1;
+    const mark = id === 'overview' ? `<span class="ncnt">${issues().length}</span>` : (st === 'warn' || st === 'crit') ? `<span class="ndot ${st}" title="${SW[st]}"></span>` : '';
+    return `<button class="ni${on ? ' on' : ''}${open && many ? ' open' : ''}" data-nav="${id}" title="${p.title}" ${on ? 'aria-current="page"' : ''}>${ic(p.icon)}<span class="lab">${p.title}</span>${mark}${many ? ic('chev', 'chev') : ''}</button>${many && open ? `<div class="sub">${p.tabs.map(t => `<button class="si${on && S.tab === t.id ? ' on' : ''}" data-go="${id}/${t.id}">${t.l}</button>`).join('')}</div>` : ''}`; };
+  return GROUPS.map(g => `<div class="nav-g"><div class="nav-gl">${g[0]}</div>${g[1].map(item).join('')}</div>`).join('') + `<div class="sb-foot">${item('settings')}<button class="ni rail-btn" data-act="rail" title="${S.rail ? 'Expand sidebar' : 'Collapse sidebar'}">${ic('rail')}<span class="lab">${S.rail ? 'Expand' : 'Collapse'}</span></button></div>`;
+}
+function headHTML(p, t){
+  const g = GROUPS.find(x => x[1].includes(p.id)), st = pageSt(p.id), tools = p.group === 'Tools' || p.id === 'settings';
+  const acts = [...(t.acts ? t.acts() : (p.acts ? p.acts() : []))].map(a => `<button class="btn ${a[2] || ''}" data-act="${a[1]}">${a[0]}</button>`).join('');
+  return `<div class="phead"><nav class="crumbs" aria-label="Breadcrumb">${g ? `<span>${g[0]}</span>${ic('chev')}` : ''}<button data-go="${p.id}/${p.tabs[0].id}">${p.title}</button>${p.tabs.length > 1 ? ic('chev') + `<span>${t.l}</span>` : ''}</nav>
+    <div class="ph-row"><div class="ph-title"><span class="pic">${ic(p.icon)}</span><h1>${p.title}</h1>${tools ? '' : B(st, SW[st])}</div>
+    <div class="ph-acts">${acts}<button class="btn" data-act="refresh" title="Refresh">${ic('ref')}<span>Refresh</span></button>${tools ? '' : `<button class="btn" data-act="export" title="Export">${ic('dl')}<span>Export</span></button>`}</div></div>
+    ${p.tabs.length > 1 ? `<div class="tabs" role="tablist">${p.tabs.map(x => { const n = x.n ? x.n() : null; return `<button class="tab" role="tab" aria-selected="${x.id === t.id}" data-go="${p.id}/${x.id}">${x.l}${n ? `<span class="tcnt ${x.crit ? 'crit' : ''}">${n}</span>` : ''}</button>`; }).join('')}</div>` : '<div style="height:10px"></div>'}</div>`;
+}
+function render(keepScroll){
+  const app = $('#app'), main = $('#main'), y = main.scrollTop;
+  app.classList.toggle('expert', S.expert); app.classList.toggle('rail', S.rail);
+  $('#nav').innerHTML = navHTML();
+  const p = PAGES[S.page], t = p.tabs.find(x => x.id === S.tab) || p.tabs[0]; S.tab = t.id;
+  CH = [];
+  main.innerHTML = headHTML(p, t) + `<div class="content"><div class="grid">${t.f().map(widget).join('')}</div></div>`;
+  mountCharts();
+  $('#rangeSeg').innerHTML = Object.keys(RANGES).map(r => `<button data-act="range:${r}" aria-pressed="${S.range === r}">${r}</button>`).join('');
+  const mb = $('#modeSeg').querySelectorAll('button'); mb[0].setAttribute('aria-pressed', String(!S.expert)); mb[1].setAttribute('aria-pressed', String(S.expert));
+  $('#noteCnt').textContent = issues().filter(i => i.sev !== 'info').length;
+  if(keepScroll) main.scrollTop = y;
+  const cb = $('#chatbox'); if(cb) cb.scrollTop = cb.scrollHeight;
+  renderOverlay();
+}
+function go(path){
+  const [pg, tb] = path.split('/');
+  if(!PAGES[pg]) return;
+  S.page = pg; S.tab = tb || PAGES[pg].tabs[0].id; S.open[pg] = true; S.pop = null;
+  $('#app').classList.remove('navopen');
+  render(); $('#main').scrollTop = 0;
+}
+
+/* ============ overlays ============ */
+function renderOverlay(){
+  let h = '';
+  if(S.drawer) h += '<div class="scrim" data-act="close"></div>' + drawerHTML();
+  if(S.cmdk) h += '<div class="scrim" data-act="close"></div>' + cmdkHTML();
+  if(S.pop) h += '<div style="position:fixed;inset:0;z-index:29" data-act="close"></div>' + popHTML();
+  $('#overlay').innerHTML = h;
+  if(S.cmdk){ const i = $('#cmdkq'); if(i){ i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }
+}
+function popHTML(){
+  const btn = document.querySelector(S.pop === 'host' ? '.host' : '[data-act="pop:notes"]'); if(!btn) return '';
+  const r = btn.getBoundingClientRect(), right = S.pop !== 'host';
+  const pos = right ? `top:${r.bottom + 6}px;right:${Math.max(12, innerWidth - r.right)}px` : `top:${r.bottom + 6}px;left:${Math.max(12, r.left)}px`;
+  if(S.pop === 'host') return `<div class="pop" style="${pos}"><div class="pop-h">Machines</div><button class="pop-i" data-act="close"><span class="dot ok" style="margin-top:6px"></span><span><b>riya-laptop</b><small>This computer · Ubuntu 24.04.1 LTS</small></span></button><button class="pop-i" data-act="toast:Multi-machine view is planned for a later phase."><span class="muted">${ic('ext')}</span><span><b>Add a machine</b><small>Planned · small office view</small></span></button></div>`;
+  const L = issues();
+  return `<div class="pop" style="${pos}"><div class="pop-h">Notifications <span class="muted" style="font-weight:400;font-size:12px">${L.length} open</span></div>${L.slice(0, 6).map(i => `<button class="pop-i" data-act="${i.act[1]}"><span class="dot ${i.sev}" style="margin-top:6px"></span><span><b>${i.t}</b><small>${i.cat} · ${i.first}</small></span></button>`).join('')}<button class="pop-i" data-go="overview/issues" style="grid-template-columns:1fr;text-align:center;color:var(--accent);border-bottom:0">View all issues</button></div>`;
+}
+function cmdkItems(){
+  const out = [];
+  Object.values(PAGES).forEach(p => p.tabs.forEach(t => out.push({l:p.tabs.length > 1 ? `${p.title} › ${t.l}` : p.title, go:`${p.id}/${t.id}`, ic:p.icon})));
+  ['bluetooth.service', 'docker.service', 'NetworkManager.service', 'snapd.service', 'cups-browsed.service'].forEach(s => out.push({l:s, go:'services/system', ic:'cog', k:'Service'}));
+  PKGS.slice(0, 14).forEach(p => out.push({l:p[0], go:'packages/installed', ic:'pkg', k:'Package'}));
+  ['sync-notes.sh', 'backup-photos.sh', 'logrotate.timer', 'e2scrub_all.timer'].forEach(j => out.push({l:j, go:j.endsWith('.sh') ? 'jobs/cron' : 'jobs/timers', ic:'cal', k:'Job'}));
+  return out;
+}
+function cmdkHTML(){
+  const q = S.cmdk.q.toLowerCase(), list = cmdkItems().filter(x => x.l.toLowerCase().includes(q)).slice(0, 40);
+  S.cmdk.list = list; if(S.cmdk.i >= list.length) S.cmdk.i = 0;
+  return `<div class="cmdk" role="dialog" aria-modal="true" aria-label="Search"><div class="cmdk-in">${ic('search')}<input id="cmdkq" value="${esc(S.cmdk.q)}" placeholder="Search pages, services, packages, jobs…" autocomplete="off" aria-label="Search"><kbd>Esc</kbd></div><div class="cmdk-l">${list.length ? list.map((x, i) => `<button class="${i === S.cmdk.i ? 'act' : ''}" data-go="${x.go}">${ic(x.ic)}${x.l}<small>${x.k || 'Page'}</small></button>`).join('') : '<div class="empty">No results</div>'}</div></div>`;
+}
+const chosenSteps = d => FIXES[d.id].steps.filter(s => d.sel[s.id] && !(d.id === 'storage' && S.cleaned[s.id]));
+const applyLabel = (d, ch) => d.id === 'storage' ? `Free ${f1(ch.reduce((x, s) => x + s.size, 0))} GB` : ch.length > 1 ? `Apply ${ch.length} steps` : 'Apply';
+const fxNote = ch => ch.some(s => s.admin) ? 'Password required once' : ch.length ? 'No password needed' : 'Select at least one step';
+function drawerHTML(){
+  const d = S.drawer; let title = '', subt = '', body = '', foot = '';
+  if(d.type === 'fix'){
+    const F = FIXES[d.id], steps = F.steps.filter(s => !(d.id === 'storage' && S.cleaned[s.id])), chosen = chosenSteps(d);
+    title = F.title; subt = F.sub;
+    if(d.phase === 'preview'){
+      body = `<div class="dsec"><h4>Steps</h4>${steps.map(s => `<label class="fstep" for="fx-${s.id}"><input type="checkbox" id="fx-${s.id}" data-fx="${s.id}" ${d.sel[s.id] ? 'checked' : ''}><span><b>${s.l}</b><span class="muted" style="display:block;font-size:12.5px">${s.d}</span><span class="meta">${B(...UNDO[s.undo])}${s.admin ? OFF('Admin') : ''}</span><code class="cmd">${esc(s.cmd)}</code></span><span class="sz">${s.size ? f1(s.size) + ' GB' : ''}</span></label>`).join('')}</div>`;
+      foot = `<span class="fn" id="fxnote">${fxNote(chosen)}</span><button class="btn" data-act="close">Cancel</button><button class="btn pri" id="fxapply" data-act="fx:apply" ${chosen.length ? '' : 'disabled'}>${applyLabel(d, chosen)}</button>`;
+    } else if(d.phase === 'auth'){
+      body = `<div class="auth"><span class="lk">${ic('lock')}</span><b>Authentication required</b><span class="muted">sysdoc-helper wants to run ${chosen.filter(s => s.admin).length} privileged action(s)</span><div class="pw" aria-hidden="true">••••••••</div><small>Simulated polkit prompt. In the real app Ubuntu shows this window and SysDoc never sees the password.</small></div>`;
+      foot = '<button class="btn" data-act="fx:back">Back</button><button class="btn pri" data-act="fx:auth">Authenticate</button>';
+    } else if(d.phase === 'run'){
+      body = `<ol class="runl">${d.steps.map((s, i) => `<li class="${i < d.done ? 'done' : ''}">${i < d.done ? `<span class="okc">${ic('check')}</span>` : i === d.done ? '<span class="spin" style="margin:3px"></span>' : '<span class="dot" style="margin:6px"></span>'}<span>${s.l}</span>${i < d.done ? `<code class="cmd">${esc(s.cmd)}</code>` : ''}</li>`).join('')}</ol>`;
+      foot = '<span class="fn">Stops on the first error</span>';
+    } else {
+      const r = d.result;
+      body = `<div class="alert ok" style="padding:0;border:0"><span class="ai">${ic('check')}</span><div class="at"><b>${r.title}</b><small>Logged in Activity › SysDoc Actions at ${r.time}</small></div></div><div class="res">${r.cells.map(c => `<div><small>${c[0]}</small><b>${c[1]}</b></div>`).join('')}</div>${r.note ? `<div class="alert info"><span class="ai">${ic('info')}</span><div class="at"><small style="color:var(--ink-2)">${r.note}</small></div></div>` : ''}`;
+      foot = '<button class="btn" data-act="close-go:activity/sysdoc">View log</button><button class="btn pri" data-act="close">Done</button>';
+    }
+  } else if(d.type === 'bt'){
+    title = 'bluetooth.service'; subt = 'Bluetooth service · crash loop';
+    body = `<div class="res"><div><small>Active state</small><b>${S.btRestarted ? 'active' : 'failed'}</b></div><div><small>Restarts today</small><b>14</b></div><div><small>Exit status</small><b>11 (SIGSEGV)</b></div><div><small>First crash</small><b>Today 09:12</b></div></div>
+      <div class="dsec"><h4>Correlated change</h4><div class="alert info"><span class="ai">${ic('info')}</span><div class="at"><b>Kernel upgraded 6.8.0-45 → 6.8.0-47</b><small>Tue 18:40 · crashes started at next boot</small></div></div></div>
+      <div class="dsec"><h4>Log excerpt</h4><div class="logline">09:12:44 kernel: bluetoothd[1342]: segfault at 0 ip 000055d1c2a4 error 4</div><div class="logline" style="margin-top:4px">systemd: bluetooth.service: Main process exited, code=dumped, status=11/SEGV</div></div>
+      <div class="dsec"><h4>Remediation</h4><div class="checks" style="border:1px solid var(--line);border-radius:7px">
+        <div class="ck"><span class="cki pass">${ic('ref')}</span><div>Restart service<small>${M('sudo systemctl restart bluetooth')}</small></div><div>${BTN('Restart', 'btrestart', 'pri')}</div></div>
+        <div class="ck"><span class="cki na">${ic('sys')}</span><div>Boot previous kernel once<small>Boot menu › Advanced options › 6.8.0-45</small></div><div>${BTN('Guide', 'toast:Hold Shift at startup → Advanced options for Ubuntu → 6.8.0-45-generic.')}</div></div>
+        <div class="ck"><span class="cki na">${ic('chat')}</span><div>Ask the assistant<small>Explain the crash in plain words</small></div><div>${BTN('Ask', 'askgo:bt')}</div></div></div></div>`;
+    foot = '<button class="btn" data-act="close-go:logs/crashes">Crash reports</button><button class="btn" data-act="close">Close</button>';
+  } else if(d.type === 'insp'){
+    const w = REG[d.tid], row = w.rows[d.i], cells = Array.isArray(row) ? row : row.c, cols = w.cols.map(c => typeof c === 'string' ? c : c[0]);
+    title = strip(cells[0]).split('\n')[0]; subt = w.h;
+    body = `<dl class="kv">${cells.map((c, i) => cols[i] ? `<dt>${cols[i]}</dt><dd>${c}</dd>` : '').join('')}</dl>`;
+    foot = (w.ra || []).map(a => `<button class="btn" data-act="${a[1] === 'kill' ? 'toast:SIGTERM sent to ' + esc(title) + ' (prototype).' : a[1] === 'svc' ? 'toast:' + a[0] + ' requested for ' + esc(title) + ' (prototype).' : a[1]}">${a[0]}</button>`).join('') + '<button class="btn pri" data-act="close">Close</button>';
+  }
+  return `<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="dtitle"><div class="dh"><div><h2 id="dtitle">${title}</h2>${subt ? `<div class="dsub">${subt}</div>` : ''}</div><button class="ibtn" data-act="close" aria-label="Close">${ic('x')}</button></div><div class="db">${body}</div>${foot ? `<div class="df">${foot}</div>` : ''}</aside>`;
+}
+function openFix(id, preset){
+  const F = FIXES[id];
+  S.drawer = {type:'fix', id, phase:'preview', done:0, sel:Object.fromEntries(F.steps.map(s => [s.id, preset ? !!preset[s.id] : !s.off]))};
+  renderOverlay();
+}
+function runFix(){
+  const d = S.drawer; d.steps = chosenSteps(d); d.phase = 'run'; d.done = 0; renderOverlay();
+  const step = () => { if(S.drawer !== d) return; d.done++; if(d.done >= d.steps.length){ applyFix(d); d.phase = 'done'; render(true); return; } renderOverlay(); setTimeout(step, 700); };
+  setTimeout(step, 700);
+}
+function applyFix(d){
+  const time = clockTick(), s0 = score();
+  if(d.id === 'storage'){
+    const p0 = dPct(); let freed = 0; d.steps.forEach(s => { S.cleaned[s.id] = true; freed += s.size; }); S.used -= freed;
+    if(S.TS.cleanup) S.TS.cleanup.sel = {};
+    d.result = {title:`${f1(freed)} GB freed`, time, cells:[['Root filesystem', `${p0}% → ${dPct()}%`], ['Health score', `${s0} → ${score()}`], ['Free space', `${f1(S.total - S.used)} GB`], ['Full in', `~${daysFull()} days`]], note:dPct() >= 85 ? `Still above 85%. ~/Videos uses 52 GB; moving it to external storage brings / to about ${Math.round((S.used - 52) / S.total * 100)}%.` : ''};
+    SYSDOC_LOG.unshift({when:'Today ' + time, time, text:`Freed ${f1(freed)} GB`, sub:d.steps.map(s => s.l).join(' · '), target:'/', undoNote:'Not reversible'});
+  } else if(d.id === 'sec'){
+    S.secFixed = true; const n = d.steps.some(s => s.id === 'other') ? 12 : 4;
+    if(S.TS.pending) S.TS.pending.sel = {};
+    d.result = {title:`${n} updates installed`, time, cells:[['Security updates pending', '4 → 0'], ['Health score', `${s0} → ${score()}`], ['Known CVEs', '3 → 0'], ['Reboot', 'Required']], note:'Restart when convenient to load the updated libraries.'};
+    SYSDOC_LOG.unshift({when:'Today ' + time, time, text:`Installed ${n} updates`, sub:'apt-get install --only-upgrade', target:'apt', undoNote:'Not reversible'});
+  } else {
+    S.battFixed = true; S.battTime = time;
+    d.result = {title:'Low-battery action configured', time, cells:[['At 10%', 'Warning'], ['At 5%', 'Clean power-off']], note:'Reversible from Activity › SysDoc Actions or Backups › Restore Points.'};
+    SYSDOC_LOG.unshift({when:'Today ' + time, time, text:'Configured low-battery action', sub:'PercentageAction=5', target:'/etc/UPower/UPower.conf', undo:'batt'});
+  }
+}
+
+/* ============ events ============ */
+function toast(m){ $('#toast').innerHTML = `<div class="toast">${m}</div>`; clearTimeout(toast.t); toast.t = setTimeout(() => $('#toast').innerHTML = '', 3200); }
+function refreshTable(id){ const el = document.querySelector(`[data-tbl="${id}"]`); if(el && REG[id]) el.innerHTML = tableHTML(REG[id]); }
+function ask(key){
+  const a = ANS[key];
+  S.chat.push({u:a ? a.q : key}, {wait:true}); if(S.page === 'assistant') render(true);
+  setTimeout(() => { S.chat = S.chat.filter(m => !m.wait); S.chat.push({a:a ? key : 'none'}); if(S.page === 'assistant') render(true); }, 700);
+}
+function act(a){
+  const i = a.indexOf(':'), k = i < 0 ? a : a.slice(0, i), v = i < 0 ? '' : a.slice(i + 1);
+  if(k !== 'pop') S.pop = null;
+  switch(k){
+    case 'go': S.drawer = null; go(v); break;
+    case 'toast': toast(v); renderOverlay(); break;
+    case 'close': if(!(S.drawer && S.drawer.phase === 'run')) S.drawer = null; S.cmdk = null; renderOverlay(); break;
+    case 'close-go': S.drawer = null; go(v); break;
+    case 'range': S.range = v; render(true); break;
+    case 'mode': S.expert = v === 'e'; render(true); break;
+    case 'rail': S.rail = !S.rail; render(true); break;
+    case 'navtoggle': $('#app').classList.toggle('navopen'); break;
+    case 'pop': S.pop = S.pop === v ? null : v; renderOverlay(); break;
+    case 'cmdk': S.cmdk = {q:'', i:0}; renderOverlay(); break;
+    case 'refresh': render(true); toast('Refreshed · 21:34'); break;
+    case 'export': toast('Export is disabled in the prototype.'); break;
+    case 'fix': {
+      if(v === 'storage' && cleanable() < .05){ toast('Nothing left to clean.'); break; }
+      if(v === 'sec' && S.secFixed){ toast('Security updates are already installed.'); break; }
+      if(v === 'batt' && S.battFixed){ toast('Low-battery action is already configured.'); break; }
+      let preset = null;
+      if(v === 'storage' && S.page === 'storage' && S.tab === 'cleanup' && S.TS.cleanup && Object.values(S.TS.cleanup.sel).some(Boolean)){ const avail = FIXES.storage.steps.filter(s => !S.cleaned[s.id]); preset = {}; Object.entries(S.TS.cleanup.sel).forEach(([ix, on]) => { if(on && avail[+ix]) preset[avail[+ix].id] = true; }); }
+      openFix(v, preset); break; }
+    case 'fx': {
+      const d = S.drawer; if(!d) break;
+      if(v === 'apply'){ const ch = chosenSteps(d); if(!ch.length) break; if(ch.some(s => s.admin)){ d.phase = 'auth'; renderOverlay(); } else runFix(); }
+      else if(v === 'auth') runFix();
+      else if(v === 'back'){ d.phase = 'preview'; renderOverlay(); }
+      break; }
+    case 'bt': S.drawer = {type:'bt'}; renderOverlay(); break;
+    case 'btrestart': S.btRestarted = true; S.btTime = clockTick(); S.drawer = null; render(true); toast('bluetooth.service restarted · monitoring for new crashes.'); break;
+    case 'askgo': S.drawer = null; go('assistant/chat'); ask(v); break;
+    case 'ask': ask(v); break;
+    case 'undo':
+      if(v === 'cups'){ S.cupsUndone = true; toast('Undone · cups-browsed.service enabled and started.'); }
+      if(v === 'batt'){ S.battFixed = false; const r = SYSDOC_LOG.find(x => x.undo === 'batt' && !x.undone); if(r) r.undone = true; toast('Undone · UPower.conf restored from the restore point.'); }
+      render(true); break;
+    case 'track': S.tracked[v] = true; render(true); toast('Job wrapped · results are recorded from the next run.'); break;
+    case 'diag': case 'net': {
+      const st = k === 'diag' ? S.diag : S.net, n = k === 'diag' ? DIAG_STEPS.length : NET_STEPS.length;
+      st.phase = 'run'; st.n = 0; render(true);
+      const t = () => { if(st.phase !== 'run') return; st.n++; if(st.n >= n) st.phase = 'done'; if(S.page === 'diagnostics') render(true); if(st.phase === 'run') setTimeout(t, 450); };
+      setTimeout(t, 450); break; }
+  }
+}
+document.addEventListener('click', e => {
+  const t = e.target;
+  if(t.closest('input, select, .switch, label.rad, label.sbox')) return;
+  const nav = t.closest('[data-nav]');
+  if(nav){ const id = nav.dataset.nav; if(S.page === id && PAGES[id].tabs.length > 1 && !S.rail){ S.open[id] = !(S.open[id] ?? true); $('#nav').innerHTML = navHTML(); } else go(id); return; }
+  const g = t.closest('[data-go]'); if(g){ S.cmdk = null; S.drawer = null; go(g.dataset.go); return; }
+  const srt = t.closest('[data-tsort]'); if(srt){ const [id, ci] = srt.dataset.tsort.split('|'), st = S.TS[id]; if(st.sort === +ci) st.dir = -st.dir; else { st.sort = +ci; st.dir = 1; } refreshTable(id); return; }
+  const fl = t.closest('[data-tfilter]'); if(fl){ const [id, o] = fl.dataset.tfilter.split('|'); S.TS[id].f = o; S.TS[id].pg = 0; refreshTable(id); return; }
+  const pg = t.closest('[data-tpage]'); if(pg){ const [id, dlt] = pg.dataset.tpage.split('|'); S.TS[id].pg += +dlt; refreshTable(id); return; }
+  const a = t.closest('[data-act]'); if(a && !a.disabled){ act(a.dataset.act); return; }
+  const ins = t.closest('[data-tinsp]'); if(ins){ const [id, i] = ins.dataset.tinsp.split('|'); S.drawer = {type:'insp', tid:id, i:+i}; renderOverlay(); }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if(t.dataset.tsearch){ const id = t.dataset.tsearch; S.TS[id].q = t.value; S.TS[id].pg = 0; const pos = t.selectionStart; refreshTable(id); const n = document.querySelector(`[data-tsearch="${id}"]`); if(n){ n.focus(); n.setSelectionRange(pos, pos); } }
+  if(t.id === 'cmdkq'){ S.cmdk.q = t.value; S.cmdk.i = 0; renderOverlay(); }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(t.dataset.fx && S.drawer){ S.drawer.sel[t.dataset.fx] = t.checked; const ch = chosenSteps(S.drawer), b = $('#fxapply'), n = $('#fxnote'); if(b){ b.disabled = !ch.length; b.textContent = applyLabel(S.drawer, ch); } if(n) n.textContent = fxNote(ch); return; }
+  if(t.dataset.tsel){ const [id, i] = t.dataset.tsel.split('|'); S.TS[id].sel[+i] = t.checked; refreshTable(id); return; }
+  if(t.dataset.tselall){ const id = t.dataset.tselall; REG[id].rows.forEach((_, i) => S.TS[id].sel[i] = t.checked); refreshTable(id); return; }
+  if(t.name === 'access'){ S.access = t.value; render(true); toast(t.value === 'full' ? 'Full access · admin helper authorized.' : 'Basic access · admin-only checks are locked.'); return; }
+  if(t.id === 'set-expert'){ S.expert = t.checked; render(true); return; }
+  if(t.id === 'set-range'){ S.range = t.value; render(true); return; }
+  if(t.id === 'set-ai'){ S.ai = t.checked; toast(t.checked ? 'Assistant enabled.' : 'Assistant disabled.'); return; }
+  if(t.id === 'set-cloud'){ S.aiCloud = t.checked; toast(t.checked ? 'Cloud fallback on · data redacted before sending.' : 'Cloud fallback off.'); return; }
+  if(t.name === 'pp'){ toast('Power profile set to ' + t.closest('label').querySelector('b').textContent + '.'); return; }
+  if(t.matches('.switch input, select')) toast('Saved.');
+});
+document.addEventListener('submit', e => {
+  if(e.target.id !== 'askf') return;
+  e.preventDefault();
+  const q = $('#askq').value.trim(), t = q.toLowerCase(); if(!q) return;
+  const k = /restart|shut|power off|turned off/.test(t) ? 'restart' : /bluetooth|earbud/.test(t) ? 'bt' : /ssd|nvme|drive health/.test(t) ? 'ssd' : /disk|space|full|storage/.test(t) ? 'disk' : null;
+  if(k) ask(k); else { S.chat.push({u:q}, {wait:true}); render(true); setTimeout(() => { S.chat = S.chat.filter(m => !m.wait); S.chat.push({a:'none'}); render(true); }, 700); }
+});
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); act('cmdk'); return; }
+  if(S.cmdk){
+    if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); const n = S.cmdk.list.length; if(!n) return; S.cmdk.i = (S.cmdk.i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n; renderOverlay(); const b = document.querySelector('.cmdk-l .act'); if(b) b.scrollIntoView({block:'nearest'}); return; }
+    if(e.key === 'Enter'){ e.preventDefault(); const x = S.cmdk.list[S.cmdk.i]; if(x){ S.cmdk = null; go(x.go); } return; }
+  }
+  if(e.key === 'Escape'){ if(S.drawer && S.drawer.phase === 'run') return; S.drawer = null; S.cmdk = null; S.pop = null; $('#app').classList.remove('navopen'); renderOverlay(); }
+});
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { mountCharts(); if(S.pop) renderOverlay(); }, 120); });
+document.addEventListener('click', e => { if($('#app').classList.contains('navopen') && !e.target.closest('.sidebar') && !e.target.closest('.menu-btn')) $('#app').classList.remove('navopen'); }, true);
+new ResizeObserver(() => { clearTimeout(rz); rz = setTimeout(mountCharts, 80); }).observe(document.getElementById('main'));
+
+/* ============ boot ============ */
+(() => { const h = (location.hash || '').slice(1).split('.'); if(PAGES[h[0]]){ S.page = h[0]; S.tab = (h[1] && PAGES[h[0]].tabs.some(t => t.id === h[1])) ? h[1] : PAGES[h[0]].tabs[0].id; } S.open[S.page] = true; render(); })();
+</script>
+
+</body>
+</html>

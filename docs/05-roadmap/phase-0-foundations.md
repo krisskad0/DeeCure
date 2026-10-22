@@ -1,0 +1,43 @@
+# Phase 0 — Foundations
+
+[Docs](../README.md) › [Roadmap](README.md)
+
+**Goal:** a working skeleton. It installs as a `.deb` and `sysdoc status` shows real data.
+**Rough time:** 3–4 weeks.
+
+## Tasks (in order)
+
+1. **Close the blocking decisions:** name, license, GitHub org, app ID, Rust vs Go.
+   → [Open decisions](../01-product/open-decisions.md)
+2. **Set up the repo:** `git`, branch protection on `main`, CI that runs format, lint, and tests on every pull request.
+   → [CONTRIBUTING.md](../../CONTRIBUTING.md), [Testing](../04-development/testing.md)
+3. **Create the Cargo workspace** with `sysdoc-core`, `sysdoc-agent`, and `sysdoc-cli`. Add `rust-toolchain.toml` and the `Makefile`.
+   → [Project structure](../04-development/project-structure.md)
+4. **Shared types in `sysdoc-core`:** finding, severity, metric, event, snapshot, and the request and response messages.
+   → [Architecture overview](../02-architecture/overview.md)
+5. **Agent skeleton:** systemd user socket and service, JSON-RPC over the Unix socket, caller user ID check.
+   → [How the parts talk](../02-architecture/overview.md#how-the-parts-talk)
+6. **Storage:** SQLite in WAL mode, the six tables, migrations, and the retention job.
+   → [Storage](../02-architecture/storage.md)
+7. **First 5 collectors** with the Ubuntu adapter: CPU, memory, filesystems, battery, systemd services.
+   → [Collectors](../02-architecture/collectors.md)
+8. **Rules engine v0:** load YAML rules, evaluate them, save findings. Ship 3 rules, starting with `storage.root_almost_full`.
+   → [Rules engine](../02-architecture/rules-engine.md), [Writing rules](../04-development/writing-rules-and-kb.md)
+9. **CLI:** `sysdoc status` and `sysdoc status --json`.
+   → [CLI](../02-architecture/cli.md)
+10. **Fixture tests:** a capture script and fixtures from at least 3 real machines.
+    → [Testing](../04-development/testing.md)
+11. **First `.deb`:** CI builds an installable package with the agent, CLI, and units. `lintian` passes.
+    → [Debian package](../06-packaging/debian-package.md)
+12. **Performance check in CI:** agent idle CPU and RAM stay inside the budget.
+    → [Performance budget](../02-architecture/performance-budget.md)
+
+## Done when
+
+- [ ] On a clean Ubuntu 24.04 VM, `sudo apt install ./sysdoc_*.deb` works, then `sysdoc status` shows real CPU, memory, disk, battery, and service data.
+- [ ] `sudo apt purge sysdoc` removes everything it installed.
+- [ ] CI is green: format, lint, unit tests, fixture tests, `lintian`, performance check.
+
+---
+
+[Index](README.md) · Next: [Phase 1 — MVP](phase-1-mvp.md) →

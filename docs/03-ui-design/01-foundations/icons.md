@@ -1,0 +1,53 @@
+# Icons
+
+[Docs](../../README.md) › [UI design](../README.md) › [Foundations](README.md)
+
+All icons are 24×24 viewBox, one `<path>` each, `fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round`.
+
+| Name | Path `d` |
+| --- | --- |
+| `grid` | `M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z` |
+| `perf` | `M3 12h4l3-7 4 14 3-7h4` |
+| `logs` | `M5 6h14M5 10h14M5 14h10M5 18h7` |
+| `hist` | `M12 8v4l3 2M3.5 12a8.5 8.5 0 1 0 2.4-5.9M3 3.5v4h4` |
+| `sys` | `M3.5 5h17v14h-17zM7.5 10l2.5 2-2.5 2M12 14h4.5` |
+| `chip` | `M7 7h10v10H7zM10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4` |
+| `bat` | `M3 8h15v8H3zM21 10.5v3M6 11v2M9 11v2` |
+| `mon` | `M3 4.5h18v11.5H3zM8 20h8M12 16v4` |
+| `layers` | `M12 3l9 5-9 5-9-5zM3 13l9 5 9-5` |
+| `cog` | `M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1` |
+| `cal` | `M4 5.5h16V20H4zM4 10h16M8.5 3v4M15.5 3v4` |
+| `cube` | `M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5` |
+| `pkg` | `M3.5 4h17v4h-17zM5 8v12h14V8M10 12h4` |
+| `db` | `M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3` |
+| `backup` | `M7 18.5a4.5 4.5 0 0 1-.6-9A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9.5zM12 11.5v6M9.5 14l2.5-2.5 2.5 2.5` |
+| `wifi` | `M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01` |
+| `users` | `M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 7.5M22 21v-1a6 6 0 0 0-4-5.6` |
+| `shield` | `M12 3l8 3v6c0 4.5-3.4 8.4-8 9-4.6-.6-8-4.5-8-9V6zM9 12l2 2 4-4` |
+| `eye` | `M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z` |
+| `gauge` | `M4 17a8 8 0 1 1 16 0M12 17l4-5` |
+| `chat` | `M4 5h16v11H9l-5 4z` |
+| `sliders` | `M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4` |
+| `chev` | `M9 6l6 6-6 6` |
+| `search` | `M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5` |
+| `x` | `M6 6l12 12M18 6L6 18` |
+| `check` | `M5 12.5l4.2 4L19 7` |
+| `excl` | `M12 6.5v7M12 17.5h.01` |
+| `info` | `M12 11v6M12 7h.01` |
+| `minus` | `M6 12h12` |
+| `i` | `M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 11v5M12 8h.01` |
+| `play` | `M7 5l12 7-12 7z` |
+| `dl` | `M12 4v11M7 10l5 5 5-5M5 20h14` |
+| `ref` | `M20 11a8 8 0 0 0-14.7-4M4 3.5V8h4.5M4 13a8 8 0 0 0 14.7 4M20 20.5V16h-4.5` |
+| `rail` | `M4 4h16v16H4zM9 4v16` |
+| `ext` | `M14 4h6v6M20 4l-9 9M18 14v6H4V6h6` |
+| `lock` | `M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3` |
+| `mic` | `M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3` |
+| `cam` | `M3 7h12v10H3zM15 10.5l6-3.5v10l-6-3.5` |
+| `screen` | `M3 4.5h18v12H3zM8 20h8` |
+| `pin` | `M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z` |
+| `fan` | `M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 10c0-4 1-7 4-7 2 0 3 2 1 4M14 12c4 0 7 1 7 4 0 2-2 3-4 1M12 14c0 4-1 7-4 7-2 0-3-2-1-4M10 12c-4 0-7-1-7-4 0-2 2-3 4-1` |
+| `bolt` | `M13 3L5 13.5h6L10 21l8-10.5h-6z` |
+| `usb` | `M12 3v14M9 6l3-3 3 3M7 10v3l5 3 5-3v-3M12 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z` |
+
+Page icons: Overview = `grid`, Performance = `perf`, Logs = `logs`, Activity = `hist`, System = `sys`, Hardware = `chip`, Power = `bat`, Display & Audio = `mon`, Processes = `layers`, Services = `cog`, Scheduled Jobs = `cal`, Containers = `cube`, Packages = `pkg`, Storage = `db`, Backups = `backup`, Network = `wifi`, Accounts = `users`, Security = `shield`, Privacy = `eye`, Diagnostics = `gauge`, Assistant = `chat`, Settings = `sliders`. Hamburger menu: `M4 6h16M4 12h16M4 18h16`. Bell: `M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0`. Chevron down (machine picker): `M6 9l6 6 6-6`.
