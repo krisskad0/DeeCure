@@ -75,6 +75,11 @@ Safety rules for live reads:
 | `device_events` | kernel log (`usb …` lines) | USB devices plugged in and out in the last 30 days |
 | `config_changes` | `/etc` (file times) | Files in `/etc` changed in the last 30 days, with their owner |
 | `package_history` | `/var/log/apt/history.log` | Every package installed, upgraded, or removed, with versions and who started it |
+| `net_details` | `ip -j addr`, `/sys/class/net/*/statistics`, `/proc/net/route`, `/proc/net/wireless`, NetworkManager (system D-Bus), `/etc/resolv.conf`, `/run/systemd/resolve/resolv.conf`, `/etc/ufw/ufw.conf`, `/etc/default/ufw` | Addresses and traffic per interface, default gateway, Wi-Fi name, signal, band, and speed, internet connectivity, DNS resolver and servers, VPNs, and the firewall state and default policies (rules need root) |
+| `sockets` | `/proc/net/{tcp,tcp6,udp,udp6}`, `/proc/<pid>/fd` | Every socket with local and remote address, state, who can reach it (this computer, one network, every network), and the owning program when it is the user's |
+| `accounts` | `/etc/passwd`, `/etc/group`, logind (system D-Bus), `last`, journal (sudo), `~/.ssh`, `ssh-keygen -lf`, `/etc/ssh/sshd_config` | People who can sign in with groups and admin rights, groups with members and what they allow, open sessions, sign-ins and sudo use (30 days), SSH server settings and keys. `/etc/shadow` is never read. |
+| `security` | `/proc/sys`, `/sys/module/apparmor`, SUID files and `dpkg -S`, scanner programs, ClamAV signature files, autostart and cron files, `/sys/module/*/taint`, `gsettings` | Kernel hardening settings, AppArmor, SUID programs and their packages, malware scanners, simple malware signs, and the screen lock |
+| `privacy` | `pw-dump`, `snap connections`, `flatpak info --show-permissions`, `gsettings`, `/etc/popularity-contest.conf` | Apps using the microphone, camera, or screen now; what snap and Flatpak apps may use; desktop privacy settings |
 | `gpu` | `/sys/class/drm/card*`, `pci.ids` | Each graphics card's maker and model, PCI ID, driver, whether it is the main card, and load, video memory, and temperature when the driver reports them without admin rights |
 
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.
@@ -121,6 +126,8 @@ The 2-second rate while the app is open comes with the app in Phase 1. The colle
 | `boot.time` | — | seconds | How long a boot took, stored at the time of that boot |
 | `updates.pending`, `updates.security` | — | count | Packages with a newer version, and how many of those are security updates |
 | `system.reboot_required` | — | count | 1 when an update asks for a restart, else 0 |
+| `net.listening_all` | — | count | TCP ports listening on every network |
+| `firewall.enabled` | — | count | 1 when ufw is on, 0 when off; missing when ufw is not installed |
 | `health.score` | — | count | The [health score](health-score.md), saved after every check |
 | `services.running` | — | count | Services that are running |
 | `services.failed` | — | count | Services that failed |

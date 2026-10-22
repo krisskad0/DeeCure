@@ -12,6 +12,10 @@ import { PerformanceGpu } from "./pages/performance/Gpu";
 import { PerformanceMemory } from "./pages/performance/Memory";
 import { PerformanceNetwork } from "./pages/performance/Network";
 import { PerformancePressure } from "./pages/performance/Pressure";
+import { AccountsGroups, AccountsLogins, AccountsSessions, AccountsSsh, AccountsUsers } from "./pages/accounts/Accounts";
+import { NetworkConnections, NetworkDns, NetworkFirewall, NetworkInterfaces, NetworkPorts, NetworkTraffic } from "./pages/network/Network";
+import { PrivacyAccess, PrivacyPermissions, PrivacySettings } from "./pages/privacy/Privacy";
+import { SecurityHardening, SecurityIntegrity, SecurityMalware, SecurityOverview, SecurityVulns } from "./pages/security/Security";
 import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "./pages/activity/Activity";
 import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
 import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel } from "./pages/logs/Logs";
@@ -77,6 +81,10 @@ const TABS: Record<string, Record<string, Tab>> = {
   display: { displays: DisplayDisplays, audio: DisplayAudio },
   logs: { journal: LogsJournal, errors: LogsErrors, crashes: LogsCrashes, kernel: LogsKernel, boots: LogsBoots },
   activity: { timeline: ActivityTimelinePage, packages: ActivityPackages, config: ActivityConfig, devices: ActivityDevices, deecure: ActivityDeeCure },
+  network: { interfaces: NetworkInterfaces, connections: NetworkConnections, ports: NetworkPorts, firewall: NetworkFirewall, dns: NetworkDns, traffic: NetworkTraffic },
+  accounts: { users: AccountsUsers, groups: AccountsGroups, sessions: AccountsSessions, logins: AccountsLogins, ssh: AccountsSsh },
+  security: { overview: SecurityOverview, vulns: SecurityVulns, hardening: SecurityHardening, integrity: SecurityIntegrity, malware: SecurityMalware },
+  privacy: { access: PrivacyAccess, perms: PrivacyPermissions, settings: PrivacySettings },
   storage: { overview: StorageOverview, filesystems: StorageFilesystems, usage: StorageUsage, cleanup: StorageCleanup },
   services: { user: ServicesUser, startup: ServicesStartup },
   jobs: { calendar: JobsCalendar, cron: JobsCron, timers: JobsTimers, anacron: JobsAnacron, at: JobsAt },

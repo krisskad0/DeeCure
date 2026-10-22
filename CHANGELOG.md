@@ -46,6 +46,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Fix: the .deb test counts the shipped rules instead of expecting 3.
 - Logs pages with real data from the journal: entries of the last 24 hours with hourly volume, errors grouped and classified with a day × hour heatmap, crashes (kernel, systemd, apport), the kernel log, and boot history with unclean shutdowns.
 - Activity pages: a 7-day change timeline (packages, configuration, devices, boots, crashes), package history with versions, files changed in /etc, and USB device events. Overview now shows recent activity and errors by hour.
+- Network pages with real data: interfaces with addresses and traffic, Wi-Fi signal, connectivity, connections and listening ports with who can reach them, the firewall, DNS, VPNs, and traffic over time.
+- Accounts pages: users and admins, groups and what they allow, sessions, sign-ins and sudo use, and SSH keys and server settings.
+- Security pages: a posture checklist, packages with security fixes, kernel hardening settings, SUID programs and their packages, and malware signs. New rule `security.firewall_off` (a warning only when ports are open to every network).
+- Privacy pages: apps using the microphone, camera, or screen now, snap and Flatpak permissions, and desktop privacy settings.
 - Data table (search, filter chips, unit-aware sorting, paging with totals, row selection with a bulk action, Expert-only columns, empty text) and form controls (switch, select, radio cards, field rows, state tiles).
 - First real page: Services › System Services, with a KPI row, an alert per failed service, and a searchable, filterable units table. The services collector now also records each service's enabled-at-boot state and restarts since boot.
 - Pinned Rust 1.99.1 (`rust-toolchain.toml`), shared lints, `Makefile` (`build`, `test`, `lint`, `fmt`), and a GitHub Actions CI workflow.

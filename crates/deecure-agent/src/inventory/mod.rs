@@ -3,6 +3,7 @@
 //! Live inventories: read from the system when the app or CLI asks, not stored.
 //! Used for things that change too fast to keep, or are cheap to read again.
 
+mod accounts;
 mod audio;
 mod bluetooth;
 mod command;
@@ -14,11 +15,15 @@ mod history;
 mod jobs;
 mod kernel;
 mod logs;
+mod net;
 mod network;
 mod os;
 mod power;
+mod privacy;
 mod processes;
+mod security;
 mod sleep;
+mod sockets;
 mod storage;
 mod system;
 mod units;
@@ -62,6 +67,11 @@ pub const KINDS: &[&str] = &[
     "device_events",
     "config_changes",
     "package_history",
+    "net_details",
+    "sockets",
+    "accounts",
+    "security",
+    "privacy",
 ];
 
 /// Reads one inventory. `Err` holds a plain-English reason.
@@ -108,6 +118,13 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
             &processes::user_names(&agent.root),
         )),
         "package_history" => serde_json::to_value(history::read_changes(&agent.root)),
+        "net_details" => serde_json::to_value(net::read(agent).await),
+        "sockets" => serde_json::to_value(sockets::read(&agent.root)),
+        "accounts" => serde_json::to_value(accounts::read(agent).await),
+        "security" => serde_json::to_value(
+            security::read(&agent.root, &processes::user_names(&agent.root)).await,
+        ),
+        "privacy" => serde_json::to_value(privacy::read(&agent.root).await),
         other => {
             return Err(format!(
                 "unknown inventory '{other}' (known: {})",

@@ -1,0 +1,12 @@
+id: security.firewall_off
+category: security
+title: "The firewall is off"
+explain: >
+  The ufw firewall is installed but turned off. Right now {net.listening_all}
+  ports accept connections from any network this computer joins, such as
+  public Wi-Fi. Turning the firewall on blocks those connections while your
+  own apps keep working.
+severity:
+  warning: "firewall.enabled == 0 and net.listening_all >= 1"
+  info: "firewall.enabled == 0"
+learn_more: kb/security/firewall.md

@@ -421,6 +421,57 @@ export interface PackageChange {
   source: string;
 }
 
+export interface NetDetails {
+  links: { name: string; ipv4: string[]; ipv6: string[]; rx: number; tx: number }[];
+  gateway?: string;
+  wifi?: { interface: string; ssid?: string; strength?: number; dbm?: number; frequency_mhz?: number; bitrate_mbps?: number };
+  connectivity?: "full" | "limited" | "portal" | "none" | "unknown";
+  resolver: string;
+  dns_servers: string[];
+  vpns: { name: string; kind: string; connected: boolean }[];
+  firewall: { installed: boolean; enabled: boolean; incoming?: string; outgoing?: string; rules?: string[] };
+}
+
+export interface SocketInfo {
+  proto: "tcp" | "udp";
+  local: string;
+  local_port: number;
+  remote: string;
+  state: string;
+  process?: string;
+  exposure: "local" | "all" | "network";
+}
+
+export interface AccountsInfo {
+  users: { name: string; full_name: string; uid: number; groups: string[]; admin: boolean; shell: string; home: string; last_sign_in?: number }[];
+  groups: { name: string; gid: number; members: string[]; privilege?: string }[];
+  sessions: { id: string; user: string; seat: string; kind: string; class: string; state: string; remote: boolean; since?: number }[];
+  events: { at: number; user: string; event: "sign-in" | "sudo"; source: string; success: boolean }[];
+  ssh: {
+    server_installed: boolean;
+    password_login?: boolean;
+    root_login?: string;
+    authorized_keys: number;
+    client_keys: { file: string; kind: string; bits: number; fingerprint: string; created: number }[];
+  };
+}
+
+export interface SecurityInfo {
+  hardening: { name: string; value: string; result: "pass" | "fail" | "na"; recommendation: string }[];
+  apparmor: boolean;
+  suid: { path: string; owner: string; package?: string }[];
+  scanners: string[];
+  clamav_updated?: number;
+  heuristics: { title: string; passed: boolean; detail: string }[];
+  screen_lock?: boolean;
+}
+
+export interface PrivacyInfo {
+  in_use: { microphone: string[]; camera: string[]; screen: string[] };
+  apps: { app: string; kind: "snap" | "flatpak"; camera: boolean; microphone: boolean; location: boolean; files: boolean; network: boolean }[];
+  settings: { label: string; description: string; on: boolean }[];
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
@@ -450,6 +501,11 @@ export function getInventory(kind: "boots"): Promise<BootRecord[]>;
 export function getInventory(kind: "device_events"): Promise<DeviceEvent[]>;
 export function getInventory(kind: "config_changes"): Promise<ConfigChange[]>;
 export function getInventory(kind: "package_history"): Promise<PackageChange[]>;
+export function getInventory(kind: "net_details"): Promise<NetDetails>;
+export function getInventory(kind: "sockets"): Promise<SocketInfo[]>;
+export function getInventory(kind: "accounts"): Promise<AccountsInfo>;
+export function getInventory(kind: "security"): Promise<SecurityInfo>;
+export function getInventory(kind: "privacy"): Promise<PrivacyInfo>;
 export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }
