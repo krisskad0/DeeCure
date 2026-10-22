@@ -3,7 +3,7 @@
 //! Time series: CPU, memory, temperature, disk, battery.
 
 use deecure_core::{Metric, Timestamp, Unit};
-use rusqlite::params;
+use rusqlite::{Connection, params};
 
 use super::{Result, Store, from_text, subject_from_db, subject_to_db, to_text};
 
@@ -19,24 +19,38 @@ pub(super) fn floor_to(ms: i64, step: i64) -> i64 {
     ms.div_euclid(step) * step
 }
 
+fn insert_metric(conn: &Connection, metric: &Metric) -> Result<()> {
+    conn.execute(
+        "INSERT INTO metric (name, subject, resolution, at, value, samples, unit)
+         VALUES (?1, ?2, 60, ?3, ?4, 1, ?5)
+         ON CONFLICT (name, subject, resolution, at) DO UPDATE SET
+             value = (value * samples + excluded.value) / (samples + 1),
+             samples = samples + 1,
+             unit = excluded.unit",
+        params![
+            metric.name,
+            subject_to_db(metric.subject.as_deref()),
+            floor_to(metric.at.as_millis(), MINUTE_MS),
+            metric.value,
+            to_text(&metric.unit)?,
+        ],
+    )?;
+    Ok(())
+}
+
 impl Store {
     /// Records one reading. Readings in the same minute are averaged into one point.
     pub fn add_metric(&self, metric: &Metric) -> Result<()> {
-        self.conn.execute(
-            "INSERT INTO metric (name, subject, resolution, at, value, samples, unit)
-             VALUES (?1, ?2, 60, ?3, ?4, 1, ?5)
-             ON CONFLICT (name, subject, resolution, at) DO UPDATE SET
-                 value = (value * samples + excluded.value) / (samples + 1),
-                 samples = samples + 1,
-                 unit = excluded.unit",
-            params![
-                metric.name,
-                subject_to_db(metric.subject.as_deref()),
-                floor_to(metric.at.as_millis(), MINUTE_MS),
-                metric.value,
-                to_text(&metric.unit)?,
-            ],
-        )?;
+        insert_metric(&self.conn, metric)
+    }
+
+    /// Records many readings in one transaction (one disk write instead of many).
+    pub fn add_metrics(&self, metrics: &[Metric]) -> Result<()> {
+        let tx = self.conn.unchecked_transaction()?;
+        for metric in metrics {
+            insert_metric(&tx, metric)?;
+        }
+        tx.commit()?;
         Ok(())
     }
 
@@ -134,6 +148,18 @@ mod tests {
         assert_eq!(points.len(), 1);
         assert_eq!(points[0].value, 40.0);
         assert_eq!(points[0].subject.as_deref(), Some("/home"));
+    }
+
+    #[test]
+    fn batched_readings_are_all_stored() {
+        let store = Store::open_in_memory().unwrap();
+        store
+            .add_metrics(&[cpu(0, 10.0), cpu(60_000, 20.0), cpu(120_000, 30.0)])
+            .unwrap();
+        let points = store
+            .metrics("cpu.usage", None, Timestamp(0), Timestamp(120_000))
+            .unwrap();
+        assert_eq!(points.len(), 3);
     }
 
     #[test]

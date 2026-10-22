@@ -3,13 +3,15 @@
 //! Turns one request line into one response. No I/O here, so it is easy to test.
 
 use deecure_core::rpc::{
-    PROTOCOL_VERSION, Request, RequestId, Response, RpcError, StatusReport, VersionInfo, method,
+    MetricsParams, PROTOCOL_VERSION, Request, RequestId, Response, RpcError, SnapshotParams,
+    StatusReport, VersionInfo, method,
 };
 use deecure_core::{Timestamp, VERSION};
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use crate::store::Store;
+use crate::store::{Store, StoreError};
 
 /// Reads one JSON-RPC message and answers it.
 pub fn handle_line(line: &[u8], store: &Store) -> Response {
@@ -46,17 +48,20 @@ pub fn handle(request: Request, store: &Store) -> Response {
             })
         }),
         method::STATUS => no_params(&request).and_then(|()| {
-            let findings = store.open_findings().map_err(|e| {
-                RpcError::new(
-                    RpcError::INTERNAL_ERROR,
-                    format!("could not read findings: {e}"),
-                )
-            })?;
+            let findings = store.open_findings().map_err(store_failed)?;
             to_result(&StatusReport {
                 generated_at: Timestamp::now(),
                 findings,
             })
         }),
+        method::METRICS => params::<MetricsParams>(&request).and_then(|p| {
+            let points = store
+                .metrics(&p.name, p.subject.as_deref(), p.since, p.until)
+                .map_err(store_failed)?;
+            to_result(&points)
+        }),
+        method::SNAPSHOT => params::<SnapshotParams>(&request)
+            .and_then(|p| to_result(&store.latest_snapshot(p.kind).map_err(store_failed)?)),
         other => Err(RpcError::method_not_found(other)),
     };
     match result {
@@ -81,6 +86,21 @@ fn no_params(request: &Request) -> Result<(), RpcError> {
             format!("'{}' takes no params", request.method),
         ))
     }
+}
+
+/// Reads the params a method needs.
+fn params<T: DeserializeOwned>(request: &Request) -> Result<T, RpcError> {
+    let value = request.params.clone().unwrap_or(Value::Null);
+    serde_json::from_value(value).map_err(|e| {
+        RpcError::new(
+            RpcError::INVALID_PARAMS,
+            format!("bad params for '{}': {e}", request.method),
+        )
+    })
+}
+
+fn store_failed(e: StoreError) -> RpcError {
+    RpcError::new(RpcError::INTERNAL_ERROR, format!("database: {e}"))
 }
 
 fn to_result<T: Serialize>(value: &T) -> Result<Value, RpcError> {
@@ -155,6 +175,48 @@ mod tests {
         let reply = answer(r#"{"jsonrpc":"2.0","id":9}"#);
         assert_eq!(reply["id"], 9);
         assert_eq!(reply["error"]["code"], RpcError::INVALID_REQUEST);
+    }
+
+    #[test]
+    fn metrics_and_snapshot_read_the_store() {
+        let store = Store::open_in_memory().unwrap();
+        store
+            .add_metric(&deecure_core::Metric {
+                name: "cpu.usage".into(),
+                subject: None,
+                value: 12.0,
+                unit: deecure_core::Unit::Percent,
+                at: Timestamp(60_000),
+            })
+            .unwrap();
+        let reply = serde_json::to_value(handle_line(
+            br#"{"jsonrpc":"2.0","id":4,"method":"metrics","params":{"name":"cpu.usage","since":0,"until":120000}}"#,
+            &store,
+        ))
+        .unwrap();
+        assert_eq!(reply["result"][0]["value"], 12.0);
+
+        let reply = serde_json::to_value(handle_line(
+            br#"{"jsonrpc":"2.0","id":5,"method":"snapshot","params":{"kind":"services"}}"#,
+            &store,
+        ))
+        .unwrap();
+        assert_eq!(reply["result"], Value::Null, "nothing stored yet");
+    }
+
+    #[test]
+    fn missing_or_unknown_params_are_rejected() {
+        for line in [
+            r#"{"jsonrpc":"2.0","id":6,"method":"metrics"}"#,
+            r#"{"jsonrpc":"2.0","id":7,"method":"snapshot","params":{"kind":"toasters"}}"#,
+            r#"{"jsonrpc":"2.0","id":8,"method":"snapshot","params":{"kind":"services","extra":1}}"#,
+        ] {
+            assert_eq!(
+                answer(line)["error"]["code"],
+                RpcError::INVALID_PARAMS,
+                "{line}"
+            );
+        }
     }
 
     #[test]

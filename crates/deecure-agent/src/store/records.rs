@@ -71,6 +71,19 @@ impl Store {
         Ok(())
     }
 
+    /// Stores an inventory only if it differs from the newest one of the same kind.
+    /// Returns `true` if it was stored. Keeps the database small when little changes.
+    pub fn add_snapshot_if_changed(&self, snapshot: &Snapshot) -> Result<bool> {
+        let unchanged = self
+            .latest_snapshot(snapshot.kind)?
+            .is_some_and(|latest| latest.data == snapshot.data);
+        if unchanged {
+            return Ok(false);
+        }
+        self.add_snapshot(snapshot)?;
+        Ok(true)
+    }
+
     /// The newest inventory of one kind, if any.
     pub fn latest_snapshot(&self, kind: SnapshotKind) -> Result<Option<Snapshot>> {
         let mut stmt = self.conn.prepare_cached(
@@ -174,6 +187,36 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(latest.data, json!({"failed": 1}));
+    }
+
+    #[test]
+    fn unchanged_snapshot_is_not_stored_twice() {
+        let store = Store::open_in_memory().unwrap();
+        let snapshot = |at, data| Snapshot {
+            kind: SnapshotKind::Filesystems,
+            taken_at: Timestamp(at),
+            data,
+        };
+        assert!(
+            store
+                .add_snapshot_if_changed(&snapshot(1, json!(["/"])))
+                .unwrap()
+        );
+        assert!(
+            !store
+                .add_snapshot_if_changed(&snapshot(2, json!(["/"])))
+                .unwrap()
+        );
+        assert!(
+            store
+                .add_snapshot_if_changed(&snapshot(3, json!(["/", "/home"])))
+                .unwrap()
+        );
+        let latest = store
+            .latest_snapshot(SnapshotKind::Filesystems)
+            .unwrap()
+            .unwrap();
+        assert_eq!(latest.taken_at, Timestamp(3));
     }
 
     #[test]

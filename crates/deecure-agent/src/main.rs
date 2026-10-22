@@ -3,7 +3,8 @@
 //! The DeeCure agent.
 //!
 //! Runs as a systemd user service and answers the desktop app and CLI over a
-//! private socket. Collecting data and running rules come in later Phase 0 tasks.
+//! private socket. It reads the system every minute and keeps the history.
+//! Running rules comes in a later Phase 0 task.
 
 use std::error::Error;
 use std::io;
@@ -12,6 +13,7 @@ use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use deecure_agent::collect::{self, SystemRoot};
 use deecure_agent::store::{self, SharedStore, Store};
 use deecure_agent::{server, socket};
 use deecure_core::rpc::default_socket_path;
@@ -89,6 +91,7 @@ async fn run(socket_path: Option<PathBuf>, db_path: Option<PathBuf>) -> Result<(
     let store: SharedStore = Arc::new(Mutex::new(Store::open(&db_path)?));
     eprintln!("deecure-agent: database {}", db_path.display());
     tokio::spawn(clean_up_regularly(store.clone()));
+    tokio::spawn(collect::run(store.clone(), SystemRoot::real()));
 
     // Prefer the socket systemd opened for us. Otherwise open our own, and remove it on exit.
     let (listener, owned_path) = match socket::from_systemd()? {

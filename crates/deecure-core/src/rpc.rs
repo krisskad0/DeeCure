@@ -36,6 +36,33 @@ pub mod method {
     pub const VERSION: &str = "version";
     /// Returns [`StatusReport`](super::StatusReport). Takes no params.
     pub const STATUS: &str = "status";
+    /// Returns a list of [`Metric`](crate::Metric). Takes [`MetricsParams`](super::MetricsParams).
+    pub const METRICS: &str = "metrics";
+    /// Returns a [`Snapshot`](crate::Snapshot) or `null`. Takes [`SnapshotParams`](super::SnapshotParams).
+    pub const SNAPSHOT: &str = "snapshot";
+}
+
+/// Params of the `metrics` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MetricsParams {
+    /// The metric, such as `cpu.usage`.
+    pub name: String,
+    /// Which one, for metrics that have many, such as a mount point.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subject: Option<String>,
+    /// Start of the time range (included).
+    pub since: Timestamp,
+    /// End of the time range (included).
+    pub until: Timestamp,
+}
+
+/// Params of the `snapshot` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SnapshotParams {
+    /// Which inventory to return, the newest one stored.
+    pub kind: crate::SnapshotKind,
 }
 
 /// The `"jsonrpc": "2.0"` marker. Any other value is rejected.
