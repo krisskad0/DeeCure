@@ -6,7 +6,7 @@ What every folder is for. Items marked *(planned)* do not exist yet.
 
 ```
 deecure/
-├── .github/                 # Issue and pull request templates; CI workflows (planned)
+├── .github/                 # Issue and pull request templates; CI workflow (workflows/ci.yml)
 ├── app/                     # Desktop app: Tauri v2 + React + TypeScript
 │   ├── src/                 #   React UI (planned)
 │   └── src-tauri/           #   Tauri Rust side, talks to the agent (planned)
@@ -30,9 +30,10 @@ deecure/
 │   ├── fixtures/            #   Real /proc, /sys, journal and command outputs from many machines
 │   └── vm/                  #   VM test matrix scripts
 ├── docs/                    # All documentation (start at docs/README.md)
-├── Cargo.toml               # Workspace manifest (planned)
-├── rust-toolchain.toml      # Pinned Rust version (planned)
-├── Makefile                 # Short commands: build, test, lint, dev, deb (planned)
+├── Cargo.toml               # Workspace manifest and shared lints
+├── rust-toolchain.toml      # Pinned Rust version (1.99.1)
+├── clippy.toml              # Lint settings (unwrap allowed only in tests)
+├── Makefile                 # Short commands: build, test, lint, fmt (dev and deb planned)
 ├── README.md  LICENSE  CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  CHANGELOG.md
 └── .editorconfig  .gitignore
 ```

@@ -5,6 +5,15 @@
 **Goal:** a working skeleton. It installs as a `.deb` and `deecure status` shows real data.
 **Rough time:** 3–4 weeks.
 
+## Progress
+
+| Task | Status |
+| --- | --- |
+| 1. Blocking decisions | Name ✅, Rust ✅. License and app ID still open. |
+| 2. Repo setup | git ✅, CI ✅. Branch protection: turn on in GitHub settings. |
+| 3. Cargo workspace | ✅ Done |
+| 4–12 | Not started |
+
 ## Tasks (in order)
 
 1. **Close the blocking decisions:** name, license, GitHub org, app ID, Rust vs Go.

@@ -1,0 +1,20 @@
+[package]
+name = "deecure-agent"
+description = "DeeCure agent: collects system data, runs rules, and serves the app and CLI"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "deecure-agent"
+path = "src/main.rs"
+
+[dependencies]
+deecure-core.workspace = true
+
+[lints]
+workspace = true

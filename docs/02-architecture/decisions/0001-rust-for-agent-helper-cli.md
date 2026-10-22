@@ -1,6 +1,6 @@
 # 0001. Rust for the agent, helper, and CLI
 
-- Status: Proposed (open decision 5: Rust vs Go)
+- Status: Accepted 2026-10-23 (closes open decision 5: Rust vs Go)
 - Date: 2026-10-22
 
 ## Context

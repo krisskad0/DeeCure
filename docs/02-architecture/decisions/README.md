@@ -8,7 +8,7 @@ An architecture decision record (ADR) is a short note about one big technical ch
 
 | # | Decision | Status |
 | --- | --- | --- |
-| [0001](0001-rust-for-agent-helper-cli.md) | Rust for the agent, helper, and CLI | Proposed |
+| [0001](0001-rust-for-agent-helper-cli.md) | Rust for the agent, helper, and CLI | Accepted |
 | [0002](0002-tauri-react-desktop-ui.md) | Tauri v2 + React + TypeScript for the desktop app | Accepted |
 | [0003](0003-deb-and-apt-repository.md) | `.deb` package and our own APT repository as the main channel | Accepted |
 | [0004](0004-license-apache-2.0.md) | Apache-2.0 license | Proposed |

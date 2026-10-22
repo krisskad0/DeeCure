@@ -1,0 +1,3 @@
+# unwrap()/expect() are banned in normal code (see CONTRIBUTING.md), but fine in tests.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true

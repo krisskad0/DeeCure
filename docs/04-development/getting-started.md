@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [Development](README.md)
 
-> **Status:** there is no code yet. This page is the target setup. Update it when Phase 0 lands.
+> **Status:** Phase 0 in progress. The Rust workspace builds, and `make build`, `make test`, `make lint`, and `make fmt` work. Steps marked *(planned)* come later.
 
 ## 1. What you need
 
@@ -33,7 +33,7 @@ sudo apt install -y build-essential curl wget file git pkg-config \
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-The repo will pin the Rust version in `rust-toolchain.toml`. `rustup` picks it up by itself.
+The repo pins the Rust version (1.99.1) in `rust-toolchain.toml`. `rustup` installs and uses it by itself.
 
 ## 4. Install Node.js
 
@@ -47,18 +47,20 @@ cd deecure
 
 make build        # build all Rust crates and the web UI
 make test         # run all tests
-make dev          # start the agent and the desktop app in dev mode
+make help         # list all commands
 ```
 
 The `Makefile` gives short names to the real commands:
 
 | Target | Runs |
 | --- | --- |
-| `make build` | `cargo build --workspace` and `npm run build` in `app/` |
-| `make test` | `cargo test --workspace` and `npm test` in `app/` |
-| `make lint` | `cargo fmt --check`, `cargo clippy -- -D warnings`, `npm run lint` |
-| `make dev` | Runs the agent, then `npm run tauri dev` in `app/` |
-| `make deb` | Builds the `.deb` (see [Debian package](../06-packaging/debian-package.md)) |
+| `make build` | `cargo build --workspace` (later also `npm run build` in `app/`) |
+| `make test` | `cargo test --workspace` (later also `npm test` in `app/`) |
+| `make lint` | `cargo fmt --check` and `cargo clippy -- -D warnings` (later also `npm run lint`) |
+| `make fmt` | `cargo fmt --all` |
+| `make help` | Lists all commands |
+| `make dev` *(planned)* | Runs the agent, then `npm run tauri dev` in `app/` |
+| `make deb` *(planned)* | Builds the `.deb` (see [Debian package](../06-packaging/debian-package.md)) |
 
 ## 6. Try the CLI
 

@@ -1,0 +1,20 @@
+[package]
+name = "deecure-cli"
+description = "The deecure command: status, checks, and fixes from the terminal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "deecure"
+path = "src/main.rs"
+
+[dependencies]
+deecure-core.workspace = true
+
+[lints]
+workspace = true

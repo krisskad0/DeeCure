@@ -1,0 +1,28 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/deecure-core",
+    "crates/deecure-agent",
+    "crates/deecure-cli",
+]
+# crates/deecure-helper joins the workspace in Phase 2.
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+license = "Apache-2.0"
+repository = "https://github.com/krisskad0/DeeCure"
+homepage = "https://github.com/krisskad0/DeeCure"
+authors = ["DeeCure contributors"]
+
+[workspace.dependencies]
+deecure-core = { path = "crates/deecure-core" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"

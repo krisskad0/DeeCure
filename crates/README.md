@@ -9,4 +9,6 @@ The Rust workspace. One folder per crate.
 | `deecure-helper` | `deecure-helper` | Root, started by D-Bus on demand | [Helper](../docs/02-architecture/helper.md) |
 | `deecure-cli` | `deecure` | Normal user | [CLI](../docs/02-architecture/cli.md) |
 
+`deecure-helper` joins the workspace in Phase 2. Until then its folder is empty.
+
 Changes to `deecure-helper` need two reviewers. See [CONTRIBUTING.md](../CONTRIBUTING.md).
