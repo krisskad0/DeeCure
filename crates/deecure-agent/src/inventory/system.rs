@@ -10,24 +10,35 @@ use crate::collect::SystemRoot;
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
 pub struct SystemInfo {
     /// Host name.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub hostname: Option<String>,
     /// OS name, such as "Ubuntu 24.04.5 LTS".
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub os: Option<String>,
     /// OS version, such as "24.04".
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub os_version: Option<String>,
     /// Kernel release, such as "6.8.0-47-generic".
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub kernel: Option<String>,
     /// CPU architecture, such as "x86_64".
     pub arch: String,
     /// Maker and model, such as "Dell Inc. Latitude 3450".
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub model: Option<String>,
     /// CPU model name.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cpu: Option<String>,
     /// Logical CPUs (threads).
     pub cpu_threads: usize,
+    /// The highest CPU clock speed, in hertz.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cpu_max_hz: Option<f64>,
     /// All memory, in bytes.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memory_total: Option<u64>,
     /// Seconds since boot.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub uptime_seconds: Option<f64>,
     /// True when an update asks for a restart.
     pub reboot_required: bool,
@@ -77,6 +88,9 @@ pub fn read(root: &SystemRoot) -> SystemInfo {
             .lines()
             .filter(|line| line.starts_with("processor"))
             .count(),
+        cpu_max_hz: text("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+            .and_then(|khz| khz.parse::<f64>().ok())
+            .map(|khz| khz * 1000.0),
         memory_total: root.read("/proc/meminfo").ok().and_then(|m| {
             m.lines()
                 .find_map(|line| line.strip_prefix("MemTotal:"))

@@ -42,7 +42,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | `metrics` | `{"name": "cpu.usage", "subject": "/"?, "since": <ms>, "until": <ms>, "max_points": 160?}` | `[<Metric>, …]`, oldest first. Points are averaged into time buckets so about `max_points` remain (at most 2000, the default). Buckets start at whole multiples of their length, so different metrics line up. | Phase 0 |
 | `latest` | none | `[<Metric>, …]`: the newest point of every metric and subject from the last 10 minutes | Phase 1 |
 | `snapshot` | `{"kind": "filesystems"}` | The newest `<Snapshot>` of that kind, or `null` | Phase 0 |
-| `inventory` | `{"kind": "system"}` | Live data read now: `system` facts or the list of `processes` ([Collectors](collectors.md#live-inventories)). An unknown kind is a `-32602` error. | Phase 1 |
+| `inventory` | `{"kind": "system"}` | Live data read now: `system`, `processes`, `network`, or `gpu` ([Collectors](collectors.md#live-inventories)). An unknown kind is a `-32602` error. | Phase 1 |
 
 `?` marks an optional field. Unknown param fields are rejected. Metric names are listed in [Collectors](collectors.md#metric-names).
 

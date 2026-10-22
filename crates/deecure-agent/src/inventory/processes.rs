@@ -25,6 +25,8 @@ pub struct Process {
     pub cpu_percent: f64,
     /// Memory in use (resident set), in bytes.
     pub memory_bytes: u64,
+    /// Memory moved out to swap, in bytes.
+    pub swap_bytes: u64,
     /// Threads.
     pub threads: u32,
     /// The full command line, shortened to 200 characters.
@@ -129,9 +131,8 @@ impl ProcessSampler {
                     .unwrap_or_default(),
                 state: stat.state,
                 cpu_percent: (cpu_percent * 10.0).round() / 10.0,
-                memory_bytes: field("VmRSS:")
-                    .and_then(|v| v.trim_end_matches("kB").trim().parse::<u64>().ok())
-                    .map_or(0, |kb| kb * 1024),
+                memory_bytes: kilobytes(field("VmRSS:")),
+                swap_bytes: kilobytes(field("VmSwap:")),
                 threads: field("Threads:").and_then(|v| v.parse().ok()).unwrap_or(1),
                 command: command.chars().take(200).collect(),
             });
@@ -155,6 +156,13 @@ fn full_name(short: &str, command: &str) -> String {
     } else {
         short.to_owned()
     }
+}
+
+/// "204800 kB" → bytes. Kernel threads have no memory lines, so they count as 0.
+fn kilobytes(value: Option<&str>) -> u64 {
+    value
+        .and_then(|v| v.trim_end_matches("kB").trim().parse::<u64>().ok())
+        .map_or(0, |kb| kb * 1024)
 }
 
 /// User IDs to names, from `/etc/passwd`.
@@ -210,7 +218,7 @@ mod tests {
                 ("/proc/4242/stat", STAT),
                 (
                     "/proc/4242/status",
-                    "Name:\tWeb Content\nUid:\t1000\t1000\t1000\t1000\nVmRSS:\t  204800 kB\nThreads:\t42\n",
+                    "Name:\tWeb Content\nUid:\t1000\t1000\t1000\t1000\nVmRSS:\t  204800 kB\nVmSwap:\t  1024 kB\nThreads:\t42\n",
                 ),
                 (
                     "/proc/4242/cmdline",
@@ -227,6 +235,7 @@ mod tests {
             (4242, "Web Content", "riya")
         );
         assert_eq!(p.memory_bytes, 204_800 * 1024);
+        assert_eq!(p.swap_bytes, 1024 * 1024);
         assert_eq!(p.threads, 42);
         assert_eq!(p.command, "/usr/lib/firefox/firefox -contentproc");
         assert!(p.cpu_percent > 0.0);

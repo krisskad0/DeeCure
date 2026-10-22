@@ -72,7 +72,7 @@ export interface Metric {
   name: string;
   subject?: string;
   value: number;
-  unit: "percent" | "bytes" | "bytes_per_second" | "celsius" | "watts" | "seconds" | "count";
+  unit: "percent" | "bytes" | "bytes_per_second" | "celsius" | "watts" | "seconds" | "hertz" | "count";
   /** Milliseconds since 1970. */
   at: number;
 }
@@ -96,6 +96,8 @@ export interface SystemInfo {
   model?: string;
   cpu?: string;
   cpu_threads: number;
+  /** Highest CPU clock speed, in hertz. */
+  cpu_max_hz?: number;
   memory_total?: number;
   uptime_seconds?: number;
   reboot_required: boolean;
@@ -111,14 +113,46 @@ export interface Process {
   /** Percent of one CPU since the last reading. */
   cpu_percent: number;
   memory_bytes: number;
+  swap_bytes: number;
   threads: number;
   command: string;
+}
+
+export interface NetInterface {
+  name: string;
+  /** Wi-Fi, Ethernet, Ethernet (USB), Bridge, Loopback, Mobile, VPN or tunnel, Virtual. */
+  kind: string;
+  /** `up`, `down`, `dormant`, or `unknown`. */
+  state: string;
+  mac?: string;
+  speed_mbps?: number;
+  mtu?: number;
+}
+
+export interface NetworkInfo {
+  interfaces: NetInterface[];
+  connections: { tcp_established: number; tcp_listening: number; udp: number };
+}
+
+export interface Gpu {
+  card: string;
+  vendor?: string;
+  model?: string;
+  pci_id?: string;
+  driver?: string;
+  boot_vga: boolean;
+  busy_percent?: number;
+  vram_total?: number;
+  vram_used?: number;
+  temperature?: number;
 }
 
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
-export function getInventory(kind: "system" | "processes"): Promise<unknown> {
+export function getInventory(kind: "network"): Promise<NetworkInfo>;
+export function getInventory(kind: "gpu"): Promise<Gpu[]>;
+export function getInventory(kind: "system" | "processes" | "network" | "gpu"): Promise<unknown> {
   return invoke("inventory", { kind });
 }
 

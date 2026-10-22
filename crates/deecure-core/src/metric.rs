@@ -22,7 +22,9 @@ pub enum Unit {
     Watts,
     /// Seconds.
     Seconds,
-    /// A plain count.
+    /// Hertz (cycles per second), such as a CPU clock speed.
+    Hertz,
+    /// A plain count, or a count per second when the metric name says so.
     Count,
 }
 

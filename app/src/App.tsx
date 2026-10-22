@@ -6,6 +6,12 @@ import { useCallback, useEffect, useState } from "react";
 import { type AppError, type Machine, type StatusReport, getMachine, getStatus, toAppError } from "./api";
 import { NotBuilt } from "./pages/NotBuilt";
 import { OverviewScore } from "./pages/overview/HealthScore";
+import { PerformanceCpu } from "./pages/performance/Cpu";
+import { PerformanceDisk } from "./pages/performance/Disk";
+import { PerformanceGpu } from "./pages/performance/Gpu";
+import { PerformanceMemory } from "./pages/performance/Memory";
+import { PerformanceNetwork } from "./pages/performance/Network";
+import { PerformancePressure } from "./pages/performance/Pressure";
 import { OverviewIssues } from "./pages/overview/Issues";
 import { OverviewSummary } from "./pages/overview/Summary";
 import { SystemServices } from "./pages/services/SystemServices";
@@ -22,6 +28,15 @@ import { UiContext } from "./ui";
 import { Gallery } from "./dev/Gallery";
 
 const REFRESH_MS = 10_000;
+
+const PERFORMANCE: Record<string, () => React.JSX.Element> = {
+  cpu: PerformanceCpu,
+  memory: PerformanceMemory,
+  disk: PerformanceDisk,
+  network: PerformanceNetwork,
+  gpu: PerformanceGpu,
+  pressure: PerformancePressure,
+};
 
 export default function App() {
   const route = useRoute();
@@ -95,6 +110,9 @@ export default function App() {
     content = <OverviewIssues {...shared} />;
   } else if (route.page.id === "overview" && route.tab.id === "score") {
     content = <OverviewScore {...shared} />;
+  } else if (route.page.id === "performance" && PERFORMANCE[route.tab.id]) {
+    const Tab = PERFORMANCE[route.tab.id];
+    content = <Tab />;
   } else if (route.page.id === "services" && route.tab.id === "system") {
     content = <SystemServices />;
   } else {

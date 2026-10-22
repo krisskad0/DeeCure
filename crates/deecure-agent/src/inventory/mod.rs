@@ -3,6 +3,8 @@
 //! Live inventories: read from the system when the app or CLI asks, not stored.
 //! Used for things that change too fast to keep, or are cheap to read again.
 
+mod gpu;
+mod network;
 mod processes;
 mod system;
 
@@ -14,7 +16,7 @@ pub use processes::{Process, ProcessSampler};
 pub use system::SystemInfo;
 
 /// The inventories the agent can read.
-pub const KINDS: &[&str] = &["system", "processes"];
+pub const KINDS: &[&str] = &["system", "processes", "network", "gpu"];
 
 /// Reads one inventory. `Err` holds a plain-English reason.
 pub fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
@@ -26,6 +28,8 @@ pub fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
                 .read(&agent.root)
                 .map_err(|e| e.to_string())?,
         ),
+        "network" => serde_json::to_value(network::read(&agent.root)),
+        "gpu" => serde_json::to_value(gpu::read(&agent.root)),
         other => {
             return Err(format!(
                 "unknown inventory '{other}' (known: {})",

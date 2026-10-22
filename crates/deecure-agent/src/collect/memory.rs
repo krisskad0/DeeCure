@@ -90,6 +90,7 @@ impl Collector for Memory {
         if info.swap_total > 0 {
             let swap_used = info.swap_total.saturating_sub(info.swap_free);
             push("swap.used", swap_used as f64, Unit::Bytes);
+            push("swap.total", info.swap_total as f64, Unit::Bytes);
             push(
                 "swap.used_percent",
                 swap_used as f64 * 100.0 / info.swap_total as f64,

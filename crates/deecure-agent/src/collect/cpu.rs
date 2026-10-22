@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
-//! CPU usage from `/proc/stat` and load from `/proc/loadavg`.
+//! CPU usage from `/proc/stat`, load from `/proc/loadavg`, and clock speed from cpufreq.
 
 use std::io;
+use std::time::Instant;
 
 use deecure_core::{Timestamp, Unit};
 
@@ -77,13 +78,47 @@ fn parse_cpu_line(line: &str) -> io::Result<CpuTimes> {
     })
 }
 
-/// Reads the 1-minute load average from `/proc/loadavg`.
-pub fn parse_loadavg(text: &str) -> io::Result<f64> {
-    text.split_whitespace()
-        .next()
-        .ok_or_else(|| invalid("/proc/loadavg", "empty"))?
-        .parse()
-        .map_err(|e| invalid("/proc/loadavg", e))
+/// Reads the 1, 5, and 15-minute load averages from `/proc/loadavg`.
+pub fn parse_loadavg(text: &str) -> io::Result<[f64; 3]> {
+    let mut fields = text.split_whitespace().map(str::parse::<f64>);
+    let mut next = || {
+        fields
+            .next()
+            .ok_or_else(|| invalid("/proc/loadavg", "too short"))?
+            .map_err(|e| invalid("/proc/loadavg", e))
+    };
+    Ok([next()?, next()?, next()?])
+}
+
+/// Context switches and interrupts since boot, from the `ctxt` and `intr` lines.
+fn parse_switches(text: &str) -> Option<(u64, u64)> {
+    let first = |key: &str| {
+        text.lines()
+            .find_map(|l| l.strip_prefix(key))?
+            .split_whitespace()
+            .next()?
+            .parse::<u64>()
+            .ok()
+    };
+    Some((first("ctxt ")?, first("intr ")?))
+}
+
+/// The average current clock speed of all CPUs, in hertz.
+fn average_frequency(root: &SystemRoot) -> Option<f64> {
+    let dir = std::fs::read_dir(root.path("/sys/devices/system/cpu")).ok()?;
+    let speeds: Vec<f64> = dir
+        .flatten()
+        .filter(|e| {
+            let name = e.file_name();
+            let name = name.to_string_lossy();
+            name.starts_with("cpu")
+                && name[3..].chars().all(|c| c.is_ascii_digit())
+                && name.len() > 3
+        })
+        .filter_map(|e| std::fs::read_to_string(e.path().join("cpufreq/scaling_cur_freq")).ok())
+        .filter_map(|khz| khz.trim().parse::<f64>().ok())
+        .collect();
+    (!speeds.is_empty()).then(|| speeds.iter().sum::<f64>() / speeds.len() as f64 * 1000.0)
 }
 
 /// Percentages of CPU time spent between two readings.
@@ -112,6 +147,7 @@ fn usage(before: CpuTimes, after: CpuTimes) -> Option<[(&'static str, f64); 4]> 
 pub struct Cpu {
     previous: Option<CpuTimes>,
     previous_cores: Vec<CpuTimes>,
+    previous_switches: Option<(Instant, (u64, u64))>,
 }
 
 impl Collector for Cpu {
@@ -123,7 +159,7 @@ impl Collector for Cpu {
         let stat = root.read("/proc/stat")?;
         let times = parse_stat(&stat)?;
         let cores = parse_cores(&stat);
-        let load = parse_loadavg(&root.read("/proc/loadavg")?)?;
+        let [load_1m, load_5m, load_15m] = parse_loadavg(&root.read("/proc/loadavg")?)?;
         let mut sample = Sample::default();
         if let Some(percentages) = self
             .previous
@@ -148,9 +184,41 @@ impl Collector for Cpu {
                 ));
             }
         }
-        sample
-            .metrics
-            .push(metric("cpu.load_1m", None, load, Unit::Count, now));
+        for (name, value) in [
+            ("cpu.load_1m", load_1m),
+            ("cpu.load_5m", load_5m),
+            ("cpu.load_15m", load_15m),
+        ] {
+            sample
+                .metrics
+                .push(metric(name, None, value, Unit::Count, now));
+        }
+        if let Some(switches) = parse_switches(&stat) {
+            let at = Instant::now();
+            if let Some((before, (ctxt, intr))) = self.previous_switches.replace((at, switches)) {
+                let seconds = at.duration_since(before).as_secs_f64().max(0.001);
+                let per_second = |new: u64, old: u64| new.saturating_sub(old) as f64 / seconds;
+                sample.metrics.push(metric(
+                    "cpu.context_switches",
+                    None,
+                    per_second(switches.0, ctxt),
+                    Unit::Count,
+                    now,
+                ));
+                sample.metrics.push(metric(
+                    "cpu.interrupts",
+                    None,
+                    per_second(switches.1, intr),
+                    Unit::Count,
+                    now,
+                ));
+            }
+        }
+        if let Some(hz) = average_frequency(root) {
+            sample
+                .metrics
+                .push(metric("cpu.frequency", None, hz, Unit::Hertz, now));
+        }
         Ok(sample)
     }
 }
@@ -160,10 +228,8 @@ mod tests {
     use super::*;
     use crate::collect::test_support::{fixture_root, value};
 
-    const STAT_BEFORE: &str =
-        "cpu  1000 0 500 8000 500 0 0 0 0 0\ncpu0 500 0 250 4000 250 0 0 0 0 0\n";
-    const STAT_AFTER: &str =
-        "cpu  1300 100 600 8800 700 0 0 0 0 0\ncpu0 650 50 300 4400 350 0 0 0 0 0\n";
+    const STAT_BEFORE: &str = "cpu  1000 0 500 8000 500 0 0 0 0 0\ncpu0 500 0 250 4000 250 0 0 0 0 0\nintr 5000 1 2\nctxt 90000\n";
+    const STAT_AFTER: &str = "cpu  1300 100 600 8800 700 0 0 0 0 0\ncpu0 650 50 300 4400 350 0 0 0 0 0\nintr 6000 1 2\nctxt 99000\n";
 
     #[test]
     fn parses_the_all_cpu_line() {
@@ -194,11 +260,25 @@ mod tests {
             &[
                 ("/proc/stat", STAT_BEFORE),
                 ("/proc/loadavg", "0.84 0.70 0.65 2/1031 12345\n"),
+                (
+                    "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq",
+                    "1200000\n",
+                ),
+                (
+                    "/sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq",
+                    "1800000\n",
+                ),
+                (
+                    "/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq",
+                    "9\n",
+                ),
             ],
         );
         let mut cpu = Cpu::default();
         let first = cpu.collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&first, "cpu.load_1m", None), Some(0.84));
+        assert_eq!(value(&first, "cpu.load_15m", None), Some(0.65));
+        assert_eq!(value(&first, "cpu.frequency", None), Some(1.5e9));
         assert_eq!(value(&first, "cpu.usage", None), None);
 
         std::fs::write(root.path("/proc/stat"), STAT_AFTER).unwrap();
@@ -208,5 +288,6 @@ mod tests {
         // cpu0: total 750, idle 400, iowait 100 → busy 250 → 33.3%
         let core = value(&second, "cpu.core", Some("0")).unwrap();
         assert!((core - 33.33).abs() < 0.01, "core 0 was {core}");
+        assert!(value(&second, "cpu.context_switches", None).unwrap() > 0.0);
     }
 }
