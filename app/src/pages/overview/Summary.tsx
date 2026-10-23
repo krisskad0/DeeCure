@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Overview › Summary (docs/03-ui-design/05-pages/01-overview.md), with real data.
 
+import { temp as tempText } from "../../units";
 import { type Finding, type Metric, type Process, type SystemInfo, getInventory, getLatest, getMetrics, getSnapshot } from "../../api";
 import { ActivityTimeline } from "../../components/ActivityTimeline";
 import { LinkButton } from "../../components/Button";
@@ -228,7 +229,7 @@ function subsystems(report: PageProps["report"], latest: Metric[] | undefined, s
     return { icon, label: areaLabel(id), metric: metric ?? (notChecked ? "Open to see details" : NOT_YET), status, statusLabel: notChecked ? "Not checked" : undefined, href: href(id, tab) };
   };
   return [
-    row("hardware", "chip", temp === undefined ? undefined : `CPU ${Math.round(temp)} °C`, "summary"),
+    row("hardware", "chip", temp === undefined ? undefined : `CPU ${tempText(temp)}`, "summary"),
     row("power", "bat", battery ? `Health ${Math.round(battery.value)}%` : latest ? "No battery" : undefined, "battery"),
     row("system", "sys", system ? (system.reboot_required ? "Reboot required" : system.uptime_seconds ? `Up ${duration(system.uptime_seconds)}` : undefined) : undefined, "overview"),
     row("services", "cog", failed ? `${failed} failed` : running !== undefined ? `${running} running` : undefined, "system"),

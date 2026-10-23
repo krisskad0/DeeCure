@@ -2,6 +2,7 @@
 // Performance › GPU (docs/03-ui-design/05-pages/02-performance.md), with real data.
 // Load history is not stored yet: drivers that report load without admin rights are rare.
 
+import { tempUnit, tempValue } from "../../units";
 import { type Gpu, getInventory } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
 import { LinkButton } from "../../components/Button";
@@ -54,7 +55,7 @@ export function PerformanceGpu() {
             : { label: "Memory", value: "Shared", subtext: "Uses system RAM" },
           gpu.temperature === undefined
             ? { label: "Temperature", value: "N/A", subtext: `Not reported by ${gpu.driver ?? "the driver"}` }
-            : { label: "Temperature", value: String(Math.round(gpu.temperature)), unit: "°C" },
+            : { label: "Temperature", value: String(Math.round(tempValue(gpu.temperature))), unit: tempUnit() },
           { label: "Driver", value: gpu.driver ?? "None", subtext: gpu.driver ? "" : "No driver is loaded for this card" },
         ]}
       />

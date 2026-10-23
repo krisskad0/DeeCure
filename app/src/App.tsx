@@ -2,6 +2,7 @@
 // The app shell: top bar, sidebar, page header with tabs, and the 12-column content grid.
 // Spec: docs/03-ui-design/02-shell/
 
+import { REFRESH_EVENT, type TempUnit } from "./units";
 import { useCallback, useEffect, useState } from "react";
 import { type AppError, type Machine, type StatusReport, getMachine, getStatus, toAppError } from "./api";
 import { NotBuilt } from "./pages/NotBuilt";
@@ -122,6 +123,8 @@ export default function App() {
   const [fix, setFix] = useState<{ action: string; subject?: string } | null>(null);
   const openFix = useCallback((action: string, subject?: string) => setFix({ action, subject }), []);
 
+  // Re-render everything when the temperature unit changes.
+  usePref<TempUnit>("temp", "celsius");
   const refresh = useCallback(async () => {
     try {
       setReport(await getStatus());
@@ -252,7 +255,10 @@ export default function App() {
             route={route}
             status={pageStatus(route.page.id, report, error)}
             tabCounts={tabCounts}
-            onRefresh={() => void refresh()}
+            onRefresh={() => {
+              void refresh();
+              window.dispatchEvent(new Event(REFRESH_EVENT));
+            }}
           />
         )}
         <div className="grid">{content}</div>

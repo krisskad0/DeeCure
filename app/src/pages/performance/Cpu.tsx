@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Performance › CPU (docs/03-ui-design/05-pages/02-performance.md), with real data.
 
+import { tempUnit, tempValue } from "../../units";
 import { type Process, type SystemInfo, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { InlineMeter } from "../../components/InlineMeter";
@@ -53,8 +54,8 @@ export function PerformanceCpu() {
           { label: "Frequency", value: freq === undefined ? "—" : ghz(freq), unit: freq === undefined ? undefined : "GHz", subtext: system?.cpu_max_hz ? `Max ${ghz(system.cpu_max_hz)} GHz` : "" },
           {
             label: "Temperature",
-            value: temp === undefined ? "N/A" : String(Math.round(temp)),
-            unit: temp === undefined ? undefined : "°C",
+            value: temp === undefined ? "N/A" : String(Math.round(tempValue(temp))),
+            unit: temp === undefined ? undefined : tempUnit(),
             subtext: temp === undefined ? "No CPU sensor found" : "",
             visual: sparks.temp && { kind: "spark", data: sparks.temp, slot: 2 },
           },

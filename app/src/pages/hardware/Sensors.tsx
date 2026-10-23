@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Sensors (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
+import { temp as tempText, tempUnit, tempValue } from "../../units";
 import type { Metric } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -42,7 +43,7 @@ export function HardwareSensors() {
           <GaugeGroup
             gauges={chips.map((t) => ({
               value: t.value,
-              display: `${Math.round(t.value)} °C`,
+              display: tempText(t.value),
               subtitle: t.subject?.split("/")[1] ?? "",
               caption: t.subject?.split("/")[0] ?? "sensor",
               status: t.value >= 90 ? "crit" : t.value >= 80 ? "warn" : "ok",
@@ -56,9 +57,10 @@ export function HardwareSensors() {
         <TimeChart
           history={history}
           names={["CPU", ...(nvme ? ["NVMe"] : []), ...(battery ? ["Battery"] : [])]}
-          unit="°C"
-          max={cpu !== undefined && cpu > 85 ? "auto" : 100}
-          threshold={{ value: 95, label: "Throttle ~95 °C" }}
+          unit={tempUnit()}
+          scale={tempValue}
+          max={cpu !== undefined && cpu > 85 ? "auto" : tempValue(100)}
+          threshold={{ value: tempValue(95), label: `Throttle ~${tempText(95)}` }}
         />
       </Panel>
       {fans.length ? (

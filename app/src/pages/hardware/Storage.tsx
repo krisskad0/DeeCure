@@ -2,6 +2,7 @@
 // Hardware › Storage Devices (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // SMART health needs Full access (Phase 2); drive temperature comes from hwmon.
 
+import { temp as tempText, tempUnit, tempValue } from "../../units";
 import type { HardwareInfo } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { Panel } from "../../components/Panel";
@@ -22,7 +23,7 @@ const COLUMNS: Column<DiskRow>[] = [
   { key: "size", label: "Size", text: (d) => bytes(d.size, 0), numeric: true },
   { key: "fw", label: "Firmware", text: (d) => d.firmware ?? "—", expert: true },
   { key: "smart", label: "SMART", text: () => "Full access", render: () => <StatusBadge variant="off" label="Needs Full access" /> },
-  { key: "temp", label: "Temperature", text: (d) => (d.temp === undefined ? "—" : `${Math.round(d.temp)} °C`), numeric: true },
+  { key: "temp", label: "Temperature", text: (d) => (d.temp === undefined ? "—" : tempText(d.temp)), numeric: true },
 ];
 
 export function HardwareStorage() {
@@ -53,7 +54,7 @@ export function HardwareStorage() {
       ))}
       {nvme && (
         <Panel title="Drive temperature" source="/sys/class/hwmon (nvme)" span={12}>
-          <TimeChart history={history} names={["NVMe"]} unit="°C" height={180} />
+          <TimeChart history={history} names={["NVMe"]} unit={tempUnit()} scale={tempValue} height={180} />
         </Panel>
       )}
     </>

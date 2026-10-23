@@ -7,6 +7,11 @@ import { useEffect, useState } from "react";
 
 const EVENT = "deecure-pref";
 
+/** A preference's saved value, outside React (for formatting helpers). */
+export function readPref<T>(key: string, initial: T): T {
+  return load(key, initial);
+}
+
 function load<T>(key: string, initial: T): T {
   try {
     const saved = window.localStorage.getItem(`deecure.${key}`);

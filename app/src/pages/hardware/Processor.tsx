@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Processor (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
+import { temp as tempText } from "../../units";
 import type { HardwareInfo } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { InlineMeter } from "../../components/InlineMeter";
@@ -25,7 +26,7 @@ const COLUMNS: Column<Row>[] = [
   { key: "type", label: "Type", text: (r) => r.type },
   { key: "mhz", label: "Frequency", text: (r) => (r.mhz === undefined ? "—" : `${Math.round(r.mhz)} MHz`), numeric: true },
   { key: "usage", label: "Utilization", text: (r) => (r.usage === undefined ? "—" : `${Math.round(r.usage)}%`), render: (r) => (r.usage === undefined ? "—" : <InlineMeter percent={r.usage} />) },
-  { key: "temp", label: "Temperature", text: (r) => (r.temp === undefined ? "—" : `${Math.round(r.temp)} °C`), numeric: true },
+  { key: "temp", label: "Temperature", text: (r) => (r.temp === undefined ? "—" : tempText(r.temp)), numeric: true },
 ];
 
 /** P0, P1, … for performance threads and E0, E1, … for efficient ones; plain numbers otherwise. */
@@ -64,7 +65,7 @@ export function HardwareProcessor() {
         <GaugeGroup
           gauges={[
             { value: usage ?? 0, display: usage === undefined ? "—" : `${Math.round(usage)}%`, subtitle: "utilization", caption: "Load" },
-            { value: temp ?? 0, display: temp === undefined ? "N/A" : `${Math.round(temp)} °C`, subtitle: "package", caption: "Temperature", status: temp === undefined ? undefined : temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok" },
+            { value: temp ?? 0, display: temp === undefined ? "N/A" : tempText(temp), subtitle: "package", caption: "Temperature", status: temp === undefined ? undefined : temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok" },
             { value: freq ?? 0, max: p.max_hz ?? 1, display: freq === undefined ? "—" : GHZ(freq), subtitle: p.max_hz ? `of ${GHZ(p.max_hz)}` : "", caption: "Frequency" },
           ]}
         />

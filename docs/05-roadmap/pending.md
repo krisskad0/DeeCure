@@ -19,7 +19,6 @@ The owner's view (2026-10-23): the app is not ready as a first version; too much
 
 | Where | Problem |
 | --- | --- |
-| Settings › General | The spec's "Refresh interval" and "Temperature unit" are missing. |
 | Settings › Assistant, Assistant page | Placeholders until Phase 4. |
 | Top bar › Machines | "Add a machine" is planned for Phase 5. |
 | Every page | Review with the owner which panels look empty or "dummy" on a real computer, and fix each one. |

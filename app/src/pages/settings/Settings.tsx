@@ -12,6 +12,7 @@ import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { bytes, duration, when } from "../../metrics";
 import { usePref } from "../../prefs";
+import type { RefreshChoice, TempUnit } from "../../units";
 import { useToast } from "../../shell/Toast";
 import type { Mode, Range } from "../../ui";
 import { useLive } from "../../useLive";
@@ -48,10 +49,23 @@ function TrayRow() {
   );
 }
 
+const REFRESH = [
+  { value: "2s", label: "2 seconds" },
+  { value: "5s", label: "5 seconds" },
+  { value: "15s", label: "15 seconds" },
+  { value: "manual", label: "Manual" },
+] as const;
+const UNITS = [
+  { value: "celsius", label: "Celsius (°C)" },
+  { value: "fahrenheit", label: "Fahrenheit (°F)" },
+] as const;
+
 export function SettingsGeneral() {
   const [mode, setMode] = usePref<Mode>("mode", "beginner");
   const [range, setRange] = usePref<Range>("range", "24h");
   const [rail, setRail] = usePref<boolean>("rail", false);
+  const [refresh, setRefresh] = usePref<RefreshChoice>("refresh", "5s");
+  const [unit, setUnit] = usePref<TempUnit>("temp", "celsius");
   const [, setOnboarded] = usePref<boolean>("onboarded", true);
   return (
     <Panel title="General" span={8}>
@@ -60,6 +74,12 @@ export function SettingsGeneral() {
       </FieldRow>
       <FieldRow label="Default time range" description="Used by charts; also in the top bar">
         <Select value={range} options={RANGES} onChange={setRange} label="Default time range" />
+      </FieldRow>
+      <FieldRow label="Refresh interval" description="How often live numbers update while a page is open. Manual: only when you press Refresh">
+        <Select value={refresh} options={REFRESH} onChange={setRefresh} label="Refresh interval" />
+      </FieldRow>
+      <FieldRow label="Temperature unit" description="How temperatures are shown">
+        <Select value={unit} options={UNITS} onChange={setUnit} label="Temperature unit" />
       </FieldRow>
       <FieldRow label="Narrow sidebar" description="Show only icons in the sidebar">
         <Switch checked={rail} onChange={setRail} label="Narrow sidebar" />

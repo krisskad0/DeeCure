@@ -2,6 +2,7 @@
 // Hardware › Summary (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // Badges come from simple, stated thresholds; DeeCure has no hardware rules yet.
 
+import { temp as tempText } from "../../units";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -35,7 +36,7 @@ export function HardwareSummary() {
   const updates = firmware?.devices.filter((d) => d.available).length ?? 0;
   const gpu = gpus?.[0];
   const rows: StatusRow[] = [
-    { icon: "chip", label: "Processor", metric: [shortCpu(hw.processor.model), temp !== undefined && `${Math.round(temp)} °C`].filter(Boolean).join(" · "), status: temp === undefined ? "off" : temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok", href: href("hardware", "processor") },
+    { icon: "chip", label: "Processor", metric: [shortCpu(hw.processor.model), temp !== undefined && tempText(temp)].filter(Boolean).join(" · "), status: temp === undefined ? "off" : temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok", href: href("hardware", "processor") },
     { icon: "layers", label: "Memory", metric: hw.memory_total ? bytes(hw.memory_total) : "—", status: "ok", href: href("hardware", "memory") },
     { icon: "db", label: "Storage", metric: disk ? `${disk.kind} ${bytes(disk.size, 0)}` : "No disks found", status: "off", href: href("hardware", "storage") },
     { icon: "bat", label: "Battery", metric: health === undefined ? "No battery" : `${Math.round(health)}% of design`, status: health === undefined ? "off" : health < 60 ? "warn" : health < 80 ? "info" : "ok", href: href("power", "battery") },
