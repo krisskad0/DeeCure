@@ -97,6 +97,12 @@ async fn process_detail(pid: u32) -> Result<Value, AppError> {
     ask(method::PROCESS_DETAIL, Some(json!({ "pid": pid }))).await
 }
 
+/// One installed package in depth, for the Expert package drawer.
+#[tauri::command]
+async fn package_detail(name: String) -> Result<Value, AppError> {
+    ask(method::PACKAGE_DETAIL, Some(json!({ "name": name }))).await
+}
+
 /// Points for one metric over a time range (milliseconds since 1970), averaged down
 /// to about `max_points`.
 #[tauri::command]
@@ -426,6 +432,7 @@ fn main() {
             snapshot,
             inventory,
             process_detail,
+            package_detail,
             metrics,
             latest,
             events,

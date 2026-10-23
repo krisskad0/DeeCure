@@ -3,6 +3,8 @@
 // with real data. Cleanup removes packages no longer needed and leftover settings through
 // the fix engine; removing any one package is not offered.
 
+import { atLeast, useUi } from "../../ui";
+import { PackageExpertDetail, SoftwareHealthExpert } from "./SoftwareExpert";
 import { useState } from "react";
 import { type PackageInfo, type PackagesInfo, getInventory } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
@@ -45,6 +47,7 @@ const COLUMNS: Column<PackageInfo>[] = [
 ];
 
 export function PackagesInstalled() {
+  const { mode } = useUi();
   const { data: info, error } = usePackages();
   const [inspect, setInspect] = useState<PackageInfo | null>(null);
   const kb = useKb();
@@ -90,6 +93,7 @@ export function PackagesInstalled() {
               ["About", kbPackage(kb, inspect.name)?.plain ?? (inspect.summary || "-")],
             ]}
           />
+          {atLeast(mode, "expert") && <PackageExpertDetail name={inspect.name} />}
         </Drawer>
       )}
     </>
@@ -107,6 +111,7 @@ const SOURCE_COLUMNS: Column<SourceRow>[] = [
 ];
 
 export function PackagesSources() {
+  const { mode } = useUi();
   const { data: info, error } = usePackages();
   if (!info) return <Waiting title="Software sources" error={error} />;
   const unchecked = info.sources.filter((s) => s.enabled && !s.signed).length;
@@ -116,6 +121,7 @@ export function PackagesSources() {
       <Panel title="Software sources" source="/etc/apt/sources.list · sources.list.d" span={12} flush>
         <DataTable rows={info.sources} columns={SOURCE_COLUMNS} rowKey={(s) => `${s.file}|${s.line}`} filter={{ column: "kind", options: ["Official", "PPA", "Third-party"] }} />
       </Panel>
+      {atLeast(mode, "expert") && <SoftwareHealthExpert />}
     </>
   );
 }

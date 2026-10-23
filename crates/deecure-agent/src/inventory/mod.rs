@@ -42,6 +42,7 @@ mod security;
 mod services_detail;
 mod sleep;
 mod sockets;
+mod software_detail;
 pub(crate) mod storage;
 mod storage_detail;
 pub(crate) mod system;
@@ -54,6 +55,7 @@ use serde_json::Value;
 use crate::context::Agent;
 
 pub use processes::{Process, ProcessSampler};
+pub use software_detail::VerifyState;
 pub use system::SystemInfo;
 pub use usage::UsageScan;
 
@@ -83,6 +85,9 @@ pub const KINDS: &[&str] = &[
     "platform_detail",
     "devices_detail",
     "hw_errors",
+    "software_health",
+    "package_verify",
+    "package_verify_run",
     "os",
     "kernel",
     "update_history",
@@ -127,6 +132,21 @@ pub async fn process_detail(pid: u32, agent: &Agent) -> Result<Value, String> {
     serde_json::to_value(detail).map_err(|e| e.to_string())
 }
 
+/// One installed package in depth. `Err` holds a plain-English reason.
+pub async fn package_detail(name: &str, agent: &Agent) -> Result<Value, String> {
+    let detail = software_detail::package_detail(&agent.root, name).await?;
+    serde_json::to_value(detail).map_err(|e| e.to_string())
+}
+
+fn verify_answer(agent: &Agent) -> software_detail::VerifyAnswer {
+    agent
+        .verify
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .answer
+        .clone()
+}
+
 /// Reads one inventory. `Err` holds a plain-English reason.
 pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
     let value = match kind {
@@ -159,6 +179,12 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "platform_detail" => serde_json::to_value(platform_detail::read(&agent.root).await),
         "devices_detail" => serde_json::to_value(devices_detail::read(&agent.root).await),
         "hw_errors" => serde_json::to_value(hw_errors::read(&agent.root).await),
+        "software_health" => serde_json::to_value(software_detail::read_health().await),
+        "package_verify" => serde_json::to_value(verify_answer(agent)),
+        "package_verify_run" => {
+            software_detail::start_verify(&agent.verify);
+            serde_json::to_value(verify_answer(agent))
+        }
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),

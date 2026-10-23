@@ -48,6 +48,8 @@ pub mod method {
     pub const INVENTORY: &str = "inventory";
     /// Everything about one process (`ProcessDetailParams`), for the Expert process drawer.
     pub const PROCESS_DETAIL: &str = "process_detail";
+    /// One installed package in depth (`PackageDetailParams`), for the Expert package drawer.
+    pub const PACKAGE_DETAIL: &str = "package_detail";
     /// Returns a fix [`Plan`](crate::fix::Plan). Takes [`FixPlanParams`](super::FixPlanParams). Only reads.
     pub const FIX_PLAN: &str = "fix_plan";
     /// Saves a finished [`FixRun`](crate::fix::FixRun), checks the rules again, and returns
@@ -199,6 +201,14 @@ pub struct InventoryParams {
 pub struct ProcessDetailParams {
     /// The process ID.
     pub pid: u32,
+}
+
+/// Params of the `package_detail` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PackageDetailParams {
+    /// The package name, such as `htop`.
+    pub name: String,
 }
 
 /// Params of the `fix_plan` method.

@@ -2,6 +2,7 @@
 // Security › Overview, Vulnerabilities, Hardening, File Integrity, Malware Scan
 // (docs/03-ui-design/05-pages/18-security.md), with real data. All checks are read-only.
 
+import { FileCheck } from "../packages/SoftwareExpert";
 import { type SecurityInfo, type UpdatesInfo, getInventory, getSnapshot } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
 import { LinkButton } from "../../components/Button";
@@ -154,7 +155,7 @@ export function SecurityIntegrity() {
       <Panel title="Programs with SUID bit" source="file modes · dpkg -S" span={12} flush>
         <DataTable rows={sec.suid} columns={SUID} rowKey={(s) => s.path} pageSize={15} />
       </Panel>
-      <AlertBanner tone="info" title="Full file verification comes later" text="Checking every installed file against its package checksum takes a long scan; it comes with the diagnostics runner." />
+      <FileCheck />
     </>
   );
 }

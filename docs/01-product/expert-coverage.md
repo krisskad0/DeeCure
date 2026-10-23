@@ -230,12 +230,12 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Why each package is here: installed by hand or as a dependency, by which command, and when | Clean up with confidence | `/var/lib/apt/extended_states`, apt history | You | Partly: by hand or not |
-| What it needs, and what needs it | Know what breaks if it goes | `/var/lib/dpkg/status` | You | New |
-| Packages from no repository, held packages, half-installed or broken packages | Hidden causes of failed updates | `apt-cache policy`, `apt-mark showhold`, `dpkg --audit` | You | New |
-| Changed or damaged package files: every file checked against its package checksum | The full file check that Security › File Integrity waits for | `dpkg --verify`; files only the admin can read need Admin | You and Admin | New |
-| Snap: revision, sandbox type, refresh schedule, held, disk per revision | Control snap updates and space | snapd (REST API) | You | Partly |
-| Flatpak runtimes that no app uses | Free space safely | `flatpak list --runtime` | You | New |
+| Why each package is here: installed by hand or as a dependency, by which command, and when | Clean up with confidence | `/var/lib/apt/extended_states`, apt history | You | ✅ Built (by hand or as a dependency; the command and date are on Activity › Timeline) |
+| What it needs, and what needs it | Know what breaks if it goes | `/var/lib/dpkg/status` | You | ✅ Built |
+| Packages from no repository, held packages, half-installed or broken packages | Hidden causes of failed updates | `apt-cache policy`, `apt-mark showhold`, `dpkg --audit` | You | ✅ Built |
+| Changed or damaged package files: every file checked against its package checksum | The full file check that Security › File Integrity waits for | `dpkg --verify`; files only the admin can read need Admin | You and Admin | ✅ Built (Security › File Integrity; admin-only files: Admin, later) |
+| Snap: revision, sandbox type, refresh schedule, held, disk per revision | Control snap updates and space | snapd (REST API) | You | ✅ Built |
+| Flatpak runtimes that no app uses | Free space safely | `flatpak list --runtime` | You | ✅ Built |
 
 ## 14. Security
 

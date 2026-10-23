@@ -438,6 +438,25 @@ export interface HwErrors {
   driver_offers?: { vendor?: string; model?: string; drivers: [string, boolean][] }[];
 }
 
+/** Software health (Expert): held, broken, and local packages, snaps, Flatpak runtimes. */
+export interface SoftwareHealth {
+  held: string[];
+  broken: string[];
+  local: [string, string][];
+  snaps?: { name: string; version: string; revision: string; tracking?: string; publisher?: string; notes: string[] }[];
+  snap_refresh: Record<string, string>;
+  runtimes?: { id: string; branch: string; installation: string; used: boolean }[];
+}
+
+/** The full package file check: runs only when asked. */
+export interface VerifyAnswer {
+  running: boolean;
+  finished_at?: number;
+  took_s?: number;
+  problems?: { file: string; problem: "missing" | "changed" | "unreadable"; config: boolean; package?: string }[];
+  failed?: string;
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -1013,6 +1032,8 @@ export function getInventory(kind: "kernel_detail"): Promise<KernelDetail>;
 export function getInventory(kind: "platform_detail"): Promise<PlatformDetail>;
 export function getInventory(kind: "devices_detail"): Promise<DevicesDetail>;
 export function getInventory(kind: "hw_errors"): Promise<HwErrors>;
+export function getInventory(kind: "software_health"): Promise<SoftwareHealth>;
+export function getInventory(kind: "package_verify" | "package_verify_run"): Promise<VerifyAnswer>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;
@@ -1098,6 +1119,24 @@ export interface ProcessDetail {
 
 export function getProcessDetail(pid: number): Promise<ProcessDetail> {
   return invoke<ProcessDetail>("process_detail", { pid });
+}
+
+/** One installed package in depth (Expert package drawer). */
+export interface PackageDetail {
+  name: string;
+  fields: Record<string, string>;
+  manual: boolean;
+  needs: string[];
+  needed_by: string[];
+  installed?: string;
+  candidate?: string;
+  sources: [string, string[]][];
+  files: number;
+  changed_files: [string, string][];
+}
+
+export function getPackageDetail(name: string): Promise<PackageDetail> {
+  return invoke<PackageDetail>("package_detail", { name });
 }
 
 export function getMachine(): Promise<Machine> {
