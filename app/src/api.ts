@@ -353,6 +353,32 @@ export interface ThermalInfo {
   cooling: { kind: string; count: number; level: number; max_level: number }[];
 }
 
+/** The boot's critical chain and every unit's start time (Expert). */
+export interface BootDetail {
+  critical_chain: { unit: string; at_ms?: number; took_ms?: number; depth: number }[];
+  blame: [string, number][];
+}
+
+/** One system service's unit file facts (Expert). */
+export interface UnitFile {
+  unit: string;
+  file?: string;
+  local_overrides: string[];
+  package_overrides: string[];
+  wanted_by: string[];
+  restart?: string;
+  restarts: number;
+  state?: string;
+  masked_by?: "local" | "runtime" | "package";
+}
+
+/** How locked down a service is: 0 locked down, 10 every right. */
+export interface Exposure {
+  unit: string;
+  score: number;
+  level: string;
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -921,6 +947,9 @@ export function getInventory(kind: "net_deep"): Promise<NetDeep>;
 export function getInventory(kind: "tcp_traffic"): Promise<TcpTraffic>;
 export function getInventory(kind: "power_detail"): Promise<PowerDetail>;
 export function getInventory(kind: "thermal"): Promise<ThermalInfo>;
+export function getInventory(kind: "boot_detail"): Promise<BootDetail>;
+export function getInventory(kind: "unit_files"): Promise<UnitFile[]>;
+export function getInventory(kind: "service_security"): Promise<Exposure[]>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

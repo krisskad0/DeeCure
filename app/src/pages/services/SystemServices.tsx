@@ -2,6 +2,8 @@
 // Services › System Services (docs/03-ui-design/05-pages/10-services.md), with real data.
 // The unit list comes from the 5-minute snapshot; memory is read live.
 
+import { ServicesExpertSections } from "./ServicesExpert";
+import { atLeast, useUi } from "../../ui";
 import { useState } from "react";
 import { type UnitState, getInventory, getSnapshot } from "../../api";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -56,6 +58,7 @@ function byConcern(a: UnitState, b: UnitState): number {
 }
 
 export function SystemServices() {
+  const { mode } = useUi();
   const { data: snapshot, error } = useLive(loadServices);
   const memory = useLive(loadMemory, 30_000).data;
   const kb = useKb();
@@ -109,6 +112,7 @@ export function SystemServices() {
         />
       </Panel>
       {inspect && <UnitDrawer unit={inspect} info={kbService(kb, inspect.name)} onClose={() => setInspect(null)} />}
+      {atLeast(mode, "expert") && <ServicesExpertSections />}
     </>
   );
 }

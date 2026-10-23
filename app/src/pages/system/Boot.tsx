@@ -2,6 +2,8 @@
 // System › Boot (docs/03-ui-design/05-pages/05-system.md), with real data.
 // The history holds the boots since DeeCure was installed.
 
+import { BootExpertSections } from "../services/ServicesExpert";
+import { atLeast, useUi } from "../../ui";
 import { type BootInfo, getMetrics, getSnapshot } from "../../api";
 import { KpiRow, type Kpi } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
@@ -20,6 +22,7 @@ const loadHistory = () => {
 const unescape = (name: string) => name.replace(/\\x([0-9a-f]{2})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
 
 export function SystemBoot() {
+  const { mode } = useUi();
   const { data: snapshot, error } = useLive(loadBoot, 300_000);
   const history = useLive(loadHistory, 300_000).data ?? [];
   const boot = snapshot?.data;
@@ -62,6 +65,7 @@ export function SystemBoot() {
           highlight={slow ? [recent.length - 1] : []}
         />
       </Panel>
+      {atLeast(mode, "expert") && <BootExpertSections />}
     </>
   );
 }

@@ -189,12 +189,12 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| CPU time, memory, peak memory, disk I/O, tasks, and restarts per service | Cost of each service | cgroup files, systemd (D-Bus) | You | Partly: memory and restarts |
-| How locked down each service is (exposure score) | Finds services with too many rights | `systemd-analyze security` | You | New |
-| Unit file, local overrides, and what turns it on | Finds local changes and why a service runs | systemd `FragmentPath`, `DropInPaths`, `WantedBy` | You | New |
-| What each service waits for at boot (critical chain) | Shows what really delays the desktop | `systemd-analyze critical-chain` | You | Partly: 15 slowest units |
-| Boot time of every unit, and the boot time trend | See if boots get slower | systemd timestamps, stored boots | You | Partly: last boot |
-| Services that restart in a loop, masked services | Hidden problems | systemd `NRestarts`, unit state | You | Partly |
+| CPU time, memory, peak memory, disk I/O, tasks, and restarts per service | Cost of each service | cgroup files, systemd (D-Bus) | You | ✅ Built |
+| How locked down each service is (exposure score) | Finds services with too many rights | `systemd-analyze security` | You | ✅ Built |
+| Unit file, local overrides, and what turns it on | Finds local changes and why a service runs | systemd `FragmentPath`, `DropInPaths`, `WantedBy` | You | ✅ Built (local apart from package overrides; who masked it) |
+| What each service waits for at boot (critical chain) | Shows what really delays the desktop | `systemd-analyze critical-chain` | You | ✅ Built |
+| Boot time of every unit, and the boot time trend | See if boots get slower | systemd timestamps, stored boots | You | ✅ Built (trend: Logs › Boots) |
+| Services that restart in a loop, masked services | Hidden problems | systemd `NRestarts`, unit state | You | ✅ Built |
 
 ## 11. Kernel and system limits (System › Kernel)
 

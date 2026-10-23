@@ -35,6 +35,7 @@ mod process_detail;
 mod process_io;
 pub(crate) mod processes;
 mod security;
+mod services_detail;
 mod sleep;
 mod sockets;
 pub(crate) mod storage;
@@ -71,6 +72,9 @@ pub const KINDS: &[&str] = &[
     "tcp_traffic",
     "power_detail",
     "thermal",
+    "boot_detail",
+    "unit_files",
+    "service_security",
     "os",
     "kernel",
     "update_history",
@@ -140,6 +144,9 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "tcp_traffic" => serde_json::to_value(net_deep::read_tcp().await),
         "power_detail" => serde_json::to_value(power_detail::read(&agent.root)),
         "thermal" => serde_json::to_value(thermal::read(&agent.root)),
+        "boot_detail" => serde_json::to_value(services_detail::read_boot().await),
+        "unit_files" => serde_json::to_value(services_detail::read_units().await),
+        "service_security" => serde_json::to_value(services_detail::read_security().await),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),
