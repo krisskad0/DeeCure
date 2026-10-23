@@ -11,7 +11,7 @@ import { Icon } from "../components/Icon";
 import { NoData } from "../pages/NoData";
 import { usePref } from "../prefs";
 import type { IconName } from "../spec/icons";
-import type { Mode } from "../ui";
+import { type Mode, atLeast } from "../ui";
 
 interface Area {
   name: string;
@@ -151,8 +151,9 @@ const PROMISES: [IconName, string][] = [
 ];
 
 const MODES = [
-  { value: "beginner" as const, title: "Yes, keep it simple", description: "Beginner mode · the pages most people need, in plain words" },
-  { value: "expert" as const, title: "No, show me everything", description: "Expert mode · every page and tab, data sources, commands, and raw columns" },
+  { value: "beginner" as const, title: "Yes, keep it simple", description: "Beginner · the pages most people need, in plain words" },
+  { value: "advanced" as const, title: "I know my way around", description: "Advanced · every page and tab" },
+  { value: "expert" as const, title: "Show me everything", description: "Expert · every page, plus data sources, commands, raw columns, and deep details" },
 ];
 
 /** The first check is the last step. */
@@ -184,8 +185,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     title = "Are you new to Linux?";
     body = (
       <>
-        <RadioCards name="onb-mode" value={mode === "expert" ? "expert" : "beginner"} options={MODES} onChange={setMode} />
-        <p className="muted">You can switch any time with Beginner / Expert at the top.</p>
+        <RadioCards name="onb-mode" value={atLeast(mode, "expert") ? "expert" : atLeast(mode, "advanced") ? "advanced" : "beginner"} options={MODES} onChange={setMode} />
+        <p className="muted">You can switch any time with Beginner / Advanced / Expert at the top.</p>
       </>
     );
   } else if (step === 3) {

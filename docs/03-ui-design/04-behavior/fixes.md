@@ -40,5 +40,5 @@ Undo badge mapping: `full` → `{ok:Reversible}`, `regen` → `{info:Regenerates
 | Undo low-battery change | `battFixed=false` | Reverts the battery change and marks the log entry undone. Toast "Undone · UPower.conf restored from the restore point." |
 | Track cron job | `tracked[id]=true` | The cron result becomes `{info:Tracking}`. Toast "Job wrapped · results are recorded from the next run." |
 | Access = Basic | `access='basic'` | Admin-only values show `{off:Requires Full access}` or `{off:Locked}`; admin-only tables are empty with "Requires Full access". Toast "Basic access · admin-only checks are locked." (Full: "Full access · admin helper authorized.") |
-| Expert mode | `expert=true` | Panel source chips appear; columns marked `x` appear. |
+| Expert level | `mode=expert` | Panel source chips appear; columns marked `x` appear. |
 | Time range | `range` | All generated series and sparklines regenerate with that range's point count and labels. |

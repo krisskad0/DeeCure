@@ -46,7 +46,7 @@ Linux shows you numbers: 94% disk, 3 failed units, load 4.2. Most people then se
 - **Predictions:** "Your disk will be full in about 3 days", from the last 7 days of history.
 - **Notifications that respect you:** critical problems right away, quiet hours, and never the same alert twice in 24 hours.
 - **Weekly report:** health trend, what changed, and one tip, as a notification and as a shareable HTML file.
-- **Beginner and Expert modes:** plain words by default; data sources, commands, and raw columns for experts.
+- **Three view levels:** Beginner (plain words, a short menu), Advanced (every page), and Expert (data sources, commands, raw columns, and deep hardware and system details).
 - **Works in the terminal too:** `deecure status`, `deecure history`, `deecure report --html`, `deecure fix`, and JSON output for scripts and servers.
 - **Private by design:** no account, no telemetry, nothing sent anywhere.
 

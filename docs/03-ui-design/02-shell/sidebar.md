@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Shell](README.md)
 
-22 pages and 91 sub-pages. Group order and page order are exactly as listed. This is Expert mode; Beginner mode shows fewer (see [Beginner mode](#beginner-mode)).
+22 pages and 91 sub-pages. Group order and page order are exactly as listed. Advanced and Expert show all of them; Beginner shows fewer (see [Beginner mode](#beginner-mode)).
 
 | Group | Page | ID | Icon | Initial status | Sidebar mark | Sub-pages (ID: label) |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -40,7 +40,7 @@
 
 ## Beginner mode
 
-Beginner mode (the default) keeps the app light. The sidebar, the page tabs, and the search palette show only these pages and sub-pages, in the same order. Expert mode shows everything above. The list lives in one place in code: `BEGINNER` in `app/src/visible.ts`.
+Beginner (the default [view level](../../01-product/view-levels.md)) keeps the app light. The sidebar, the page tabs, and the search palette show only these pages and sub-pages, in the same order. Advanced and Expert show everything above. The list lives in one place in code: `BEGINNER` in `app/src/visible.ts`.
 
 | Page | Sub-pages in Beginner mode |
 | --- | --- |
@@ -55,6 +55,6 @@ Beginner mode (the default) keeps the app light. The sidebar, the page tabs, and
 
 - **Links still work.** Links inside pages (for example Security › Overview › Hardening "View") open any page in either mode.
 - **The current page stays.** When a link opens a page or sub-page that Beginner mode leaves out, it is shown in the sidebar and the tabs while the user is on it.
-- **A note explains it.** Such a page starts with an info banner: "This page is part of Expert mode" with a **Switch to Expert mode** button.
+- **A note explains it.** Such a page starts with an info banner: "This page is part of the Advanced view" with a **Switch to Advanced** button.
 - **Problems are never hidden.** Every issue still shows in Overview › Issues and the bell, whatever page it belongs to. Status dots show only on the pages in the menu.
-- **Switching is instant.** The top bar, Settings › General, and onboarding step 3 share one pref (`mode`); every menu updates at once.
+- **Switching is instant.** The top bar, Settings › General, and onboarding step 3 share one pref (`mode`: `beginner`, `advanced`, or `expert`); every menu updates at once.

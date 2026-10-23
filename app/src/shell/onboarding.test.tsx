@@ -39,8 +39,11 @@ describe("onboarding", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("heading", { name: "Are you new to Linux?" })).toBeTruthy();
     expect((screen.getByRole("radio", { name: /keep it simple/ }) as HTMLInputElement).checked).toBe(true);
-    fireEvent.click(screen.getByRole("radio", { name: /show me everything/ }));
+    expect(screen.getAllByRole("radio")).toHaveLength(3);
+    fireEvent.click(screen.getByRole("radio", { name: /show me everything/i }));
     expect(localStorage.getItem("deecure.mode")).toBe('"expert"');
+    fireEvent.click(screen.getByRole("radio", { name: /know my way around/ }));
+    expect(localStorage.getItem("deecure.mode")).toBe('"advanced"');
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     fireEvent.click(screen.getByRole("button", { name: "Start the first check" }));
     await waitFor(() => expect(screen.getByText("Latitude 3450 · 12 threads")).toBeTruthy());

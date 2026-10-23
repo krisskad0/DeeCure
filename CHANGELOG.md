@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- A light Beginner mode (the default): the sidebar, page tabs, and search show only 8 pages and 22 sub-pages (Overview, Performance, Activity, System, Power, Storage, Security, Settings). Expert mode shows every page. Links inside pages still open Expert pages, which start with a note and a **Switch to Expert mode** button. The first-run screens now ask "Are you new to Linux?" to pick the mode. Your saved mode is kept.
+- Three view levels: **Beginner** (the default: the sidebar, page tabs, and search show only 8 pages and 22 sub-pages), **Advanced** (every page), and **Expert** (also data sources, commands, raw columns, and deep details). Switch in the top bar or Settings › General. Links inside pages still open other pages from Beginner, with a note and a **Switch to Advanced** button. The first-run screens ask "Are you new to Linux?" to pick the level. A saved choice is kept.
 - Performance › Disk I/O shows each drive's type (SSD, hard disk, USB drive) and size, so you can tell the drives apart.
 
 ### Changed

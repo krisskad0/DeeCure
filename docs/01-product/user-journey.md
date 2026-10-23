@@ -18,7 +18,7 @@
 
 1. **Welcome:** "DeeCure checks your computer and explains problems in simple words."
 2. **Privacy promise:** "Everything stays on this computer. No account. No data sent anywhere."
-3. **New to Linux?** "Yes, keep it simple" (Beginner mode, the default) or "No, show me everything" (Expert mode).
+3. **New to Linux?** "Yes, keep it simple" (Beginner, the default), "I know my way around" (Advanced), or "Show me everything" (Expert). See [View levels](view-levels.md).
 4. **Choose access level:**
    - **Basic (no password):** sees about 80% of insights.
    - **Full:** uses the DeeCure admin helper. This unlocks disk health, firewall rules, all users' cron jobs, and admin fixes. The admin password is asked each time one is used (a deliberate safety choice, see [Security model](../02-architecture/security-model.md)). Full needs the helper, which comes with the package from DeeCure's repository.
@@ -36,7 +36,7 @@ The user can switch the level later in Settings, and the mode at any time in the
 The app opens on a dashboard, not a list of cards. See `deecure-dashboard.html` for the clickable version.
 
 ```
-┌ Top bar: DeeCure · machine picker · search (Ctrl K) · 1h/24h/7d/30d · Beginner/Expert · bell ┐
+┌ Top bar: DeeCure · machine picker · search (Ctrl K) · 1h/24h/7d/30d · Beginner/Advanced/Expert · bell ┐
 ├──────────┬──────────────────────────────────────────────────────────────────────────────────┤
 │ Sidebar  │ Monitoring › Overview                       [Refresh] [Export]                   │
 │ (pages + │ Summary | Issues (8) | Health Score                                             │
@@ -104,8 +104,9 @@ The app opens on a dashboard, not a list of cards. See `deecure-dashboard.html` 
 ## Growing into an expert
 
 - **Beginner mode** (default) keeps the app light: 8 pages and 22 sub-pages (Overview, Performance, Activity, System, Power, Storage, Security, Settings), plain labels, info tooltips, and one-click fixes.
-- **Expert mode** adds every other page and sub-page (logs, services, jobs, containers, network, accounts, and more), the data source on every panel (for example `ss -tulpn`), extra table columns (MAC address, swap per process, threads), and the exact command of every fix step.
-- Links inside a page still open Expert pages in Beginner mode, with a note and a **Switch to Expert mode** button, so nothing is ever out of reach.
+- **Advanced** adds every other page and sub-page (logs, services, jobs, containers, network, accounts, and more).
+- **Expert** adds the data source on every panel (for example `ss -tulpn`), extra table columns, the exact command of every fix step, and the deep data in [Expert coverage](expert-coverage.md).
+- Links inside a page still open other pages in Beginner, with a note and a **Switch to Advanced** button, so nothing is ever out of reach.
 
 ## Uninstall
 

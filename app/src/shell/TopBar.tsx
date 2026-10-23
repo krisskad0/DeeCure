@@ -18,6 +18,7 @@ const RANGES = [
 
 const MODES = [
   { value: "beginner", label: "Beginner" },
+  { value: "advanced", label: "Advanced" },
   { value: "expert", label: "Expert" },
 ] as const;
 
@@ -68,7 +69,7 @@ export function TopBar(props: {
         <span className="dot" />
         {error ? "Agent not reachable" : report?.checked_at ? `Live · checked ${ago(report.checked_at, now)}` : "Connecting…"}
       </span>
-      <Segmented label="Mode" options={MODES} value={props.mode} onChange={props.onMode} />
+      <Segmented label="View level" className="mode-seg" options={MODES} value={props.mode} onChange={props.onMode} />
       <button
         className="ibtn bell"
         type="button"

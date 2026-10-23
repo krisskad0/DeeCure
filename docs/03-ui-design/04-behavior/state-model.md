@@ -6,7 +6,7 @@
 S = {
   page: 'overview', tab: 'summary',   // current page / sub-page
   range: '24h',                       // '1h' | '24h' | '7d' | '30d'
-  expert: false,                      // Beginner / Expert mode
+  mode: 'beginner',                   // 'beginner' | 'advanced' | 'expert' (view level)
   rail: false,                        // sidebar collapsed
   access: 'full',                     // 'full' | 'basic'
   ai: true, aiCloud: false,           // assistant on, cloud fallback off

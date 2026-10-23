@@ -16,7 +16,7 @@ Think of it this way:
 | Person | Situation | What they need from DeeCure |
 | --- | --- | --- |
 | **Riya, student, new to Ubuntu** | Laptop feels slow, battery dies fast, scared of the terminal | One health score, simple answers, safe one-click fixes |
-| **Arjun, developer** | Docker and old kernels filling the disk, many cron jobs, VPNs | Fast full picture, cleanup, scheduled-jobs calendar, Expert mode |
+| **Arjun, developer** | Docker and old kernels filling the disk, many cron jobs, VPNs | Fast full picture, cleanup, scheduled-jobs calendar, Advanced and Expert levels |
 | **Meena, small office admin** | Looks after 5 shared Ubuntu PCs, no IT team | Clear warnings, security checks, history of "what changed" |
 
 Start with Riya and Arjun. Meena (many machines) comes in a later phase.

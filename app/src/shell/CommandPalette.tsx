@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // Command palette (docs/03-ui-design/02-shell/overlays.md): Ctrl/Cmd+K, search everything, jump.
 // Results: every page and sub-page, and the services the agent knows. Packages and jobs
-// join when their collectors exist. Beginner mode lists only its own pages (menuPages in
-// visible.ts) and no services, and says that Expert mode finds more.
+// join when their collectors exist. Beginner lists only its own pages (menuPages in
+// visible.ts) and no services, and says that Advanced finds more.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type UnitState, getSnapshot } from "../api";
 import { Icon } from "../components/Icon";
 import { href } from "../route";
 import type { PageSpec } from "../spec/pages";
-import { useUi } from "../ui";
+import { atLeast, useUi } from "../ui";
 import { menuPages } from "../visible";
 
 interface Entry {
@@ -31,7 +31,8 @@ function pageEntries(pages: PageSpec[]): Entry[] {
 const DEV_ENTRIES: Entry[] = import.meta.env.DEV ? [{ label: "Component gallery", kind: "Dev", target: "#/gallery" }] : [];
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
-  const expert = useUi().mode === "expert";
+  const { mode } = useUi();
+  const full = atLeast(mode, "advanced");
   const [query, setQuery] = useState("");
   const [services, setServices] = useState<Entry[]>([]);
   const [highlight, setHighlight] = useState(0);
@@ -40,7 +41,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     input.current?.focus();
-    if (!expert) {
+    if (!full) {
       setServices([]);
       return;
     }
@@ -56,9 +57,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     return () => {
       alive = false;
     };
-  }, [expert]);
+  }, [full]);
 
-  const pages = useMemo(() => pageEntries(menuPages(expert ? "expert" : "beginner")), [expert]);
+  const pages = useMemo(() => pageEntries(menuPages(mode)), [mode]);
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return [...DEV_ENTRIES, ...pages, ...services].filter((e) => e.label.toLowerCase().includes(needle)).slice(0, MAX_RESULTS);
@@ -104,7 +105,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           <kbd>Esc</kbd>
         </div>
         <ul className="palette-results" ref={list} role="listbox">
-          {results.length === 0 && <li className="palette-empty muted">{expert ? "No matches" : "No matches. Expert mode shows every page and service."}</li>}
+          {results.length === 0 && <li className="palette-empty muted">{full ? "No matches" : "No matches. Advanced shows every page and service."}</li>}
           {results.map((entry, i) => (
             <li key={`${entry.kind}|${entry.label}`} role="option" aria-selected={i === highlight}>
               <button

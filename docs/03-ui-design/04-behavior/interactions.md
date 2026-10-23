@@ -22,7 +22,7 @@
 | `undo:cups`, `undo:batt` | Undo ([What changes after each action](fixes.md#what-changes-after-each-action)) |
 | `track:sync`, `track:backup` | Track a cron job ([What changes after each action](fixes.md#what-changes-after-each-action)) |
 | `diag:run`, `net:run` | Start the diagnostics runner ([Diagnostics runner](../03-components/23-diagnostics-runner.md)) |
-| `range:X`, `mode:b`, `mode:e` | Time range; Beginner / Expert |
+| `range:X`, `mode:b`, `mode:a`, `mode:e` | Time range; Beginner / Advanced / Expert |
 | `rail`, `navtoggle`, `pop:notes`, `pop:host`, `cmdk` | Collapse sidebar, mobile menu, popovers, command palette |
 | `refresh` | Re-render; toast "Refreshed · 21:34" |
 | `export` | Toast "Export is disabled in the prototype." |
@@ -78,7 +78,7 @@ Tables marked **Inspect** open a drawer when a row is clicked: title = the first
 - Any switch or select not listed below shows the toast "Saved."
 - Power profile radios → toast "Power profile set to <name>."
 - Settings › Assistant "Enable assistant" → toggles the assistant (toast "Assistant enabled." / "Assistant disabled."); "Cloud fallback" → toast "Cloud fallback on · data redacted before sending." / "Cloud fallback off."
-- Settings › General "Expert mode" toggles Expert mode; "Default time range" sets the range.
+- Settings › General "View level" sets Beginner, Advanced, or Expert; "Default time range" sets the range.
 
 ## Charts
 

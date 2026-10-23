@@ -42,9 +42,12 @@ describe("Beginner and Expert menus", () => {
     for (const hidden of ["Scheduled Jobs", "Containers", "Logs", "Accounts", "Network"]) expect(screen.queryByText(hidden)).toBeNull();
   });
 
-  it("the Expert sidebar shows every page", () => {
-    sidebar("expert", "#/overview/summary");
-    for (const page of ["Scheduled Jobs", "Containers", "Logs", "Accounts", "Diagnostics"]) expect(screen.getByText(page)).toBeTruthy();
+  it("the Advanced and Expert sidebars show every page", () => {
+    for (const mode of ["advanced", "expert"] as const) {
+      sidebar(mode, "#/overview/summary");
+      for (const page of ["Scheduled Jobs", "Containers", "Logs", "Accounts", "Diagnostics"]) expect(screen.getByText(page)).toBeTruthy();
+      cleanup();
+    }
   });
 
   it("a link to an Expert page keeps that page in the Beginner sidebar", () => {
@@ -71,7 +74,7 @@ describe("Beginner and Expert menus", () => {
     expect(screen.getByText("Storage › Overview")).toBeTruthy();
     expect(screen.queryByText("Storage › Filesystems")).toBeNull();
     fireEvent.change(input, { target: { value: "cups" } });
-    expect(screen.getByText(/Expert mode shows every page and service/)).toBeTruthy();
+    expect(screen.getByText(/Advanced shows every page and service/)).toBeTruthy();
     cleanup();
     inMode("expert", <CommandPalette onClose={() => {}} />);
     fireEvent.change(screen.getByRole("textbox", { name: "Search pages and services" }), { target: { value: "cups" } });

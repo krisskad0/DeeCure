@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import { parseHash } from "./route";
 import { PAGES } from "./spec/pages";
+import { type Mode, atLeast } from "./ui";
 import { VISIBLE_PAGES, inBeginner, menuPages } from "./visible";
 
 describe("visible pages", () => {
@@ -22,6 +23,7 @@ describe("visible pages", () => {
 
   it("Beginner mode keeps the menus short, Expert mode shows everything", () => {
     expect(menuPages("expert")).toBe(VISIBLE_PAGES);
+    expect(menuPages("advanced")).toBe(VISIBLE_PAGES);
     const beginner = menuPages("beginner");
     expect(beginner.map((p) => p.id)).toEqual(["overview", "performance", "activity", "system", "power", "storage", "security", "settings"]);
     expect(beginner.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "disk", "network", "gpu"]);
@@ -50,5 +52,13 @@ describe("visible pages", () => {
     ]);
     expect(inBeginner("jobs", "cron")).toBe(false);
     expect(PAGES.some((p) => p.id === "jobs")).toBe(true);
+  });
+
+  it("levels are ordered, and a broken saved value counts as Beginner", () => {
+    expect(atLeast("expert", "advanced")).toBe(true);
+    expect(atLeast("advanced", "expert")).toBe(false);
+    expect(atLeast("beginner", "beginner")).toBe(true);
+    expect(atLeast("Expert" as Mode, "advanced")).toBe(false);
+    expect(menuPages("nonsense" as Mode).length).toBe(menuPages("beginner").length);
   });
 });

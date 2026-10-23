@@ -57,7 +57,7 @@ import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
 import { Sidebar } from "./shell/Sidebar";
 import { type Mode, type Range, TopBar } from "./shell/TopBar";
 import { findingsFor, pageStatus } from "./status";
-import { UiContext } from "./ui";
+import { UiContext, atLeast } from "./ui";
 import { inBeginner } from "./visible";
 import { AlertBanner } from "./components/AlertBanner";
 import { Button } from "./components/Button";
@@ -193,13 +193,13 @@ export default function App() {
     content = <NotBuilt route={route} findings={pageFindings} {...shared} />;
   }
 
-  // A link can open a page that Beginner mode leaves out of the menus: say so, with a way out.
-  const expertNote = mode !== "expert" && !route.gallery && !inBeginner(route.page.id, route.tab.id) && (
+  // A link can open a page that the Beginner menus leave out: say so, with a way out.
+  const levelNote = !atLeast(mode, "advanced") && !route.gallery && !inBeginner(route.page.id, route.tab.id) && (
     <AlertBanner
       tone="info"
-      title="This page is part of Expert mode"
-      text="Beginner mode shows the pages most people need. You can still use this one."
-      actions={<Button small onClick={() => setMode("expert")}>Switch to Expert mode</Button>}
+      title="This page is part of the Advanced view"
+      text="Beginner shows the pages most people need. You can still use this one."
+      actions={<Button small onClick={() => setMode("advanced")}>Switch to Advanced</Button>}
     />
   );
 
@@ -269,7 +269,7 @@ export default function App() {
           />
         )}
         <div className="grid">
-          {expertNote}
+          {levelNote}
           {content}
         </div>
       </main>

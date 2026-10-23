@@ -146,7 +146,7 @@ kbd { font-size: 11px; padding: 1px 5px; border: 1px solid var(--line-2); border
   .btn-label { display: none; }
 }
 @media (max-width: 560px) {
-  .machine, .avatar, .wordmark { display: none; }
+  .machine, .avatar, .wordmark, .mode-seg { display: none; }
 }
 
 /* ---------- Overlays (docs/03-ui-design/02-shell/overlays.md) ---------- */

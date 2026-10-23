@@ -37,7 +37,7 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
    → [Shell](../03-ui-design/02-shell/README.md)
 5. **Components 01-22**, each with its own tests. (23 Diagnostics runner comes in step 11; 24 Chat comes in Phase 4.)
    → [Components](../03-ui-design/03-components/README.md)
-6. **Behavior:** state, time range, Beginner / Expert mode, page status rules, keyboard, command palette.
+6. **Behavior:** state, time range, view level (Beginner / Advanced / Expert), page status rules, keyboard, command palette.
    → [Behavior](../03-ui-design/04-behavior/README.md)
 7. **All "Yes" collectors**, using the catalog from step 1.
    → [Collectors](../02-architecture/collectors.md)

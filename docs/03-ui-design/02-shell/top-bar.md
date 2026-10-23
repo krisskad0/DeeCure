@@ -11,7 +11,7 @@
 | 5 | Search trigger | Flex 1, max-width 420, margin-left auto, 32px, `--panel-2` background, border, radius 7. Search icon, muted text "Search pages, services, packages…", `kbd` "Ctrl K". Opens the command palette. |
 | 6 | Time range | Segmented control: `1h`, `24h` (default), `7d`, `30d`. Hidden at ≤900px. |
 | 7 | Live indicator | "Live · 21:34" with a 7px green dot and a 3px `--good-soft` ring. 12px muted. Hidden at ≤1240px. |
-| 8 | Mode | Segmented control: `Beginner` (default), `Expert`. Beginner shows fewer pages and sub-pages ([Beginner mode](sidebar.md#beginner-mode)); Expert also shows data sources, commands, and raw columns. |
+| 8 | View level | Segmented control: `Beginner` (default), `Advanced`, `Expert` ([View levels](../../01-product/view-levels.md)). Beginner shows fewer pages and sub-pages ([Beginner mode](sidebar.md#beginner-mode)); Advanced shows every page; Expert also shows data sources, commands, raw columns, and deep details. Hidden at ≤560px (still in Settings › General). |
 | 9 | Notifications | 32px icon button (bell). Red count badge (16px, `--crit` background, white 10.5px 700) = number of open Critical and Warning issues. Opens the Notifications popover. |
 | 10 | Avatar | 28px circle, `--accent-soft` background, `--accent` text, "R". |
 

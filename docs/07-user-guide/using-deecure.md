@@ -18,14 +18,15 @@ DeeCure shows four short screens:
 2. **Privacy:** everything stays on this computer. No account. Nothing is sent anywhere.
 3. **New to Linux?**
    - **Yes, keep it simple** (Beginner mode): only the pages most people need.
-   - **No, show me everything** (Expert mode): every page and tab, plus technical details.
+   - **I know my way around** (Advanced): every page and tab.
+   - **Show me everything** (Expert): every page, plus technical details.
 4. **Access level:**
    - **Basic** (no password): DeeCure sees everything your account can read. That is most things.
    - **Full**: DeeCure can also read admin-only things (disk health, firewall rules) and run admin fixes. Your password is asked each time, in the normal Ubuntu box.
 
 Then a first check runs. Each area turns green, yellow, or red as it finishes. You can change the access level later in **Settings › Access**.
 
-**Beginner or Expert:** switch any time with **Beginner / Expert** at the top. Beginner mode shows 8 pages: Overview, Performance, Activity, System, Power, Storage, Security, and Settings. Expert mode adds logs, services, scheduled jobs, containers, network, accounts, and more. If a link opens an Expert page while you are in Beginner mode, a note at the top offers **Switch to Expert mode**.
+**View level:** switch any time with **Beginner / Advanced / Expert** at the top, or in Settings › General. Beginner shows 8 pages: Overview, Performance, Activity, System, Power, Storage, Security, and Settings. Advanced shows every page: logs, services, scheduled jobs, containers, network, accounts, and more. Expert also shows where each number comes from, the exact commands, extra columns, and deep details. If a link opens another page while you are in Beginner, a note at the top offers **Switch to Advanced**.
 
 ## 2. The home screen
 
@@ -40,7 +41,7 @@ Status words always come with a color and an icon: **Healthy** (green), **Warnin
 ## 3. Fix a problem
 
 1. Click **Fix** on a problem.
-2. DeeCure shows each step: what it does, whether it can be undone, and (in Expert mode) the exact command.
+2. DeeCure shows each step: what it does, whether it can be undone, and (in Expert) the exact command.
 3. Untick any step you do not want.
 4. Click **Apply**. Steps marked **Admin** ask for your password (Full access only; in Basic access they are locked).
 5. DeeCure checks again and tells you if the problem is gone.
@@ -79,7 +80,7 @@ Change all of this in **Settings › Notifications**. **Send a test notification
 
 | Where | Setting |
 | --- | --- |
-| Settings › General | **Expert mode** (every page and tab, data sources, commands, raw columns), default time range, **refresh interval** (2 s, 5 s, 15 s, or Manual), **temperature unit** (°C or °F), narrow sidebar, **tray icon** |
+| Settings › General | **View level** (Beginner, Advanced, or Expert), default time range, **refresh interval** (2 s, 5 s, 15 s, or Manual), **temperature unit** (°C or °F), narrow sidebar, **tray icon** |
 | Settings › Access | Basic or Full access |
 | Settings › Notifications | Critical, warnings, weekly summary, quiet hours |
 | Settings › Data | Keep history for 90 days, 1 year, or 2 years; database size; **Export report** (an HTML file in your Downloads folder); **Delete history** (restore points and settings are kept) |

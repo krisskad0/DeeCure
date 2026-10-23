@@ -90,12 +90,13 @@ describe("Diagnostics", () => {
 });
 
 describe("Settings and Assistant", () => {
-  it("expert mode switch works", () => {
+  it("the view level has three choices and is saved", () => {
     render(<SettingsGeneral />);
-    const toggle = screen.getByRole("switch", { name: "Expert mode" }) as HTMLInputElement;
-    const before = toggle.checked;
-    fireEvent.click(toggle);
-    expect(toggle.checked).toBe(!before);
+    const level = screen.getByRole("combobox", { name: "View level" }) as HTMLSelectElement;
+    expect([...level.options].map((o) => o.value)).toEqual(["beginner", "advanced", "expert"]);
+    fireEvent.change(level, { target: { value: "advanced" } });
+    expect(level.value).toBe("advanced");
+    expect(localStorage.getItem("deecure.mode")).toBe('"advanced"');
   });
 
   it("delete history asks first, and the retention choice is real", async () => {

@@ -21,6 +21,13 @@ Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster install
 
 ## 2. Recommended order of what is left
 
+0. **Expert build (approved by the owner on 2026-10-23, in progress).** Build all of [View levels](../01-product/view-levels.md), [Expert coverage](../01-product/expert-coverage.md), and [Optimize](../01-product/optimize-catalog.md), in this order. Test each step once, commit, push, and tick it here:
+   1. ✅ Three view levels (Beginner, Advanced, Expert): menus, top bar, Settings, first-run screens.
+   2. Tab merges (89 to 77), with old links opening the merged tab and its filter.
+   3. Expert depth without admin, area by area: CPU, memory, drives, filesystems, graphics, network, battery and sleep, temperature, processes drawer, services and boot, kernel limits, hardware and firmware, ports and USB-C, built-in devices, display and sound, hardware errors, software, security, containers.
+   4. Power controls (charge limits and mode, wake sources, device power saving, turbo, keyboard backlight, radios, lid), each with undo.
+   5. Optimize page, item by item, each on a measured trigger.
+   6. Admin reads in the helper, one by one with its security review (BIOS settings, memory slots, power meters, NVMe details, self-tests, wake-up tracing, low-power residency, sudo rules, `sshd -T`); eBPF traffic counters last.
 1. **First version complete** (owner and developer, no downloads): the owner reviews every page and names what looks empty or "dummy"; fix each one (section 4). Then the real-desktop checks in section 3.
 2. **Owner decisions** before a stable release (section 5): contact emails (#11), app ID (#6), signing key (#12, also turns on the APT repository and signed commits and tags), supported systems (#9), health points (#15).
 3. **People and machines** (section 6): the 22 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.

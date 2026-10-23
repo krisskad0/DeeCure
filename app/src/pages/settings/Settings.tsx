@@ -60,6 +60,12 @@ const UNITS = [
   { value: "fahrenheit", label: "Fahrenheit (°F)" },
 ] as const;
 
+const LEVELS = [
+  { value: "beginner", label: "Beginner" },
+  { value: "advanced", label: "Advanced" },
+  { value: "expert", label: "Expert" },
+] as const;
+
 export function SettingsGeneral() {
   const [mode, setMode] = usePref<Mode>("mode", "beginner");
   const [range, setRange] = usePref<Range>("range", "24h");
@@ -69,8 +75,8 @@ export function SettingsGeneral() {
   const [, setOnboarded] = usePref<boolean>("onboarded", true);
   return (
     <Panel title="General" span={8}>
-      <FieldRow label="Expert mode" description="Show every page and tab, data sources, commands, and raw columns">
-        <Switch checked={mode === "expert"} onChange={(on) => setMode(on ? "expert" : "beginner")} label="Expert mode" />
+      <FieldRow label="View level" description="Beginner: the pages most people need. Advanced: every page and tab. Expert: also data sources, commands, raw columns, and deep details. Also in the top bar">
+        <Select value={mode} options={LEVELS} onChange={setMode} label="View level" />
       </FieldRow>
       <FieldRow label="Default time range" description="Used by charts; also in the top bar">
         <Select value={range} options={RANGES} onChange={setRange} label="Default time range" />
