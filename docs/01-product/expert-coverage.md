@@ -32,16 +32,16 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Full breakdown: apps, file cache, shared memory, kernel caches (can be freed or not), page tables, kernel stacks, data waiting to be written | Where RAM really goes, kernel included | `/proc/meminfo` | You | Partly: 5 parts |
-| Real memory per process: shared memory split fairly (PSS) and memory only it uses (USS) | "Resident" counts shared memory many times; PSS does not | `/proc/<pid>/smaps_rollup` | You (own) | New |
-| Memory, peak memory, swap, and memory pressure per app and per service | An app's 40 processes count as one app | cgroup `memory.current`, `memory.peak`, `memory.swap.current`, `memory.pressure` | You | Partly: memory per service |
-| Hard page faults per second, system-wide and per process | The real sign that RAM is too small | `/proc/vmstat` `pgmajfault`, `/proc/<pid>/stat` | You | New |
-| Swap in and swap out per second | Using swap is fine; swapping all the time is slow | `/proc/vmstat` `pswpin`, `pswpout` | You | New |
-| Compressed swap (zswap, zram): on or off, size, how much it saves | Shows what RAM compression gives | `/sys/module/zswap/parameters`, `/sys/block/zram*/mm_stat`; zswap totals need Admin | You | New |
-| Out-of-memory guard (systemd-oomd): on or off, what it watches, what it stopped | Explains apps that closed by themselves | `oomctl`, journal | You | Partly: kernel kills only |
-| Which processes the system would stop first when memory runs out | Shows who is at risk | `/proc/<pid>/oom_score` | You | New |
-| Memory error counts (corrected and uncorrected), when the memory controller reports them | Uncorrected errors mean failing RAM | `/sys/devices/system/edac/mc*` | You | Partly: "reports or not" only |
-| Huge pages: setting and use | Matters for databases and virtual machines | `/sys/kernel/mm/transparent_hugepage`, `/proc/meminfo` | You | New |
+| Full breakdown: apps, file cache, shared memory, kernel caches (can be freed or not), page tables, kernel stacks, data waiting to be written | Where RAM really goes, kernel included | `/proc/meminfo` | You | ✅ Built |
+| Real memory per process: shared memory split fairly (PSS) and memory only it uses (USS) | "Resident" counts shared memory many times; PSS does not | `/proc/<pid>/smaps_rollup` | You (own) | ✅ Built |
+| Memory, peak memory, swap, and memory pressure per app and per service | An app's 40 processes count as one app | cgroup `memory.current`, `memory.peak`, `memory.swap.current`, `memory.pressure` | You | ✅ Built |
+| Hard page faults per second, system-wide and per process | The real sign that RAM is too small | `/proc/vmstat` `pgmajfault`, `/proc/<pid>/stat` | You | ✅ Built |
+| Swap in and swap out per second | Using swap is fine; swapping all the time is slow | `/proc/vmstat` `pswpin`, `pswpout` | You | ✅ Built |
+| Compressed swap (zswap, zram): on or off, size, how much it saves | Shows what RAM compression gives | `/sys/module/zswap/parameters`, `/sys/block/zram*/mm_stat`; zswap totals need Admin | You | ✅ Built (zswap totals: Admin, later) |
+| Out-of-memory guard (systemd-oomd): on or off, what it watches, what it stopped | Explains apps that closed by themselves | `oomctl`, journal | You | ✅ Built |
+| Which processes the system would stop first when memory runs out | Shows who is at risk | `/proc/<pid>/oom_score` | You | ✅ Built |
+| Memory error counts (corrected and uncorrected), when the memory controller reports them | Uncorrected errors mean failing RAM | `/sys/devices/system/edac/mc*` | You | ✅ Built |
+| Huge pages: setting and use | Matters for databases and virtual machines | `/sys/kernel/mm/transparent_hugepage`, `/proc/meminfo` | You | ✅ Built |
 | Each memory module: slot, size, type, rated speed against the speed it really runs at | Finds RAM running slower than it can | `dmidecode -t 17` through the helper | Admin | Partly: type, speed, and slots |
 | Free slots, and the maximum memory the board supports | Know before you buy more | `dmidecode -t 16` through the helper | Admin | New |
 | Dual-channel or single-channel, from the slots in use | Single-channel halves memory speed, and slows built-in graphics | module bank locations from `dmidecode` | Admin | New |

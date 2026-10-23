@@ -7,6 +7,7 @@ mod accounts;
 mod audio;
 pub(crate) mod backups;
 mod bluetooth;
+mod cgroups;
 pub(crate) mod command;
 mod containers;
 mod cpu_detail;
@@ -19,6 +20,7 @@ mod history;
 mod jobs;
 pub(crate) mod kernel;
 pub(crate) mod logs;
+mod memory_detail;
 pub(crate) mod net;
 mod network;
 mod os;
@@ -49,6 +51,9 @@ pub const KINDS: &[&str] = &[
     "network",
     "gpu",
     "cpu_detail",
+    "memory_detail",
+    "process_memory",
+    "cgroups",
     "os",
     "kernel",
     "update_history",
@@ -100,6 +105,9 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "network" => serde_json::to_value(network::read(&agent.root)),
         "gpu" => serde_json::to_value(gpu::read(&agent.root)),
         "cpu_detail" => serde_json::to_value(cpu_detail::read(&agent.root)),
+        "memory_detail" => serde_json::to_value(memory_detail::read(&agent.root).await),
+        "process_memory" => serde_json::to_value(memory_detail::read_processes(&agent.root)),
+        "cgroups" => serde_json::to_value(cgroups::read(&agent.root)),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),

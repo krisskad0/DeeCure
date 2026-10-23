@@ -2,6 +2,8 @@
 // Hardware › Memory (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // Module type, speed, and slots come from dmidecode through the admin helper (Full access).
 
+import { atLeast, useUi } from "../../ui";
+import { MemoryErrors } from "../performance/MemoryExpert";
 import { LinkButton } from "../../components/Button";
 import { type Check, Checklist } from "../../components/Checklist";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -16,6 +18,7 @@ import { AdminRead } from "../../components/AdminRead";
 const FULL = <span className="muted">See below</span>;
 
 export function HardwareMemory() {
+  const { mode } = useUi();
   const { data: hw, error } = useHardware();
   const latest = useLatest();
   const pressure = useHistory(["pressure.memory"], undefined, "24h");
@@ -70,6 +73,7 @@ export function HardwareMemory() {
           }}
         </AdminRead>
       </Panel>
+      {atLeast(mode, "expert") && <MemoryErrors />}
     </>
   );
 }

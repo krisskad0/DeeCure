@@ -174,6 +174,54 @@ export interface CpuDetail {
   interrupts: { irq: string; count: number; device: string }[];
 }
 
+/** Deep memory details (Expert); counters are totals since start. */
+export interface MemoryDetail {
+  at: number;
+  /** Every /proc/meminfo line, in bytes (page counts as they are). */
+  meminfo: Record<string, number>;
+  /** pgfault, pgmajfault, pswpin, pswpout, oom_kill, pgscan_direct, pgsteal_direct. */
+  vmstat: Record<string, number>;
+  swaps: { path: string; kind: string; size: number; used: number; priority: number }[];
+  zswap?: { enabled: boolean; compressor?: string; max_pool_percent?: number };
+  zram: { name: string; algorithm?: string; disk_size: number; original: number; compressed_used: number }[];
+  huge_pages?: string;
+  huge_pages_defrag?: string;
+  controllers: { name: string; corrected: number; uncorrected: number; seconds_since_reset?: number; dimms: { label?: string; size_mb?: number; corrected?: number; uncorrected?: number }[] }[];
+  oomd?: { swap_limit_percent?: number; pressure_limit_percent?: number; pressure_duration?: string; swap_watched: string[]; pressure_watched: [string, number | null][] };
+}
+
+/** Real memory of one process; PSS and USS only for the biggest ones the user may read. */
+export interface ProcessMemory {
+  pid: number;
+  name: string;
+  rss: number;
+  pss?: number;
+  uss?: number;
+  swap_pss?: number;
+  major_faults: number;
+  oom_score?: number;
+}
+
+/** Use per app and per service (cgroups); totals since start. */
+export interface Groups {
+  at: number;
+  groups: {
+    kind: "service" | "user-service" | "app";
+    unit: string;
+    name: string;
+    memory?: number;
+    memory_own?: number;
+    memory_cache?: number;
+    memory_peak?: number;
+    swap?: number;
+    memory_pressure?: number;
+    cpu_usec?: number;
+    disk_read?: number;
+    disk_write?: number;
+    tasks?: number;
+  }[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -730,6 +778,9 @@ export function getInventory(kind: "processes"): Promise<Process[]>;
 export function getInventory(kind: "network"): Promise<NetworkInfo>;
 export function getInventory(kind: "gpu"): Promise<Gpu[]>;
 export function getInventory(kind: "cpu_detail"): Promise<CpuDetail>;
+export function getInventory(kind: "memory_detail"): Promise<MemoryDetail>;
+export function getInventory(kind: "process_memory"): Promise<ProcessMemory[]>;
+export function getInventory(kind: "cgroups"): Promise<Groups>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

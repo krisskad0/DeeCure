@@ -9,7 +9,9 @@ import { type Kpi, KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { Donut } from "../../components/charts/Donut";
 import { bytes, pick } from "../../metrics";
+import { atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
+import { MemoryExpertSections } from "./MemoryExpert";
 import { GB, TimeChart, spark, useHistory, useLatest } from "./shared";
 
 const loadProcesses = () => getInventory("processes");
@@ -31,6 +33,7 @@ function columns(total: number | undefined): Column<Process>[] {
 }
 
 export function PerformanceMemory() {
+  const { mode } = useUi();
   const latest = useLatest();
   const processes = useLive(loadProcesses, 10_000).data;
   const history = useHistory(["memory.used", "memory.cache"]);
@@ -92,6 +95,7 @@ export function PerformanceMemory() {
       <Panel title="Top memory consumers" source="/proc/[pid]/status" span={12} flush>
         {processes ? <DataTable rows={top} columns={columns(total)} rowKey={(p) => String(p.pid)} pageSize={8} /> : <div className="empty muted">Loading…</div>}
       </Panel>
+      {atLeast(mode, "expert") && <MemoryExpertSections />}
     </>
   );
 }

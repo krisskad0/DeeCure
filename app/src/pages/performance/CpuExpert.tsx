@@ -4,7 +4,6 @@
 // flaws, and sleep states. The data is read only while one of these sections is open. Counters
 // are totals since start; two readings give the "now" rates.
 
-import { useEffect, useRef, useState } from "react";
 import { type CpuDetail, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -12,30 +11,13 @@ import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
-import { useLive } from "../../useLive";
+import { perSecond, useLiveWithPrevious } from "../../useLive";
 import { NoData } from "../NoData";
 
 const loadDetail = () => getInventory("cpu_detail");
 
 /** The newest reading, and the one before it (for rates). */
-export function useCpuDetail() {
-  const { data, error } = useLive(loadDetail, 5000);
-  const last = useRef<CpuDetail | undefined>(undefined);
-  const [before, setBefore] = useState<CpuDetail | undefined>(undefined);
-  useEffect(() => {
-    if (data && data !== last.current) {
-      setBefore(last.current);
-      last.current = data;
-    }
-  }, [data]);
-  return { data, before: before && data && data.at > before.at ? before : undefined, error };
-}
-
-/** Per second between two readings, or undefined. */
-function perSecond(now: number | undefined, then: number | undefined, seconds: number): number | undefined {
-  if (now === undefined || then === undefined || seconds <= 0 || now < then) return undefined;
-  return (now - then) / seconds;
-}
+export const useCpuDetail = () => useLiveWithPrevious(loadDetail, 5000);
 
 const mhz = (khz?: number) => (khz === undefined ? "-" : `${Math.round(khz / 1000).toLocaleString()} MHz`);
 const rateText = (r?: number) => (r === undefined ? "-" : r >= 100 ? Math.round(r).toLocaleString() : r.toFixed(1));
