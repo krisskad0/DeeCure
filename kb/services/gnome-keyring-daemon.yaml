@@ -1,0 +1,4 @@
+name: "gnome-keyring-daemon.service"
+plain: "Stores your passwords and keys, unlocked when you sign in."
+safe_to_disable: "No."
+if_failed: "Apps ask for passwords again, or cannot save them."

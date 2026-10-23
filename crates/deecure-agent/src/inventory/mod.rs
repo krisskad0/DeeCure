@@ -82,6 +82,7 @@ pub const KINDS: &[&str] = &[
     "diagnose_performance",
     "diagnose_network",
     "agent",
+    "kb",
 ];
 
 /// Reads one inventory. `Err` holds a plain-English reason.
@@ -141,6 +142,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "diagnose_performance" => serde_json::to_value(diagnostics::performance(agent).await),
         "diagnose_network" => serde_json::to_value(diagnostics::network(agent).await),
         "agent" => serde_json::to_value(diagnostics::agent_info(agent)),
+        "kb" => serde_json::to_value(agent.facts.get().map(|f| &f.kb)),
         other => {
             return Err(format!(
                 "unknown inventory '{other}' (known: {})",

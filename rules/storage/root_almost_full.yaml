@@ -11,4 +11,4 @@ fixes:
   - action: storage.clean_apt_cache
   - action: storage.remove_old_snap_revisions
   - action: storage.empty_trash
-learn_more: kb/storage/disk-full.md
+learn_more: topics/storage/disk-full

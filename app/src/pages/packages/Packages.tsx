@@ -14,6 +14,7 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { Donut } from "../../components/charts/Donut";
 import { bytes } from "../../metrics";
 import { Drawer } from "../../shell/Drawer";
+import { kbPackage, useKb } from "../../kb";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 import { PrivacyPermissions } from "../privacy/Privacy";
@@ -43,6 +44,7 @@ const COLUMNS: Column<PackageInfo>[] = [
 export function PackagesInstalled() {
   const { data: info, error } = usePackages();
   const [inspect, setInspect] = useState<PackageInfo | null>(null);
+  const kb = useKb();
   if (!info) return <Waiting title="Packages" error={error} />;
   const of = (src: PackageInfo["source"]) => info.packages.filter((p) => p.source === src);
   const size = (src: PackageInfo["source"]) => of(src).reduce((s, p) => s + p.size, 0);
@@ -82,7 +84,7 @@ export function PackagesInstalled() {
               ["Size", bytes(inspect.size)],
               ["Installed by", inspect.manual ? "You" : "The system (as a dependency)"],
               ["Section", inspect.section || "—"],
-              ["About", inspect.summary || "—"],
+              ["About", kbPackage(kb, inspect.name)?.plain ?? (inspect.summary || "—")],
             ]}
           />
         </Drawer>

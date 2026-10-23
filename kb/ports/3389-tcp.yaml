@@ -1,0 +1,5 @@
+port: 3389
+proto: "tcp"
+name: "Remote Desktop (RDP)"
+plain: "Lets others see and control this desktop."
+risk_if_open: "high"

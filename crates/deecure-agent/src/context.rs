@@ -36,6 +36,8 @@ pub struct Facts {
     pub rules: usize,
     /// When the agent started.
     pub started: std::time::Instant,
+    /// The knowledge base.
+    pub kb: crate::kb::Kb,
 }
 
 /// Which D-Bus bus to talk to.

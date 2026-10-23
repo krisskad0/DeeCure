@@ -1,0 +1,4 @@
+name: "systemd-resolved.service"
+plain: "Looks up internet names (DNS) and caches them."
+safe_to_disable: "No."
+if_failed: "Websites cannot be found by name."

@@ -1,0 +1,4 @@
+name: "cups-browsed.service"
+plain: "Finds shared printers on the network and adds them."
+safe_to_disable: "Yes, if you never use network printers."
+if_failed: "Network printers are not added by themselves."

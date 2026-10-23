@@ -1,0 +1,4 @@
+name: "NetworkManager.service"
+plain: "Connects to Wi-Fi, wired networks, and VPNs."
+safe_to_disable: "No on a desktop."
+if_failed: "No network connection."

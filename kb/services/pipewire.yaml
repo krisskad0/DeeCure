@@ -1,0 +1,4 @@
+name: "pipewire.service"
+plain: "Plays and records sound and shares the screen."
+safe_to_disable: "No on a desktop."
+if_failed: "No sound, and screen sharing fails."

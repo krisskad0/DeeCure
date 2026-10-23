@@ -9,6 +9,7 @@ import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { BarChart } from "../../components/charts/BarChart";
 import { Heatmap } from "../../components/charts/Heatmap";
 import { duration, heatRows, unescapeUnit, when } from "../../metrics";
+import { kbError, useKb } from "../../kb";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 
@@ -80,8 +81,22 @@ export function LogsJournal() {
 type Group = ErrorsInfo["groups"][number];
 const CLASS: Record<Group["class"], [StatusVariant, string]> = { attention: ["crit", "Needs attention"], review: ["warn", "Worth a look"], harmless: ["off", "Harmless"] };
 
-const GROUPS: Column<Group>[] = [
-  { key: "message", label: "Message", text: (g) => g.message, render: (g) => <span className="cell-two"><b className="wrap-anywhere">{unescapeUnit(g.message)}</b></span>, wrap: true },
+const groupColumns = (kb: ReturnType<typeof useKb>): Column<Group>[] => [
+  {
+    key: "message",
+    label: "Message",
+    text: (g) => g.message,
+    render: (g) => {
+      const k = kbError(kb, g.message);
+      return (
+        <span className="cell-two">
+          <b className="wrap-anywhere">{unescapeUnit(g.message)}</b>
+          {k && <span>{k.plain} {k.next_step}</span>}
+        </span>
+      );
+    },
+    wrap: true,
+  },
   { key: "unit", label: "Unit", text: (g) => g.unit, render: (g) => <code>{unescapeUnit(g.unit)}</code> },
   { key: "count", label: "Count", text: (g) => String(g.count), numeric: true },
   { key: "last", label: "Last seen", text: (g) => String(g.last_seen), render: (g) => when(g.last_seen) },
@@ -90,6 +105,7 @@ const GROUPS: Column<Group>[] = [
 
 export function LogsErrors() {
   const { data: e, error } = useLive(loadErrors, 60_000);
+  const kb = useKb();
   if (!e) return <Waiting title="Grouped errors" error={error} />;
   const attention = e.groups.filter((g) => g.class === "attention").length;
   return (
@@ -102,7 +118,7 @@ export function LogsErrors() {
         ]}
       />
       <Panel title="Grouped errors" subtitle="same message, numbers ignored" source="journalctl -p err --since -7d" span={12} flush>
-        <DataTable rows={e.groups} columns={GROUPS} rowKey={(g) => `${g.unit}|${g.message}`} filter={{ column: "class", options: ["Needs attention", "Worth a look", "Harmless"] }} empty="No errors in the last 7 days" />
+        <DataTable rows={e.groups} columns={groupColumns(kb)} rowKey={(g) => `${g.unit}|${g.message}`} filter={{ column: "class", options: ["Needs attention", "Worth a look", "Harmless"] }} empty="No errors in the last 7 days" />
       </Panel>
       <Panel title="Errors by day and hour" source="journalctl -p err" span={12}>
         <Heatmap rows={heatRows(e.times)} unit="errors" />

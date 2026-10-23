@@ -1,0 +1,4 @@
+match: "EXT4-fs error"
+plain: "The disk's file system reported damage."
+severity: "critical"
+next_step: "Back up important files now, then run a disk check from recovery mode."

@@ -7,4 +7,4 @@ explain: >
   scheduled backup did not run.
 severity:
   warning: "backup.configured == 1 and backup.age_days > 35"
-learn_more: kb/backups/overdue.md
+learn_more: topics/backups/overdue

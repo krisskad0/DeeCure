@@ -1,0 +1,4 @@
+match: "reset high-speed USB device"
+plain: "A USB device stopped answering and was reset."
+severity: "info"
+next_step: "Try another port or cable if it happens often."

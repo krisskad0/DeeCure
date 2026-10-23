@@ -1,0 +1,4 @@
+name: "tracker-miner-fs-3.service"
+plain: "Indexes your files so search finds them fast."
+safe_to_disable: "Yes, if you do not search files from the Activities view."
+if_failed: "File search becomes slower."

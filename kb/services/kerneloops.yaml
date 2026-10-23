@@ -1,0 +1,4 @@
+name: "kerneloops.service"
+plain: "Collects kernel error reports for Ubuntu."
+safe_to_disable: "Yes."
+if_failed: "Kernel error reports are not collected."

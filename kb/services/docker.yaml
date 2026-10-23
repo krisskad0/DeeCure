@@ -1,0 +1,4 @@
+name: "docker.service"
+plain: "Runs Docker containers."
+safe_to_disable: "Yes, if you do not use Docker; containers stop when it stops."
+if_failed: "Containers do not run."

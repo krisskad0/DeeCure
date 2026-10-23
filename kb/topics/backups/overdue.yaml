@@ -1,0 +1,6 @@
+title: "The last backup is old"
+summary: "Files changed since the last backup are not protected."
+steps:
+  - "Connect the backup drive if it is a USB drive."
+  - "Open Backups and run a backup now."
+  - "Check that automatic backups are still on."

@@ -1,0 +1,5 @@
+port: 631
+proto: "tcp"
+name: "Printing (CUPS)"
+plain: "The printing service. Safe on 127.0.0.1."
+risk_if_open: "low"

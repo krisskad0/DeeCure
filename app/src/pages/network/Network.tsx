@@ -12,6 +12,7 @@ import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { useLive } from "../../useLive";
+import { kbPort, useKb } from "../../kb";
 import { MB, TimeChart, useHistory } from "../performance/shared";
 import { NoData } from "../NoData";
 
@@ -121,6 +122,7 @@ const EXPOSURE: Record<SocketInfo["exposure"], [StatusVariant, string]> = { loca
 export function NetworkPorts() {
   const { data: sockets, error } = useLive(loadSockets, 15_000);
   const details = useLive(loadDetails, 60_000).data;
+  const kb = useKb();
   if (!sockets) return <Waiting title="Listening ports" error={error} />;
   // A port shows up once per address family; one row per port, protocol, and exposure.
   const seen = new Set<string>();
@@ -135,6 +137,16 @@ export function NetworkPorts() {
   const columns: Column<SocketInfo>[] = [
     { key: "port", label: "Port", text: (s) => String(s.local_port), render: (s) => <code>{s.local_port}</code>, numeric: true },
     { key: "proto", label: "Protocol", text: (s) => s.proto.toUpperCase() },
+    {
+      key: "what",
+      label: "What it is",
+      text: (s) => kbPort(kb, s.local_port, s.proto)?.name ?? "",
+      render: (s) => {
+        const k = kbPort(kb, s.local_port, s.proto);
+        return k ? <span className="cell-two"><b>{k.name}</b><span>{k.plain}</span></span> : <span className="muted">—</span>;
+      },
+      wrap: true,
+    },
     { key: "bind", label: "Bind address", text: (s) => s.local.slice(0, s.local.lastIndexOf(":")), render: (s) => <code>{s.local.slice(0, s.local.lastIndexOf(":"))}</code> },
     { key: "exposure", label: "Exposure", text: (s) => EXPOSURE[s.exposure][1], render: (s) => <StatusBadge variant={EXPOSURE[s.exposure][0]} label={EXPOSURE[s.exposure][1]} /> },
     { key: "process", label: "Process", text: (s) => s.process ?? "—", render: (s) => s.process ?? <span className="muted">system (needs Full access)</span> },

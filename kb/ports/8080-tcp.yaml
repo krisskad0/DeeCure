@@ -1,0 +1,5 @@
+port: 8080
+proto: "tcp"
+name: "Web (alternative)"
+plain: "A web server or proxy."
+risk_if_open: "medium"

@@ -1,0 +1,5 @@
+port: 5353
+proto: "udp"
+name: "mDNS (Avahi)"
+plain: "Finds printers and devices on the local network."
+risk_if_open: "low"

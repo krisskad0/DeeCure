@@ -1,0 +1,4 @@
+name: "thermald.service"
+plain: "Prevents Intel CPUs from overheating by slowing them down early."
+safe_to_disable: "No on Intel laptops."
+if_failed: "The computer may get hotter and throttle harder."

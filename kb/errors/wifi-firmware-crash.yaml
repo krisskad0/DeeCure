@@ -1,0 +1,4 @@
+match: "firmware crashed"
+plain: "The Wi-Fi card's firmware crashed and restarted."
+severity: "warning"
+next_step: "Update linux-firmware. If it repeats, report it to the driver maintainers."

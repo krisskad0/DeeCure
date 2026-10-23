@@ -1,0 +1,4 @@
+match: "device descriptor read"
+plain: "A USB device did not answer when plugged in."
+severity: "warning"
+next_step: "Try another port or cable. The device may be faulty."

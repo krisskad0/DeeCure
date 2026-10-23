@@ -1,0 +1,4 @@
+name: "systemd-udevd.service"
+plain: "Sets up hardware when it is plugged in."
+safe_to_disable: "No."
+if_failed: "New devices are not set up."

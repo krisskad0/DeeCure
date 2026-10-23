@@ -1,0 +1,4 @@
+name: "systemd-timesyncd.service"
+plain: "Keeps the clock correct using time servers."
+safe_to_disable: "No."
+if_failed: "The clock drifts; secure connections can fail."

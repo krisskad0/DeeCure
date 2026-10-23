@@ -1,0 +1,5 @@
+port: 139
+proto: "tcp"
+name: "Windows file sharing (NetBIOS)"
+plain: "Samba file sharing, older protocol."
+risk_if_open: "high"

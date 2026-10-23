@@ -1,0 +1,4 @@
+match: "Out of memory: Killed process"
+plain: "Memory ran out, so Linux stopped a program to keep the system alive."
+severity: "warning"
+next_step: "Close large apps, add swap, or add memory."

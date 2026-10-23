@@ -1,0 +1,5 @@
+port: 22
+proto: "tcp"
+name: "SSH"
+plain: "Remote sign-in. Anyone who can reach it can try passwords."
+risk_if_open: "high"

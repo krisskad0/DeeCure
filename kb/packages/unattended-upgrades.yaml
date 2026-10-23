@@ -1,0 +1,2 @@
+name: "unattended-upgrades"
+plain: "Installs security updates automatically."

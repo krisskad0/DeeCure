@@ -6,4 +6,4 @@ explain: >
   a restart. Restart when it suits you.
 severity:
   info: "system.reboot_required == 1"
-learn_more: kb/system/reboot-required.md
+learn_more: topics/system/reboot-required

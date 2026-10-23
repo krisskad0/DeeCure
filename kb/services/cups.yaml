@@ -1,0 +1,4 @@
+name: "cups.service"
+plain: "Printing service. Sends documents to printers."
+safe_to_disable: "Yes, if you never print."
+if_failed: "Printing does not work. Other things are not affected."

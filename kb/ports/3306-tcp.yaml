@@ -1,0 +1,5 @@
+port: 3306
+proto: "tcp"
+name: "MySQL / MariaDB"
+plain: "A database. Should not be reachable from other computers."
+risk_if_open: "high"

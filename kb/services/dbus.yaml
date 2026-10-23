@@ -1,0 +1,4 @@
+name: "dbus.service"
+plain: "The message bus programs use to talk to each other."
+safe_to_disable: "No. The system cannot work without it."
+if_failed: "Many parts of the system stop working."

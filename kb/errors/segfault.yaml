@@ -1,0 +1,4 @@
+match: "segfault at"
+plain: "A program crashed because of a bug."
+severity: "warning"
+next_step: "Update the program. If it keeps crashing, report the bug."

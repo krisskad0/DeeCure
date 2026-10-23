@@ -1,0 +1,4 @@
+name: "containerd.service"
+plain: "The container runtime under Docker."
+safe_to_disable: "Only together with Docker."
+if_failed: "Docker containers do not run."

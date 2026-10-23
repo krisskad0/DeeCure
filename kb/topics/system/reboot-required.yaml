@@ -1,0 +1,5 @@
+title: "Restart to finish updates"
+summary: "Some updates, such as a new kernel or core library, are only used after a restart."
+steps:
+  - "Save your work and restart when it suits you."
+  - "Until then, the old versions keep running."

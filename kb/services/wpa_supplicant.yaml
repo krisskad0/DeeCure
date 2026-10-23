@@ -1,0 +1,4 @@
+name: "wpa_supplicant.service"
+plain: "Handles Wi-Fi sign-in and encryption."
+safe_to_disable: "No, if you use Wi-Fi."
+if_failed: "Wi-Fi does not connect."

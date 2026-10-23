@@ -1,0 +1,8 @@
+title: "A service failed"
+summary: "A service is a program that runs in the background. When it fails, the feature it provides stops working."
+steps:
+  - "Open Services › System Services and select the failed service."
+  - "Read its last log lines in Logs › Journal, filtered by the service name."
+  - "Updates often fix crashing services: install pending updates."
+  - "If you do not need the feature, the service can be turned off."
+notes: "One failed service rarely affects the rest of the system."

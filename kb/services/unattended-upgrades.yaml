@@ -1,0 +1,4 @@
+name: "unattended-upgrades.service"
+plain: "Installs security updates automatically."
+safe_to_disable: "No. It keeps the system safe."
+if_failed: "Security updates must be installed by hand."

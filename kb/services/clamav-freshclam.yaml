@@ -1,0 +1,4 @@
+name: "clamav-freshclam.service"
+plain: "Downloads new ClamAV virus signatures."
+safe_to_disable: "Not if you use ClamAV: old signatures miss new malware."
+if_failed: "Virus signatures go out of date."

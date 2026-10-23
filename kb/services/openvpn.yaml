@@ -1,0 +1,4 @@
+name: "openvpn.service"
+plain: "Starts OpenVPN connections configured system-wide."
+safe_to_disable: "Yes, if you use no system-wide OpenVPN."
+if_failed: "Those VPN connections do not start."

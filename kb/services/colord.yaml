@@ -1,0 +1,4 @@
+name: "colord.service"
+plain: "Manages color profiles for screens and printers."
+safe_to_disable: "Yes, if you do not need color calibration."
+if_failed: "Color profiles are not applied."

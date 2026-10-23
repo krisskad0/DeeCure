@@ -1,0 +1,4 @@
+name: "apt-daily.service"
+plain: "Downloads package lists and updates in the background."
+safe_to_disable: "Not recommended."
+if_failed: "Update checks stop."

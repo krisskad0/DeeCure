@@ -1,0 +1,4 @@
+name: "man-db.service"
+plain: "Updates the index for manual pages."
+safe_to_disable: "Yes."
+if_failed: "Searching man pages may be out of date."

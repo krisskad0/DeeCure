@@ -1,0 +1,2 @@
+name: "linux-generic"
+plain: "Keeps the newest Ubuntu kernel installed. Do not remove it."

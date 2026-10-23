@@ -1,0 +1,4 @@
+name: "snapd.service"
+plain: "Installs and updates snap apps, such as Firefox on Ubuntu."
+safe_to_disable: "No if you use any snap apps."
+if_failed: "Snap apps do not update or start."

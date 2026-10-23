@@ -1,0 +1,2 @@
+name: "snapd"
+plain: "Installs and updates snap apps. Ubuntu ships Firefox and the Software app as snaps."

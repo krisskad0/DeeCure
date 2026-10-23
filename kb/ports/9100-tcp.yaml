@@ -1,0 +1,5 @@
+port: 9100
+proto: "tcp"
+name: "Printer (JetDirect)"
+plain: "Raw printing to network printers."
+risk_if_open: "medium"

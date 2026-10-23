@@ -1,0 +1,2 @@
+name: "timeshift"
+plain: "Takes system snapshots so you can roll back after a bad update."

@@ -1,0 +1,4 @@
+name: "cron.service"
+plain: "Runs scheduled jobs from crontab files."
+safe_to_disable: "No. Many system jobs rely on it."
+if_failed: "Scheduled jobs stop running."

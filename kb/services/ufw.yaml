@@ -1,0 +1,4 @@
+name: "ufw.service"
+plain: "Loads the firewall rules at startup."
+safe_to_disable: "No, if you use the firewall."
+if_failed: "The firewall is not applied."

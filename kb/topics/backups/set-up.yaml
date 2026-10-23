@@ -1,0 +1,6 @@
+title: "Set up backups"
+summary: "A backup is a copy of your files on another drive or online. It is the only protection against a broken disk, theft, or mistakes."
+steps:
+  - "Install Ubuntu Backups: sudo apt install deja-dup"
+  - "Open Backups, choose a USB drive or a cloud account, and turn on automatic backups."
+  - "Timeshift protects the system; Déjà Dup protects your documents and photos. Use both."

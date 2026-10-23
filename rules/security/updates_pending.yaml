@@ -7,4 +7,4 @@ explain: >
   System › Updates to see the list.
 severity:
   warning: "updates.security >= 1"
-learn_more: kb/security/updates.md
+learn_more: topics/security/updates

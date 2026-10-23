@@ -1,0 +1,4 @@
+name: "avahi-daemon.service"
+plain: "Finds printers, file shares, and other devices on the local network (mDNS/Bonjour)."
+safe_to_disable: "Yes, if you never discover network printers or shares automatically."
+if_failed: "Network printers and shares may not appear by themselves."

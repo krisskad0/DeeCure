@@ -1,0 +1,4 @@
+name: "ModemManager.service"
+plain: "Manages mobile broadband modems (3G, 4G, 5G)."
+safe_to_disable: "Yes, if you have no mobile modem."
+if_failed: "Mobile broadband does not work."

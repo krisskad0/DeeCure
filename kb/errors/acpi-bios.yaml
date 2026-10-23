@@ -1,0 +1,4 @@
+match: "ACPI BIOS Error"
+plain: "The computer's firmware has a small bug Linux works around."
+severity: "info"
+next_step: "Nothing to do. A BIOS update may remove it."

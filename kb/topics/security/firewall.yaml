@@ -1,0 +1,7 @@
+title: "Turn on the firewall"
+summary: "Ubuntu includes the ufw firewall, turned off by default. It blocks other computers from reaching programs that listen on the network."
+steps:
+  - "Run: sudo ufw enable"
+  - "Your own apps keep working: outgoing connections are allowed."
+  - "If you share something on purpose (for example SSH), allow it: sudo ufw allow ssh"
+  - "Docker publishes ports with its own rules that ufw does not block; bind containers to 127.0.0.1 to keep them local."

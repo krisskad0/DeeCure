@@ -8,6 +8,7 @@ pub mod collect;
 pub mod context;
 pub mod handler;
 pub mod inventory;
+pub mod kb;
 pub mod rules;
 pub mod server;
 pub mod socket;

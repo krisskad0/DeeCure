@@ -1,0 +1,4 @@
+name: "polkit.service"
+plain: "Decides which programs may do admin tasks after asking your password."
+safe_to_disable: "No."
+if_failed: "Admin prompts and many settings stop working."

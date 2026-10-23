@@ -2,7 +2,11 @@
 // Services › System Services (docs/03-ui-design/05-pages/10-services.md), with real data.
 // The unit list comes from the 5-minute snapshot; memory is read live.
 
+import { useState } from "react";
 import { type UnitState, getInventory, getSnapshot } from "../../api";
+import { KeyValueList } from "../../components/KeyValueList";
+import { kbService, useKb } from "../../kb";
+import { Drawer } from "../../shell/Drawer";
 import { bytes } from "../../metrics";
 import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -52,6 +56,8 @@ function byConcern(a: UnitState, b: UnitState): number {
 export function SystemServices() {
   const { data: snapshot, error } = useLive(loadServices);
   const memory = useLive(loadMemory, 30_000).data;
+  const kb = useKb();
+  const [inspect, setInspect] = useState<Row | null>(null);
   if (!snapshot) {
     return (
       <Panel title="Units" span={12} flush>
@@ -97,8 +103,38 @@ export function SystemServices() {
           filter={{ column: "active", options: ["active", "failed", "inactive"] }}
           pageSize={14}
           empty="No units match"
+          onRowClick={setInspect}
         />
       </Panel>
+      {inspect && <UnitDrawer unit={inspect} info={kbService(kb, inspect.name)} onClose={() => setInspect(null)} />}
     </>
   );
 }
+
+/** One service: its state, and what the knowledge base says about it. */
+export function UnitDrawer({ unit, info, onClose }: { unit: Row; info?: { plain: string; safe_to_disable?: string; if_failed?: string }; onClose: () => void }) {
+  return (
+    <Drawer title={unit.name} subtitle={unit.description} note="Restarting or stopping services comes with the fix engine" onClose={onClose}>
+      <KeyValueList
+        rows={[
+          ["State", <StatusBadge key="s" variant={ACTIVE[unit.active] ?? "off"} label={`${unit.active} (${unit.sub})`} />],
+          ["Starts at boot", unit.enabled ?? "—"],
+          ["Memory", unit.memory === undefined ? "—" : bytes(unit.memory)],
+          ["Restarts since boot", unit.restarts === undefined ? "—" : String(unit.restarts)],
+        ]}
+      />
+      {info ? (
+        <KeyValueList
+          rows={[
+            ["What it does", info.plain],
+            ["Safe to turn off?", info.safe_to_disable ?? "—"],
+            ["If it fails", info.if_failed ?? "—"],
+          ]}
+        />
+      ) : (
+        <p className="muted">The knowledge base has no entry for this service yet.</p>
+      )}
+    </Drawer>
+  );
+}
+

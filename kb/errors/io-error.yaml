@@ -1,0 +1,4 @@
+match: "I/O error"
+plain: "Reading or writing the disk failed. The disk or its cable may be failing."
+severity: "critical"
+next_step: "Back up important files now and check the disk's SMART health."

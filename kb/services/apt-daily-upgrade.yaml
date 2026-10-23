@@ -1,0 +1,4 @@
+name: "apt-daily-upgrade.service"
+plain: "Installs updates in the background (with unattended-upgrades)."
+safe_to_disable: "Not recommended."
+if_failed: "Automatic security updates stop."

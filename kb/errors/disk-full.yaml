@@ -1,0 +1,4 @@
+match: "No space left on device"
+plain: "The disk is full. Apps cannot save files."
+severity: "critical"
+next_step: "Free space now: Storage › Cleanup."

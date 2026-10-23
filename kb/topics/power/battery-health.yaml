@@ -1,0 +1,7 @@
+title: "Battery health"
+summary: "Batteries lose capacity as they age. Health is the charge the battery holds now compared with when it was new."
+steps:
+  - "Above 80% is normal for a battery a few years old."
+  - "Below 60% you will notice much shorter battery life; think about a replacement."
+  - "To slow wear, avoid keeping the battery at 100% all day. Many laptops can stop charging at 80% (Power › Power Profile shows if yours can)."
+notes: "Battery wear is normal and not a fault."

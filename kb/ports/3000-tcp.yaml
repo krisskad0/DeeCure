@@ -1,0 +1,5 @@
+port: 3000
+proto: "tcp"
+name: "Development web server"
+plain: "Often a Node.js, Grafana, or similar dev server."
+risk_if_open: "medium"

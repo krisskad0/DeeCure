@@ -8,4 +8,4 @@ explain: >
   shows why.
 severity:
   warning: "item.active == 'failed'"
-learn_more: kb/services/failed-service.md
+learn_more: topics/services/failed-service

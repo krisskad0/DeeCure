@@ -1,0 +1,4 @@
+name: "fwupd.service"
+plain: "Finds and installs firmware updates for your devices."
+safe_to_disable: "Yes, but you will not get firmware updates through the Software app."
+if_failed: "Firmware updates are not offered."

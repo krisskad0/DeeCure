@@ -1,0 +1,5 @@
+port: 80
+proto: "tcp"
+name: "Web (HTTP)"
+plain: "A web server without encryption."
+risk_if_open: "medium"

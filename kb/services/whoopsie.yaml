@@ -1,0 +1,4 @@
+name: "whoopsie.service"
+plain: "Sends crash reports to Ubuntu when you allow it."
+safe_to_disable: "Yes, if you do not send crash reports."
+if_failed: "Crash reports are not sent."

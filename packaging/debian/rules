@@ -32,6 +32,7 @@ override_dh_auto_install:
 	install -D -m 0644 packaging/systemd/deecure-agent.socket $(DEST)/usr/lib/systemd/user/deecure-agent.socket
 	install -D -m 0644 packaging/systemd/deecure-agent.service $(DEST)/usr/lib/systemd/user/deecure-agent.service
 	cd rules && find . -name '*.yaml' -exec install -D -m 0644 {} ../$(DEST)/usr/share/deecure/rules/{} \;
+	cd kb && find . -name '*.yaml' -exec install -D -m 0644 {} ../$(DEST)/usr/share/deecure/kb/{} \;
 	install -D -m 0755 $(BIN)/deecure-desktop $(APP)/usr/bin/deecure-desktop
 	install -D -m 0644 packaging/desktop/$(ID).desktop $(APP)/usr/share/applications/$(ID).desktop
 	install -D -m 0644 packaging/desktop/$(ID).metainfo.xml $(APP)/usr/share/metainfo/$(ID).metainfo.xml

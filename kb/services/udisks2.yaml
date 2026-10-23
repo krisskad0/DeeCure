@@ -1,0 +1,4 @@
+name: "udisks2.service"
+plain: "Mounts USB drives and other disks for the desktop."
+safe_to_disable: "No on a desktop."
+if_failed: "USB drives do not appear."

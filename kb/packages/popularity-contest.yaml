@@ -1,0 +1,2 @@
+name: "popularity-contest"
+plain: "Sends a weekly list of installed packages to Ubuntu, if you agreed to it."

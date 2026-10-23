@@ -523,6 +523,16 @@ export interface VersionInfo {
   protocol: number;
 }
 
+export interface Kb {
+  services: { name: string; plain: string; safe_to_disable?: string; if_failed?: string }[];
+  ports: { port: number; proto: string; name: string; plain: string; risk_if_open: "low" | "medium" | "high" }[];
+  errors: { match: string; plain: string; severity: "info" | "warning" | "critical"; next_step: string }[];
+  packages: { name: string; plain: string }[];
+  topics: { id: string; title: string; summary: string; steps: string[]; notes?: string }[];
+  /** Rule ID → topic ID. */
+  rules: Record<string, string>;
+}
+
 /** Live data the agent reads now. */
 export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
@@ -562,6 +572,7 @@ export function getInventory(kind: "containers"): Promise<ContainersInfo>;
 export function getInventory(kind: "backups"): Promise<BackupsInfo>;
 export function getInventory(kind: "diagnose_performance" | "diagnose_network"): Promise<DiagnosticReport>;
 export function getInventory(kind: "agent"): Promise<AgentInfo | null>;
+export function getInventory(kind: "kb"): Promise<Kb | null>;
 export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }

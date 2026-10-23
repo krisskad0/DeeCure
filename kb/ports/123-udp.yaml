@@ -1,0 +1,5 @@
+port: 123
+proto: "udp"
+name: "NTP"
+plain: "Time sync."
+risk_if_open: "low"

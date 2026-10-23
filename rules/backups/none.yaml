@@ -8,4 +8,4 @@ explain: >
   cloud account.
 severity:
   warning: "backup.configured == 0"
-learn_more: kb/backups/set-up.md
+learn_more: topics/backups/set-up

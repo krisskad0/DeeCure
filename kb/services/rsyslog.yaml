@@ -1,0 +1,4 @@
+name: "rsyslog.service"
+plain: "Writes system logs to files in /var/log."
+safe_to_disable: "Usually yes; the journal keeps logs too."
+if_failed: "Text log files in /var/log stop updating."

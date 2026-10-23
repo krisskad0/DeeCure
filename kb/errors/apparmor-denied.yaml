@@ -1,0 +1,4 @@
+match: "apparmor=\"DENIED\""
+plain: "AppArmor blocked a program from doing something outside its profile."
+severity: "info"
+next_step: "Usually harmless. If an app misbehaves, check its AppArmor profile."

@@ -1,0 +1,4 @@
+name: "gdm.service"
+plain: "The login screen (GNOME Display Manager)."
+safe_to_disable: "No on a desktop: you could not sign in graphically."
+if_failed: "No login screen appears."

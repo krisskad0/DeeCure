@@ -1,0 +1,4 @@
+name: "networkd-dispatcher.service"
+plain: "Runs scripts when network connections change."
+safe_to_disable: "Usually yes, unless you added your own scripts."
+if_failed: "Custom network scripts do not run."

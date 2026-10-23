@@ -1,0 +1,4 @@
+name: "fstrim.service"
+plain: "Tells SSDs which blocks are free, once a week. Keeps them fast."
+safe_to_disable: "Not on SSDs."
+if_failed: "SSD write speed may drop over time."

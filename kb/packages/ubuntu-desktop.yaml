@@ -1,0 +1,2 @@
+name: "ubuntu-desktop"
+plain: "A meta-package that pulls in the standard Ubuntu desktop. Removing it removes nothing else right away, but upgrades may then miss new desktop parts."

@@ -1,0 +1,5 @@
+port: 5432
+proto: "tcp"
+name: "PostgreSQL"
+plain: "A database. Should not be reachable from other computers."
+risk_if_open: "high"

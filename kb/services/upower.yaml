@@ -1,0 +1,4 @@
+name: "upower.service"
+plain: "Reports battery and power information."
+safe_to_disable: "No on laptops."
+if_failed: "Battery level and warnings disappear."

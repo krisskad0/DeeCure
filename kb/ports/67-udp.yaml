@@ -1,0 +1,5 @@
+port: 67
+proto: "udp"
+name: "DHCP"
+plain: "Hands out network addresses; normally only on routers."
+risk_if_open: "medium"

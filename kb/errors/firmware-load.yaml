@@ -1,0 +1,4 @@
+match: "Direct firmware load"
+plain: "A driver looked for an optional firmware file that is not installed."
+severity: "info"
+next_step: "Usually nothing to do. If a device does not work, install linux-firmware updates."

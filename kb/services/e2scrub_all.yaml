@@ -1,0 +1,4 @@
+name: "e2scrub_all.service"
+plain: "Checks ext4 file systems on LVM for errors in the background."
+safe_to_disable: "Yes."
+if_failed: "Background file system checks stop."

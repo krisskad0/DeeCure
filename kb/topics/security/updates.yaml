@@ -1,0 +1,6 @@
+title: "Install security updates"
+summary: "Security updates close holes that attackers use. Ubuntu publishes them for every supported release."
+steps:
+  - "Open the Software Updater, or run: sudo apt update && sudo apt upgrade"
+  - "Restart if asked, so the new versions are used."
+  - "Keep automatic security updates on (System › Updates)."

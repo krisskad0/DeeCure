@@ -1,0 +1,4 @@
+match: "nvme.*timeout"
+plain: "The SSD took too long to answer."
+severity: "critical"
+next_step: "Back up now; update the SSD firmware and check its health."

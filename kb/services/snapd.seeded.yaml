@@ -1,0 +1,4 @@
+name: "snapd.seeded.service"
+plain: "Waits for the first snap setup to finish at startup."
+safe_to_disable: "No."
+if_failed: "Snap apps may not be ready at login."

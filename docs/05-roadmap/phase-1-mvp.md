@@ -20,7 +20,8 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 | 7. Collectors | Started. Network, disk I/O (rates, IOPS, busy, wait), pressure (some and full), sensors, per-core CPU, load, clock speed, context switches, memory and swap breakdown, and battery time left, boot timing, and pending updates, plus live `system`, `os`, `kernel`, `update_history`, `processes`, `network`, and `gpu` inventories. New rules: `security.updates_pending`, `system.reboot_required`, `security.firewall_off`, `backups.none`, `backups.overdue`. |
 | 11. Performance check | ✅ Done. Diagnostics › Performance Check with the runner. |
 | 13. Desktop integration | ✅ Done. A second package, `deecure-desktop`: the app with a menu entry, icons, AppStream data, and a man page. Tested by installing in a clean container. |
-| 1, 6, 8, 12 | Not started |
+| 8. Knowledge base | ✅ Done. 125 entries: 59 services, 26 ports, 20 errors, 12 packages, and 8 how-to topics (one per rule). Used in issues, services, ports, errors, and packages. |
+| 1, 6, 12 | Not started |
 
 ## Tasks (in order)
 

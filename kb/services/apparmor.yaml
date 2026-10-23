@@ -1,0 +1,4 @@
+name: "apparmor.service"
+plain: "Loads AppArmor security profiles that limit what programs may do."
+safe_to_disable: "No. It is an important security layer."
+if_failed: "Programs run without their safety limits."

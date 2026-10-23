@@ -1,0 +1,4 @@
+name: "acpid.service"
+plain: "Reacts to power button and lid events on some machines."
+safe_to_disable: "Usually yes on desktops with GNOME, which handles these itself."
+if_failed: "Power button or lid actions may stop working on older setups."

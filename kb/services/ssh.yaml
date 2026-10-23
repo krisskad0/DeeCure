@@ -1,0 +1,4 @@
+name: "ssh.service"
+plain: "The OpenSSH server: lets other computers sign in to this one."
+safe_to_disable: "Yes, if nobody signs in remotely."
+if_failed: "Remote sign-in does not work."

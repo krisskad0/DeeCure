@@ -1,0 +1,4 @@
+name: "apport.service"
+plain: "Collects crash reports so problems can be reported to Ubuntu."
+safe_to_disable: "Yes, if you do not want crash reports."
+if_failed: "Crash reports are not collected. Nothing else breaks."

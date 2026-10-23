@@ -1,0 +1,4 @@
+name: "NetworkManager-wait-online.service"
+plain: "Makes startup wait until the network is connected. Often the slowest part of a boot."
+safe_to_disable: "Usually yes on laptops, which saves seconds at startup. Keep it if a service needs the network right away."
+if_failed: "Nothing breaks; some network shares may mount a little later."

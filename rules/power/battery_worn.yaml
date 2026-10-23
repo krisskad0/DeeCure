@@ -9,4 +9,4 @@ explain: >
 severity:
   warning: "item.health < 60"
   info: "item.health < 80"
-learn_more: kb/power/battery-health.md
+learn_more: topics/power/battery-health

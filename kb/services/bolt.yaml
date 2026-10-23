@@ -1,0 +1,4 @@
+name: "bolt.service"
+plain: "Manages Thunderbolt devices and their security level."
+safe_to_disable: "Yes, if you never use Thunderbolt docks or drives."
+if_failed: "Thunderbolt devices may not be allowed to connect."

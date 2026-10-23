@@ -1,0 +1,4 @@
+match: "Failed to start"
+plain: "A service did not start."
+severity: "warning"
+next_step: "Open Services to see which one, and its log."

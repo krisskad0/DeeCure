@@ -1,0 +1,4 @@
+match: "code=dumped"
+plain: "A service crashed and systemd saved a crash dump."
+severity: "warning"
+next_step: "Look at the service's log. Updating it often helps."

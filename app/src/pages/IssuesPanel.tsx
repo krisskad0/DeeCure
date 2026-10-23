@@ -8,6 +8,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { NoData } from "./NoData";
 import { severityVariant } from "../status";
 import { ago } from "../time";
+import { kbTopic, useKb } from "../kb";
 
 export function IssuesPanel(props: {
   title: string;
@@ -27,6 +28,7 @@ export function IssuesPanel(props: {
 }
 
 function Body({ findings, report, error, now }: { findings: Finding[]; report: StatusReport | null; error: AppError | null; now: number }) {
+  const kb = useKb();
   if (error) return <NoData error={error} waiting="" />;
   if (!report) return <div className="empty muted">Loading…</div>;
   if (!report.checked_at) {
@@ -52,9 +54,28 @@ function Body({ findings, report, error, now }: { findings: Finding[]; report: S
               <code>{f.rule}</code>
               {f.subject && <> · {f.subject}</>} · first seen {ago(f.first_seen, now)}
             </div>
+            <HowTo topic={kbTopic(kb, f.rule)} />
           </div>
         </li>
       ))}
     </ul>
   );
 }
+
+/** The knowledge base article for a finding, folded until opened. */
+function HowTo({ topic }: { topic?: { title: string; summary: string; steps: string[]; notes?: string } }) {
+  if (!topic) return null;
+  return (
+    <details className="howto">
+      <summary>How to fix: {topic.title}</summary>
+      <p>{topic.summary}</p>
+      <ol>
+        {topic.steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+      {topic.notes && <p className="muted">{topic.notes}</p>}
+    </details>
+  );
+}
+

@@ -1,0 +1,4 @@
+name: "clamav-daemon.service"
+plain: "The ClamAV virus scanner, kept loaded in memory for fast scans. Uses about 1 GB of memory."
+safe_to_disable: "Yes, if you only scan by hand; clamscan works without it."
+if_failed: "On-demand scans are slower; nothing else breaks."

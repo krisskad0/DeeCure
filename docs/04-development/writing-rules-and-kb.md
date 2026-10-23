@@ -18,6 +18,7 @@ This is the easiest way to help DeeCure. You need YAML and Linux knowledge, not 
 | KB: error | `kb/errors/<name>.yaml` | `kb/errors/ext4-error.yaml` |
 | KB: port | `kb/ports/<number>-<proto>.yaml` | `kb/ports/5432-tcp.yaml` |
 | KB: package | `kb/packages/<name>.yaml` | `kb/packages/snapd.yaml` |
+| KB: topic | `kb/topics/<area>/<name>.yaml` | `kb/topics/storage/disk-full.yaml` (a rule links to it with `learn_more: topics/storage/disk-full`) |
 
 The file name must match the last part of the `id`.
 

@@ -1,0 +1,4 @@
+match: "critical temperature"
+plain: "A part reached a dangerous temperature."
+severity: "critical"
+next_step: "Check fans and air vents, and clean dust."

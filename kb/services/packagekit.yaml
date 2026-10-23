@@ -1,0 +1,4 @@
+name: "packagekit.service"
+plain: "Lets the Software app and update tools install packages."
+safe_to_disable: "Not recommended on desktops."
+if_failed: "The Software app cannot install or update."

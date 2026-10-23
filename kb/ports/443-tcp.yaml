@@ -1,0 +1,5 @@
+port: 443
+proto: "tcp"
+name: "Web (HTTPS)"
+plain: "An encrypted web server."
+risk_if_open: "medium"

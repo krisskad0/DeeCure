@@ -1,0 +1,4 @@
+name: "power-profiles-daemon.service"
+plain: "Switches between Power Saver, Balanced, and Performance modes."
+safe_to_disable: "Yes, but the power mode menu disappears."
+if_failed: "The power mode cannot be changed."

@@ -1,0 +1,4 @@
+match: "gkr-pam"
+plain: "The keyring could not unlock at sign-in, often after a password change."
+severity: "info"
+next_step: "Open Passwords and Keys and set the keyring password to your sign-in password."

@@ -1,0 +1,4 @@
+name: "plymouth-quit-wait.service"
+plain: "Waits for the boot splash screen to finish."
+safe_to_disable: "No; it is part of the normal boot."
+if_failed: "The boot screen may hang a little."

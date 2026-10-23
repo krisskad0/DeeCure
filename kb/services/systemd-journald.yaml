@@ -1,0 +1,4 @@
+name: "systemd-journald.service"
+plain: "Collects every log message on the system."
+safe_to_disable: "No."
+if_failed: "No logs are kept."

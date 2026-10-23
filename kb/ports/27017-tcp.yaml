@@ -1,0 +1,5 @@
+port: 27017
+proto: "tcp"
+name: "MongoDB"
+plain: "A database. Should not be reachable from other computers."
+risk_if_open: "high"

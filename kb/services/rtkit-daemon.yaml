@@ -1,0 +1,4 @@
+name: "rtkit-daemon.service"
+plain: "Gives audio programs the priority they need to play without gaps."
+safe_to_disable: "No on a desktop."
+if_failed: "Audio may crackle."

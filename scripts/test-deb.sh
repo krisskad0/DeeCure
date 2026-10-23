@@ -47,6 +47,9 @@ su deecure-test -c '
   # Every installed rule must load: the count in the log matches the files shipped.
   rules=$(find /usr/share/deecure/rules -name "*.yaml" | wc -l)
   grep -q "$rules rules from /usr/share/deecure/rules" /tmp/deecure-test.log
+  grep -q "knowledge base from /usr/share/deecure/kb" /tmp/deecure-test.log
+  # "! grep" would not stop the script under set -e, so test it explicitly.
+  if grep "knowledge base: " /tmp/deecure-test.log; then exit 1; fi
   [ "$(stat -c %a ~/.local/share/deecure/deecure.db)" = 600 ]
 '
 grep -q '"generated_at"' /tmp/deecure-test.json || fail "status --json did not print the report"

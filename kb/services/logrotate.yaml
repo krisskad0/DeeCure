@@ -1,0 +1,4 @@
+name: "logrotate.service"
+plain: "Compresses and deletes old log files so they do not fill the disk."
+safe_to_disable: "No."
+if_failed: "Log files grow without limit."

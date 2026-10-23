@@ -1,0 +1,4 @@
+match: "cpu clock throttled"
+plain: "The CPU slowed itself down because it was too hot."
+severity: "warning"
+next_step: "Check fans and air vents."

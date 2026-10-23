@@ -1,0 +1,8 @@
+title: "Free up disk space"
+summary: "When the main disk is full, apps crash, updates fail, and the computer may not start the desktop."
+steps:
+  - "Empty the Trash."
+  - "Open Storage › Cleanup to see what DeeCure can remove safely: old snap revisions, the APT cache, and unused Docker images."
+  - "Open Storage › Disk Usage to find your largest folders and files."
+  - "Move large videos and backups to another drive."
+notes: "DeeCure never deletes personal files except the Trash, and only after you confirm."

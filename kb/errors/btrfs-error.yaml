@@ -1,0 +1,4 @@
+match: "BTRFS error"
+plain: "The Btrfs file system reported damage."
+severity: "critical"
+next_step: "Back up important files now, then run 'btrfs scrub'."

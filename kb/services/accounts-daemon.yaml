@@ -1,0 +1,4 @@
+name: "accounts-daemon.service"
+plain: "Keeps the list of user accounts for the login screen and Settings."
+safe_to_disable: "No. The login screen and Settings need it."
+if_failed: "The login screen may not list users."

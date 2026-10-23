@@ -1,0 +1,4 @@
+name: "anacron.service"
+plain: "Runs daily, weekly, and monthly jobs that were missed while the computer was off."
+safe_to_disable: "Not recommended: updates and log cleanup rely on it."
+if_failed: "Maintenance jobs such as log rotation run late or not at all."

@@ -1,0 +1,5 @@
+port: 1716
+proto: "tcp"
+name: "KDE Connect / GSConnect"
+plain: "Phone integration on the local network."
+risk_if_open: "medium"

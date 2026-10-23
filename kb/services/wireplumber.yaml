@@ -1,0 +1,4 @@
+name: "wireplumber.service"
+plain: "Decides which speaker and microphone PipeWire uses."
+safe_to_disable: "No on a desktop."
+if_failed: "Sound devices are not set up."

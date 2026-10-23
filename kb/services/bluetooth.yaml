@@ -1,0 +1,4 @@
+name: "bluetooth.service"
+plain: "Runs Bluetooth: headphones, mice, keyboards, and phones."
+safe_to_disable: "Yes, if you never use Bluetooth."
+if_failed: "Bluetooth devices stop working."

@@ -1,0 +1,4 @@
+name: "systemd-logind.service"
+plain: "Manages sign-ins, sessions, power buttons, and the lid."
+safe_to_disable: "No."
+if_failed: "Sign-in and power handling fail."

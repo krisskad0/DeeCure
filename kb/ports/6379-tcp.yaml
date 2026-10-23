@@ -1,0 +1,5 @@
+port: 6379
+proto: "tcp"
+name: "Redis"
+plain: "An in-memory database, often without a password."
+risk_if_open: "high"

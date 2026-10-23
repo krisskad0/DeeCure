@@ -1,0 +1,4 @@
+match: "AER: Corrected error"
+plain: "A PCIe device reported an error it fixed by itself."
+severity: "info"
+next_step: "Nothing to do unless it floods the log."

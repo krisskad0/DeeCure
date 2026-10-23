@@ -1,0 +1,4 @@
+name: "switcheroo-control.service"
+plain: "Lets apps choose the faster graphics card on laptops with two."
+safe_to_disable: "Yes, on computers with one graphics card."
+if_failed: "The 'Launch using Dedicated Graphics Card' option disappears."

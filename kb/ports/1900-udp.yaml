@@ -1,0 +1,5 @@
+port: 1900
+proto: "udp"
+name: "UPnP / SSDP"
+plain: "Device discovery on the local network."
+risk_if_open: "medium"

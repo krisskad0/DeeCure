@@ -1,0 +1,4 @@
+match: "Read-only file system"
+plain: "The file system switched to read-only after an error, to protect your data."
+severity: "critical"
+next_step: "Back up important files, then check the disk."

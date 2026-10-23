@@ -1,0 +1,4 @@
+name: "sysstat.service"
+plain: "Records system activity for the sar tool."
+safe_to_disable: "Yes, if you do not use sar."
+if_failed: "sar history stops."

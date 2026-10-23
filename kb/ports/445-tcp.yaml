@@ -1,0 +1,5 @@
+port: 445
+proto: "tcp"
+name: "Windows file sharing (SMB)"
+plain: "Samba file sharing."
+risk_if_open: "high"

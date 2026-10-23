@@ -1,0 +1,4 @@
+name: "gnome-remote-desktop.service"
+plain: "Lets other computers see and control this desktop when you turn on Remote Desktop."
+safe_to_disable: "Yes, if you never use Remote Desktop."
+if_failed: "Remote Desktop does not work."

@@ -17,7 +17,7 @@ use std::time::Duration;
 use deecure_agent::collect::{self, SystemRoot};
 use deecure_agent::context::{Agent, Facts};
 use deecure_agent::store::{self, SharedStore, Store};
-use deecure_agent::{rules, server, socket};
+use deecure_agent::{kb, rules, server, socket};
 use deecure_core::rpc::default_socket_path;
 use deecure_core::{Metric, Timestamp, Unit, VERSION, health};
 use tokio::signal::unix::{SignalKind, signal};
@@ -107,6 +107,23 @@ async fn run(
     let started = std::time::Instant::now();
     let (rules, errors) = rules::load_dir(&rules_dir);
     let rule_count = rules.len();
+    let links: Vec<(String, String)> = rules
+        .iter()
+        .filter_map(|r| Some((r.id.to_string(), r.learn_more.clone()?)))
+        .collect();
+    let kb_dir = kb::beside(&rules_dir);
+    let (knowledge, kb_errors) = kb::load_dir(&kb_dir, &links);
+    for error in &kb_errors {
+        eprintln!("deecure-agent: knowledge base: {error}");
+    }
+    eprintln!(
+        "deecure-agent: knowledge base from {}: {} services, {} ports, {} errors, {} topics",
+        kb_dir.display(),
+        knowledge.services.len(),
+        knowledge.ports.len(),
+        knowledge.errors.len(),
+        knowledge.topics.len()
+    );
     for error in &errors {
         eprintln!("deecure-agent: skipped a rule: {error}");
     }
@@ -146,6 +163,7 @@ async fn run(
         rules_dir: rules_dir.clone(),
         rules: rule_count,
         started,
+        kb: knowledge,
     });
     server::serve(listener, agent, shutdown_signal()).await;
 
