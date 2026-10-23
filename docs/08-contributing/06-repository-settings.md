@@ -2,6 +2,8 @@
 
 [Docs](../README.md) › [Contributing](README.md)
 
+> **Status:** applied on 2026-10-23 through the GitHub API (`gh`, as `krisskad0`). Everything in sections 1 to 5 is on. Use this page to check the settings, to set them up again on a copy of the repository, or to change them later.
+
 The rules in this folder are enforced by GitHub settings and **rulesets**. Rulesets cannot be turned on by a commit, so the owner sets them up once, in the browser. It takes about 15 minutes. Everything below is under the repository's **Settings** tab.
 
 ## 1. Import the rulesets
