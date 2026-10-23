@@ -148,19 +148,38 @@ pub fn parse_dpkg(text: &str, tz: &local::TimeZone) -> Vec<DpkgChange> {
 /// Changes made with `dpkg` directly, outside every apt run (apt logs its own). A purge
 /// right after a remove of the same package is one change.
 pub fn outside_apt(changes: Vec<DpkgChange>, runs: &[AptRun]) -> Vec<DpkgChange> {
+    // Runs sorted by start, each with the latest end so far: a binary search then tells
+    // whether a time falls in any run. A big dpkg log has hundreds of thousands of lines.
+    let mut spans: Vec<(i64, i64)> = runs
+        .iter()
+        .map(|r| (r.start - 2_000, r.end + 2_000))
+        .collect();
+    spans.sort_unstable();
+    let mut reach = Vec::with_capacity(spans.len());
+    let mut furthest = i64::MIN;
+    for (_, end) in &spans {
+        furthest = furthest.max(*end);
+        reach.push(furthest);
+    }
     let inside = |at: i64| {
-        runs.iter()
-            .any(|r| at >= r.start - 2_000 && at <= r.end + 2_000)
+        let n = spans.partition_point(|(start, _)| *start <= at);
+        n > 0 && reach[n - 1] >= at
     };
     let mut out: Vec<DpkgChange> = Vec::new();
+    // The last remove of each package, to fold a purge right after it into one change.
+    let mut last_remove: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
     for c in changes.into_iter().filter(|c| !inside(c.at)) {
         if c.item.action == "purge"
-            && let Some(prev) = out.iter_mut().rev().find(|p| {
-                p.item.name == c.item.name && p.item.action == "remove" && c.at - p.at <= 10_000
-            })
+            && let Some(&i) = last_remove.get(&c.item.name)
+            && out[i].item.action == "remove"
+            && c.at - out[i].at <= 10_000
         {
-            prev.item.action = "purge".into();
+            out[i].item.action = "purge".into();
             continue;
+        }
+        if c.item.action == "remove" {
+            last_remove.insert(c.item.name.clone(), out.len());
         }
         out.push(c);
     }
@@ -437,6 +456,40 @@ garbage line
         );
         assert_eq!(events[0].1.source, "dpkg");
         assert_eq!(events[1].1.title, "Removed zoom and its settings");
+    }
+
+    #[test]
+    fn a_huge_dpkg_log_is_matched_quickly() {
+        let runs: Vec<AptRun> = (0..2_000)
+            .map(|i| AptRun {
+                start: i * 100_000,
+                end: i * 100_000 + 30_000,
+                source: "apt".into(),
+                failed: false,
+                items: vec![],
+            })
+            .collect();
+        let changes: Vec<DpkgChange> = (0..300_000)
+            .map(|i| DpkgChange {
+                at: i * 700,
+                item: Item {
+                    action: "upgrade".into(),
+                    name: format!("p{i}"),
+                    arch: String::new(),
+                    from: None,
+                    to: None,
+                },
+            })
+            .collect();
+        let started = std::time::Instant::now();
+        let own = outside_apt(changes, &runs);
+        assert!(
+            started.elapsed() < std::time::Duration::from_secs(2),
+            "{:?}",
+            started.elapsed()
+        );
+        // 32 of every 100 seconds are inside a run (30 s plus 2 s margins on both ends).
+        assert!(own.len() > 190_000 && own.len() < 210_000, "{}", own.len());
     }
 
     #[test]

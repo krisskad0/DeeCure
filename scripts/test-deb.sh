@@ -55,13 +55,19 @@ su deecure-test -c '
   /usr/libexec/deecure/deecure-agent --socket /tmp/deecure-test.sock 2>/tmp/deecure-test.log &
   agent=$!
   for i in $(seq 1 50); do [ -S /tmp/deecure-test.sock ] && break; sleep 0.1; done
-  sleep 2
-  deecure --socket /tmp/deecure-test.sock status
+  # The first start also imports history; wait until the agent answers (at most 30 s).
+  ok=no
+  for i in $(seq 1 30); do
+    if deecure --socket /tmp/deecure-test.sock status >/tmp/deecure-status.txt 2>&1; then ok=yes; break; fi
+    sleep 1
+  done
+  cat /tmp/deecure-status.txt
+  if [ "$ok" != yes ]; then echo "the agent did not answer within 30 s; its log:"; cat /tmp/deecure-test.log; exit 1; fi
   deecure --socket /tmp/deecure-test.sock status --json > /tmp/deecure-test.json
   kill $agent || true
   # Every installed rule must load: the count in the log matches the files shipped.
   rules=$(find /usr/share/deecure/rules -name "*.yaml" | wc -l)
-  grep -q "$rules rules from /usr/share/deecure/rules" /tmp/deecure-test.log
+  grep -q "$rules rules from /usr/share/deecure/rules" /tmp/deecure-test.log || { echo "rules did not all load:"; cat /tmp/deecure-test.log; exit 1; }
   grep -q "knowledge base from /usr/share/deecure/kb" /tmp/deecure-test.log
   # "! grep" would not stop the script under set -e, so test it explicitly.
   if grep "knowledge base: " /tmp/deecure-test.log; then exit 1; fi

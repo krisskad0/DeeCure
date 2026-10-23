@@ -155,43 +155,52 @@ impl History {
         if !changed {
             return Ok(());
         }
-        let tz = deecure_core::local::zone();
-        let mut runs = Vec::new();
+        let mut apt_texts = Vec::new();
         for path in APT_LOGS {
             if let Some(text) = self.read_log(path).await {
-                runs.extend(packages::parse_apt(&text, &tz));
+                apt_texts.push(text);
             }
         }
-        let mut dpkg = Vec::new();
+        let mut dpkg_texts = Vec::new();
         for path in DPKG_LOGS {
             if let Some(text) = self.read_log(path).await {
-                dpkg.extend(packages::parse_dpkg(&text, &tz));
+                dpkg_texts.push(text);
             }
         }
-        let own = packages::outside_apt(dpkg, &runs);
-        let mut events = packages::apt_events(&runs);
-        events.extend(packages::dpkg_events(&own));
-        // "apt install -y a b c" is too long to say who changed a file; "apt" is enough.
-        let who = |source: &str| {
-            if source.starts_with("apt") {
-                "apt".to_owned()
-            } else {
-                source.to_owned()
-            }
-        };
-        self.windows = Windows(
-            runs.iter()
-                .map(|r| (r.start, r.end, who(&r.source)))
-                .collect(),
-        );
-        store::lock(store)
-            .batch(|s| {
-                for (key, event) in &events {
-                    s.add_event(key, event)?;
+        // Parsing a big log takes a moment: do it on a worker thread, so the agent keeps
+        // answering the app and the CLI meanwhile.
+        let (events, windows) = tokio::task::spawn_blocking(move || {
+            let tz = deecure_core::local::zone();
+            let runs: Vec<packages::AptRun> = apt_texts
+                .iter()
+                .flat_map(|t| packages::parse_apt(t, &tz))
+                .collect();
+            let dpkg = dpkg_texts
+                .iter()
+                .flat_map(|t| packages::parse_dpkg(t, &tz))
+                .collect();
+            let own = packages::outside_apt(dpkg, &runs);
+            let mut events = packages::apt_events(&runs);
+            events.extend(packages::dpkg_events(&own));
+            // "apt install -y a b c" is too long to say who changed a file; "apt" is enough.
+            let who = |source: &str| {
+                if source.starts_with("apt") {
+                    "apt".to_owned()
+                } else {
+                    source.to_owned()
                 }
-                Ok(())
-            })
-            .map_err(|e| e.to_string())?;
+            };
+            let windows = Windows(
+                runs.iter()
+                    .map(|r| (r.start, r.end, who(&r.source)))
+                    .collect(),
+            );
+            (events, windows)
+        })
+        .await
+        .map_err(|e| e.to_string())?;
+        self.windows = windows;
+        save_events(store, events, false).await?;
         self.seen_logs = signatures;
         Ok(())
     }
@@ -315,29 +324,35 @@ impl History {
         )
         .await
         .ok_or("journalctl is missing or took too long")?;
-        let entries = logs::parse_entries(&text);
-        // When the entry limit cut the read short, only the hours after the oldest entry
-        // read are complete; older hours keep what was stored before.
-        let full = entries.len() >= MAX_JOURNAL_ENTRIES;
-        let from = match entries.first() {
-            Some(first) if full => (first.at.div_euclid(journal::HOUR_MS) + 1) * journal::HOUR_MS,
-            _ => since,
-        };
-        let events: Vec<_> = journal::events(&entries)
-            .into_iter()
-            .filter(|(_, e)| e.at.as_millis() >= from)
-            .collect();
+        let (events, from) = tokio::task::spawn_blocking(move || {
+            let entries = logs::parse_entries(&text);
+            // When the entry limit cut the read short, only the hours after the oldest
+            // entry read are complete; older hours keep what was stored before.
+            let full = entries.len() >= MAX_JOURNAL_ENTRIES;
+            let from = match entries.first() {
+                Some(first) if full => {
+                    (first.at.div_euclid(journal::HOUR_MS) + 1) * journal::HOUR_MS
+                }
+                _ => since,
+            };
+            let events: Vec<_> = journal::events(&entries)
+                .into_iter()
+                .filter(|(_, e)| e.at.as_millis() >= from)
+                .collect();
+            (events, from)
+        })
+        .await
+        .map_err(|e| e.to_string())?;
+        // The hours from `from` on were read in full: what is stored for them is replaced,
+        // so a failure that turned out to be part of a shutdown goes away. The next read
+        // starts here only after everything is saved, so a crash in between is harmless.
+        store::lock(store)
+            .delete_events_from(journal::KEY_PREFIXES, Timestamp(from))
+            .map_err(|e| e.to_string())?;
+        save_events(store, events, true).await?;
         let next = now.as_millis().div_euclid(journal::HOUR_MS) * journal::HOUR_MS;
         store::lock(store)
-            .batch(|s| {
-                // The hours from `from` on were read in full: what is stored for them is
-                // replaced, so a failure that turned out to be part of a shutdown goes away.
-                s.delete_events_from(journal::KEY_PREFIXES, Timestamp(from))?;
-                for (key, event) in &events {
-                    s.put_event(key, event)?;
-                }
-                s.set_setting(JOURNAL_SINCE, &next)
-            })
+            .set_setting(JOURNAL_SINCE, &next)
             .map_err(|e| e.to_string())
     }
 
@@ -346,15 +361,7 @@ impl History {
         if boots.is_empty() {
             return Err("the journal lists no boots".into());
         }
-        let events = journal::boot_events(&boots);
-        store::lock(store)
-            .batch(|s| {
-                for (key, event) in &events {
-                    s.add_event(key, event)?;
-                }
-                Ok(())
-            })
-            .map_err(|e| e.to_string())?;
+        save_events(store, journal::boot_events(&boots), false).await?;
         self.boots_read = Some(Instant::now());
         Ok(())
     }
@@ -410,6 +417,41 @@ impl History {
         .map(|_| ())
         .map_err(|e| e.to_string())
     }
+}
+
+/// Events saved per transaction. The store is unlocked between chunks, so the app and
+/// the CLI get their answers even while a big first import is saved.
+const CHUNK: usize = 500;
+
+/// Saves events on a worker thread, [`CHUNK`] at a time. `replace` updates events whose
+/// key is already stored (grouped events that grow); otherwise they are left as they are.
+async fn save_events(
+    store: &SharedStore,
+    events: Vec<(String, Event)>,
+    replace: bool,
+) -> Result<(), String> {
+    if events.is_empty() {
+        return Ok(());
+    }
+    let store = store.clone();
+    tokio::task::spawn_blocking(move || {
+        for chunk in events.chunks(CHUNK) {
+            store::lock(&store).batch(|s| {
+                for (key, event) in chunk {
+                    if replace {
+                        s.put_event(key, event)?;
+                    } else {
+                        s.add_event(key, event)?;
+                    }
+                }
+                Ok(())
+            })?;
+        }
+        Ok::<(), store::StoreError>(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())
 }
 
 /// The event for a fix DeeCure ran, or undid.
