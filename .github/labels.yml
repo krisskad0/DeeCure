@@ -1,0 +1,29 @@
+# Labels for issues and pull requests (docs/08-contributing/02-issues-and-labels.md).
+# Apply them with scripts/sync-labels.sh (needs the gh command, logged in as a maintainer).
+- {name: "type: bug", color: "d73a4a", description: "Something does not work or shows wrong data"}
+- {name: "type: feature", color: "a2eeef", description: "Something new, or a change in behavior"}
+- {name: "type: docs", color: "0075ca", description: "Documentation only"}
+- {name: "type: security", color: "b60205", description: "Security hardening (report holes privately: SECURITY.md)"}
+- {name: "type: chore", color: "cfd3d7", description: "Maintenance, tooling, dependencies"}
+- {name: "area: agent", color: "5319e7", description: "The background agent: collectors, history, rules, notifications"}
+- {name: "area: app", color: "5319e7", description: "The desktop app"}
+- {name: "area: cli", color: "5319e7", description: "The deecure command"}
+- {name: "area: helper", color: "5319e7", description: "The root helper, polkit, D-Bus (two reviews)"}
+- {name: "area: rules-kb", color: "5319e7", description: "Rules and the knowledge base (YAML)"}
+- {name: "area: packaging", color: "5319e7", description: "Debian packages, installer, releases"}
+- {name: "area: ci", color: "5319e7", description: "GitHub Actions and scripts"}
+- {name: "area: docs", color: "5319e7", description: "The docs folder"}
+- {name: "priority: critical", color: "b60205", description: "Data loss, a security hole, or the app does not start"}
+- {name: "priority: high", color: "d93f0b", description: "Important; next in line"}
+- {name: "priority: normal", color: "fbca04", description: "The usual"}
+- {name: "priority: low", color: "c2e0c6", description: "Nice to have"}
+- {name: "status: needs-triage", color: "ededed", description: "New; a triager will look"}
+- {name: "status: needs-info", color: "ededed", description: "Waiting for facts from the reporter; closed after 30 days"}
+- {name: "status: ready", color: "0e8a16", description: "Clear and wanted; anyone may take it"}
+- {name: "status: in-progress", color: "1d76db", description: "Assigned and being worked on"}
+- {name: "status: blocked", color: "000000", description: "Waiting for something else"}
+- {name: "good first issue", color: "7057ff", description: "Good for newcomers"}
+- {name: "help wanted", color: "008672", description: "Maintainers would welcome help"}
+- {name: "needs-two-reviews", color: "e99695", description: "Sensitive area: two maintainer approvals"}
+- {name: "breaking-change", color: "b60205", description: "Changes behavior people rely on"}
+- {name: "release-blocker", color: "b60205", description: "Must be fixed before the next release"}

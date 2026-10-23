@@ -1,0 +1,20 @@
+# Who must review changes to each area (docs/08-contributing/04-pull-requests-and-review.md).
+# The last matching line wins. Add reviewers here as the team grows, for example:
+#   /rules/  @krisskad0 @rules-reviewer
+# If @krisskad1 is also the owner's account, add it next to @krisskad0.
+
+*                                   @krisskad0
+
+# Sensitive areas: two maintainer reviews (see the review rules).
+/crates/deecure-helper/             @krisskad0
+/packaging/helper/                  @krisskad0
+/crates/deecure-fix/                @krisskad0
+/crates/deecure-agent/src/fixes.rs  @krisskad0
+/packaging/install.sh               @krisskad0
+/packaging/debian/                  @krisskad0
+/scripts/build-*.sh                 @krisskad0
+/scripts/bump-version.sh            @krisskad0
+/.github/                           @krisskad0
+/SECURITY.md                        @krisskad0
+/GOVERNANCE.md                      @krisskad0
+/MAINTAINERS.md                     @krisskad0

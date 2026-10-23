@@ -1,0 +1,33 @@
+# Weekly dependency updates, grouped so they arrive as a few pull requests, not dozens.
+# They go through the same checks and reviews as every other pull request.
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      rust:
+        patterns: ["*"]
+    commit-message:
+      prefix: "build(deps)"
+    open-pull-requests-limit: 3
+  - package-ecosystem: npm
+    directory: /app
+    schedule:
+      interval: weekly
+    groups:
+      web:
+        patterns: ["*"]
+    commit-message:
+      prefix: "build(deps)"
+    open-pull-requests-limit: 3
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci(deps)"

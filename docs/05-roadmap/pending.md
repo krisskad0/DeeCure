@@ -40,6 +40,10 @@ These download hundreds of MB, so they wait until the main connection works. All
 - The tag `v0.1.0-alpha.1` has no release (its build failed on a timing problem, since fixed). It can be deleted from GitHub, or left.
 - Next releases: `scripts/bump-version.sh <version>`, CHANGELOG, `dch`, commit, wait for green CI, then tag. Pre-release tags publish at once.
 
+## 2c. Repository protection (owner, in the browser)
+
+The contribution rules are written ([docs/08-contributing](../08-contributing/README.md)) and the files are in the repo (`.github/rulesets/`, `CODEOWNERS`, `labels.yml`, `dependabot.yml`, the `Sign-off and title` check). GitHub only enforces them after the owner follows [Repository settings](../08-contributing/06-repository-settings.md): import the 5 rulesets, set squash-only merging, Actions approval for outside contributors, private vulnerability reporting, and run `scripts/sync-labels.sh` once.
+
 ## 3. Phase 2 items that need people, machines, or the owner
 
 → [Phase 2](phase-2-fix-safely.md)

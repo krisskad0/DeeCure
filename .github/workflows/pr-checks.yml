@@ -1,0 +1,59 @@
+# Checks every pull request for two rules from docs/08-contributing:
+# - every commit is signed off (Developer Certificate of Origin), except bot commits;
+# - the title follows Conventional Commits, because it becomes the commit on main.
+# It needs no secrets and only reads the repository, so it is safe for forks.
+name: Pull request
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  rules:
+    name: Sign-off and title
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Every commit is signed off
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          for sha in $(git rev-list "$BASE..$HEAD"); do
+            author="$(git log -1 --format='%an <%ae>' "$sha")"
+            case "$author" in
+              *"[bot]"*) continue ;;
+            esac
+            if ! git log -1 --format=%B "$sha" | grep -qi '^Signed-off-by: '; then
+              echo "::error::Commit $sha by $author has no Signed-off-by line. Fix: git rebase --signoff origin/main, then git push --force-with-lease."
+              missing=1
+            fi
+          done
+          [ "$missing" = 0 ] && echo "All commits are signed off."
+          exit "$missing"
+
+      - name: The title follows Conventional Commits
+        env:
+          # Passed as data, never pasted into the script: a title cannot run commands.
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # GitHub's Revert button makes 'Revert "fix(x): y"', which is fine too.
+          if printf '%s' "$TITLE" | grep -Eq '^(feat|fix|docs|test|refactor|perf|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: .+|^Revert ".+"$'; then
+            echo "Title is fine: $TITLE"
+          else
+            echo "::error::The title must look like 'fix(power): show battery health', with a type of feat, fix, docs, test, refactor, perf, build, ci, chore, or revert."
+            exit 1
+          fi

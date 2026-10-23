@@ -17,6 +17,7 @@ Read the folders in number order. Then build the app by following the roadmap.
 | 5 | [05-roadmap](05-roadmap/README.md) | Build the app phase by phase, task by task |
 | 6 | [06-packaging](06-packaging/README.md) | Ship the `.deb`, the APT repository, and releases |
 | 7 | [07-user-guide](07-user-guide/README.md) | Help end users install DeeCure and use it every day |
+| 8 | [08-contributing](08-contributing/README.md) | Contribute: issues, branches, pull requests, reviews, roles, and the protected-branch rules |
 
 ## How to build the app with these docs
 
