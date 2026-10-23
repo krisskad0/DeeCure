@@ -33,13 +33,12 @@ These download hundreds of MB, so they wait until the main connection works. All
 | Install script against a signed test repository, and from a GitHub Release | `make install-test` | Not run since the GitHub-release mode was added. Run it once. |
 | CI on GitHub | The Actions page of the repository | Check that the run for the newest push is green (all 4 jobs, including the new `make db-size` step). Poll the GitHub API at most once a minute. |
 
-## 2b. First pre-release (owner's go-ahead)
+## 2b. Releases
 
-The one-command installer works from GitHub Releases, so a published pre-release is all that is needed for people to install DeeCure:
-
-1. `scripts/bump-version.sh 0.1.0-alpha.1`, move the CHANGELOG notes under it, add the `dch` entry it prints, commit.
-2. `git tag v0.1.0-alpha.1 && git push origin v0.1.0-alpha.1`. The release workflow builds and tests the packages on GitHub and publishes the pre-release.
-3. Check on a clean machine: `curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh`.
+- **v0.1.0-alpha.2** is published (pre-release, 2026-10-23): `curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh` installs it. Checked with `--dry-run` against the real release.
+- Still to do: one real install on a clean Ubuntu 24.04 and 26.04 machine or VM (not the development laptop).
+- The tag `v0.1.0-alpha.1` has no release (its build failed on a timing problem, since fixed). It can be deleted from GitHub, or left.
+- Next releases: `scripts/bump-version.sh <version>`, CHANGELOG, `dch`, commit, wait for green CI, then tag. Pre-release tags publish at once.
 
 ## 3. Phase 2 items that need people, machines, or the owner
 
