@@ -1,0 +1,9 @@
+# What CodeQL scans. The design prototype (a mock-up with sample data, not shipped) and
+# test files (fixed sample strings, never real input) are left out.
+name: DeeCure CodeQL config
+paths-ignore:
+  - docs/**
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - app/src/dev/**
+  - tests/fixtures/**

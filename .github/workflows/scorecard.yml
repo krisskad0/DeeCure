@@ -3,10 +3,10 @@
 # score for the README badge, and shows findings under Security › Code scanning.
 name: Scorecard
 
+# Weekly, and when protection rules change; that is what Scorecard recommends.
 on:
-  push:
-    branches: [main]
   branch_protection_rule:
+  workflow_dispatch:
   schedule:
     - cron: "23 5 * * 3"
 

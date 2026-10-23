@@ -550,7 +550,14 @@ mod randomized {
             true
         }
         fn package_state(&self, name: &str) -> Option<String> {
-            Some(if name.len().is_multiple_of(2) { "ii" } else { "rc" }.into())
+            Some(
+                if name.len().is_multiple_of(2) {
+                    "ii"
+                } else {
+                    "rc"
+                }
+                .into(),
+            )
         }
         fn disabled_snaps(&self) -> Vec<(String, String)> {
             vec![self.snap.clone()]

@@ -17,12 +17,46 @@ env:
   APT_OPTIONS: -o Acquire::Retries=3 -o DPkg::Lock::Timeout=120
 
 jobs:
+  # Docs-only changes skip the heavy jobs below. A skipped job counts as passed for the
+  # required checks, so such pull requests can still merge. Anything unclear runs all.
+  changes:
+    name: What changed
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          # docs/03-ui-design feeds the generated UI code, so it counts as code.
+          docs_only='^(docs/(0[124-8]|archive)[^/]*/|docs/README\.md$|[^/]+\.md$|\.github/ISSUE_TEMPLATE/|\.github/PULL_REQUEST_TEMPLATE\.md$|\.github/labels\.yml$|\.github/rulesets/|LICENSE$)'
+          if [ -z "$BASE" ] || [ "$BASE" = 0000000000000000000000000000000000000000 ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "code=true" >> "$GITHUB_OUTPUT"; echo "No base to compare with: run everything."; exit 0
+          fi
+          changed="$(git diff --name-only "$BASE" HEAD)"
+          echo "$changed"
+          if [ -z "$changed" ] || printf '%s\n' "$changed" | grep -qvE "$docs_only"; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"; echo "Only docs changed: the heavy jobs are skipped."
+          fi
+
   rust:
     name: Lint and test
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Install system libraries (SQLite, and WebKitGTK for the desktop app)
         run: |
@@ -43,6 +77,8 @@ jobs:
 
   web:
     name: Web UI (test, type-check, build)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
@@ -50,6 +86,8 @@ jobs:
         working-directory: app
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -71,10 +109,14 @@ jobs:
 
   performance:
     name: Performance budget
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Install system libraries
         run: |
@@ -96,10 +138,14 @@ jobs:
 
   package:
     name: Build and test the .deb
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Install packaging tools
         run: |
@@ -127,8 +173,11 @@ jobs:
       - name: Test the admin helper with real D-Bus and polkit (in a container)
         run: docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-helper.sh --throwaway /src/target/deb/deecure_*.deb'
 
+      # Test builds of main, for people who want to try the newest code; a week is enough.
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: github.event_name == 'push'
         with:
           name: deecure-deb
           path: target/deb/*.deb
           if-no-files-found: error
+          retention-days: 7

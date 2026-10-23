@@ -21,6 +21,7 @@ A pull request can merge only when all of these are green ([.github/workflows](.
 
 | Check | What it runs |
 | --- | --- |
+| `What changed` | Decides whether the heavy checks run: a pull request that only changes docs skips them (a skipped check counts as passed), anything else runs all of them |
 | `Lint and test` | `make lint` and `make test`: formatting, clippy, Rust tests, real-machine fixtures |
 | `Web UI (test, type-check, build)` | UI tests, the generated-spec check, type-check, build |
 | `Performance budget` | `make perf` and `make db-size` |

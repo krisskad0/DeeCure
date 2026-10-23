@@ -12,7 +12,7 @@ The rules in this folder are enforced by GitHub settings and **rulesets**. Rules
 
 | File | Protects | Rules | Who may bypass |
 | --- | --- | --- | --- |
-| `main.json` | `main` | No deletion, no force push, straight history, a pull request with 1 approval and the code owner's, stale approvals dismissed, conversations resolved, **squash merge only**, all 5 CI checks green and up to date | Repository admins |
+| `main.json` | `main` | No deletion, no force push, straight history, a pull request with 1 approval and the code owner's, stale approvals dismissed, conversations resolved, **squash merge only**, all 6 required checks green and up to date | Repository admins |
 | `release-branches.json` | `release/*` | The same as `main` | Repository admins |
 | `release-branch-creation.json` | `release/*` | Only maintainers and admins may create one | Admins, maintainers |
 | `tag-creation.json` | `v*` tags | Only maintainers and admins may create a release tag (which starts a release) | Admins, maintainers |

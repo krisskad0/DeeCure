@@ -1,33 +1,35 @@
-# Weekly dependency updates, grouped so they arrive as a few pull requests, not dozens.
-# They go through the same checks and reviews as every other pull request.
+# Dependency updates, kept calm: once a month, small updates (minor and patch) grouped
+# into one pull request per ecosystem, and each major version as its own pull request
+# to review. Security fixes come right away regardless (Dependabot security updates).
 version: 2
 updates:
   - package-ecosystem: cargo
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       rust:
-        patterns: ["*"]
+        update-types: [minor, patch]
     commit-message:
       prefix: "build(deps)"
     open-pull-requests-limit: 3
   - package-ecosystem: npm
     directory: /app
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       web:
-        patterns: ["*"]
+        update-types: [minor, patch]
     commit-message:
       prefix: "build(deps)"
     open-pull-requests-limit: 3
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       actions:
-        patterns: ["*"]
+        update-types: [minor, patch]
     commit-message:
       prefix: "ci(deps)"
+    open-pull-requests-limit: 3

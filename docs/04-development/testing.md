@@ -34,6 +34,18 @@
 | VM matrix and fix safety | Ubuntu 24.04 and 26.04 VMs: each fix passes apply → verify → undo | Before every release | Pending ([Pending work](../05-roadmap/pending.md)) |
 | Beginner tests | 5 non-technical users, three tasks | Before the beta | Pending |
 
+### When each check runs (no wasted runs)
+
+| Workflow | Runs on | Skips |
+| --- | --- | --- |
+| CI | Every push to `main` and every pull request | The heavy jobs, when only docs changed (the `What changed` job decides; anything unclear runs everything) |
+| Pull request (sign-off and title) | Every pull request event, including description edits | Nothing: it takes 10 seconds, and a skipped required check would count as passed |
+| Dependencies | Changes to `Cargo.lock`, `Cargo.toml`, `package*.json`, or `deny.toml`, and every Monday | Everything else |
+| CodeQL | Code changes, and every Tuesday | Docs-only changes; the design prototype, tests, and fixtures are not scanned |
+| Scorecard | Every Wednesday, and when protection rules change | Normal pushes |
+| Dependabot | Monthly: minor and patch updates grouped, each major version alone; security fixes at once | |
+| Release | `v*` tags only | |
+
 ## Where tests live
 
 | Path | What |

@@ -18,6 +18,8 @@ concurrency:
 jobs:
   rules:
     name: Sign-off and title
+    # It also runs when only the description is edited: a skipped required check counts
+    # as passed on GitHub, so skipping it could hide a failure. It takes 10 seconds.
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

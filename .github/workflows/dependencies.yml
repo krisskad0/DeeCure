@@ -3,10 +3,26 @@
 # Runs on changes, and every Monday, because new advisories appear for old versions.
 name: Dependencies
 
+# Only when dependencies or the policy change; the weekly run catches new advisories
+# for versions we already use.
 on:
   push:
     branches: [main]
+    paths:
+      - Cargo.lock
+      - "**/Cargo.toml"
+      - app/package.json
+      - app/package-lock.json
+      - deny.toml
+      - .github/workflows/dependencies.yml
   pull_request:
+    paths:
+      - Cargo.lock
+      - "**/Cargo.toml"
+      - app/package.json
+      - app/package-lock.json
+      - deny.toml
+      - .github/workflows/dependencies.yml
   schedule:
     - cron: "17 4 * * 1"
 
