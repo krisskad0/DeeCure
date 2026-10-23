@@ -49,6 +49,8 @@ Radio group name: `access`.
 | Weekly summary | Sunday 18:00 | Switch | On | `n3` |
 | Quiet hours |  | Select: Off / 22:00–07:00 / 23:00–08:00 | 22:00–07:00 | `n4` |
 
+What is built (Phase 3): the choices are saved by the agent, which sends the notifications ([Notifications](../../02-architecture/notifications.md)). A **Send a test notification** button shows one now, or says why it cannot, and a **Recently shown** panel lists the last 8.
+
 ## Settings › Assistant — `settings/assistant`
 
 1. **Settings form (field rows, [Form controls](../03-components/21-form-controls.md))** — "Assistant" · span 8

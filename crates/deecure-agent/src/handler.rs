@@ -5,7 +5,8 @@
 use deecure_core::rpc::{
     EventList, EventParams, EventsParams, FixPlanParams, FixRecordParams, FixUndoneParams,
     InventoryParams, MAX_EVENTS, MAX_MESSAGE_BYTES, MAX_POINTS, MetricsParams, PROTOCOL_VERSION,
-    Request, RequestId, Response, RpcError, SnapshotParams, StatusReport, VersionInfo, method,
+    Request, RequestId, Response, RpcError, SetNotifySettingsParams, SnapshotParams, StatusReport,
+    VersionInfo, method,
 };
 use deecure_core::{Timestamp, VERSION, health, thin};
 use serde::Serialize;
@@ -151,6 +152,32 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
         }),
         method::EVENT => params::<EventParams>(&request)
             .and_then(|p| to_result(&store().event_by_id(p.id).map_err(store_failed)?)),
+        method::NOTIFY_SETTINGS => no_params(&request)
+            .and_then(|()| to_result(&crate::notify::settings(&store()).map_err(store_failed)?)),
+        method::SET_NOTIFY_SETTINGS => params::<SetNotifySettingsParams>(&request).and_then(|p| {
+            store()
+                .set_setting(crate::notify::SETTING, &p.settings)
+                .map_err(store_failed)?;
+            to_result(&p.settings)
+        }),
+        method::NOTIFY_TEST => match no_params(&request) {
+            Ok(()) => {
+                let (title, body) = (
+                    "DeeCure notifications work",
+                    "This is how DeeCure tells you about serious problems.",
+                );
+                match crate::notify::show(agent, title, body, false).await {
+                    Ok(()) => store()
+                        .add_notification("test", Timestamp::now(), title, body)
+                        .map_err(store_failed)
+                        .and_then(|()| to_result(&true)),
+                    Err(why) => Err(RpcError::new(RpcError::INTERNAL_ERROR, why)),
+                }
+            }
+            Err(e) => Err(e),
+        },
+        method::NOTIFICATIONS => no_params(&request)
+            .and_then(|()| to_result(&store().recent_notifications(30).map_err(store_failed)?)),
         other => Err(RpcError::method_not_found(other)),
     };
     match result {
@@ -442,5 +469,41 @@ mod tests {
         let list = event_list((0..1000).map(big).collect(), 2000);
         assert!(list.truncated);
         assert!(serde_json::to_vec(&list).unwrap().len() < MAX_MESSAGE_BYTES);
+    }
+
+    #[tokio::test]
+    async fn notification_settings_round_trip_and_are_checked() {
+        let agent = agent();
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":1,"method":"notify_settings"}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["critical"], true);
+        assert_eq!(reply["result"]["quiet_hours"], "22-07");
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":2,"method":"set_notify_settings","params":{"settings":{"warnings":true,"quiet_hours":"off"}}}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["warnings"], true);
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":3,"method":"notify_settings"}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["quiet_hours"], "off");
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":4,"method":"set_notify_settings","params":{"settings":{"quiet_hours":"all day"}}}"#,
+        )
+        .await;
+        assert_eq!(reply["error"]["code"], RpcError::INVALID_PARAMS);
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":5,"method":"notifications"}"#,
+        )
+        .await;
+        assert_eq!(reply["result"], json!([]));
     }
 }

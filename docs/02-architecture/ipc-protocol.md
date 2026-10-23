@@ -45,6 +45,10 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | `inventory` | `{"kind": "system"}` | Live data read now: `system`, `processes`, `network`, `gpu`, `os`, `kernel`, `update_history`, `hardware`, `power`, `display`, `audio`, `bluetooth`, `firmware`, `sleep`, `storage`, `disk_usage`, `user_services`, `service_memory`, `startup`, `jobs`, `journal`, `errors`, `kernel_log`, `crashes`, `boots`, `device_events`, `config_changes`, `package_history`, `net_details`, `sockets`, `accounts`, `security`, `privacy`, `packages`, `containers`, `backups`, `diagnose_performance` and `diagnose_network` (on-demand checks that take a second or two), or `agent` (DeeCure's own facts) ([Collectors](collectors.md#live-inventories)). An unknown kind is a `-32602` error. | Phase 1 |
 | `events` | `{"since": <ms>, "until": <ms>?, "kinds": ["boot", …]?, "limit": 500?}` | `{"events": [<Event>, …], "truncated": false}`: what changed, newest first ([Storage › Events](storage.md#events)). At most 2000 (the default), and never more than fits in three quarters of one message; `truncated` says more matched. Config diffs are left out. | Phase 3 |
 | `event` | `{"id": 42}` | One `<Event>` with every detail, such as a config file's `diff`, or `null` | Phase 3 |
+| `notify_settings` | none | `{"critical": true, "warnings": false, "weekly": true, "quiet_hours": "22-07"}` ([Notifications](notifications.md#settings)) | Phase 3 |
+| `set_notify_settings` | `{"settings": {…}}` (missing fields take their defaults) | The saved settings. Unknown fields or values are a `-32602` error. | Phase 3 |
+| `notify_test` | none | `true` when a test notification was shown; otherwise an error saying why (such as no desktop session) | Phase 3 |
+| `notifications` | none | `[{"at": <ms>, "title": …, "body": …}, …]`: the last 30 shown, newest first | Phase 3 |
 
 `?` marks an optional field. Unknown param fields are rejected. Metric names are listed in [Collectors](collectors.md#metric-names).
 

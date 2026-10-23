@@ -16,6 +16,7 @@ pub mod health;
 mod id;
 pub mod local;
 mod metric;
+pub mod notify;
 pub mod rpc;
 mod severity;
 mod snapshot;
@@ -29,6 +30,10 @@ pub use metric::{Metric, Unit, thin};
 pub use severity::{Severity, Status};
 pub use snapshot::{Snapshot, SnapshotKind};
 pub use time::Timestamp;
+
+/// The app ID: the desktop file, AppStream, and notifications use it. Open decision #6
+/// (`docs/01-product/open-decisions.md`): it must never change after the first release.
+pub const APP_ID: &str = "io.github.krisskad0.DeeCure";
 
 /// The DeeCure version, taken from the workspace `Cargo.toml`.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

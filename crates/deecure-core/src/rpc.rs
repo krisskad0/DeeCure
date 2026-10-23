@@ -61,6 +61,25 @@ pub mod method {
     /// Returns one [`Event`](crate::Event) with all its details (such as a config diff),
     /// or `null`. Takes [`EventParams`](super::EventParams).
     pub const EVENT: &str = "event";
+    /// Returns the [`NotifySettings`](crate::notify::NotifySettings). Takes no params.
+    pub const NOTIFY_SETTINGS: &str = "notify_settings";
+    /// Saves new [`NotifySettings`](crate::notify::NotifySettings) and returns them. Takes
+    /// [`SetNotifySettingsParams`](super::SetNotifySettingsParams).
+    pub const SET_NOTIFY_SETTINGS: &str = "set_notify_settings";
+    /// Shows a test notification now. Returns `true`, or an error saying why it could not.
+    /// Takes no params.
+    pub const NOTIFY_TEST: &str = "notify_test";
+    /// Returns the last 30 [`SentNotification`](crate::notify::SentNotification)s, newest
+    /// first. Takes no params.
+    pub const NOTIFICATIONS: &str = "notifications";
+}
+
+/// Params of the `set_notify_settings` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SetNotifySettingsParams {
+    /// The new settings. Missing fields take their defaults.
+    pub settings: crate::notify::NotifySettings,
 }
 
 /// Params of the `events` method.

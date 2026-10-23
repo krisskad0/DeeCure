@@ -480,6 +480,37 @@ export function getEvent(id: number): Promise<HistoryEvent | null> {
   return invoke<HistoryEvent | null>("event", { id });
 }
 
+// Notifications (docs/02-architecture/notifications.md).
+
+export interface NotifySettings {
+  critical: boolean;
+  warnings: boolean;
+  weekly: boolean;
+  quiet_hours: "off" | "22-07" | "23-08";
+}
+
+export interface SentNotification {
+  at: number;
+  title: string;
+  body: string;
+}
+
+export function getNotifySettings(): Promise<NotifySettings> {
+  return invoke<NotifySettings>("notify_settings");
+}
+
+export function setNotifySettings(settings: NotifySettings): Promise<NotifySettings> {
+  return invoke<NotifySettings>("set_notify_settings", { settings });
+}
+
+export function sendTestNotification(): Promise<boolean> {
+  return invoke<boolean>("notify_test");
+}
+
+export function getNotifications(): Promise<SentNotification[]> {
+  return invoke<SentNotification[]>("notifications");
+}
+
 export interface PackageChange {
   /** Local time as apt wrote it: `YYYY-MM-DD  HH:MM:SS`. */
   start: string;

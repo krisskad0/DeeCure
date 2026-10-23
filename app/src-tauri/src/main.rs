@@ -119,6 +119,34 @@ async fn event(id: i64) -> Result<Value, AppError> {
     ask(method::EVENT, Some(json!({ "id": id }))).await
 }
 
+/// The notification settings.
+#[tauri::command]
+async fn notify_settings() -> Result<Value, AppError> {
+    ask(method::NOTIFY_SETTINGS, None).await
+}
+
+/// Saves the notification settings; the agent checks them.
+#[tauri::command]
+async fn set_notify_settings(settings: Value) -> Result<Value, AppError> {
+    ask(
+        method::SET_NOTIFY_SETTINGS,
+        Some(json!({ "settings": settings })),
+    )
+    .await
+}
+
+/// Shows a test notification.
+#[tauri::command]
+async fn notify_test() -> Result<bool, AppError> {
+    ask(method::NOTIFY_TEST, None).await
+}
+
+/// The last notifications shown.
+#[tauri::command]
+async fn notifications() -> Result<Value, AppError> {
+    ask(method::NOTIFICATIONS, None).await
+}
+
 /// A fix's plan: what it will do, before anything runs.
 #[tauri::command]
 async fn fix_plan(action: String, subject: Option<String>) -> Result<Plan, AppError> {
@@ -244,6 +272,10 @@ fn main() {
             latest,
             events,
             event,
+            notify_settings,
+            set_notify_settings,
+            notify_test,
+            notifications,
             machine,
             fix_plan,
             fix_apply,

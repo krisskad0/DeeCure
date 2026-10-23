@@ -9,6 +9,7 @@ mod files;
 mod findings;
 mod fixes;
 mod metrics;
+mod notifications;
 mod records;
 mod retention;
 mod schema;

@@ -11,6 +11,7 @@ pub mod handler;
 pub mod history;
 pub mod inventory;
 pub mod kb;
+pub mod notify;
 pub mod rules;
 pub mod server;
 pub mod socket;

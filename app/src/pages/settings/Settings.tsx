@@ -3,14 +3,14 @@
 // (docs/03-ui-design/05-pages/22-settings.md). View settings work now; settings for
 // features that come later are shown honestly as "later".
 
-import { getInventory } from "../../api";
-import { AlertBanner } from "../../components/AlertBanner";
+import { type NotifySettings, getInventory, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
+import { useState } from "react";
 import { Button } from "../../components/Button";
 import { FieldRow, RadioCards, Select, Switch } from "../../components/FormControls";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
-import { bytes, duration } from "../../metrics";
+import { bytes, duration, when } from "../../metrics";
 import { usePref } from "../../prefs";
 import { useToast } from "../../shell/Toast";
 import type { Mode, Range } from "../../ui";
@@ -86,23 +86,77 @@ export function SettingsAccess() {
   );
 }
 
+const loadNotify = () => getNotifySettings();
+const loadSent = () => getNotifications();
+const QUIET = [
+  { value: "off", label: "Off" },
+  { value: "22-07", label: "22:00–07:00" },
+  { value: "23-08", label: "23:00–08:00" },
+] as const;
+
 export function SettingsNotifications() {
-  const [critical, setCritical] = usePref<boolean>("notify.critical", true);
-  const [warnings, setWarnings] = usePref<boolean>("notify.warnings", false);
-  const [weekly, setWeekly] = usePref<boolean>("notify.weekly", true);
+  const toast = useToast();
+  const { data, error } = useLive(loadNotify, 300_000);
+  const sent = useLive(loadSent, 60_000).data;
+  const [saved, setSaved] = useState<NotifySettings | null>(null);
+  const [testing, setTesting] = useState(false);
+  const current = saved ?? data;
+  if (!current) {
+    return (
+      <Panel title="Notifications" span={8}>
+        <NoData error={error} waiting="Loading…" />
+      </Panel>
+    );
+  }
+  const change = async (next: NotifySettings) => {
+    const before = current;
+    setSaved(next);
+    try {
+      setSaved(await setNotifySettings(next));
+    } catch (e) {
+      setSaved(before);
+      toast(`Not saved: ${toAppError(e).message}`);
+    }
+  };
+  const test = async () => {
+    setTesting(true);
+    try {
+      await sendTestNotification();
+      toast("A test notification was sent. Did you see it?");
+    } catch (e) {
+      toast(`No notification: ${toAppError(e).message}`);
+    }
+    setTesting(false);
+  };
   return (
     <>
-      <AlertBanner tone="info" title="Desktop notifications come later" text="Your choices are saved now and will be used when notifications arrive." />
-      <Panel title="Notifications" span={8}>
-        <FieldRow label="Critical issues" description="Disk almost full, failing drive, overheating">
-          <Switch checked={critical} onChange={setCritical} label="Critical issues" />
+      <Panel title="Notifications" info="The background agent shows these, even when this window is closed." span={8}>
+        <FieldRow label="Critical issues" description="Disk almost full or filling fast, failing drive, overheating — right away">
+          <Switch checked={current.critical} onChange={(on) => void change({ ...current, critical: on })} label="Critical issues" />
         </FieldRow>
         <FieldRow label="Warnings" description="Included in the weekly summary when off">
-          <Switch checked={warnings} onChange={setWarnings} label="Warnings" />
+          <Switch checked={current.warnings} onChange={(on) => void change({ ...current, warnings: on })} label="Warnings" />
         </FieldRow>
-        <FieldRow label="Weekly summary" description="Sunday evening">
-          <Switch checked={weekly} onChange={setWeekly} label="Weekly summary" />
+        <FieldRow label="Weekly summary" description="Sunday 18:00: health trend, what changed, and one tip">
+          <Switch checked={current.weekly} onChange={(on) => void change({ ...current, weekly: on })} label="Weekly summary" />
         </FieldRow>
+        <FieldRow label="Quiet hours" description="Nothing is shown then; it waits until they end">
+          <Select value={current.quiet_hours} options={QUIET} onChange={(v) => void change({ ...current, quiet_hours: v })} label="Quiet hours" />
+        </FieldRow>
+        <FieldRow label="Test" description="The same alert never repeats within 24 hours">
+          <Button small disabled={testing} onClick={() => void test()}>
+            {testing ? "Sending…" : "Send a test notification"}
+          </Button>
+        </FieldRow>
+      </Panel>
+      <Panel title="Recently shown" span={4} flush>
+        {!sent ? (
+          <div className="empty muted">Loading…</div>
+        ) : sent.length ? (
+          <KeyValueList rows={sent.slice(0, 8).map((n) => [when(n.at), n.title])} />
+        ) : (
+          <div className="empty muted">No notifications yet.</div>
+        )}
       </Panel>
     </>
   );

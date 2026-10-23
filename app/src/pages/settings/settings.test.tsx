@@ -6,7 +6,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { usePref } from "../../prefs";
 import { AssistantChat } from "../assistant/Assistant";
 import { DiagnosticsHardware, DiagnosticsNetwork, DiagnosticsPerformance } from "../diagnostics/Diagnostics";
-import { SettingsAbout, SettingsData, SettingsGeneral } from "./Settings";
+import { SettingsAbout, SettingsData, SettingsGeneral, SettingsNotifications } from "./Settings";
+
+const saved: unknown[] = [];
 
 vi.mock("../../api", () => ({
   getInventory: (kind: string) =>
@@ -16,6 +18,13 @@ vi.mock("../../api", () => ({
         ? Promise.reject({ kind: "agent_not_running", message: "The agent is not running." })
         : Promise.resolve({ version: "0.1.0", database: "/home/riya/.local/share/deecure/deecure.db", database_bytes: 74e6, rules: 8, rules_dir: "/usr/share/deecure/rules", uptime_seconds: 3700, memory_bytes: 9e6 }),
   getLatest: () => Promise.resolve([{ name: "temp.cpu", value: 54, unit: "celsius", at: 0 }]),
+  getNotifySettings: () => Promise.resolve({ critical: true, warnings: false, weekly: true, quiet_hours: "22-07" }),
+  setNotifySettings: (s: unknown) => {
+    saved.push(s);
+    return Promise.resolve(s);
+  },
+  sendTestNotification: () => Promise.reject({ message: "no notification service is running (is a desktop session open?)" }),
+  getNotifications: () => Promise.resolve([{ at: Date.now(), title: "Main disk is almost full", body: "Only 3 GB left." }]),
   toAppError: (e: { message?: string }) => ({ kind: "other", message: e.message ?? String(e) }),
 }));
 
@@ -86,6 +95,18 @@ describe("Settings and Assistant", () => {
     cleanup();
     render(<SettingsAbout />);
     await waitFor(() => expect(screen.getByText("8 from /usr/share/deecure/rules")).toBeTruthy());
+  });
+
+  it("notification choices are saved in the agent", async () => {
+    render(<SettingsNotifications />);
+    await waitFor(() => expect(screen.getByRole("switch", { name: "Warnings" })).toBeTruthy());
+    expect(screen.getByText("Main disk is almost full")).toBeTruthy();
+    fireEvent.click(screen.getByRole("switch", { name: "Warnings" }));
+    await waitFor(() => expect(saved).toEqual([{ critical: true, warnings: true, weekly: true, quiet_hours: "22-07" }]));
+    fireEvent.change(screen.getByRole("combobox", { name: "Quiet hours" }), { target: { value: "off" } });
+    await waitFor(() => expect(saved[1]).toEqual({ critical: true, warnings: true, weekly: true, quiet_hours: "off" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send a test notification" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Send a test notification" })).toBeTruthy());
   });
 
   it("assistant is honest that it comes later", () => {
