@@ -2,7 +2,7 @@
 // Features that are not built yet stay out of the app.
 
 import { describe, expect, it } from "vitest";
-import { parseHash } from "./route";
+import { MERGED, href, parseHash } from "./route";
 import { PAGES } from "./spec/pages";
 import { type Mode, atLeast } from "./ui";
 import { VISIBLE_PAGES, inBeginner, menuPages } from "./visible";
@@ -32,8 +32,8 @@ describe("visible pages", () => {
   });
 
   it("the page the user is on stays in the Beginner menus", () => {
-    const onKernel = menuPages("beginner", { pageId: "logs", tabId: "kernel" });
-    expect(onKernel.find((p) => p.id === "logs")?.tabs.map((t) => t.id)).toEqual(["kernel"]);
+    const onBoots = menuPages("beginner", { pageId: "logs", tabId: "boots" });
+    expect(onBoots.find((p) => p.id === "logs")?.tabs.map((t) => t.id)).toEqual(["boots"]);
     const onPsi = menuPages("beginner", { pageId: "performance", tabId: "pressure" });
     expect(onPsi.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "disk", "network", "gpu", "pressure"]);
   });
@@ -60,5 +60,24 @@ describe("visible pages", () => {
     expect(atLeast("beginner", "beginner")).toBe(true);
     expect(atLeast("Expert" as Mode, "advanced")).toBe(false);
     expect(menuPages("nonsense" as Mode).length).toBe(menuPages("beginner").length);
+  });
+
+  it("old links to merged sub-pages open the merged one at the right part", () => {
+    const r = parseHash("#/jobs/cron");
+    expect([r.page.id, r.tab.id, r.section]).toEqual(["jobs", "all", "cron"]);
+    expect(parseHash("#/logs/kernel").tab.id).toBe("journal");
+    expect(parseHash("#/jobs/all/timers").section).toBe("timers");
+    expect(parseHash("#/jobs/all").section).toBeUndefined();
+    expect(href("logs", "kernel")).toBe("#/logs/journal/kernel");
+    for (const [old, to] of Object.entries(MERGED)) {
+      const [pageId] = old.split("/");
+      const page = VISIBLE_PAGES.find((p) => p.id === pageId);
+      expect(page?.tabs.map((t) => t.id)).toContain(to.tab);
+      expect(page?.tabs.map((t) => t.id)).not.toContain(old.split("/")[1]);
+    }
+  });
+
+  it("the full view has 77 sub-pages", () => {
+    expect(VISIBLE_PAGES.reduce((n, p) => n + p.tabs.length, 0)).toBe(77);
   });
 });

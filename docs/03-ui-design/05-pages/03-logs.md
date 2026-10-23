@@ -3,7 +3,7 @@
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
 - Group: Monitoring · Icon: `logs` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Journal, Errors, Crashes, Kernel, Boots
+- Sub-pages: Journal (with Kernel below it), Errors and crashes (Errors, then Crashes), Boots. The sections below keep their old names: each is now a part of a merged sub-page, and old links scroll to it ([merged sub-pages](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)).
 
 ## Logs › Journal: `logs/journal`
 

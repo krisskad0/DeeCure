@@ -55,9 +55,10 @@ import { Onboarding } from "./shell/Onboarding";
 import { PageHeader } from "./shell/PageHeader";
 import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
 import { Sidebar } from "./shell/Sidebar";
-import { type Mode, type Range, TopBar } from "./shell/TopBar";
+import { type Range, TopBar } from "./shell/TopBar";
 import { findingsFor, pageStatus } from "./status";
-import { UiContext, atLeast } from "./ui";
+import { type Mode, UiContext, atLeast } from "./ui";
+import { stack } from "./shell/Stack";
 import { inBeginner } from "./visible";
 import { AlertBanner } from "./components/AlertBanner";
 import { Button } from "./components/Button";
@@ -66,6 +67,7 @@ import { Gallery } from "./dev/Gallery";
 const REFRESH_MS = 10_000;
 
 type Tab = () => React.JSX.Element;
+
 
 /** Pages whose tabs need no shared props, by page and tab ID. */
 const TABS: Record<string, Record<string, Tab>> = {
@@ -90,21 +92,32 @@ const TABS: Record<string, Record<string, Tab>> = {
   },
   power: { battery: PowerBattery, profile: PowerProfile, sleep: PowerSleep },
   display: { displays: DisplayDisplays, audio: DisplayAudio },
-  logs: { journal: LogsJournal, errors: LogsErrors, crashes: LogsCrashes, kernel: LogsKernel, boots: LogsBoots },
-  activity: { timeline: ActivityTimelinePage, packages: ActivityPackages, config: ActivityConfig, devices: ActivityDevices, deecure: ActivityDeeCure },
+  logs: {
+    journal: stack(["journal", LogsJournal], ["kernel", LogsKernel]),
+    errors: stack(["errors", LogsErrors], ["crashes", LogsCrashes]),
+    boots: LogsBoots,
+  },
+  activity: {
+    timeline: stack(["timeline", ActivityTimelinePage], ["packages", ActivityPackages, "advanced"], ["devices", ActivityDevices, "advanced"], ["deecure", ActivityDeeCure, "advanced"]),
+    config: ActivityConfig,
+  },
   network: { interfaces: NetworkInterfaces, connections: NetworkConnections, ports: NetworkPorts, firewall: NetworkFirewall, dns: NetworkDns, traffic: NetworkTraffic },
-  accounts: { users: AccountsUsers, groups: AccountsGroups, sessions: AccountsSessions, logins: AccountsLogins, ssh: AccountsSsh },
+  accounts: {
+    users: stack(["users", AccountsUsers], ["groups", AccountsGroups]),
+    sessions: stack(["sessions", AccountsSessions], ["logins", AccountsLogins]),
+    ssh: AccountsSsh,
+  },
   security: { overview: SecurityOverview, vulns: SecurityVulns, hardening: SecurityHardening, integrity: SecurityIntegrity, malware: SecurityMalware },
   privacy: { access: PrivacyAccess, perms: PrivacyPermissions, settings: PrivacySettings },
   packages: { installed: PackagesInstalled, sources: PackagesSources, cleanup: PackagesCleanup, permissions: PackagesPermissions },
-  containers: { containers: ContainersList, images: ContainersImages, volumes: ContainersVolumes, vms: ContainersVms },
-  backups: { jobs: BackupsJobs, snapshots: BackupsSnapshots, restore: BackupsRestore },
+  containers: { containers: ContainersList, images: stack(["images", ContainersImages], ["volumes", ContainersVolumes]), vms: ContainersVms },
+  backups: { jobs: stack(["jobs", BackupsJobs], ["snapshots", BackupsSnapshots]), restore: BackupsRestore },
   diagnostics: { performance: DiagnosticsPerformance, network: DiagnosticsNetwork, hardware: DiagnosticsHardware },
   assistant: { chat: AssistantChat },
   settings: { general: SettingsGeneral, access: SettingsAccess, notifications: SettingsNotifications, assistant: SettingsAssistant, data: SettingsData, about: SettingsAbout },
   storage: { overview: StorageOverview, filesystems: StorageFilesystems, usage: StorageUsage, cleanup: StorageCleanup },
   services: { user: ServicesUser, startup: ServicesStartup },
-  jobs: { calendar: JobsCalendar, cron: JobsCron, timers: JobsTimers, anacron: JobsAnacron, at: JobsAt },
+  jobs: { calendar: JobsCalendar, all: stack(["cron", JobsCron], ["timers", JobsTimers], ["anacron", JobsAnacron], ["at", JobsAt]) },
   system: { overview: SystemOverview, boot: SystemBoot, updates: SystemUpdates, kernel: SystemKernel, time: SystemTime },
 };
 
@@ -145,6 +158,13 @@ export default function App() {
   useEffect(() => {
     getMachine().then(setMachine, () => setMachine(null));
   }, []);
+
+  // An old link to a merged sub-page scrolls to its part once the page is drawn.
+  useEffect(() => {
+    if (!route.section) return;
+    const frame = requestAnimationFrame(() => document.getElementById(`sec-${route.section}`)?.scrollIntoView({ block: "start" }));
+    return () => cancelAnimationFrame(frame);
+  }, [route.page.id, route.tab.id, route.section]);
 
   useEffect(() => {
     document.title = `${route.gallery ? "Component gallery" : route.page.label} · DeeCure`;

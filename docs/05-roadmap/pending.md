@@ -23,7 +23,7 @@ Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster install
 
 0. **Expert build (approved by the owner on 2026-10-23, in progress).** Build all of [View levels](../01-product/view-levels.md), [Expert coverage](../01-product/expert-coverage.md), and [Optimize](../01-product/optimize-catalog.md), in this order. Test each step once, commit, push, and tick it here:
    1. ✅ Three view levels (Beginner, Advanced, Expert): menus, top bar, Settings, first-run screens.
-   2. Tab merges (89 to 77), with old links opening the merged tab and its filter.
+   2. ✅ Tab merges (89 to 77), with old links opening the merged tab at the right part.
    3. Expert depth without admin, area by area: CPU, memory, drives, filesystems, graphics, network, battery and sleep, temperature, processes drawer, services and boot, kernel limits, hardware and firmware, ports and USB-C, built-in devices, display and sound, hardware errors, software, security, containers.
    4. Power controls (charge limits and mode, wake sources, device power saving, turbo, keyboard backlight, radios, lid), each with undo.
    5. Optimize page, item by item, each on a measured trigger.

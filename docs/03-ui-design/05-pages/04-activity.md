@@ -3,7 +3,7 @@
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
 - Group: Monitoring · Icon: `hist` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Timeline, Package History, Config Changes, Device Events, DeeCure Actions
+- Sub-pages: Timeline (with Package History, Device Events, and DeeCure Actions below it, from the Advanced level up), Config Changes. The sections below keep their old names: each is now a part of a merged sub-page, and old links scroll to it ([merged sub-pages](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)).
 
 ## Activity › Timeline: `activity/timeline`
 

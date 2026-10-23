@@ -2,27 +2,27 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Shell](README.md)
 
-22 pages and 91 sub-pages. Group order and page order are exactly as listed. Advanced and Expert show all of them; Beginner shows fewer (see [Beginner mode](#beginner-mode)).
+22 pages and 79 sub-pages. Group order and page order are exactly as listed. Advanced and Expert show all of them; Beginner shows fewer (see [Beginner mode](#beginner-mode)).
 
 | Group | Page | ID | Icon | Initial status | Sidebar mark | Sub-pages (ID: label) |
 | --- | --- | --- | --- | --- | --- | --- |
 | Monitoring | Overview | `overview` | `grid` | {crit:Critical} | Count pill (9) | `summary`: Summary · `issues`: Issues (count 9, red) · `score`: Health Score |
 | Monitoring | Performance | `performance` | `perf` | {ok:Healthy} | - | `cpu`: CPU · `memory`: Memory · `disk`: Disk I/O · `network`: Network · `gpu`: GPU · `pressure`: Pressure (PSI) |
-| Monitoring | Logs | `logs` | `logs` | {warn:Warning} | Yellow dot | `journal`: Journal · `errors`: Errors (count 37) · `crashes`: Crashes · `kernel`: Kernel · `boots`: Boots |
-| Monitoring | Activity | `activity` | `hist` | {ok:Healthy} | - | `timeline`: Timeline · `packages`: Package History · `config`: Config Changes · `devices`: Device Events · `deecure`: DeeCure Actions |
+| Monitoring | Logs | `logs` | `logs` | {warn:Warning} | Yellow dot | `journal`: Journal · `errors`: Errors and crashes (count 37) · `boots`: Boots |
+| Monitoring | Activity | `activity` | `hist` | {ok:Healthy} | - | `timeline`: Timeline · `config`: Config Changes |
 | System | System | `system` | `sys` | {info:Info} | - | `overview`: Overview · `boot`: Boot · `updates`: Updates (count 12) · `kernel`: Kernel · `time`: Time & Locale |
 | System | Hardware | `hardware` | `chip` | {ok:Healthy} | - | `summary`: Summary · `processor`: Processor · `memory`: Memory · `storage`: Storage Devices · `graphics`: Graphics · `sensors`: Sensors · `peripherals`: Peripherals · `firmware`: Firmware |
 | System | Power | `power` | `bat` | {warn:Warning} | Yellow dot | `battery`: Battery · `profile`: Power Profile · `sleep`: Sleep |
 | System | Display & Audio | `display` | `mon` | {ok:Healthy} | - | `displays`: Displays · `audio`: Audio |
 | Workloads | Processes | `processes` | `layers` | {ok:Healthy} | - | `all`: All Processes · `top`: Top Consumers |
 | Workloads | Services | `services` | `cog` | {crit:Critical} | Red dot | `system`: System Services (count 1, red) · `user`: User Services · `startup`: Startup Applications |
-| Workloads | Scheduled Jobs | `jobs` | `cal` | {ok:Healthy} | - | `calendar`: Calendar · `cron`: Cron · `timers`: Systemd Timers · `anacron`: Anacron · `at`: At Jobs |
-| Workloads | Containers | `containers` | `cube` | {warn:Warning} | Yellow dot | `containers`: Containers · `images`: Images · `volumes`: Volumes · `vms`: Virtual Machines |
+| Workloads | Scheduled Jobs | `jobs` | `cal` | {ok:Healthy} | - | `calendar`: Calendar · `all`: All Jobs |
+| Workloads | Containers | `containers` | `cube` | {warn:Warning} | Yellow dot | `containers`: Containers · `images`: Images and Volumes · `vms`: Virtual Machines |
 | Software & Data | Packages | `packages` | `pkg` | {warn:Warning} | Yellow dot | `installed`: Installed · `sources`: Sources · `cleanup`: Cleanup · `permissions`: Permissions |
 | Software & Data | Storage | `storage` | `db` | {crit:Critical} | Red dot | `overview`: Overview · `filesystems`: Filesystems · `usage`: Disk Usage · `cleanup`: Cleanup |
-| Software & Data | Backups | `backups` | `backup` | {warn:Warning} | Yellow dot | `jobs`: Backup Jobs · `snapshots`: System Snapshots · `restore`: Restore Points |
+| Software & Data | Backups | `backups` | `backup` | {warn:Warning} | Yellow dot | `jobs`: Backups · `restore`: Restore Points |
 | Network & Access | Network | `network` | `wifi` | {ok:Healthy} | - | `interfaces`: Interfaces · `connections`: Connections · `ports`: Open Ports · `firewall`: Firewall · `dns`: DNS & VPN · `traffic`: Traffic |
-| Network & Access | Accounts | `accounts` | `users` | {ok:Healthy} | - | `users`: Users · `groups`: Groups · `sessions`: Sessions · `logins`: Login History · `ssh`: SSH Keys |
+| Network & Access | Accounts | `accounts` | `users` | {ok:Healthy} | - | `users`: Users and Groups · `sessions`: Sign-ins · `ssh`: SSH Keys |
 | Network & Access | Security | `security` | `shield` | {warn:Warning} | Yellow dot | `overview`: Overview · `vulns`: Vulnerabilities (count 3) · `hardening`: Hardening · `integrity`: File Integrity · `malware`: Malware Scan |
 | Network & Access | Privacy | `privacy` | `eye` | {ok:Healthy} | - | `access`: Device Access · `perms`: App Permissions · `settings`: Privacy Settings |
 | Tools | Diagnostics | `diagnostics` | `gauge` | none (no badge) | - | `performance`: Performance Check · `network`: Network Test · `hardware`: Hardware Tests |

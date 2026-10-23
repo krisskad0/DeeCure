@@ -3,7 +3,7 @@
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
 - Group: Workloads · Icon: `cal` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Calendar, Cron, Systemd Timers, Anacron, At Jobs
+- Sub-pages: Calendar, All jobs (Cron, Systemd Timers, Anacron, and At Jobs, one after another). The sections below keep their old names: each is now a part of a merged sub-page, and old links scroll to it ([merged sub-pages](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)).
 
 ## Scheduled Jobs › Calendar: `jobs/calendar`
 

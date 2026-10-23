@@ -50,10 +50,12 @@ describe("Beginner and Expert menus", () => {
     }
   });
 
-  it("a link to an Expert page keeps that page in the Beginner sidebar", () => {
-    sidebar("beginner", "#/logs/kernel");
-    expect(screen.getByText("Logs").closest("a")?.getAttribute("aria-current")).toBe("page");
-    expect(screen.queryByText("Journal")).toBeNull();
+  it("a link to an Advanced page keeps that page in the Beginner sidebar", () => {
+    sidebar("beginner", "#/network/ports");
+    const link = screen.getByText("Network").closest("a");
+    expect(link?.getAttribute("aria-current")).toBe("page");
+    expect(link?.getAttribute("href")).toBe("#/network/ports");
+    expect(screen.queryByText("Interfaces")).toBeNull();
   });
 
   it("page tabs follow the mode, and keep the open tab", () => {

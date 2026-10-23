@@ -117,6 +117,8 @@ kbd { font-size: 11px; padding: 1px 5px; border: 1px solid var(--line-2); border
 .span-3 { grid-column: span 3; } .span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; }
 .span-6 { grid-column: span 6; } .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; }
 .span-9 { grid-column: span 9; } .span-12 { grid-column: span 12; }
+/* Where an old link to a merged sub-page scrolls to: no height, no extra gap, clear of the sticky header. */
+.sec-anchor { height: 0; margin-bottom: -12px; scroll-margin-top: 130px; }
 
 .scrim { display: none; }
 

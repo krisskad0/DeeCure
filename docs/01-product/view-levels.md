@@ -27,20 +27,20 @@ DeeCure has three view levels. Each level shows everything the level below shows
 - **History.** Expert values are kept, so trends (drive wear, battery health, boot time) are charts, not single numbers.
 - **One new page: Optimize.** It shows every measured improvement in one place, with a preview and undo for each.
 
-## Fewer tabs for Advanced and Expert (proposal)
+## Fewer tabs for Advanced and Expert
 
-Today the full view has 89 tabs. Merging tabs that show the same kind of list into one table with a filter brings this to 77:
+✅ Done. The full view had 89 tabs. Merging tabs that show the same kind of list into one tab brings this to 77. A merged tab shows the old tabs as parts, one after another; in Beginner, Activity › Timeline shows only the timeline part.
 
 | Page | Today | Proposed |
 | --- | --- | --- |
-| Scheduled Jobs | Calendar, Cron, Systemd Timers, Anacron, At Jobs | Calendar, All jobs (filter: cron, timer, anacron, at) |
-| Logs | Journal, Errors, Crashes, Kernel, Boots | Journal (filter: kernel), Errors and crashes, Boots |
-| Activity | Timeline, Package History, Config Changes, Device Events, DeeCure Actions | Timeline (filter by type), Config Changes |
+| Scheduled Jobs | Calendar, Cron, Systemd Timers, Anacron, At Jobs | Calendar, All jobs (cron, timers, anacron, at) |
+| Logs | Journal, Errors, Crashes, Kernel, Boots | Journal (with kernel messages), Errors and crashes, Boots |
+| Activity | Timeline, Package History, Config Changes, Device Events, DeeCure Actions | Timeline (with package, device, and DeeCure history), Config Changes |
 | Accounts | Users, Groups, Sessions, Login History, SSH Keys | Users and groups, Sign-ins (sessions and history), SSH Keys |
 | Containers | Containers, Images, Volumes, Virtual Machines | Containers, Images and volumes, Virtual Machines |
 | Backups | Backup Jobs, System Snapshots, Restore Points | Backups (jobs and snapshots), Restore Points |
 
-Links to old tabs keep working: they open the merged tab with its filter set.
+Links to old tabs keep working: they open the merged tab and scroll to that part (for example `#/jobs/cron` opens All jobs at the cron part).
 
 ---
 
