@@ -379,6 +379,22 @@ export interface Exposure {
   level: string;
 }
 
+/** Kernel settings and system limits (Expert). */
+export interface KernelDetail {
+  settings: { key: string; value: string; file: string; line: number; package?: string; file_changed: boolean; now?: string; overridden: boolean }[];
+  watch_limit?: number;
+  watch_instances_limit?: number;
+  watches_used: number;
+  watch_users: { pid: number; name: string; watches: number }[];
+  open_files?: number;
+  open_files_limit?: number;
+  modules: { name: string; size: number; taint?: string; used_by: string[]; devices: number }[];
+  dkms?: { module: string; version: string; kernels: string[] }[];
+  kernels: string[];
+  lockdown?: string;
+  time_sync: Record<string, string>;
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -950,6 +966,7 @@ export function getInventory(kind: "thermal"): Promise<ThermalInfo>;
 export function getInventory(kind: "boot_detail"): Promise<BootDetail>;
 export function getInventory(kind: "unit_files"): Promise<UnitFile[]>;
 export function getInventory(kind: "service_security"): Promise<Exposure[]>;
+export function getInventory(kind: "kernel_detail"): Promise<KernelDetail>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

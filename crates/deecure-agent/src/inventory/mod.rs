@@ -20,6 +20,7 @@ mod hardware;
 mod history;
 mod jobs;
 pub(crate) mod kernel;
+mod kernel_detail;
 pub(crate) mod logs;
 mod memory_detail;
 pub(crate) mod net;
@@ -75,6 +76,7 @@ pub const KINDS: &[&str] = &[
     "boot_detail",
     "unit_files",
     "service_security",
+    "kernel_detail",
     "os",
     "kernel",
     "update_history",
@@ -147,6 +149,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "boot_detail" => serde_json::to_value(services_detail::read_boot().await),
         "unit_files" => serde_json::to_value(services_detail::read_units().await),
         "service_security" => serde_json::to_value(services_detail::read_security().await),
+        "kernel_detail" => serde_json::to_value(kernel_detail::read(&agent.root).await),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),

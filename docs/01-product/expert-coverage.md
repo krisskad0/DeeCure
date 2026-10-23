@@ -200,13 +200,13 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Kernel settings changed on this computer, with the file and line that set each | Only what was changed, not 1,000 values | `/proc/sys`, `/etc/sysctl.d`, `/etc/sysctl.conf`, `/usr/lib/sysctl.d` | You | New |
-| File-watch limit: used and maximum | Editors and sync apps fail when it runs out | `/proc/sys/fs/inotify/*`, `/proc/*/fdinfo` | You (own) | New |
-| Open files, system-wide: used and maximum | Prevents "too many open files" | `/proc/sys/fs/file-nr` | You | New |
-| Kernel modules: which device uses each, and modules from outside Ubuntu | Find what a module is for | `/sys/module/*/holders`, `/sys/bus/*/drivers`, taint | You | Partly: list of modules |
-| Extra drivers built locally (DKMS) and whether each is built for every installed kernel | A missing build breaks Wi-Fi or NVIDIA after an update | `dkms status`, `/lib/modules/*/updates/dkms` | You | New |
-| Kernel lockdown mode | Shows if the kernel blocks unsigned changes | `/sys/kernel/security/lockdown` | You | New |
-| Time sync: server, offset, last sync | Wrong time breaks sign-ins and updates | systemd-timesyncd (D-Bus) | You | Partly: synced or not |
+| Kernel settings changed on this computer, with the file and line that set each | Only what was changed, not 1,000 values | `/proc/sys`, `/etc/sysctl.d`, `/etc/sysctl.conf`, `/usr/lib/sysctl.d` | You | ✅ Built (every setting, with its owner package and whether its file was changed) |
+| File-watch limit: used and maximum | Editors and sync apps fail when it runs out | `/proc/sys/fs/inotify/*`, `/proc/*/fdinfo` | You (own) | ✅ Built |
+| Open files, system-wide: used and maximum | Prevents "too many open files" | `/proc/sys/fs/file-nr` | You | ✅ Built |
+| Kernel modules: which device uses each, and modules from outside Ubuntu | Find what a module is for | `/sys/module/*/holders`, `/sys/bus/*/drivers`, taint | You | ✅ Built |
+| Extra drivers built locally (DKMS) and whether each is built for every installed kernel | A missing build breaks Wi-Fi or NVIDIA after an update | `dkms status`, `/lib/modules/*/updates/dkms` | You | ✅ Built |
+| Kernel lockdown mode | Shows if the kernel blocks unsigned changes | `/sys/kernel/security/lockdown` | You | ✅ Built |
+| Time sync: server, offset, last sync | Wrong time breaks sign-ins and updates | systemd-timesyncd (D-Bus) | You | ✅ Built |
 
 ## 12. Hardware and firmware (Hardware)
 
