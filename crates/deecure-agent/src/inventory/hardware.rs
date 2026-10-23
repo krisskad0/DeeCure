@@ -390,7 +390,7 @@ pub fn pci_lookup(
 }
 
 /// PCI class codes, in plain words.
-fn pci_class(code: &str) -> Option<&'static str> {
+pub(crate) fn pci_class(code: &str) -> Option<&'static str> {
     let code = code.trim_start_matches("0x");
     Some(match code.get(..2)? {
         "01" => "Storage",
@@ -415,7 +415,7 @@ fn pci_class(code: &str) -> Option<&'static str> {
     })
 }
 
-fn driver_of(path: &std::path::Path) -> Option<String> {
+pub(crate) fn driver_of(path: &std::path::Path) -> Option<String> {
     std::fs::read_link(path.join("driver"))
         .ok()
         .and_then(|p| p.file_name().map(|n| n.to_string_lossy().into_owned()))

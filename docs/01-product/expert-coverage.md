@@ -51,29 +51,29 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Disk reads and writes per service | Finds the service that keeps the disk busy | `/sys/fs/cgroup/system.slice/*/io.stat` | You | New |
-| Disk reads and writes per app and process (brings back "Top I/O processes", measured) | Finds the app that keeps the disk busy | `/proc/<pid>/io` (`read_bytes`, `write_bytes`) | You (own) | New |
+| Disk reads and writes per service | Finds the service that keeps the disk busy | `/sys/fs/cgroup/system.slice/*/io.stat` | You | ✅ Built |
+| Disk reads and writes per app and process (brings back "Top I/O processes", measured) | Finds the app that keeps the disk busy | `/proc/<pid>/io` (`read_bytes`, `write_bytes`) | You (own) | ✅ Built (your processes; others: Admin, later) |
 | SSD wear: share of rated life used, total data written, spare blocks left | SSDs wear out; this is the drive's own number | NVMe health log, SATA SMART (`smartctl -j`) | Admin | Partly: read once when asked |
 | Wear trend, and life left at today's write rate (shown with how it was worked out) | Plan a replacement early | daily stored health readings | Admin | New |
 | Media errors, unsafe shutdowns, power-on hours, the drive's error log | Early signs of a failing drive | `smartctl -j` | Admin | Partly: read once when asked |
-| PCIe link: speed and lanes now, against the most the device and slot support | Finds an SSD or graphics card running at half speed | `/sys/bus/pci/devices/*/{current,max}_link_{speed,width}` | You | New |
-| NVMe power states and the power-saving setting | Explains SSD wake-up lag or battery drain | `/sys/class/nvme/*`, `nvme_core` parameters | You | New |
-| Scheduler, queue size, and read-ahead per disk | A wrong scheduler on a hard disk costs speed | `/sys/block/*/queue/` | You | New |
-| TRIM: automatic or not, last run, `discard` mount option | SSDs slow down without TRIM | `fstrim.timer`, journal, `/proc/mounts` | You | New |
+| PCIe link: speed and lanes now, against the most the device and slot support | Finds an SSD or graphics card running at half speed | `/sys/bus/pci/devices/*/{current,max}_link_{speed,width}` | You | ✅ Built |
+| NVMe power states and the power-saving setting | Explains SSD wake-up lag or battery drain | `/sys/class/nvme/*`, `nvme_core` parameters | You | ✅ Built (setting; power-state list: later) |
+| Scheduler, queue size, and read-ahead per disk | A wrong scheduler on a hard disk costs speed | `/sys/block/*/queue/` | You | ✅ Built |
+| TRIM: automatic or not, last run, `discard` mount option | SSDs slow down without TRIM | `fstrim.timer`, journal, `/proc/mounts` | You | ✅ Built |
 | Response time per disk over time | Slow answers show before a failure | `/proc/diskstats` | You | Partly: one average |
-| SATA link speed now against the most the drive supports | Finds a SATA SSD on a slow port or cable | `/sys/class/ata_link/*/sata_spd`, `sata_spd_limit` | You | New |
-| NVMe details: controller and namespace, block size (512 or 4096 bytes), firmware slots, warning and critical temperatures | Real facts from the drive, not a model lookup | `/sys/class/nvme/*`, `nvme id-ctrl` through the helper | You / Admin | New |
+| SATA link speed now against the most the drive supports | Finds a SATA SSD on a slow port or cable | `/sys/class/ata_link/*/sata_spd`, `sata_spd_limit` | You | ✅ Built |
+| NVMe details: controller and namespace, block size (512 or 4096 bytes), firmware slots, warning and critical temperatures | Real facts from the drive, not a model lookup | `/sys/class/nvme/*`, `nvme id-ctrl` through the helper | You / Admin | ✅ Built (firmware slots and namespaces: Admin, later) |
 | Drive self-test results, and starting a short or long self-test | The drive checks itself | `smartctl -l selftest`, `smartctl -t` | Admin | New |
 
 ## 4. Filesystems and space (Storage)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Mount options of each filesystem | Shows `noatime`, `discard`, compression, read-only | `/proc/mounts` | You | Partly |
-| Errors the filesystem has recorded | ext4 and btrfs keep error counts | `/sys/fs/ext4/*/errors_count`; btrfs device stats need Admin | You | New |
-| Inodes used and left | A disk can be "full" while space is free | `statvfs` | You | New |
+| Mount options of each filesystem | Shows `noatime`, `discard`, compression, read-only | `/proc/mounts` | You | ✅ Built |
+| Errors the filesystem has recorded | ext4 and btrfs keep error counts | `/sys/fs/ext4/*/errors_count`; btrfs device stats need Admin | You | ✅ Built (ext4; btrfs: Admin, later) |
+| Inodes used and left | A disk can be "full" while space is free | `statvfs` | You | ✅ Built |
 | Space reserved for the admin | ext4 keeps 5% by default | `tune2fs -l` | Admin | New |
-| Partition table and partition alignment | Misaligned partitions slow SSDs | `/sys/block/*/*/start`, `alignment_offset` | You | New |
+| Partition table and partition alignment | Misaligned partitions slow SSDs | `/sys/block/*/*/start`, `alignment_offset` | You | ✅ Built |
 | Duplicate files in your home folder (only when you ask) | Exact: same size, then same content hash; never by name | file walk and SHA-256 | You | New |
 | Folders that grew the most in the last 7 days | Finds a runaway log or cache | stored folder scans | You | New |
 
@@ -294,7 +294,7 @@ One place for every error the hardware itself reports. Each row says how many ti
 | --- | --- | --- | --- | --- |
 | CPU and memory hardware errors (machine checks) | The CPU reports real hardware faults | journal `mce` lines, `/sys/devices/system/machinecheck` | You | Partly: in the error log |
 | Memory errors (ECC) | See section 2 | `/sys/devices/system/edac/mc*` | You | New |
-| PCIe link errors per device (corrected, non-fatal, fatal) | A bad link shows here before a crash | `/sys/bus/pci/devices/*/aer_dev_*` (readable here without a password) | You | New |
+| PCIe link errors per device (corrected, non-fatal, fatal) | A bad link shows here before a crash | `/sys/bus/pci/devices/*/aer_dev_*` (readable here without a password) | You | ✅ Built (Hardware › Peripherals) |
 | Firmware that failed to load | A device works badly or not at all without it | journal `Direct firmware load ... failed` | You | Partly: in the error log |
 | Driver and firmware crash reports | Wi-Fi and graphics firmware crashes leave a report | `/sys/class/devcoredump`, journal | You | New |
 | USB errors (device not accepting address, descriptor errors) | Bad cable, weak port, or a failing device | kernel log | You | Partly: in the kernel log |

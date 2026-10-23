@@ -222,6 +222,53 @@ export interface Groups {
   }[];
 }
 
+/** Drives and filesystems in depth (Expert). */
+export interface StorageDetail {
+  disks: {
+    name: string;
+    rotational: boolean;
+    scheduler?: string;
+    schedulers: string[];
+    queue_size?: number;
+    read_ahead_kb?: number;
+    logical_block?: number;
+    physical_block?: number;
+    trim: boolean;
+    table?: string;
+    partitions: { name: string; start_sector: number; size: number; aligned: boolean }[];
+    sata_speed?: string;
+    sata_limit?: string;
+    nvme?: { firmware?: string; transport?: string; state?: string; pci_address?: string; temp_warning?: number; temp_critical?: number };
+  }[];
+  filesystems: { device: string; mount: string; fstype: string; options: string[]; inodes?: number; inodes_free?: number; errors?: number; first_error_at?: number; last_error_at?: number }[];
+  nvme_max_latency_us?: number;
+}
+
+/** Disk use per process since it started (own processes only). */
+export interface ProcessesIo {
+  at: number;
+  processes: { pid: number; name: string; read_bytes: number; write_bytes: number; cancelled_write_bytes: number }[];
+  unreadable: number;
+}
+
+/** One PCI device's link, link errors, and power saving. */
+export interface PciDevice {
+  address: string;
+  class?: string;
+  vendor?: string;
+  model?: string;
+  driver?: string;
+  link_speed?: string;
+  max_link_speed?: string;
+  link_width?: number;
+  max_link_width?: number;
+  slot_max_link_speed?: string;
+  slot_max_link_width?: number;
+  errors?: { corrected: number; nonfatal: number; fatal: number };
+  power_control?: string;
+  power_state?: string;
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -781,6 +828,9 @@ export function getInventory(kind: "cpu_detail"): Promise<CpuDetail>;
 export function getInventory(kind: "memory_detail"): Promise<MemoryDetail>;
 export function getInventory(kind: "process_memory"): Promise<ProcessMemory[]>;
 export function getInventory(kind: "cgroups"): Promise<Groups>;
+export function getInventory(kind: "storage_detail"): Promise<StorageDetail>;
+export function getInventory(kind: "process_io"): Promise<ProcessesIo>;
+export function getInventory(kind: "pci_detail"): Promise<PciDevice[]>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

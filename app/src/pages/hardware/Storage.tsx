@@ -2,6 +2,8 @@
 // Hardware › Storage Devices (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // SMART health needs Full access (Phase 2); drive temperature comes from hwmon.
 
+import { DriveExpertSections } from "../performance/DiskExpert";
+import { atLeast, useUi } from "../../ui";
 import { temp as tempText, tempUnit, tempValue } from "../../units";
 import type { HardwareInfo } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -27,6 +29,7 @@ const COLUMNS: Column<DiskRow>[] = [
 ];
 
 export function HardwareStorage() {
+  const { mode } = useUi();
   const { data: hw, error } = useHardware();
   const latest = useLatest();
   // NVMe drives report their temperature as hwmon "nvme/Composite".
@@ -57,6 +60,7 @@ export function HardwareStorage() {
           <TimeChart history={history} names={["NVMe"]} unit={tempUnit()} scale={tempValue} height={180} />
         </Panel>
       )}
+      {atLeast(mode, "expert") && <DriveExpertSections />}
     </>
   );
 }

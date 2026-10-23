@@ -25,13 +25,16 @@ pub(crate) mod net;
 mod network;
 mod os;
 pub(crate) mod packages;
+mod pci_detail;
 mod power;
 mod privacy;
+mod process_io;
 pub(crate) mod processes;
 mod security;
 mod sleep;
 mod sockets;
 pub(crate) mod storage;
+mod storage_detail;
 pub(crate) mod system;
 pub(crate) mod units;
 mod usage;
@@ -54,6 +57,9 @@ pub const KINDS: &[&str] = &[
     "memory_detail",
     "process_memory",
     "cgroups",
+    "storage_detail",
+    "process_io",
+    "pci_detail",
     "os",
     "kernel",
     "update_history",
@@ -108,6 +114,9 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "memory_detail" => serde_json::to_value(memory_detail::read(&agent.root).await),
         "process_memory" => serde_json::to_value(memory_detail::read_processes(&agent.root)),
         "cgroups" => serde_json::to_value(cgroups::read(&agent.root)),
+        "storage_detail" => serde_json::to_value(storage_detail::read(&agent.root)),
+        "process_io" => serde_json::to_value(process_io::read(&agent.root)),
+        "pci_detail" => serde_json::to_value(pci_detail::read(&agent.root)),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),

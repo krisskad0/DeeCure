@@ -3,6 +3,8 @@
 // Queue depth and disk use per process are not collected yet, so they are not shown.
 // Each device shows its type (SSD, hard disk, USB drive) from the hardware inventory.
 
+import { DiskIoExpertSections } from "./DiskExpert";
+import { atLeast, useUi } from "../../ui";
 import type { HardwareInfo, Metric } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KpiRow } from "../../components/KpiTile";
@@ -52,6 +54,7 @@ const split = (bytesPerSecond: number | undefined) => {
 };
 
 export function PerformanceDisk() {
+  const { mode } = useUi();
   const latest = useLatest();
   // Drives plugged in since the last inventory show "-" until the next one.
   const hw = useHardware().data;
@@ -81,6 +84,7 @@ export function PerformanceDisk() {
       <Panel title="Devices" subtitle="last minute" source="/proc/diskstats" span={12} flush>
         <DataTable rows={devices(latest, disks)} columns={COLUMNS} rowKey={(d) => d.name} empty="Measuring… (needs two readings, one minute apart)" />
       </Panel>
+      {atLeast(mode, "expert") && <DiskIoExpertSections />}
     </>
   );
 }
