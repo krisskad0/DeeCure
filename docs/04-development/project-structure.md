@@ -2,52 +2,67 @@
 
 [Docs](../README.md) › [Development](README.md)
 
-What every folder is for. Items marked *(planned)* do not exist yet.
+What every folder is for.
 
 ```
 deecure/
-├── .github/                 # Issue and pull request templates; CI workflow (workflows/ci.yml)
+├── .github/                 # Issue and PR templates; CI (workflows/ci.yml) and releases (workflows/release.yml)
 ├── app/                     # Desktop app: Tauri v2 + React + TypeScript
 │   ├── src/                 #   React UI
-│   └── src-tauri/           #   Tauri Rust side, talks to the agent
+│   │   ├── shell/           #     Top bar, sidebar, page header, palette, drawers, fix drawer, onboarding
+│   │   ├── components/      #     The spec's components and SVG charts
+│   │   ├── pages/<page>/    #     One folder per page; every tab shows real data
+│   │   ├── spec/            #     Generated from the UI spec by scripts/gen-ui.py (do not edit)
+│   │   ├── api.ts           #     Calls into the Tauri side, with the agent's types
+│   │   ├── visible.ts       #     Pages hidden until they are built (the assistant)
+│   │   ├── access.ts, units.ts, prefs.ts  # Access level, units and refresh, saved preferences
+│   │   └── dev/             #     Component gallery (development only)
+│   └── src-tauri/src/       #   Tauri side: main.rs (commands, agent client), tray.rs (tray, one copy)
 ├── crates/                  # Rust workspace
-│   ├── deecure-core/         #   Shared types: findings, metrics, IPC messages, rule schema
-│   ├── deecure-agent/        #   Collectors, rules engine, fix planner, storage, socket API
-│   ├── deecure-helper/       #   Root helper: D-Bus service with a fixed list of actions
-│   └── deecure-cli/          #   The `deecure` command
-├── rules/                   # Rule and fix-action YAML files, by category
-├── kb/                      # Knowledge base YAML: services, errors, ports, packages
-├── packaging/               # Everything needed to ship DeeCure
-│   ├── debian/              #   Debian packaging files (copied to debian/ at build time)
-│   ├── desktop/             #   App icon (deecure.svg); .desktop file and AppStream metainfo (planned)
-│   ├── dbus/                #   D-Bus activation and policy files for the helper
-│   ├── polkit/              #   polkit action policy for the helper
-│   ├── systemd/             #   systemd units for the agent and the helper
+│   ├── deecure-core/        #   Shared types: findings, metrics, events, fix plans, reports, RPC messages, local time
+│   ├── deecure-agent/src/   #   The background agent
+│   │   ├── collect/         #     Every-minute collectors (CPU, memory, disks, sensors, battery, network, services…)
+│   │   ├── inventory/       #     Live read-outs the app asks for (processes, hardware, logs, packages…)
+│   │   ├── history/         #     What changed: package logs, snap/Flatpak, journal, boots, config files
+│   │   ├── rules/           #     Rule loader, condition language, facts, disk forecast
+│   │   ├── store/           #     SQLite: schema, metrics, events, findings, fixes, retention
+│   │   ├── fixes.rs         #     Fix planner (plans only; nothing runs here)
+│   │   ├── notify.rs        #     Notifications and the weekly summary
+│   │   ├── report.rs        #     Reports for the weekly summary, the CLI, and Export
+│   │   └── handler.rs, server.rs  # The JSON-RPC socket
+│   ├── deecure-fix/         #   Runs fix steps in the user's session, and undo
+│   ├── deecure-helper/      #   Root helper: D-Bus service with a fixed list of actions
+│   └── deecure-cli/         #   The `deecure` command
+├── rules/<area>/            # Rule YAML files, one folder per area
+├── kb/                      # Knowledge base YAML: services, ports, errors, packages, topics
+├── packaging/
+│   ├── debian/              #   Debian packaging (copied to debian/ at build time)
+│   ├── desktop/             #   .desktop file, AppStream metainfo, icon
+│   ├── helper/              #   Helper: systemd unit, D-Bus activation and policy, polkit actions
+│   ├── systemd/             #   The agent's systemd user units
 │   ├── man/                 #   Man pages
-│   ├── apt-repo/            #   Config and scripts to publish the signed APT repository
-│   └── install.sh           #   One-line installer (planned)
-├── scripts/                 # Developer scripts: build-deb, bump-version, dev helper install
-├── tests/
-│   ├── fixtures/            #   Real /proc, /sys, journal and command outputs from many machines
-│   └── vm/                  #   VM test matrix scripts
-├── docs/                    # All documentation (start at docs/README.md)
+│   ├── apt-repo/            #   Signed APT repository config
+│   └── install.sh           #   One-line installer
+├── scripts/                 # build-deb, test-deb, test-helper, test-install, build-apt-repo,
+│                            # bump-version, perf-check, capture-fixture, gen-ui, dev-agent-units
+├── tests/fixtures/          # Real /proc, /sys, and service lists from real machines, with expected findings
+├── docs/                    # All documentation (start at docs/README.md; what is left: docs/05-roadmap/pending.md)
 ├── Cargo.toml               # Workspace manifest and shared lints
 ├── rust-toolchain.toml      # Pinned Rust version (1.99.1)
-├── clippy.toml              # Lint settings (unwrap allowed only in tests)
-├── Makefile                 # Short commands: build, test, lint, fmt (dev and deb planned)
-├── README.md  LICENSE  CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  CHANGELOG.md
-└── .editorconfig  .gitignore
+├── Makefile                 # Short commands (make help)
+└── README.md  LICENSE  CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  CHANGELOG.md
 ```
 
 ## Where code goes
 
 | You are changing… | Put it in… |
 | --- | --- |
-| How data is read from the system | `crates/deecure-agent/src/collectors/` |
-| Distro-specific reading (Ubuntu, Fedora, Arch) | `crates/deecure-agent/src/adapters/` |
-| A check or its severity | `rules/<category>/` (YAML) |
+| A value read every minute | `crates/deecure-agent/src/collect/` |
+| Data the app reads live | `crates/deecure-agent/src/inventory/` |
+| Something to keep in the "what changed" history | `crates/deecure-agent/src/history/` |
+| A check or its severity | `rules/<area>/` (YAML) |
 | A plain-English explanation | `kb/<type>/` (YAML) |
-| An admin action | `crates/deecure-helper/` + `packaging/polkit/` (needs two reviewers) |
+| A fix | Plan: `crates/deecure-agent/src/fixes.rs`; steps: `crates/deecure-fix/`; admin steps: `crates/deecure-helper/` (needs two reviewers) |
 | A type shared by agent, CLI, and app | `crates/deecure-core/` |
 | A screen or component | `app/src/` |
 | What gets installed where | `packaging/` |

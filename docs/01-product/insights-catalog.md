@@ -7,7 +7,7 @@ Every insight DeeCure shows, and what it needs. This is the checklist the collec
 | Access | Meaning |
 | --- | --- |
 | **Yes** | Readable by your own account. Works in Basic access, today. |
-| **Admin** | Needs root. Comes with the admin helper (Full access, [Phase 2](../05-roadmap/phase-2-fix-safely.md)). The app says "Requires Full access" until then. |
+| **Admin** | Needs root. Read through the admin helper in Full access ([Phase 2](../05-roadmap/phase-2-fix-safely.md)); the password is asked each time. In Basic access, or without the helper, the app says how to turn it on. |
 | **No** | Linux does not expose it (for example password strength). The app says so. |
 
 Sources are listed in [Collectors](../02-architecture/collectors.md).
@@ -92,13 +92,32 @@ Sources are listed in [Collectors](../02-architecture/collectors.md).
 
 | Rule | Access |
 | --- | --- |
-| `storage.root_almost_full` | Yes |
-| `services.unit_failed` | Yes |
-| `power.battery_worn` | Yes |
-| `security.updates_pending` | Yes |
-| `security.firewall_off` | Yes |
-| `system.reboot_required` | Yes |
-| `backups.none`, `backups.overdue` | Yes |
+All 16 rules work in Basic access. Every one of the 13 areas in Overview › Subsystems has at least one.
+
+| Area | Rule | Access |
+| --- | --- | --- |
+| Storage | `storage.root_almost_full`, `storage.filling_up` (7-day forecast) | Yes |
+| Services | `services.unit_failed` | Yes |
+| Scheduled Jobs | `jobs.job_failed` (a timer-started service failed) | Yes |
+| Hardware | `hardware.cpu_hot` | Yes (needs a CPU sensor) |
+| Power | `power.battery_worn` | Yes |
+| System | `system.reboot_required` | Yes |
+| Packages | `packages.updates_available` | Yes |
+| Containers | `containers.port_exposed` | Yes (in the `docker` group) |
+| Backups | `backups.none`, `backups.overdue` | Yes |
+| Network | `network.offline` | Yes |
+| Accounts | `accounts.extra_root` (another UID 0 account) | Yes (`/etc/passwd` only) |
+| Security | `security.updates_pending`, `security.firewall_off` | Yes |
+| Privacy | `privacy.popcon` (popularity contest on) | Yes |
+
+## History, predictions, and reports (Phase 3)
+
+| Insight | Access | Where |
+| --- | --- | --- |
+| What changed: packages (apt, dpkg, snap, Flatpak), config files with diffs, USB devices, boots and kernel changes, unclean shutdowns, crashes, failed services, DeeCure's fixes | Yes | Activity, `deecure history` |
+| Disk full in about N days | Yes | Storage, rule `storage.filling_up` |
+| Desktop notifications and the weekly summary | Yes | Settings › Notifications, Overview › Health Score |
+| A report of any period, as text or HTML | Yes | `deecure report`, Settings › Data › Export |
 
 ---
 

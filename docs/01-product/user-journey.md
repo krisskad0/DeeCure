@@ -20,7 +20,7 @@
 2. **Privacy promise:** "Everything stays on this computer. No account. No data sent anywhere."
 3. **Choose access level:**
    - **Basic (no password):** sees about 80% of insights.
-   - **Full (recommended):** approves the DeeCure helper once with the admin password. This unlocks disk health, firewall, all users' cron jobs, and similar items.
+   - **Full:** uses the DeeCure admin helper. This unlocks disk health, firewall rules, all users' cron jobs, and admin fixes. The admin password is asked each time one is used (a deliberate safety choice, see [Security model](../02-architecture/security-model.md)). Full needs the helper, which comes with the package from DeeCure's repository.
 
 The user can switch the level later in Settings.
 

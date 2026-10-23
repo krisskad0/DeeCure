@@ -10,17 +10,25 @@
 
 ## Tools
 
-| Test type | Tool | Runs |
-| --- | --- | --- |
-| Rust unit and integration tests | `cargo test` | Every pull request |
-| UI unit tests | Vitest + React Testing Library | Every pull request |
-| Lint and format | `cargo fmt`, `cargo clippy -D warnings`, ESLint, Prettier, `tsc` | Every pull request |
-| Fixture tests | `cargo test` against `tests/fixtures/` | Every pull request |
-| Dependency checks | `cargo-deny`, `cargo-audit`, `npm audit` | Every pull request and nightly |
-| End-to-end UI tests | WebDriver with `tauri-driver` | Nightly and before release |
-| Package checks | `lintian` (package rules), `piuparts` (install → remove → purge leaves nothing behind), `autopkgtest` (smoke tests on the installed package) | Every release build |
-| VM matrix | LXD or Multipass VMs: Ubuntu 24.04 and 26.04, desktop and server | Before every release |
-| Performance budget | A script that measures agent CPU and RAM against the [budget](../02-architecture/performance-budget.md) | Every pull request |
+| Test type | Tool | Runs | State |
+| --- | --- | --- | --- |
+| Rust unit and integration tests | `cargo test` (`make test`) | Every push (CI) | ✅ About 270 tests |
+| Real-machine fixtures | `cargo test` against `tests/fixtures/` | Every push | ✅ 3 machines |
+| UI tests | Vitest + React Testing Library (`make web`) | Every push | ✅ About 120 tests |
+| Lint and format | `cargo fmt`, `cargo clippy -D warnings`, `tsc` | Every push | ✅ |
+| Generated UI code matches the spec | `scripts/gen-ui.py --check` | Every push | ✅ |
+| Performance budget | `make perf` | Every push | ✅ |
+| 2 years of history under 200 MB | `make db-size` | Every push | ✅ 124 MB |
+| Package build and lintian | `make deb` | Every push | ✅ |
+| Install, use, purge in a clean container | `make deb-test` | Every push | ✅ |
+| Root helper with real D-Bus and polkit | `make helper-test` | Every push | ✅ |
+| Install script against a signed test repository | `make install-test` | Before a release | ✅ |
+| Desktop notifications | A fake notification server on a private session bus (`dbus-run-session`), never the real desktop | By hand | ✅ |
+| Dependency checks | `cargo-deny`, `cargo-audit`, `npm audit` | Every push | Planned |
+| End-to-end UI tests | WebDriver with `tauri-driver` | Before release | Planned |
+| `piuparts`, `autopkgtest` | Package install → upgrade → purge leaves nothing; smoke tests | Release builds | Planned |
+| VM matrix and fix safety | Ubuntu 24.04 and 26.04 VMs: each fix passes apply → verify → undo | Before every release | Pending ([Pending work](../05-roadmap/pending.md)) |
+| Beginner tests | 5 non-technical users, three tasks | Before the beta | Pending |
 
 ## Where tests live
 
@@ -30,8 +38,8 @@
 | `crates/<crate>/tests/` | Rust integration tests |
 | `app/src/**/*.test.tsx` | UI component tests |
 | `tests/fixtures/<machine>/` | Captured system data from one real machine, plus expected findings |
-| `tests/vm/` | Scripts that build VMs, install the package, and run checks |
-| `packaging/debian/tests/` | `autopkgtest` smoke tests |
+| `scripts/test-deb.sh`, `test-helper.sh`, `test-install.sh` | Container tests of the packages, the helper, and the installer |
+| `tests/vm/` | VM test scripts (planned) |
 
 ## Fixtures
 

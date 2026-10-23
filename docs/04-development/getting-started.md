@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [Development](README.md)
 
-> **Status:** Phase 0 in progress. The Rust workspace builds, and `make build`, `make test`, `make lint`, and `make fmt` work. Steps marked *(planned)* come later.
+> **Status:** Phases 0–3 are built. Every command below works. What is left: [Pending work](../05-roadmap/pending.md).
 
 ## 1. What you need
 
@@ -56,18 +56,23 @@ The `Makefile` gives short names to the real commands:
 
 | Target | Runs |
 | --- | --- |
-| `make build` | `cargo build --workspace` (later also `npm run build` in `app/`) |
-| `make test` | `cargo test --workspace` (later also `npm test` in `app/`) |
-| `make lint` | `cargo fmt --check` and `cargo clippy -- -D warnings` (later also `npm run lint`) |
+| `make build` | `cargo build --workspace` |
+| `make test` | `cargo test --workspace` (Rust unit, integration, and real-machine fixture tests) |
+| `make lint` | `cargo fmt --check` and `cargo clippy -- -D warnings` |
 | `make fmt` | `cargo fmt --all` |
-| `make agent` | Runs the agent in the foreground |
+| `make web` | UI tests (Vitest), type-check, and build of the web UI |
+| `make agent` | Runs the agent in the foreground, with the rules and knowledge base from the repo |
 | `make status` | Runs `deecure status` against the running agent |
-| `make perf` | Checks the agent against the [performance budget](../02-architecture/performance-budget.md) (about 80 s) |
-| `make help` | Lists all commands |
 | `make app` | Runs the desktop app with live reload (start `make agent` first) |
-| `make web` | Runs the UI tests, type-checks, and builds the web UI |
-| `make deb` | Builds the `.deb` into `target/deb/` and checks it with lintian (see [Debian package](../06-packaging/debian-package.md)) |
-| `make deb-test` | Installs, uses, and purges the `.deb` in a clean Ubuntu container (needs Docker) |
+| `make perf` | Checks the agent against the [performance budget](../02-architecture/performance-budget.md) (about 80 s) |
+| `make db-size` | Simulates 2 years of history and checks the database stays under 200 MB (about 1 min) |
+| `make deb` | Builds both `.deb` packages into `target/deb/` and checks them with lintian ([Debian package](../06-packaging/debian-package.md)) |
+| `make deb-test` | Installs, uses, and purges the packages in a clean Ubuntu container (needs Docker) |
+| `make helper-test` | Tests the root helper with real D-Bus and polkit in a container (needs Docker) |
+| `make install-test` | Tests `install.sh` against a signed throwaway APT repository in a container (needs Docker) |
+| `make help` | Lists all commands |
+
+**Never test write paths on your own computer.** Fixes, the helper, and package installs are tested in containers or fixtures only. Reading the system (running the agent) is fine.
 
 ## 6. Run the agent
 
@@ -108,18 +113,26 @@ With the agent running (step 6):
 ```bash
 make status                                 # same as: cargo run -p deecure-cli -- status
 cargo run -p deecure-cli -- status --json
+cargo run -p deecure-cli -- history --since 1d
+cargo run -p deecure-cli -- report --html /tmp/report.html
 ```
 
-## 9. Work on the root helper (Phase 2 and later)
+## 9. Work on the root helper
 
-The helper needs system files for D-Bus and polkit. Install dev copies with a script, and remove them when you are done:
+The helper runs as root, so it is never installed on your own computer during development. Test it in a throwaway container with a real system D-Bus and polkit:
 
 ```bash
-sudo scripts/dev-install-helper.sh
-sudo scripts/dev-uninstall-helper.sh
+make helper-test
 ```
 
-Do helper work in a VM, not on your main computer.
+The app shows the access level as Basic and the helper as "Not installed" in a development build; that is expected.
+
+To try the agent against a throwaway database (for example, to see the first-run history), give it its own paths. Socket paths must be short (under about 100 characters):
+
+```bash
+./target/debug/deecure-agent --rules rules --db /tmp/dc/test.db --socket /tmp/dc/agent.sock
+./target/debug/deecure --socket /tmp/dc/agent.sock status
+```
 
 ## 10. Look at the prototype
 

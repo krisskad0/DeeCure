@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- Features that are not built yet are hidden instead of shown as placeholders: the Assistant page, Settings › Assistant, and "Add a machine".
 - Renamed the app from the working name SysDoc to **DeeCure** (package and command `deecure`).
 
 ### Added
@@ -23,6 +24,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Optional tray icon (off by default), with start at login, and one running copy of the app.
 - Storage schema version 2: metric names stored once, so 2 years of history on a big machine take 124 MB instead of about 250 MB (`make db-size`, in CI). Old snapshots are thinned, and events are capped.
 - KB topic: start once with the previous kernel.
+- Every area is checked: new rules `hardware.cpu_hot`, `network.offline`, `packages.updates_available`, `accounts.extra_root`, `jobs.job_failed` (failed scheduled jobs, no longer also reported as failed services), `containers.port_exposed`, and `privacy.popcon`, with KB articles. Overview › Subsystems shows a real number for every row, and "Not checked" instead of "Unknown" for areas without rules.
+- New metrics: `net.default_route`, `accounts.people`, `accounts.uid0_extra`, `privacy.popcon`, `containers.exposed`.
+- Access level is a real choice (onboarding and Settings › Access): Basic locks admin read-outs and admin fix steps; Full needs the admin helper.
+- Settings › Data: keep history for 90 days, 1 year, or 2 years, and Delete history (asks first; restore points and settings stay; deleted history cannot come back from old logs).
+- Settings › General: refresh interval (2 s, 5 s, 15 s, Manual; the Refresh button reloads every panel) and temperature unit (°C or °F).
+- The app says "Agent needs a restart" when the running agent is older than the app.
+- User guide: [Using DeeCure](docs/07-user-guide/using-deecure.md).
 
 - Rust workspace with `deecure-core`, `deecure-agent`, and `deecure-cli` (version and help only for now).
 - Shared types in `deecure-core`: categories, severity and UI status, rule and fix IDs, findings, metrics, events, snapshots, timestamps, and JSON-RPC 2.0 messages (`version`, `status`).
@@ -89,4 +97,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- Key-value lists in flush panels (24 of them, such as Settings › About) now line up with tables and setting rows.
 - Network totals no longer count container traffic twice, and container links (`veth…`) no longer fill the history.

@@ -17,9 +17,12 @@
     </p>
     <ul>
       <li>A health score and a short list of problems, most serious first</li>
+      <li>Safe fixes with a preview of every step, a check that they worked, and undo</li>
+      <li>A timeline of what changed: updates, config files, devices, boots, and crashes</li>
+      <li>A warning before the disk is full, from the last week's history</li>
       <li>Live performance charts, processes, sensors, battery health, and disks</li>
-      <li>Logs, crashes, boots, and every change made to the system</li>
       <li>Security and privacy checks that need no password</li>
+      <li>Notifications for serious problems, quiet hours, and a weekly summary</li>
       <li>A performance check that finds why the computer is slow</li>
     </ul>
     <p>Everything stays on this computer. There is no account, and nothing is sent anywhere.</p>
@@ -41,7 +44,7 @@
   <releases>
     <release version="0.1.0" date="2026-10-23">
       <description>
-        <p>First release: every page shows real data from this computer.</p>
+        <p>First release: every page shows real data from this computer, with safe fixes, a what-changed timeline, disk forecasts, notifications, and a weekly summary.</p>
       </description>
     </release>
   </releases>

@@ -20,8 +20,18 @@
 | First useful results | Time from starting the agent until `deecure status` shows the rules have run |
 | Agent CPU when idle | CPU time used over 65 seconds with no clients, which includes one full collection cycle |
 | Agent RAM | Peak memory (`VmHWM`) after 300 `status` requests |
-| Database size | Size after the first scan. Long-term growth is checked in Phase 3, with two years of simulated data. |
+| Database size | Size after the first scan (with 30 days of history read on the first run). Two years of growth are checked by `make db-size` ([Storage](storage.md#size-after-2-years)). |
 
 The limits are at the top of the script. Change them only together with this page.
 
-Not checked yet: desktop app RAM (Phase 1) and the full first scan (it grows as collectors are added).
+Last measured on 2026-10-23, on a real Ubuntu 24.04 laptop, with the history task, notifications, and all 16 rules:
+
+| Measure | Result | Budget |
+| --- | --- | --- |
+| First useful results | 1.5 s | 10 s |
+| Agent CPU when idle | 0.37% | 1% |
+| Agent RAM (peak) | 18.9 MB | 60 MB |
+| Database after the first scan | 10 MB | 200 MB |
+| Database after 2 simulated years | 124 MB | 200 MB |
+
+Not checked yet: desktop app RAM and the full first scan.
