@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // 10 Activity timeline (docs/03-ui-design/03-components/10-activity-timeline.md).
 
+import type { ReactNode } from "react";
+
 export type TimelineTone = "crit" | "warn" | "ok" | "info" | "default";
 
 export interface TimelineRow {
@@ -8,6 +10,8 @@ export interface TimelineRow {
   tone?: TimelineTone;
   title: string;
   detail?: string;
+  /** One small button, such as Undo or View. */
+  action?: ReactNode;
 }
 
 export function ActivityTimeline({ rows }: { rows: TimelineRow[] }) {
@@ -21,6 +25,7 @@ export function ActivityTimeline({ rows }: { rows: TimelineRow[] }) {
             <span className="tl-title">{row.title}</span>
             {row.detail && <span className="tl-detail">{row.detail}</span>}
           </span>
+          {row.action && <span className="tl-action">{row.action}</span>}
         </li>
       ))}
     </ol>

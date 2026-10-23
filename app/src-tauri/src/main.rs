@@ -99,6 +99,26 @@ async fn latest() -> Result<Vec<Metric>, AppError> {
     ask(method::LATEST, None).await
 }
 
+/// What changed from `since` (ms) on, newest first, without config diffs.
+#[tauri::command]
+async fn events(
+    since: i64,
+    until: Option<i64>,
+    kinds: Option<Vec<String>>,
+    limit: Option<usize>,
+) -> Result<Value, AppError> {
+    let params = json!({
+        "since": since, "until": until, "kinds": kinds.unwrap_or_default(), "limit": limit,
+    });
+    ask(method::EVENTS, Some(params)).await
+}
+
+/// One event with all its details, such as a config file's diff.
+#[tauri::command]
+async fn event(id: i64) -> Result<Value, AppError> {
+    ask(method::EVENT, Some(json!({ "id": id }))).await
+}
+
 /// A fix's plan: what it will do, before anything runs.
 #[tauri::command]
 async fn fix_plan(action: String, subject: Option<String>) -> Result<Plan, AppError> {
@@ -222,6 +242,8 @@ fn main() {
             inventory,
             metrics,
             latest,
+            events,
+            event,
             machine,
             fix_plan,
             fix_apply,

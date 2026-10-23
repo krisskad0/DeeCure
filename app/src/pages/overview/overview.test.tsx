@@ -28,6 +28,7 @@ const LATEST: Metric[] = [
 ];
 
 vi.mock("../../api", () => ({
+  getEvents: () => Promise.resolve({ events: [{ id: 1, kind: "boot", at: Date.now() - 3_600_000, title: "Computer started", source: "journal", detail: "Kernel 6.8.0-47-generic" }], truncated: false }),
   getLatest: () => Promise.resolve(LATEST),
   getMetrics: (name: string) => Promise.resolve([0, 1, 2].map((i) => ({ ...metric(name, 10 + i, "percent"), at: at - (2 - i) * 60_000 }))),
   getSnapshot: () => Promise.resolve({ kind: "filesystems", taken_at: at, data: [{ mount_point: "/", device: "/dev/nvme0n1p2", fs_type: "ext4", size: 238_000_000_000 }] }),

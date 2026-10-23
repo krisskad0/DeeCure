@@ -43,6 +43,8 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | `latest` | none | `[<Metric>, …]`: the newest point of every metric and subject from the last 10 minutes | Phase 1 |
 | `snapshot` | `{"kind": "filesystems"}` (also `services`, `boot`, `updates`) | The newest `<Snapshot>` of that kind, or `null` | Phase 0 |
 | `inventory` | `{"kind": "system"}` | Live data read now: `system`, `processes`, `network`, `gpu`, `os`, `kernel`, `update_history`, `hardware`, `power`, `display`, `audio`, `bluetooth`, `firmware`, `sleep`, `storage`, `disk_usage`, `user_services`, `service_memory`, `startup`, `jobs`, `journal`, `errors`, `kernel_log`, `crashes`, `boots`, `device_events`, `config_changes`, `package_history`, `net_details`, `sockets`, `accounts`, `security`, `privacy`, `packages`, `containers`, `backups`, `diagnose_performance` and `diagnose_network` (on-demand checks that take a second or two), or `agent` (DeeCure's own facts) ([Collectors](collectors.md#live-inventories)). An unknown kind is a `-32602` error. | Phase 1 |
+| `events` | `{"since": <ms>, "until": <ms>?, "kinds": ["boot", …]?, "limit": 500?}` | `{"events": [<Event>, …], "truncated": false}`: what changed, newest first ([Storage › Events](storage.md#events)). At most 2000 (the default), and never more than fits in three quarters of one message; `truncated` says more matched. Config diffs are left out. | Phase 3 |
+| `event` | `{"id": 42}` | One `<Event>` with every detail, such as a config file's `diff`, or `null` | Phase 3 |
 
 `?` marks an optional field. Unknown param fields are rejected. Metric names are listed in [Collectors](collectors.md#metric-names).
 

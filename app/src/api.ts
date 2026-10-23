@@ -411,6 +411,75 @@ export interface ConfigChange {
   owner: string;
 }
 
+// What changed (docs/02-architecture/storage.md#events).
+
+export type EventKind =
+  | "package_installed"
+  | "package_upgraded"
+  | "package_removed"
+  | "config_changed"
+  | "device_added"
+  | "device_removed"
+  | "boot"
+  | "unclean_shutdown"
+  | "service_failed"
+  | "crash"
+  | "out_of_memory_kill"
+  | "login_failed"
+  | "fix_applied"
+  | "fix_undone";
+
+export interface HistoryEvent {
+  id: number;
+  kind: EventKind;
+  at: number;
+  title: string;
+  detail?: string;
+  subject?: string;
+  source: string;
+  /** Depends on the kind: package versions, a config diff, a device ID, a fix run. */
+  data?: {
+    action?: PackageChange["action"];
+    format?: "deb" | "snap" | "flatpak";
+    from?: string | null;
+    to?: string | null;
+    run?: number;
+    failed?: boolean;
+    kernel?: boolean | string | null;
+    change?: "added" | "changed" | "removed";
+    diff?: string;
+    added?: number;
+    removed?: number;
+    count?: number;
+    first_scan?: boolean;
+    bus?: string;
+    id?: string | null;
+    signal?: string;
+    result?: string;
+    boot_id?: string;
+    previous_kernel?: string | null;
+    kernel_changed?: boolean;
+    run_id?: number;
+    status?: string;
+    undoable?: boolean;
+  };
+}
+
+export interface EventList {
+  events: HistoryEvent[];
+  /** More matched than were sent. */
+  truncated: boolean;
+}
+
+export function getEvents(since: number, opts: { until?: number; kinds?: EventKind[]; limit?: number } = {}): Promise<EventList> {
+  return invoke<EventList>("events", { since, until: opts.until ?? null, kinds: opts.kinds ?? null, limit: opts.limit ?? null });
+}
+
+/** One event with all details (a config diff), or `null` when it is gone. */
+export function getEvent(id: number): Promise<HistoryEvent | null> {
+  return invoke<HistoryEvent | null>("event", { id });
+}
+
 export interface PackageChange {
   /** Local time as apt wrote it: `YYYY-MM-DD  HH:MM:SS`. */
   start: string;

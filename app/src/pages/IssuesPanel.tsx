@@ -9,6 +9,7 @@ import { NoData } from "./NoData";
 import { severityVariant } from "../status";
 import { ago } from "../time";
 import { kbTopic, useKb } from "../kb";
+import { HowTo } from "../components/HowTo";
 import { Button } from "../components/Button";
 import { useFix } from "../shell/FixDrawer";
 
@@ -71,21 +72,3 @@ function Body({ findings, report, error, now }: { findings: Finding[]; report: S
     </ul>
   );
 }
-
-/** The knowledge base article for a finding, folded until opened. */
-function HowTo({ topic }: { topic?: { title: string; summary: string; steps: string[]; notes?: string } }) {
-  if (!topic) return null;
-  return (
-    <details className="howto">
-      <summary>How to fix: {topic.title}</summary>
-      <p>{topic.summary}</p>
-      <ol>
-        {topic.steps.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
-      </ol>
-      {topic.notes && <p className="muted">{topic.notes}</p>}
-    </details>
-  );
-}
-

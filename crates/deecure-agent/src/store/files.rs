@@ -79,6 +79,19 @@ impl Store {
         Ok(())
     }
 
+    /// The stored event with number `id`, if any.
+    pub fn event_by_id(&self, id: i64) -> Result<Option<Event>> {
+        let key = self
+            .conn
+            .prepare_cached("SELECT key FROM event WHERE id = ?1")?
+            .query_row(params![id], |row| row.get::<_, String>(0))
+            .optional()?;
+        match key {
+            Some(key) => self.event_by_key(&key),
+            None => Ok(None),
+        }
+    }
+
     /// The stored event with `key`, if any.
     pub fn event_by_key(&self, key: &str) -> Result<Option<Event>> {
         let row = self

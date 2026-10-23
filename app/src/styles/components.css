@@ -132,7 +132,8 @@ a.btn { text-decoration: none; }
 
 /* 10 Activity timeline */
 .timeline { list-style: none; margin: 0; padding: 4px 14px 8px; }
-.tl-row { position: relative; display: grid; grid-template-columns: 62px 14px 1fr; gap: 8px; padding: 7px 0; }
+.tl-row { position: relative; display: grid; grid-template-columns: 62px 14px 1fr auto; gap: 8px; padding: 7px 0; }
+.tl-action { align-self: center; }
 .tl-time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .tl-dot { width: 9px; height: 9px; margin-top: 5px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel); background: var(--line-2); z-index: 1; }
 .tl-row:not(:last-child)::after { content: ""; position: absolute; left: 74px; top: 21px; bottom: -7px; width: 1px; background: var(--line); }
@@ -259,3 +260,6 @@ a.btn { text-decoration: none; }
 .fix-fail { width: 20px; height: 20px; border-radius: 50%; background: var(--crit); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
 .issue-actions { margin-top: 8px; display: flex; gap: 8px; }
 .btn-row { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.diff { margin: 0; padding: 10px 12px; border-radius: 6px; background: var(--panel-2, var(--track)); font-family: var(--mono, monospace); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.diff-add { color: var(--good); }
+.diff-del { color: var(--crit); }

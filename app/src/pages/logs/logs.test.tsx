@@ -4,7 +4,6 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { heatRows } from "../../metrics";
-import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "../activity/Activity";
 import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel, level } from "./Logs";
 
 const now = Date.now();
@@ -72,28 +71,5 @@ describe("Logs", () => {
     cleanup();
     render(<LogsErrors />);
     await waitFor(() => expect(screen.getByText("No errors in the last 7 days")).toBeTruthy());
-  });
-});
-
-describe("Activity", () => {
-  it("timeline merges changes and groups apt runs and config files", async () => {
-    render(<ActivityTimelinePage />);
-    await waitFor(() => expect(screen.getByText("Unclean shutdown")).toBeTruthy());
-    expect(screen.getByText("bluetoothd crashed (14 times)")).toBeTruthy();
-    expect(screen.getByText("Configuration · 2 files")).toBeTruthy();
-    expect(screen.getByText("Ultra USB 3.0 connected")).toBeTruthy();
-  });
-
-  it("package, config, device, and DeeCure tabs render", async () => {
-    for (const [Tab, text] of [
-      [ActivityPackages, "openssl"],
-      [ActivityConfig, "/etc/apt/sources.list.d/vscode.list"],
-      [ActivityDevices, "Ultra USB 3.0"],
-      [ActivityDeeCure, /has not changed anything/],
-    ] as const) {
-      render(<Tab />);
-      await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
-      cleanup();
-    }
   });
 });

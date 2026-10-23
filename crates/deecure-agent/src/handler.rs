@@ -3,9 +3,9 @@
 //! Turns one request line into one response. No I/O here, so it is easy to test.
 
 use deecure_core::rpc::{
-    FixPlanParams, FixRecordParams, FixUndoneParams, InventoryParams, MAX_POINTS, MetricsParams,
-    PROTOCOL_VERSION, Request, RequestId, Response, RpcError, SnapshotParams, StatusReport,
-    VersionInfo, method,
+    EventList, EventParams, EventsParams, FixPlanParams, FixRecordParams, FixUndoneParams,
+    InventoryParams, MAX_EVENTS, MAX_MESSAGE_BYTES, MAX_POINTS, MetricsParams, PROTOCOL_VERSION,
+    Request, RequestId, Response, RpcError, SnapshotParams, StatusReport, VersionInfo, method,
 };
 use deecure_core::{Timestamp, VERSION, health, thin};
 use serde::Serialize;
@@ -141,11 +141,45 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
             agent.recheck.notify_one();
             to_result(&true)
         }),
+        method::EVENTS => params::<EventsParams>(&request).and_then(|p| {
+            let until = p.until.unwrap_or_else(Timestamp::now);
+            let limit = p.limit.unwrap_or(MAX_EVENTS).clamp(1, MAX_EVENTS);
+            let events = store()
+                .events(p.since, until, &p.kinds, limit + 1)
+                .map_err(store_failed)?;
+            to_result(&event_list(events, limit))
+        }),
+        method::EVENT => params::<EventParams>(&request)
+            .and_then(|p| to_result(&store().event_by_id(p.id).map_err(store_failed)?)),
         other => Err(RpcError::method_not_found(other)),
     };
     match result {
         Ok(value) => Response::success(request.id, value),
         Err(error) => Response::failure(Some(request.id), error),
+    }
+}
+
+/// Up to `limit` events, without config diffs (the `event` method has them), and only as
+/// many as fit in one message with room to spare.
+fn event_list(events: Vec<deecure_core::Event>, limit: usize) -> EventList {
+    let budget = MAX_MESSAGE_BYTES * 3 / 4;
+    let mut truncated = events.len() > limit;
+    let mut used = 0;
+    let mut out = Vec::new();
+    for mut e in events.into_iter().take(limit) {
+        if let Some(data) = e.data.as_mut().and_then(|d| d.as_object_mut()) {
+            data.remove("diff");
+        }
+        used += serde_json::to_vec(&e).map_or(0, |v| v.len()) + 1;
+        if used > budget {
+            truncated = true;
+            break;
+        }
+        out.push(e);
+    }
+    EventList {
+        events: out,
+        truncated,
     }
 }
 
@@ -347,5 +381,66 @@ mod tests {
     async fn unexpected_params_are_rejected() {
         let reply = answer(r#"{"jsonrpc":"2.0","id":3,"method":"version","params":{"x":1}}"#).await;
         assert_eq!(reply["error"]["code"], RpcError::INVALID_PARAMS);
+    }
+
+    #[tokio::test]
+    async fn events_come_without_diffs_and_one_event_has_them() {
+        let agent = agent();
+        let event = |at: i64, diff: &str| deecure_core::Event {
+            id: None,
+            kind: deecure_core::EventKind::ConfigChanged,
+            at: Timestamp(at),
+            title: "Changed /etc/hosts".into(),
+            detail: None,
+            subject: Some("/etc/hosts".into()),
+            source: "root".into(),
+            data: Some(json!({ "change": "changed", "diff": diff })),
+        };
+        {
+            let s = store::lock(&agent.store);
+            s.add_event("a", &event(10, "+ x")).unwrap();
+            s.add_event("b", &event(20, "+ y")).unwrap();
+        }
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":1,"method":"events","params":{"since":0,"limit":1}}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["truncated"], true);
+        let list = reply["result"]["events"].as_array().unwrap();
+        assert_eq!(list.len(), 1);
+        assert_eq!(list[0]["at"], 20);
+        assert_eq!(list[0]["data"], json!({ "change": "changed" }));
+        let id = list[0]["id"].as_i64().unwrap();
+        let reply = answer_with(
+            &agent,
+            &format!(r#"{{"jsonrpc":"2.0","id":2,"method":"event","params":{{"id":{id}}}}}"#),
+        )
+        .await;
+        assert_eq!(reply["result"]["data"]["diff"], "+ y");
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":3,"method":"events","params":{"since":0,"kinds":["boot"]}}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["events"], json!([]));
+        assert_eq!(reply["result"]["truncated"], false);
+    }
+
+    #[test]
+    fn a_long_event_list_is_cut_to_fit_one_message() {
+        let big = |i: i64| deecure_core::Event {
+            id: Some(i),
+            kind: deecure_core::EventKind::PackageUpgraded,
+            at: Timestamp(i),
+            title: "x".repeat(2000),
+            detail: None,
+            subject: None,
+            source: "apt".into(),
+            data: None,
+        };
+        let list = event_list((0..1000).map(big).collect(), 2000);
+        assert!(list.truncated);
+        assert!(serde_json::to_vec(&list).unwrap().len() < MAX_MESSAGE_BYTES);
     }
 }

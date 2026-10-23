@@ -55,6 +55,49 @@ pub mod method {
     pub const FIX_RUNS: &str = "fix_runs";
     /// Marks a run as undone. Takes [`FixUndoneParams`](super::FixUndoneParams).
     pub const FIX_UNDONE: &str = "fix_undone";
+    /// Returns an [`EventList`](super::EventList): what changed, newest first, without
+    /// config diffs. Takes [`EventsParams`](super::EventsParams).
+    pub const EVENTS: &str = "events";
+    /// Returns one [`Event`](crate::Event) with all its details (such as a config diff),
+    /// or `null`. Takes [`EventParams`](super::EventParams).
+    pub const EVENT: &str = "event";
+}
+
+/// Params of the `events` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EventsParams {
+    /// Start of the time range (included).
+    pub since: Timestamp,
+    /// End of the time range (included); now when missing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub until: Option<Timestamp>,
+    /// Only these kinds; every kind when missing or empty.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub kinds: Vec<crate::EventKind>,
+    /// At most this many, newest first ([`MAX_EVENTS`] when missing or larger).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
+}
+
+/// The most events one `events` answer holds.
+pub const MAX_EVENTS: usize = 2000;
+
+/// What `events` returns.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EventList {
+    /// Newest first.
+    pub events: Vec<crate::Event>,
+    /// True when more events matched than were sent (the limit, or the message size).
+    pub truncated: bool,
+}
+
+/// Params of the `event` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EventParams {
+    /// The event's number.
+    pub id: i64,
 }
 
 /// Params of the `metrics` method.

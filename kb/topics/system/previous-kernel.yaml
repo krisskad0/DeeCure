@@ -1,0 +1,10 @@
+title: "Start once with the previous kernel"
+summary: "A new kernel can break a driver, for example for Wi-Fi, sound, or graphics. Ubuntu keeps the previous kernel, so you can start with it to check."
+steps:
+  - "Restart the computer."
+  - "As it starts, hold Shift (older computers) or tap Esc (most newer ones) until a menu appears."
+  - "Choose \"Advanced options for Ubuntu\"."
+  - "Choose the line with the older version number. Do not choose \"recovery mode\"."
+  - "Check whether the problem is gone. If it is, the new kernel is the cause."
+  - "Restarting normally uses the new kernel again. A later kernel update usually fixes the problem; you can also report it with the command ubuntu-bug linux."
+notes: "This changes nothing permanently. DeeCure lists your installed kernels in System › Kernel."
