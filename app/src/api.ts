@@ -418,6 +418,26 @@ export interface PlatformDetail {
   thunderbolt: { id: string; name?: string; vendor?: string; authorized: boolean }[];
 }
 
+/** Built-in devices, screens, and sound hardware (Expert). */
+export interface DevicesDetail {
+  cameras: { node: string; name: string; driver?: string }[];
+  fingerprint?: { device?: string; enrolled: string[] };
+  network: { interface: string; driver?: string; firmware?: string; bus?: string; speed?: string; duplex?: string; fastest?: string; link?: boolean; energy_saving?: string }[];
+  pointing: string[];
+  batteries: { kind: string; model?: string; percent?: number }[];
+  printers?: { name: string; state: string; default: boolean; jobs: number }[];
+  screens: { connector: string; maker?: string; model?: string; product_code: number; year?: number; width_cm?: number; height_cm?: number; native?: [number, number]; refresh_min?: number; refresh_max?: number; bits?: number; hdr: string[] }[];
+  backlights: { name: string; level: number; max: number; kind?: string }[];
+  sound: { index: number; name: string; codecs: string[] }[];
+}
+
+/** Hardware errors from the kernel log, crash dumps, and drivers Ubuntu offers (Expert). */
+export interface HwErrors {
+  kinds?: { kind: string; count: number; last_at?: number; examples: string[] }[];
+  crash_dumps: string[];
+  driver_offers?: { vendor?: string; model?: string; drivers: [string, boolean][] }[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -991,6 +1011,8 @@ export function getInventory(kind: "unit_files"): Promise<UnitFile[]>;
 export function getInventory(kind: "service_security"): Promise<Exposure[]>;
 export function getInventory(kind: "kernel_detail"): Promise<KernelDetail>;
 export function getInventory(kind: "platform_detail"): Promise<PlatformDetail>;
+export function getInventory(kind: "devices_detail"): Promise<DevicesDetail>;
+export function getInventory(kind: "hw_errors"): Promise<HwErrors>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

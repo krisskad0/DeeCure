@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Display & Audio (docs/03-ui-design/05-pages/08-display.md), with real data.
 
+import { ScreensExpert, SoundHardwareExpert } from "../hardware/DevicesExpert";
+import { atLeast, useUi } from "../../ui";
 import { type AudioDevice, type DisplayInfo, getInventory, getMachine } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { Icon } from "../../components/Icon";
@@ -31,6 +33,7 @@ const OUTPUTS: Column<Output>[] = [
 ];
 
 export function DisplayDisplays() {
+  const { mode } = useUi();
   const { data: display, error } = useLive(loadDisplay, 15_000);
   const machine = useLive(loadMachine, 3_600_000).data;
   if (!display) {
@@ -55,6 +58,7 @@ export function DisplayDisplays() {
       <Panel title="Connected displays" source="/sys/class/drm · Mutter" span={8} flush>
         <DataTable rows={display.outputs} columns={OUTPUTS} rowKey={(o) => o.connector} empty="No display outputs found" />
       </Panel>
+      {atLeast(mode, "expert") && <ScreensExpert />}
     </>
   );
 }
@@ -66,6 +70,7 @@ const devices = (label: string): Column<AudioDevice>[] => [
 ];
 
 export function DisplayAudio() {
+  const { mode } = useUi();
   const { data: audio, error } = useLive(loadAudio, 10_000);
   if (!audio) {
     return (
@@ -100,6 +105,7 @@ export function DisplayAudio() {
       <Panel title="Input devices" source="pw-dump" span={6} flush>
         <DataTable rows={audio.inputs} columns={devices("Level")} rowKey={(d) => d.name} empty="No input devices" />
       </Panel>
+      {atLeast(mode, "expert") && <SoundHardwareExpert />}
     </>
   );
 }

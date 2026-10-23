@@ -2,6 +2,8 @@
 // Hardware › Summary (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // Badges come from simple, stated thresholds; DeeCure has no hardware rules yet.
 
+import { HardwareErrorsPanel } from "./DevicesExpert";
+import { atLeast, useUi } from "../../ui";
 import { temp as tempText } from "../../units";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
@@ -15,6 +17,7 @@ import { AdminRead } from "../../components/AdminRead";
 import { NEEDS_DRIVER, biosDate, shortCpu, useBluetooth, useFirmware, useGpus, useHardware } from "./shared";
 
 export function HardwareSummary() {
+  const { mode } = useUi();
   const { data: hw, error } = useHardware();
   const latest = useLatest();
   const gpus = useGpus();
@@ -68,6 +71,7 @@ export function HardwareSummary() {
       <Panel title="Components" span={6} flush>
         <StatusList rows={rows} />
       </Panel>
+      {atLeast(mode, "expert") && <HardwareErrorsPanel />}
     </>
   );
 }

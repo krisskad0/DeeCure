@@ -2,6 +2,7 @@
 // Hardware › Peripherals (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
 import { PortsExpertSections } from "./PlatformExpert";
+import { BuiltInDevicesExpert } from "./DevicesExpert";
 import { PcieLinks } from "../performance/DiskExpert";
 import { atLeast, useUi } from "../../ui";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -75,6 +76,7 @@ export function HardwarePeripherals() {
       </Panel>
       {atLeast(mode, "expert") && (
         <>
+          <BuiltInDevicesExpert />
           <PortsExpertSections />
           <PcieLinks />
         </>

@@ -267,23 +267,23 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Camera: model, resolutions and frame rates it supports, in use or not | Real camera facts, and whether an app has it open | `/sys/class/video4linux`, V4L2 queries | You | Partly: in use |
-| Fingerprint reader: supported by Ubuntu or not, fingers enrolled for you | Know if it can be used for sign-in | fprintd (D-Bus) | You | New |
-| Touchpad, touchscreen, pen: model and driver | Find the right settings and drivers | `/proc/bus/input/devices`, libinput properties | You | Partly: input list |
-| Wi-Fi chip: model, driver, firmware version, bands and Wi-Fi generations it supports | Know what the chip can do, against what it uses now (section 6) | `ethtool -i`, `/sys/class/ieee80211/*`, `iw phy` when installed | You | Partly: model |
-| Ethernet: negotiated speed and duplex, energy-saving Ethernet, Wake-on-LAN | Finds a gigabit port running at 100 Mb/s | `ethtool` | You | Partly: link speed |
+| Camera: model, resolutions and frame rates it supports, in use or not | Real camera facts, and whether an app has it open | `/sys/class/video4linux`, V4L2 queries | You | ✅ Built (model and driver; formats need `v4l2-ctl`: later) |
+| Fingerprint reader: supported by Ubuntu or not, fingers enrolled for you | Know if it can be used for sign-in | fprintd (D-Bus) | You | ✅ Built |
+| Touchpad, touchscreen, pen: model and driver | Find the right settings and drivers | `/proc/bus/input/devices`, libinput properties | You | ✅ Built |
+| Wi-Fi chip: model, driver, firmware version, bands and Wi-Fi generations it supports | Know what the chip can do, against what it uses now (section 6) | `ethtool -i`, `/sys/class/ieee80211/*`, `iw phy` when installed | You | ✅ Built (bands and generations need `iw`: later) |
+| Ethernet: negotiated speed and duplex, energy-saving Ethernet, Wake-on-LAN | Finds a gigabit port running at 100 Mb/s | `ethtool` | You | ✅ Built (Wake-on-LAN needs Admin: later) |
 | Bluetooth adapter: version, maker, and whether a radio switch has it off | Explains "Bluetooth not found" (it is switched off on this test laptop) | BlueZ (D-Bus), rfkill | You | Partly: adapter count and power |
-| Batteries of mice, keyboards, headsets | All batteries in one place | UPower devices, BlueZ battery | You | Partly: Bluetooth only |
-| Printers: queue, state, last error | Find a stuck print job | CUPS (`lpstat`) | You | New |
+| Batteries of mice, keyboards, headsets | All batteries in one place | UPower devices, BlueZ battery | You | ✅ Built |
+| Printers: queue, state, last error | Find a stuck print job | CUPS (`lpstat`) | You | ✅ Built |
 
 ## 18. Display and sound hardware (Display & Audio)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Each screen's maker, model, manufacture year, physical size, and pixel density | Real panel facts from the screen itself | EDID (`/sys/class/drm/*/edid`) | You | Partly: name and resolution |
-| Supported refresh rates, variable refresh (VRR), HDR, colour depth | Know what the screen can do, against what is set | EDID, GNOME Mutter (D-Bus) | You | Partly: refresh rate in use |
-| Screen brightness: level now, and the hardware range | Real level, not the slider position | `/sys/class/backlight/*` | You | New |
-| Sound chip (codec) and its driver and firmware | Explains missing speakers or microphones | `/proc/asound/card*/codec#*`, journal | You | New |
+| Each screen's maker, model, manufacture year, physical size, and pixel density | Real panel facts from the screen itself | EDID (`/sys/class/drm/*/edid`) | You | ✅ Built |
+| Supported refresh rates, variable refresh (VRR), HDR, colour depth | Know what the screen can do, against what is set | EDID, GNOME Mutter (D-Bus) | You | ✅ Built (refresh range, colour depth, HDR) |
+| Screen brightness: level now, and the hardware range | Real level, not the slider position | `/sys/class/backlight/*` | You | ✅ Built |
+| Sound chip (codec) and its driver and firmware | Explains missing speakers or microphones | `/proc/asound/card*/codec#*`, journal | You | ✅ Built |
 | Sample rate and format in use per output | Know if audio is resampled | PipeWire (`pw-dump`) | You | Partly: devices and volume |
 
 ## 19. Hardware errors (Hardware › Summary, one panel)
@@ -292,14 +292,14 @@ One place for every error the hardware itself reports. Each row says how many ti
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| CPU and memory hardware errors (machine checks) | The CPU reports real hardware faults | journal `mce` lines, `/sys/devices/system/machinecheck` | You | Partly: in the error log |
-| Memory errors (ECC) | See section 2 | `/sys/devices/system/edac/mc*` | You | New |
+| CPU and memory hardware errors (machine checks) | The CPU reports real hardware faults | journal `mce` lines, `/sys/devices/system/machinecheck` | You | ✅ Built |
+| Memory errors (ECC) | See section 2 | `/sys/devices/system/edac/mc*` | You | ✅ Built |
 | PCIe link errors per device (corrected, non-fatal, fatal) | A bad link shows here before a crash | `/sys/bus/pci/devices/*/aer_dev_*` (readable here without a password) | You | ✅ Built (Hardware › Peripherals) |
-| Firmware that failed to load | A device works badly or not at all without it | journal `Direct firmware load ... failed` | You | Partly: in the error log |
-| Driver and firmware crash reports | Wi-Fi and graphics firmware crashes leave a report | `/sys/class/devcoredump`, journal | You | New |
-| USB errors (device not accepting address, descriptor errors) | Bad cable, weak port, or a failing device | kernel log | You | Partly: in the kernel log |
-| Disk link errors (SATA and NVMe resets, timeouts) | Bad cable or a failing drive | kernel log, NVMe error log | You / Admin | Partly: in the kernel log |
-| Devices with no driver, or with a fallback driver (for example a basic display driver instead of the real one) | Hardware that runs slow or not at all | `/sys/bus/*/devices/*/driver`, `ubuntu-drivers devices` | You | Partly: devices with no driver |
+| Firmware that failed to load | A device works badly or not at all without it | journal `Direct firmware load ... failed` | You | ✅ Built |
+| Driver and firmware crash reports | Wi-Fi and graphics firmware crashes leave a report | `/sys/class/devcoredump`, journal | You | ✅ Built |
+| USB errors (device not accepting address, descriptor errors) | Bad cable, weak port, or a failing device | kernel log | You | ✅ Built |
+| Disk link errors (SATA and NVMe resets, timeouts) | Bad cable or a failing drive | kernel log, NVMe error log | You / Admin | ✅ Built |
+| Devices with no driver, or with a fallback driver (for example a basic display driver instead of the real one) | Hardware that runs slow or not at all | `/sys/bus/*/devices/*/driver`, `ubuntu-drivers devices` | You | ✅ Built (devices with no driver, and drivers Ubuntu offers) |
 
 ## How this stays light and safe
 
