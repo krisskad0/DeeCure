@@ -121,6 +121,9 @@ jobs:
       - name: Install, use, and purge it
         run: sudo scripts/test-deb.sh --throwaway target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb
 
+      - name: Test the admin helper with real D-Bus and polkit (in a container)
+        run: docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-helper.sh --throwaway /src/target/deb/deecure_*.deb'
+
       - uses: actions/upload-artifact@v4
         with:
           name: deecure-deb

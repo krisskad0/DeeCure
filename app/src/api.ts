@@ -588,3 +588,80 @@ export function toAppError(error: unknown): AppError {
   }
   return { kind: "other", message: String(error) };
 }
+
+// Fixes (docs/02-architecture/fix-engine.md). Planning reads only; applying runs the steps
+// in this window's session, so polkit can show the password box for admin steps.
+
+export type Undo = "full" | "regenerates" | "none";
+
+export interface FixCall {
+  op: string;
+  [key: string]: unknown;
+}
+
+export interface FixStep {
+  id: string;
+  title: string;
+  description: string;
+  size?: number;
+  undo: Undo;
+  checked: boolean;
+  command: string;
+  call: FixCall;
+}
+
+export interface FixPlan {
+  action: string;
+  title: string;
+  subtitle: string;
+  rule?: string;
+  subject?: string;
+  steps: FixStep[];
+}
+
+export interface StepResult {
+  id: string;
+  title: string;
+  ok: boolean;
+  message: string;
+  undo?: FixCall;
+}
+
+export interface FixRun {
+  id: number;
+  action: string;
+  title: string;
+  rule?: string;
+  subject?: string;
+  started_at: number;
+  finished_at: number;
+  status: "succeeded" | "failed" | "undone";
+  steps: StepResult[];
+}
+
+/** Calls that need the root helper; everything else runs as the user. */
+export const USER_CALLS = ["empty_trash", "clear_thumbnails", "docker_prune_images", "docker_prune_build_cache", "set_startup_app", "end_process", "set_power_profile"];
+
+export function getFixPlan(action: string, subject?: string): Promise<FixPlan> {
+  return invoke<FixPlan>("fix_plan", { action, subject: subject ?? null });
+}
+
+export function applyFix(plan: FixPlan, chosen: string[]): Promise<{ run: FixRun }> {
+  return invoke<{ run: FixRun }>("fix_apply", { plan, chosen });
+}
+
+export function getFixRuns(): Promise<FixRun[]> {
+  return invoke<FixRun[]>("fix_runs");
+}
+
+export function undoFix(id: number): Promise<string[]> {
+  return invoke<string[]>("fix_undo", { id });
+}
+
+export function getHelperStatus(): Promise<boolean> {
+  return invoke<boolean>("helper_status");
+}
+
+export function helperRead(what: "smart" | "firewall_rules" | "crontabs" | "accounts" | "memory_modules" | "serial", arg = ""): Promise<string> {
+  return invoke<string>("helper_read", { what, arg });
+}

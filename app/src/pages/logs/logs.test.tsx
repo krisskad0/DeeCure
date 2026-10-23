@@ -27,6 +27,7 @@ const DATA: Record<string, unknown> = {
 
 vi.mock("../../api", () => ({
   getInventory: (kind: string) => Promise.resolve(empty ? (Array.isArray(DATA[kind]) ? [] : { volume: Array(24).fill(0), entries: [], total: 0, groups: [], times: [] }) : DATA[kind]),
+  getFixRuns: () => Promise.resolve([]),
   getMetrics: () => Promise.resolve([{ name: "boot.time", value: 41.2, unit: "seconds", at: now - 12 * H }]),
   toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
 }));

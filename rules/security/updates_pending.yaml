@@ -7,4 +7,6 @@ explain: >
   System › Updates to see the list.
 severity:
   warning: "updates.security >= 1"
+fixes:
+  - action: security.install_security_updates
 learn_more: topics/security/updates

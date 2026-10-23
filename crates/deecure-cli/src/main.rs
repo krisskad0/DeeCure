@@ -4,6 +4,7 @@
 //!
 //! Commands are listed in `docs/02-architecture/cli.md`.
 
+mod fix;
 mod render;
 
 use std::path::{Path, PathBuf};
@@ -33,6 +34,26 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Preview a fix, then run it after you say yes (admin steps ask for your password)
+    Fix {
+        /// The fix, such as storage.free_space (run `deecure fix --list` to see all)
+        action: Option<String>,
+        /// The target, for fixes that need one: a service, an app, pid:name, a power mode
+        target: Option<String>,
+        /// Run without asking (the preview is still printed)
+        #[arg(long)]
+        yes: bool,
+        /// List every fix
+        #[arg(long)]
+        list: bool,
+    },
+    /// Show what DeeCure changed, newest first
+    History,
+    /// Take back a fix by its number from `deecure history`
+    Undo {
+        /// The run number
+        id: i64,
+    },
 }
 
 fn main() -> ExitCode {
@@ -43,6 +64,14 @@ fn main() -> ExitCode {
     };
     match cli.command {
         Command::Status { json } => status(&socket, json),
+        Command::Fix {
+            action,
+            target,
+            yes,
+            list,
+        } => fix::fix(&socket, action, target, yes, list),
+        Command::History => fix::history(&socket),
+        Command::Undo { id } => fix::undo(&socket, id),
     }
 }
 

@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=io.github.krisskad0.DeeCure.Helper
+Exec=/usr/libexec/deecure/deecure-helper
+User=root
+SystemdService=deecure-helper.service

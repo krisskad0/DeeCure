@@ -9,6 +9,8 @@ import { NoData } from "./NoData";
 import { severityVariant } from "../status";
 import { ago } from "../time";
 import { kbTopic, useKb } from "../kb";
+import { Button } from "../components/Button";
+import { useFix } from "../shell/FixDrawer";
 
 export function IssuesPanel(props: {
   title: string;
@@ -29,6 +31,7 @@ export function IssuesPanel(props: {
 
 function Body({ findings, report, error, now }: { findings: Finding[]; report: StatusReport | null; error: AppError | null; now: number }) {
   const kb = useKb();
+  const openFix = useFix();
   if (error) return <NoData error={error} waiting="" />;
   if (!report) return <div className="empty muted">Loading…</div>;
   if (!report.checked_at) {
@@ -55,6 +58,13 @@ function Body({ findings, report, error, now }: { findings: Finding[]; report: S
               {f.subject && <> · {f.subject}</>} · first seen {ago(f.first_seen, now)}
             </div>
             <HowTo topic={kbTopic(kb, f.rule)} />
+            {f.fixes && f.fixes.length > 0 && (
+              <div className="issue-actions">
+                <Button small variant="primary" onClick={() => openFix(f.fixes?.[0] ?? "", f.subject)}>
+                  Fix
+                </Button>
+              </div>
+            )}
           </div>
         </li>
       ))}

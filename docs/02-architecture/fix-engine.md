@@ -16,3 +16,24 @@ Every fix follows the same five steps:
 | **No undo needed** | The thing rebuilds itself | Clear apt cache, thumbnails |
 | **No undo** | It is gone for good, and the user is warned clearly | Empty Trash, remove old snap versions |
 | **System snapshot** | Used for big changes when Timeshift or Btrfs is present | Remove old kernels |
+
+## What is built
+
+```
+agent (user service)        desktop app / CLI (in the session)        deecure-helper (root)
+fix_plan ──► Plan  ───────► preview, untick steps
+                             apply: user steps run here
+                                    admin steps ─── D-Bus + polkit ──► check, run, audit
+fix_record ◄── FixRun ◄───── results (with undo calls)
+  saves it, re-checks the rules now
+fix_runs / fix_undone ◄───── Activity › DeeCure Actions, Backups › Restore Points, `deecure undo`
+```
+
+- **Plan** (`crates/deecure-agent/src/fixes.rs`): built from live data, so sizes and items are current. 22 fixes (`deecure_core::fix::ACTIONS`): free up space (and each part of it), remove packages no longer needed or leftover settings, install security or all updates, turn on the firewall, remove old kernels, restart / turn off / turn on a service, turn a startup app off or on, end a process, change the power mode, and power off cleanly at 5%.
+- **Steps** name a fixed `Call`. Seven run as the user (Trash, thumbnails, Docker images and build cache, startup apps, ending one of your own processes, power mode); the rest go to the helper.
+- **Why the app runs the steps, not the agent:** polkit shows its password box in the person's session. The agent is a systemd user service outside the session, so its calls could not be approved.
+- **Protect:** steps that change settings return an undo call (the firewall, services, startup apps, the power mode, UPower.conf's old values).
+- **Verify:** after `fix_record`, the agent runs its collectors and rules at once; the drawer then says whether the finding is gone.
+- **Undo** runs the undo calls, last step first, and marks the run undone.
+- **CLI:** `deecure fix <action> [target]` (preview, then asks), `deecure fix --list`, `deecure history`, `deecure undo <n>`.
+

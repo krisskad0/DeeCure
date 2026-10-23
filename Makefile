@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status app web perf deb deb-test clean
+.PHONY: help build test lint fmt agent status app web perf deb deb-test helper-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -40,6 +40,9 @@ deb: ## Build the .deb package into target/deb/ and check it with lintian
 
 deb-test: deb ## Install, use, and purge the .deb in a clean Ubuntu 24.04 container (needs Docker)
 	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-deb.sh --throwaway /src/target/deb/deecure_*.deb /src/target/deb/deecure-desktop_*.deb'
+
+helper-test: deb ## Test the admin helper with real D-Bus and polkit in a clean Ubuntu 24.04 container (needs Docker)
+	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-helper.sh --throwaway /src/target/deb/deecure_*.deb'
 
 clean: ## Remove build output
 	$(CARGO) clean

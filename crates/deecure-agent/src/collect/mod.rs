@@ -96,6 +96,7 @@ pub trait Collector: Send {
 pub async fn run(
     store: SharedStore,
     root: SystemRoot,
+    recheck: std::sync::Arc<tokio::sync::Notify>,
     mut after_save: impl FnMut(&Store, Timestamp) + Send + 'static,
 ) {
     let mut collectors: Vec<Box<dyn Collector>> = vec![
@@ -119,7 +120,11 @@ pub async fn run(
 
     let mut run_number: u64 = 0;
     loop {
-        timer.tick().await;
+        // Every minute, or right away when a fix asks for a fresh check.
+        tokio::select! {
+            _ = timer.tick() => {}
+            () = recheck.notified() => {}
+        }
         let now = Timestamp::now();
         let mut sample = Sample::default();
         for collector in &mut collectors {

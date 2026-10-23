@@ -245,3 +245,17 @@ a.btn { text-decoration: none; }
 .howto summary { cursor: pointer; color: var(--accent); font-weight: 600; }
 .howto p { margin: 6px 0; }
 .howto ol { margin: 4px 0; padding-left: 20px; display: grid; gap: 3px; }
+
+/* Fix drawer steps */
+.fix-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.fix-steps li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
+.fix-steps li.off { opacity: 0.55; }
+.fix-steps input[type="checkbox"] { margin-top: 3px; }
+.fix-step-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fix-step-title { font-weight: 600; }
+.fix-step-desc { font-size: 12.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+.fix-step-tags { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12px; }
+.fix-cmd { font-size: 12px; overflow-wrap: anywhere; }
+.fix-fail { width: 20px; height: 20px; border-radius: 50%; background: var(--crit); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+.issue-actions { margin-top: 8px; display: flex; gap: 8px; }
+.btn-row { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }

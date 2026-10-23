@@ -6,6 +6,7 @@
 
 mod error;
 mod findings;
+mod fixes;
 mod metrics;
 mod records;
 mod retention;

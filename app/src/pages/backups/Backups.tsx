@@ -11,6 +11,7 @@ import { Panel } from "../../components/Panel";
 import { when } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
+import { FixHistory } from "../../shell/FixHistory";
 
 type Snap = BackupsInfo["timeshift"]["snapshots"][number];
 
@@ -89,8 +90,8 @@ export function BackupsSnapshots() {
 
 export function BackupsRestore() {
   return (
-    <Panel title="DeeCure restore points" span={12}>
-      <div className="empty muted">DeeCure has not changed anything yet, so there is nothing to restore. Every fix will save a restore point here first.</div>
+    <Panel title="DeeCure restore points" info="Fixes that can be taken back. Undo restores the earlier state." span={12} flush>
+      <FixHistory restorePoints />
     </Panel>
   );
 }

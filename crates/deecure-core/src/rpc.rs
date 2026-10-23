@@ -46,6 +46,15 @@ pub mod method {
     pub const SNAPSHOT: &str = "snapshot";
     /// Returns live data read now, such as `system` facts or `processes`. Takes [`InventoryParams`](super::InventoryParams).
     pub const INVENTORY: &str = "inventory";
+    /// Returns a fix [`Plan`](crate::fix::Plan). Takes [`FixPlanParams`](super::FixPlanParams). Only reads.
+    pub const FIX_PLAN: &str = "fix_plan";
+    /// Saves a finished [`FixRun`](crate::fix::FixRun), checks the rules again, and returns
+    /// its ID. Takes [`FixRecordParams`](super::FixRecordParams).
+    pub const FIX_RECORD: &str = "fix_record";
+    /// Returns past [`FixRun`](crate::fix::FixRun)s, newest first. Takes no params.
+    pub const FIX_RUNS: &str = "fix_runs";
+    /// Marks a run as undone. Takes [`FixUndoneParams`](super::FixUndoneParams).
+    pub const FIX_UNDONE: &str = "fix_undone";
 }
 
 /// Params of the `metrics` method.
@@ -76,6 +85,33 @@ pub const MAX_POINTS: usize = 2000;
 pub struct InventoryParams {
     /// What to read, such as `system` or `processes`.
     pub kind: String,
+}
+
+/// Params of the `fix_plan` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FixPlanParams {
+    /// The fix, such as `storage.free_space`.
+    pub action: String,
+    /// The target, for fixes that need one (a service, an app, `pid:name`, a power mode).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subject: Option<String>,
+}
+
+/// Params of the `fix_record` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FixRecordParams {
+    /// What happened.
+    pub run: crate::fix::FixRun,
+}
+
+/// Params of the `fix_undone` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FixUndoneParams {
+    /// The run's ID.
+    pub id: i64,
 }
 
 /// Params of the `snapshot` method.

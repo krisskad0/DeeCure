@@ -13,6 +13,10 @@ import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { useLive } from "../../useLive";
 import { kbPort, useKb } from "../../kb";
+import { Button } from "../../components/Button";
+import { useFix } from "../../shell/FixDrawer";
+import { AdminRead } from "../../components/AdminRead";
+import { LogLine } from "../../components/CodeBlock";
 import { MB, TimeChart, useHistory } from "../performance/shared";
 import { NoData } from "../NoData";
 
@@ -176,6 +180,7 @@ export function NetworkPorts() {
 
 export function NetworkFirewall() {
   const { data: d, error } = useLive(loadDetails, 30_000);
+  const openFix = useFix();
   if (!d) return <Waiting title="Firewall" error={error} />;
   const fw = d.firewall;
   const policy = (p?: string) => (p === "DROP" || p === "REJECT" ? "Deny" : p === "ACCEPT" ? "Allow" : (p ?? "—"));
@@ -193,10 +198,19 @@ export function NetworkFirewall() {
         {fw.rules ? (
           fw.rules.length ? <ul className="plain-list">{fw.rules.map((r) => <li key={r}><code>{r}</code></li>)}</ul> : <div className="empty muted">No rules.</div>
         ) : (
-          <div className="empty muted">Requires Full access · Settings › Access</div>
+          <AdminRead what="firewall_rules" label="Show the rules (asks for your password)">
+            {(text) => <LogLine>{text}</LogLine>}
+          </AdminRead>
         )}
       </Panel>
-      {fw.installed && !fw.enabled && <AlertBanner tone="warn" title="The firewall is off" text="Any program that listens on every network can be reached by other computers on the same network, such as public Wi-Fi." />}
+      {fw.installed && !fw.enabled && (
+        <AlertBanner
+          tone="warn"
+          title="The firewall is off"
+          text="Any program that listens on every network can be reached by other computers on the same network, such as public Wi-Fi."
+          actions={<Button small variant="primary" onClick={() => openFix("security.enable_firewall")}>Turn on…</Button>}
+        />
+      )}
     </>
   );
 }

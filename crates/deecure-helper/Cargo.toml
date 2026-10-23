@@ -1,0 +1,25 @@
+[package]
+name = "deecure-helper"
+description = "The DeeCure admin helper: a fixed list of root actions on D-Bus, guarded by polkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "deecure-helper"
+path = "src/main.rs"
+
+[dependencies]
+deecure-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+rustix.workspace = true
+zbus.workspace = true
+
+[lints]
+workspace = true

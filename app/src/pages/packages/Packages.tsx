@@ -15,6 +15,8 @@ import { Donut } from "../../components/charts/Donut";
 import { bytes } from "../../metrics";
 import { Drawer } from "../../shell/Drawer";
 import { kbPackage, useKb } from "../../kb";
+import { useFix } from "../../shell/FixDrawer";
+import { Button } from "../../components/Button";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 import { PrivacyPermissions } from "../privacy/Privacy";
@@ -127,13 +129,18 @@ const REMOVABLE: Column<Removable>[] = [
 
 export function PackagesCleanup() {
   const { data: info, error } = usePackages();
+  const openFix = useFix();
   if (!info) return <Waiting title="Reclaimable" error={error} />;
   return (
     <>
       <Panel title="Reclaimable" source="apt-get -s autoremove (simulation) · snap · dpkg" span={12} flush>
-        <DataTable rows={info.removable} columns={REMOVABLE} rowKey={(r) => r.action} empty="Nothing to remove" />
+        <DataTable
+          rows={info.removable}
+          columns={[...REMOVABLE, { key: "act", label: "", text: () => "", render: (r) => <Button small onClick={() => openFix(r.action)}>Remove…</Button> }]}
+          rowKey={(r) => r.action}
+          empty="Nothing to remove"
+        />
       </Panel>
-      <AlertBanner tone="info" title="Nothing is removed by this page" text="The list comes from a simulation. Removing with one click, with a preview, comes with the fix engine." />
     </>
   );
 }

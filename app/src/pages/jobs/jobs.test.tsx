@@ -91,7 +91,7 @@ describe("Storage", () => {
     cleanup();
     render(<StorageCleanup />);
     await waitFor(() => expect(screen.getByText("Remove disabled snap revisions")).toBeTruthy());
-    expect(screen.getByText(/Nothing is deleted by this page/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Clean up…" })).toBeTruthy();
   });
 });
 

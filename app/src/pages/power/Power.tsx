@@ -12,7 +12,8 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { Gauge } from "../../components/charts/Gauge";
 import { LineChart } from "../../components/charts/LineChart";
 import { duration, pick, when } from "../../metrics";
-import { useToast } from "../../shell/Toast";
+import { useFix } from "../../shell/FixDrawer";
+import { Button } from "../../components/Button";
 import { useLive } from "../../useLive";
 import { TimeChart, spark, useHistory, useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
@@ -100,7 +101,7 @@ const SLEEP_MODE: Record<string, string> = { s2idle: "Modern standby (s2idle)", 
 
 export function PowerProfile() {
   const { data: power, error } = usePower();
-  const toast = useToast();
+  const openFix = useFix();
   if (!power) {
     return (
       <Panel title="Power mode" span={12}>
@@ -114,7 +115,7 @@ export function PowerProfile() {
     <>
       <Panel title="Power mode" source="power-profiles-daemon" span={6}>
         {power.profile ? (
-          <RadioCards name="pp" value={power.profile} options={options} onChange={() => toast("Changing the power mode from DeeCure comes in a later version. Use the system menu for now.")} />
+          <RadioCards name="pp" value={power.profile} options={options} onChange={(p) => openFix("power.set_profile", p)} />
         ) : (
           <div className="empty muted">The power profiles service is not running, so the power mode is unknown.</div>
         )}
@@ -123,7 +124,17 @@ export function PowerProfile() {
         <KeyValueList
           rows={[
             ["Low battery warning", power.policy ? `${power.policy.low_percent}%` : "—"],
-            ["Critical action", power.policy ? `${power.policy.critical_action} at ${power.policy.action_percent}%` : "—"],
+            [
+              "Critical action",
+              power.policy ? (
+                <span key="c" className="btn-row">
+                  {`${power.policy.critical_action} at ${power.policy.action_percent}%`}
+                  {battery && power.policy.critical_action !== "PowerOff" && <Button small onClick={() => openFix("power.set_battery_action")}>Power off cleanly…</Button>}
+                </span>
+              ) : (
+                "—"
+              ),
+            ],
             ["Charge limit", !battery ? "No battery" : battery.charge_limit === undefined ? "Not supported" : battery.charge_limit >= 100 ? "Supported · Off" : `Stops at ${battery.charge_limit}%`],
             ["Screen blank", minutes(power.screen_blank_seconds)],
             ["Automatic suspend", battery ? `${minutes(power.suspend_on_battery_seconds)} on battery · ${minutes(power.suspend_on_ac_seconds)} plugged in` : minutes(power.suspend_on_ac_seconds)],

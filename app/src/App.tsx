@@ -49,6 +49,7 @@ import { SystemServices } from "./pages/services/SystemServices";
 import { usePref } from "./prefs";
 import { useRoute } from "./route";
 import { CommandPalette } from "./shell/CommandPalette";
+import { FixContext, FixDrawer } from "./shell/FixDrawer";
 import { Onboarding } from "./shell/Onboarding";
 import { PageHeader } from "./shell/PageHeader";
 import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
@@ -118,6 +119,8 @@ export default function App() {
   const [palette, setPalette] = useState(false);
   const [popover, setPopover] = useState<{ kind: "bell" | "machine"; anchor: HTMLElement } | null>(null);
   const toast = useToast();
+  const [fix, setFix] = useState<{ action: string; subject?: string } | null>(null);
+  const openFix = useCallback((action: string, subject?: string) => setFix({ action, subject }), []);
 
   const refresh = useCallback(async () => {
     try {
@@ -191,6 +194,7 @@ export default function App() {
   }
 
   return (
+    <FixContext.Provider value={openFix}>
     <UiContext.Provider value={{ mode, range }}>
     <div className={`app ${rail ? "is-rail" : ""} mode-${mode}`}>
       <TopBar
@@ -209,6 +213,7 @@ export default function App() {
         onMachine={(anchor) => setPopover({ kind: "machine", anchor })}
       />
       {palette && <CommandPalette onClose={() => setPalette(false)} />}
+      {fix && <FixDrawer action={fix.action} subject={fix.subject} onClose={() => setFix(null)} onDone={() => void refresh()} />}
       {popover?.kind === "bell" && (
         <NotificationsPopover anchor={popover.anchor} findings={all} now={now} onClose={() => setPopover(null)} />
       )}
@@ -254,5 +259,6 @@ export default function App() {
       </main>
     </div>
     </UiContext.Provider>
+    </FixContext.Provider>
   );
 }

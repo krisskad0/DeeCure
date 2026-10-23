@@ -7,6 +7,8 @@ import { type UnitState, getInventory, getSnapshot } from "../../api";
 import { KeyValueList } from "../../components/KeyValueList";
 import { kbService, useKb } from "../../kb";
 import { Drawer } from "../../shell/Drawer";
+import { Button } from "../../components/Button";
+import { useFix } from "../../shell/FixDrawer";
 import { bytes } from "../../metrics";
 import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -113,8 +115,27 @@ export function SystemServices() {
 
 /** One service: its state, and what the knowledge base says about it. */
 export function UnitDrawer({ unit, info, onClose }: { unit: Row; info?: { plain: string; safe_to_disable?: string; if_failed?: string }; onClose: () => void }) {
+  const openFix = useFix();
+  const act = (action: string) => {
+    onClose();
+    openFix(action, unit.name);
+  };
   return (
-    <Drawer title={unit.name} subtitle={unit.description} note="Restarting or stopping services comes with the fix engine" onClose={onClose}>
+    <Drawer
+      title={unit.name}
+      subtitle={unit.description}
+      onClose={onClose}
+      actions={
+        <span className="btn-row">
+          <Button small onClick={() => act("services.restart")}>Restart…</Button>
+          {unit.active === "active" || unit.enabled === "enabled" ? (
+            <Button small onClick={() => act("services.disable")}>Turn off…</Button>
+          ) : (
+            <Button small onClick={() => act("services.enable")}>Turn on…</Button>
+          )}
+        </span>
+      }
+    >
       <KeyValueList
         rows={[
           ["State", <StatusBadge key="s" variant={ACTIVE[unit.active] ?? "off"} label={`${unit.active} (${unit.sub})`} />],

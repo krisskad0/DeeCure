@@ -6,6 +6,7 @@
 
 pub mod collect;
 pub mod context;
+pub mod fixes;
 pub mod handler;
 pub mod inventory;
 pub mod kb;

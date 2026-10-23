@@ -4,7 +4,7 @@
 
 import { type Metric, type SizedPath, type StorageInfo, getInventory, getMetrics, getSnapshot } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
-import { LinkButton } from "../../components/Button";
+import { Button, LinkButton } from "../../components/Button";
 import { type Check, Checklist } from "../../components/Checklist";
 import { type Column, DataTable } from "../../components/DataTable";
 import { Icon } from "../../components/Icon";
@@ -17,6 +17,7 @@ import { BarList } from "../../components/charts/BarList";
 import { LineChart } from "../../components/charts/LineChart";
 import { RANGE_MS, bytes, pick, when } from "../../metrics";
 import { href } from "../../route";
+import { useFix } from "../../shell/FixDrawer";
 import { useLive } from "../../useLive";
 import { useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
@@ -228,6 +229,7 @@ const CANDIDATES: Column<Candidate>[] = [
 
 export function StorageCleanup() {
   const { data: storage, error } = useLive(loadStorage, 300_000);
+  const openFix = useFix();
   if (!storage) {
     return (
       <Panel title="Cleanup candidates" span={12}>
@@ -244,8 +246,13 @@ export function StorageCleanup() {
           { label: "Items", value: String(storage.candidates.length) },
         ]}
       />
-      <AlertBanner tone="info" title="DeeCure shows what can be cleaned" text="Cleaning with one click, with a preview and a clear undo note, comes with the fix engine in the next version. Nothing is deleted by this page." />
-      <Panel title="Cleanup candidates" source="Trash · caches · snap · journal · docker" span={12} flush>
+      <Panel
+        title="Cleanup candidates"
+        source="Trash · caches · snap · journal · docker"
+        actions={storage.candidates.length > 0 && <Button small variant="primary" onClick={() => openFix("storage.free_space")}>Clean up…</Button>}
+        span={12}
+        flush
+      >
         <DataTable rows={storage.candidates} columns={CANDIDATES} rowKey={(c) => c.action} empty="Nothing to clean right now" />
       </Panel>
     </>

@@ -11,6 +11,7 @@ mod category;
 pub mod client;
 mod event;
 mod finding;
+pub mod fix;
 pub mod health;
 mod id;
 mod metric;

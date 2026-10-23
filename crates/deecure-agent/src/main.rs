@@ -132,11 +132,6 @@ async fn run(
         rules.len(),
         rules_dir.display()
     );
-    tokio::spawn(collect::run(
-        store.clone(),
-        SystemRoot::real(),
-        rule_checker(rules),
-    ));
 
     // Prefer the socket systemd opened for us. Otherwise open our own, and remove it on exit.
     let (listener, owned_path) = match socket::from_systemd()? {
@@ -157,7 +152,13 @@ async fn run(
         }
     };
 
-    let agent = Agent::new(store, SystemRoot::real());
+    let agent = Agent::new(store.clone(), SystemRoot::real());
+    tokio::spawn(collect::run(
+        store.clone(),
+        SystemRoot::real(),
+        agent.recheck.clone(),
+        rule_checker(rules),
+    ));
     let _ = agent.facts.set(Facts {
         database: db_path.clone(),
         rules_dir: rules_dir.clone(),

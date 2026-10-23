@@ -5,6 +5,21 @@
 **Goal:** users can fix problems with a preview, one password prompt, and an undo button. Then DeeCure goes public.
 **Rough time:** 6–8 weeks.
 
+## Progress
+
+| Task | Status |
+| --- | --- |
+| 1. Root helper | ✅ Done. 12 admin operations and 6 read-outs, strict checks, audit log, idle exit ([Helper](../02-architecture/helper.md)). |
+| 2. System files | ✅ Done. polkit policy (one action per operation), D-Bus policy and activation, hardened `deecure-helper.service`; in the `.deb`, never enabled or started by it. |
+| 3. Access level | ✅ Done. Settings › Access shows whether the helper is installed; onboarding explains Basic and Full. |
+| 4. Admin insights | ✅ Done. SMART health, firewall rules, memory modules, and the serial number through the helper, behind a "asks for your password" button. All users' crontabs and account status are available as helper read-outs. |
+| 5. Fix engine | ✅ Done. Plan → preview → apply → verify, with undo calls and run history ([Fix engine](../02-architecture/fix-engine.md)). |
+| 6. Fix drawer UI | ✅ Done. Untick steps, undo and admin badges, live progress, a verify result; Fix buttons on issues, cleanup, packages, updates, firewall, services, startup apps, processes, power, kernels, and Docker images. |
+| 7. First 20 fixes | Built: 22. Tested: unit tests, and the helper path end to end in a container with real D-Bus and polkit. Still to do: apply → verify → undo of each fix in a full VM. |
+| 8. Undo screens | ✅ Done. Activity › DeeCure Actions and Backups › Restore Points list every run with Undo; `deecure history` and `deecure undo`. |
+| 9. Security review | Needs two human reviewers. The [review checklist](../02-architecture/security-model.md#helper-review-checklist) is met by the code and its tests. |
+| 10–12 | See below |
+
 ## Tasks (in order)
 
 1. **Root helper:** D-Bus service, fixed action list, input checks, audit log, exit after 2 idle minutes.

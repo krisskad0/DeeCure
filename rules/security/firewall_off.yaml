@@ -9,4 +9,6 @@ explain: >
 severity:
   warning: "firewall.enabled == 0 and net.listening_all >= 1"
   info: "firewall.enabled == 0"
+fixes:
+  - action: security.enable_firewall
 learn_more: topics/security/firewall

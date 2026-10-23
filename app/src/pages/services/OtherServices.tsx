@@ -8,6 +8,8 @@ import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { useLive } from "../../useLive";
+import { Button } from "../../components/Button";
+import { useFix } from "../../shell/FixDrawer";
 import { NoData } from "../NoData";
 
 const loadUser = () => getInventory("user_services");
@@ -46,9 +48,14 @@ const STARTUP: Column<StartupApp>[] = [
 
 export function ServicesStartup() {
   const { data: apps, error } = useLive(loadStartup, 60_000);
+  const openFix = useFix();
+  const columns: Column<StartupApp>[] = [
+    ...STARTUP,
+    { key: "act", label: "", text: () => "", render: (a) => <Button small onClick={() => openFix(a.enabled ? "services.disable_startup_app" : "services.enable_startup_app", a.id)}>{a.enabled ? "Turn off…" : "Turn on…"}</Button> },
+  ];
   return (
     <Panel title="Started at login" source="~/.config/autostart · /etc/xdg/autostart" span={12} flush>
-      {apps ? <DataTable rows={apps} columns={STARTUP} rowKey={(a) => a.id} filter={{ column: "scope", options: ["User", "System"] }} empty="No startup applications" /> : <NoData error={error} waiting="Loading…" />}
+      {apps ? <DataTable rows={apps} columns={columns} rowKey={(a) => a.id} filter={{ column: "scope", options: ["User", "System"] }} empty="No startup applications" /> : <NoData error={error} waiting="Loading…" />}
     </Panel>
   );
 }

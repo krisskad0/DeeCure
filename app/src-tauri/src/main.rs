@@ -8,10 +8,12 @@
 use std::path::PathBuf;
 
 use deecure_core::client::{self, ClientError};
+use deecure_core::fix::{FixRun, Plan};
 use deecure_core::rpc::{StatusReport, default_socket_path, method};
 use deecure_core::{Metric, Snapshot};
 use serde::Serialize;
 use serde_json::{Value, json};
+use tauri::Emitter;
 
 /// An error the UI can show: `kind` tells it which screen to show, `message` is for people.
 #[derive(Debug, Serialize)]
@@ -97,6 +99,76 @@ async fn latest() -> Result<Vec<Metric>, AppError> {
     ask(method::LATEST, None).await
 }
 
+/// A fix's plan: what it will do, before anything runs.
+#[tauri::command]
+async fn fix_plan(action: String, subject: Option<String>) -> Result<Plan, AppError> {
+    ask(
+        method::FIX_PLAN,
+        Some(json!({ "action": action, "subject": subject })),
+    )
+    .await
+}
+
+/// What `fix_apply` returns: the run as saved.
+#[derive(Debug, Serialize)]
+struct Applied {
+    run: FixRun,
+}
+
+/// Runs the chosen steps here, in the person's session (so polkit can ask for the password),
+/// sends a `fix-progress` event after each step, then saves the run with the agent.
+#[tauri::command]
+async fn fix_apply(
+    app: tauri::AppHandle,
+    plan: Plan,
+    chosen: Vec<String>,
+) -> Result<Applied, AppError> {
+    let mut run = deecure_fix::apply(&plan, &chosen, |step| {
+        let _ = app.emit("fix-progress", step);
+    })
+    .await;
+    run.id = ask(method::FIX_RECORD, Some(json!({ "run": run }))).await?;
+    Ok(Applied { run })
+}
+
+/// Past fixes, newest first.
+#[tauri::command]
+async fn fix_runs() -> Result<Vec<FixRun>, AppError> {
+    ask(method::FIX_RUNS, None).await
+}
+
+/// Takes a fix back, then marks it undone.
+#[tauri::command]
+async fn fix_undo(id: i64) -> Result<Vec<String>, AppError> {
+    let runs: Vec<FixRun> = ask(method::FIX_RUNS, None).await?;
+    let run = runs
+        .into_iter()
+        .find(|r| r.id == id)
+        .ok_or_else(|| other(format!("no fix run {id}")))?;
+    let done = deecure_fix::undo(&run).await.map_err(other)?;
+    let _: bool = ask(method::FIX_UNDONE, Some(json!({ "id": id }))).await?;
+    Ok(done)
+}
+
+/// True when the admin helper is installed.
+#[tauri::command]
+async fn helper_status() -> bool {
+    deecure_fix::helper_installed().await
+}
+
+/// An admin read-out through the helper (polkit may ask for the password).
+#[tauri::command]
+async fn helper_read(what: String, arg: String) -> Result<String, AppError> {
+    deecure_fix::helper_read(&what, &arg).await.map_err(other)
+}
+
+fn other(message: impl Into<String>) -> AppError {
+    AppError {
+        kind: "other",
+        message: message.into(),
+    }
+}
+
 /// This computer, for the top bar's machine picker.
 #[derive(Debug, Serialize)]
 struct Machine {
@@ -145,7 +217,18 @@ fn machine() -> Machine {
 fn main() {
     let result = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            status, snapshot, inventory, metrics, latest, machine
+            status,
+            snapshot,
+            inventory,
+            metrics,
+            latest,
+            machine,
+            fix_plan,
+            fix_apply,
+            fix_runs,
+            fix_undo,
+            helper_status,
+            helper_read
         ])
         .run(tauri::generate_context!());
     if let Err(e) = result {

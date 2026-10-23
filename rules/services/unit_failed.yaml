@@ -8,4 +8,6 @@ explain: >
   shows why.
 severity:
   warning: "item.active == 'failed'"
+fixes:
+  - action: services.restart
 learn_more: topics/services/failed-service

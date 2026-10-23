@@ -8,6 +8,8 @@ import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useLive } from "../../useLive";
+import { Button } from "../../components/Button";
+import { useFix } from "../../shell/FixDrawer";
 import { ago } from "../../time";
 import { NoData } from "../NoData";
 
@@ -40,6 +42,7 @@ export function SystemUpdates() {
   const { data: snapshot, error } = useLive(loadUpdates, 60_000);
   const history = useLive(loadHistory, 300_000).data;
   const system = useLive(loadSystem, 60_000).data;
+  const openFix = useFix();
   const info = snapshot?.data;
   if (!info) {
     return (
@@ -60,7 +63,21 @@ export function SystemUpdates() {
           { label: "Reboot required", value: system?.reboot_required ? "Yes" : "No", status: system?.reboot_required ? "info" : "ok" },
         ]}
       />
-      <Panel title="Pending updates" subtitle={`${info.pending.length} packages`} source="apt list --upgradable" span={12} flush>
+      <Panel
+        title="Pending updates"
+        subtitle={`${info.pending.length} packages`}
+        source="apt list --upgradable"
+        actions={
+          info.pending.length > 0 && (
+            <span className="btn-row">
+              {security > 0 && <Button small variant="primary" onClick={() => openFix("security.install_security_updates")}>Install security updates…</Button>}
+              <Button small onClick={() => openFix("system.install_updates")}>Install all…</Button>
+            </span>
+          )
+        }
+        span={12}
+        flush
+      >
         <DataTable rows={info.pending} columns={PENDING} rowKey={(p) => p.name} search={{ placeholder: "Search packages" }} empty="Everything is up to date" />
       </Panel>
       <Panel title="Update history" source="/var/log/apt/history.log" span={12} flush>

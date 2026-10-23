@@ -10,6 +10,8 @@ import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
+import { Button } from "../../components/Button";
+import { useFix } from "../../shell/FixDrawer";
 
 type Installed = KernelInfo["installed"][number];
 type Module = KernelInfo["modules"][number];
@@ -32,6 +34,7 @@ const MODULES: Column<Module>[] = [
 
 export function SystemKernel() {
   const { data: k, error } = useLive(loadKernel, 300_000);
+  const openFix = useFix();
   if (!k) {
     return (
       <Panel title="Running kernel" span={12}>
@@ -51,7 +54,7 @@ export function SystemKernel() {
           ]}
         />
       </Panel>
-      <Panel title="Installed kernels" span={7} flush>
+      <Panel title="Installed kernels" span={7} flush actions={k.installed.some((i) => i.status === "old") && <Button small onClick={() => openFix("system.remove_old_kernels")}>Remove old…</Button>}>
         <DataTable rows={k.installed} columns={KERNELS} rowKey={(i) => i.version} empty="No kernel images found in /boot" />
       </Panel>
       <Panel title="Kernel modules" source="/proc/modules" span={12} flush>

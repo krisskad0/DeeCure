@@ -37,6 +37,7 @@ vi.mock("../../api", () => ({
         backups: { deja_dup: dejaDup, timeshift: { installed: true, configured: true, mode: "rsync", schedule: ["Monthly"], snapshots: [{ created: now - 40 * 86_400_000, kind: "Monthly", comment: "before upgrade" }] } },
       }[kind],
     ),
+  getFixRuns: () => Promise.resolve([]),
   toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
 }));
 
@@ -91,6 +92,6 @@ describe("Backups", () => {
   it("shows the last backup age and warns about personal files", async () => {
     await shows(BackupsJobs, "Personal files have no backup");
     await shows(BackupsSnapshots, "before upgrade");
-    await shows(BackupsRestore, /nothing to restore/);
+    await shows(BackupsRestore, /No restore points yet/);
   });
 });

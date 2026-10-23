@@ -16,6 +16,8 @@ pub struct Agent {
     pub root: SystemRoot,
     /// Remembers the last process reading, so CPU use is measured between requests.
     processes: Mutex<ProcessSampler>,
+    /// Wakes the collectors now instead of at the next minute (after a fix).
+    pub recheck: Arc<tokio::sync::Notify>,
     /// Set once at start by `main`; empty in tests.
     pub facts: std::sync::OnceLock<Facts>,
     /// The last folder-size scan, shared with the thread that runs a new one.
@@ -58,6 +60,7 @@ impl Agent {
             processes: Mutex::new(ProcessSampler::default()),
             usage: Arc::new(Mutex::new(UsageState::default())),
             facts: std::sync::OnceLock::new(),
+            recheck: Arc::new(tokio::sync::Notify::new()),
             system_bus: tokio::sync::Mutex::new(None),
             session_bus: tokio::sync::Mutex::new(None),
         })

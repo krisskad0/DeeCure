@@ -27,6 +27,21 @@ for unit in sockets.target.wants/deecure-agent.socket default.target.wants/deecu
   echo "ok: $unit"
 done
 
+echo "== admin helper (installed, never started by the package)"
+for f in /usr/libexec/deecure/deecure-helper /usr/lib/systemd/system/deecure-helper.service \
+  /usr/share/dbus-1/system-services/io.github.krisskad0.DeeCure.Helper.service \
+  /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf \
+  /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy; do
+  [ -e "$f" ] || fail "missing $f"
+done
+/usr/libexec/deecure/deecure-helper --version
+[ -L /etc/systemd/system/multi-user.target.wants/deecure-helper.service ] && fail "the helper must not be enabled"
+# Run as a normal user, it refuses to start.
+id deecure-test >/dev/null 2>&1 || useradd -m deecure-test
+if su deecure-test -c /usr/libexec/deecure/deecure-helper 2>/dev/null; then fail "the helper ran without root"; fi
+grep -c '<action id=' /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy
+echo "ok: helper files in place, not enabled, refuses to run without root"
+
 echo "== commands"
 deecure --version
 /usr/libexec/deecure/deecure-agent --version
@@ -73,6 +88,6 @@ fi
 echo "== purge"
 [ -z "$app" ] || apt-get purge -y -qq deecure-desktop >/dev/null
 apt-get purge -y -qq deecure >/dev/null
-left="$(ls -d /usr/bin/deecure /usr/bin/deecure-desktop /usr/libexec/deecure /usr/share/deecure /usr/share/applications/io.github.krisskad0.DeeCure.desktop /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* 2>/dev/null || true)"
+left="$(ls -d /usr/bin/deecure /usr/bin/deecure-desktop /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf /usr/libexec/deecure /usr/share/deecure /usr/share/applications/io.github.krisskad0.DeeCure.desktop /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* 2>/dev/null || true)"
 [ -z "$left" ] || fail "left behind: $left"
 echo "ok: nothing left behind"

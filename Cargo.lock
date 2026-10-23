@@ -679,8 +679,10 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "deecure-core",
+ "deecure-fix",
  "serde",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -696,10 +698,34 @@ name = "deecure-desktop"
 version = "0.1.0"
 dependencies = [
  "deecure-core",
+ "deecure-fix",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
+]
+
+[[package]]
+name = "deecure-fix"
+version = "0.1.0"
+dependencies = [
+ "deecure-core",
+ "rustix",
+ "serde_json",
+ "tokio",
+ "zbus",
+]
+
+[[package]]
+name = "deecure-helper"
+version = "0.1.0"
+dependencies = [
+ "deecure-core",
+ "rustix",
+ "serde",
+ "serde_json",
+ "tokio",
+ "zbus",
 ]
 
 [[package]]

@@ -8,7 +8,5 @@ severity:
   critical: "root.used_percent >= 93"
   warning: "root.used_percent >= 85"
 fixes:
-  - action: storage.clean_apt_cache
-  - action: storage.remove_old_snap_revisions
-  - action: storage.empty_trash
+  - action: storage.free_space
 learn_more: topics/storage/disk-full

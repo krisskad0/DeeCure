@@ -12,6 +12,7 @@ import { Donut } from "../../components/charts/Donut";
 import { aptTime, when } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
+import { FixHistory } from "../../shell/FixHistory";
 
 const loadPackages = () => getInventory("package_history");
 const loadConfig = () => getInventory("config_changes");
@@ -155,8 +156,8 @@ export function ActivityDevices() {
 
 export function ActivityDeeCure() {
   return (
-    <Panel title="Remediation log" info="Every change DeeCure made, with undo where possible." span={12}>
-      <div className="empty muted">DeeCure has not changed anything on this computer. Fixes, and this log of them, come with the fix engine.</div>
+    <Panel title="Remediation log" info="Every change DeeCure made, with undo where possible." span={12} flush>
+      <FixHistory />
     </Panel>
   );
 }

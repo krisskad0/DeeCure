@@ -10,6 +10,7 @@ import { bytes, pick, pickAll } from "../../metrics";
 import { href } from "../../route";
 import { useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
+import { AdminRead } from "../../components/AdminRead";
 import { NEEDS_DRIVER, biosDate, shortCpu, useBluetooth, useFirmware, useGpus, useHardware } from "./shared";
 
 export function HardwareSummary() {
@@ -57,7 +58,7 @@ export function HardwareSummary() {
             ["Vendor", m.vendor ?? "—"],
             ["Model", m.model ?? "—"],
             ["Chassis", m.chassis ?? "—"],
-            ["Serial number", <span key="s" className="muted">Requires Full access</span>],
+            ["Serial number", <AdminRead key="s" what="serial" label="Show (asks for your password)">{(t) => <code>{t || "Not set by the maker"}</code>}</AdminRead>],
             ["BIOS", [m.bios_version, m.bios_date && biosDate(m.bios_date)].filter(Boolean).join(" · ") || "—"],
             ["Secure Boot", m.secure_boot === undefined ? "Not available (legacy BIOS)" : <StatusBadge key="sb" variant={m.secure_boot ? "ok" : "warn"} label={m.secure_boot ? "Enabled" : "Disabled"} />],
           ]}

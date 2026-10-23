@@ -12,6 +12,8 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { Donut } from "../../components/charts/Donut";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
+import { Button } from "../../components/Button";
+import { useFix } from "../../shell/FixDrawer";
 
 type Container = ContainersInfo["containers"][number];
 type Image = ContainersInfo["images"][number];
@@ -84,6 +86,7 @@ const IMAGES: Column<Image>[] = [
 
 export function ContainersImages() {
   const { data: info, error } = useContainers();
+  const openFix = useFix();
   if (!info) return <Panel title="Images" span={12}><NoData error={error} waiting="Asking Docker…" /></Panel>;
   if (info.docker !== "running") return <Panel title="Images" span={12}><div className="empty muted">{DOCKER_STATE[info.docker]}</div></Panel>;
   const used = info.images.filter((i) => i.containers).reduce((s, i) => s + dockerBytes(i.size), 0);
@@ -94,7 +97,7 @@ export function ContainersImages() {
         <Donut segments={[{ name: "In use", value: used, slot: 1, display: `${(used / 1e9).toFixed(1)} GB` }, { name: "Unused", value: unused, tone: "warn", display: `${(unused / 1e9).toFixed(1)} GB` }]} center={{ value: ((used + unused) / 1e9).toFixed(1), subtitle: "GB" }} />
         <p className="muted">Sizes count shared layers in each image, so the total can be more than the space used.</p>
       </Panel>
-      <Panel title="Images" source="docker system df -v" span={8} flush>
+      <Panel title="Images" source="docker system df -v" span={8} flush actions={unused > 0 && <Button small onClick={() => openFix("storage.prune_docker_images")}>Prune unused…</Button>}>
         <DataTable rows={info.images} columns={IMAGES} rowKey={(i) => `${i.repository}:${i.tag}`} empty="No images" />
       </Panel>
     </>

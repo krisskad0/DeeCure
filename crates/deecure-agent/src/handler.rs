@@ -3,8 +3,9 @@
 //! Turns one request line into one response. No I/O here, so it is easy to test.
 
 use deecure_core::rpc::{
-    InventoryParams, MAX_POINTS, MetricsParams, PROTOCOL_VERSION, Request, RequestId, Response,
-    RpcError, SnapshotParams, StatusReport, VersionInfo, method,
+    FixPlanParams, FixRecordParams, FixUndoneParams, InventoryParams, MAX_POINTS, MetricsParams,
+    PROTOCOL_VERSION, Request, RequestId, Response, RpcError, SnapshotParams, StatusReport,
+    VersionInfo, method,
 };
 use deecure_core::{Timestamp, VERSION, health, thin};
 use serde::Serialize;
@@ -97,6 +98,34 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
                 .map_err(|why| RpcError::new(RpcError::INVALID_PARAMS, why)),
             Err(e) => Err(e),
         },
+        method::FIX_PLAN => match params::<FixPlanParams>(&request) {
+            Ok(p) => crate::fixes::plan(agent, &p.action, p.subject.as_deref())
+                .await
+                .map_err(|why| RpcError::new(RpcError::INVALID_PARAMS, why))
+                .and_then(|plan| to_result(&plan)),
+            Err(e) => Err(e),
+        },
+        method::FIX_RECORD => params::<FixRecordParams>(&request).and_then(|p| {
+            let id = store().add_fix_run(&p.run).map_err(store_failed)?;
+            // Check again now, so the app can show whether the problem is gone.
+            agent.recheck.notify_one();
+            to_result(&id)
+        }),
+        method::FIX_RUNS => no_params(&request)
+            .and_then(|()| to_result(&store().fix_runs(200).map_err(store_failed)?)),
+        method::FIX_UNDONE => params::<FixUndoneParams>(&request).and_then(|p| {
+            let changed = store()
+                .set_fix_status(p.id, deecure_core::fix::RunStatus::Undone)
+                .map_err(store_failed)?;
+            if !changed {
+                return Err(RpcError::new(
+                    RpcError::INVALID_PARAMS,
+                    format!("no fix run {}", p.id),
+                ));
+            }
+            agent.recheck.notify_one();
+            to_result(&true)
+        }),
         other => Err(RpcError::method_not_found(other)),
     };
     match result {

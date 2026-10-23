@@ -15,6 +15,8 @@ import { BarList } from "../../components/charts/BarList";
 import { bytes, when } from "../../metrics";
 import { href } from "../../route";
 import { Drawer } from "../../shell/Drawer";
+import { Button } from "../../components/Button";
+import { useFix } from "../../shell/FixDrawer";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 
@@ -43,6 +45,7 @@ function useProcesses() {
 export function ProcessesAll() {
   const { data: processes, error } = useProcesses();
   const [inspect, setInspect] = useState<Process | null>(null);
+  const openFix = useFix();
   if (!processes) {
     return (
       <Panel title="Processes" span={12}>
@@ -85,7 +88,22 @@ export function ProcessesAll() {
           title={inspect.name}
           subtitle={`PID ${inspect.pid} · ${inspect.user}`}
           note={live ? "Live: updates every 5 seconds" : "This process has ended"}
-          actions={<LinkButton to={href("performance", "cpu")}>Open Performance</LinkButton>}
+          actions={
+            <span className="btn-row">
+              <LinkButton to={href("performance", "cpu")}>Open Performance</LinkButton>
+              {live && (
+                <Button
+                  small
+                  onClick={() => {
+                    setInspect(null);
+                    openFix("processes.end", `${live.pid}:${live.name}`);
+                  }}
+                >
+                  End process…
+                </Button>
+              )}
+            </span>
+          }
           onClose={() => setInspect(null)}
         >
           <ProcessDetails process={live ?? inspect} ended={!live} />

@@ -11,8 +11,9 @@ import { href } from "../../route";
 import { useHistory, useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
 import { useHardware } from "./shared";
+import { AdminRead } from "../../components/AdminRead";
 
-const FULL = <span className="muted">Requires Full access</span>;
+const FULL = <span className="muted">See below</span>;
 
 export function HardwareMemory() {
   const { data: hw, error } = useHardware();
@@ -52,6 +53,22 @@ export function HardwareMemory() {
       </Panel>
       <Panel title="Health" span={6} flush>
         <Checklist checks={checks} />
+      </Panel>
+      <Panel title="Memory modules" source="dmidecode -t memory" span={12}>
+        <AdminRead what="memory_modules" label="Read the memory modules (asks for your password)">
+          {(text) => {
+            const mods = JSON.parse(text) as Record<string, string>[];
+            const filled = mods.filter((m) => m.Filled === "true");
+            return (
+              <KeyValueList
+                rows={[
+                  ["Slots", `${mods.length} (${mods.length - filled.length} free)`],
+                  ...filled.map((m, i): [string, string] => [m.Locator || `Module ${i + 1}`, [m.Size, m.Type, m["Configured Memory Speed"] || m.Speed, m["Form Factor"], m.Manufacturer].filter((x) => x && x !== "Unknown").join(" · ")]),
+                ]}
+              />
+            );
+          }}
+        </AdminRead>
       </Panel>
     </>
   );

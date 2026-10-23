@@ -1,0 +1,22 @@
+[Unit]
+Description=DeeCure admin helper
+Documentation=https://github.com/krisskad0/DeeCure/blob/main/docs/02-architecture/helper.md
+
+[Service]
+Type=dbus
+BusName=io.github.krisskad0.DeeCure.Helper
+ExecStart=/usr/libexec/deecure/deecure-helper
+# The helper runs package tools and systemctl, so it cannot be fully locked down;
+# these limits still apply to everything it starts.
+PrivateTmp=yes
+ProtectHome=read-only
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+SystemCallArchitectures=native
+UMask=0022

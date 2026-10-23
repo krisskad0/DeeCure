@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- One action per helper operation (docs/02-architecture/helper.md). Read and cleanup
+     actions keep the approval for a few minutes; changes ask every time. -->
+<policyconfig>
+  <vendor>DeeCure</vendor>
+  <vendor_url>https://github.com/krisskad0/DeeCure</vendor_url>
+  <icon_name>io.github.krisskad0.DeeCure</icon_name>
+  <action id="io.github.krisskad0.deecure.read">
+    <description>Read admin-only details</description>
+    <message>Authentication is required to read disk health, firewall rules, and other admin-only details</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.clean-apt-cache">
+    <description>Clean the package cache</description>
+    <message>Authentication is required to delete downloaded package files</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.vacuum-journal">
+    <description>Shrink the system log</description>
+    <message>Authentication is required to delete old system log files</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.remove-snap-revision">
+    <description>Remove an old snap revision</description>
+    <message>Authentication is required to remove a disabled snap revision</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.autoremove">
+    <description>Remove packages no longer needed</description>
+    <message>Authentication is required to remove packages</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.purge-residual">
+    <description>Remove leftover package settings</description>
+    <message>Authentication is required to remove settings of removed packages</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.upgrade-packages">
+    <description>Install updates</description>
+    <message>Authentication is required to install updates</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-firewall">
+    <description>Turn the firewall on or off</description>
+    <message>Authentication is required to change the firewall</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.restart-service">
+    <description>Restart a service</description>
+    <message>Authentication is required to restart a system service</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-service-enabled">
+    <description>Turn a service on or off</description>
+    <message>Authentication is required to start or stop a system service</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.remove-kernels">
+    <description>Remove old kernels</description>
+    <message>Authentication is required to remove old kernels</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-battery-action">
+    <description>Change the low-battery action</description>
+    <message>Authentication is required to change what happens when the battery is nearly empty</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+</policyconfig>
