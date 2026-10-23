@@ -5,8 +5,8 @@
 use deecure_core::rpc::{
     EventList, EventParams, EventsParams, FixPlanParams, FixRecordParams, FixUndoneParams,
     InventoryParams, MAX_EVENTS, MAX_MESSAGE_BYTES, MAX_POINTS, MetricsParams, PROTOCOL_VERSION,
-    Request, RequestId, Response, RpcError, SetNotifySettingsParams, SnapshotParams, StatusReport,
-    VersionInfo, method,
+    ProcessDetailParams, Request, RequestId, Response, RpcError, SetNotifySettingsParams,
+    SnapshotParams, StatusReport, VersionInfo, method,
 };
 use deecure_core::{Timestamp, VERSION, health, thin};
 use serde::Serialize;
@@ -95,6 +95,12 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
             .and_then(|p| to_result(&store().latest_snapshot(p.kind).map_err(store_failed)?)),
         method::INVENTORY => match params::<InventoryParams>(&request) {
             Ok(p) => inventory::read(&p.kind, agent)
+                .await
+                .map_err(|why| RpcError::new(RpcError::INVALID_PARAMS, why)),
+            Err(e) => Err(e),
+        },
+        method::PROCESS_DETAIL => match params::<ProcessDetailParams>(&request) {
+            Ok(p) => inventory::process_detail(p.pid, agent)
                 .await
                 .map_err(|why| RpcError::new(RpcError::INVALID_PARAMS, why)),
             Err(e) => Err(e),

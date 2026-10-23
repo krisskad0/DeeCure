@@ -46,6 +46,8 @@ pub mod method {
     pub const SNAPSHOT: &str = "snapshot";
     /// Returns live data read now, such as `system` facts or `processes`. Takes [`InventoryParams`](super::InventoryParams).
     pub const INVENTORY: &str = "inventory";
+    /// Everything about one process (`ProcessDetailParams`), for the Expert process drawer.
+    pub const PROCESS_DETAIL: &str = "process_detail";
     /// Returns a fix [`Plan`](crate::fix::Plan). Takes [`FixPlanParams`](super::FixPlanParams). Only reads.
     pub const FIX_PLAN: &str = "fix_plan";
     /// Saves a finished [`FixRun`](crate::fix::FixRun), checks the rules again, and returns
@@ -189,6 +191,14 @@ pub const MAX_POINTS: usize = 2000;
 pub struct InventoryParams {
     /// What to read, such as `system` or `processes`.
     pub kind: String,
+}
+
+/// Params of the `process_detail` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProcessDetailParams {
+    /// The process ID.
+    pub pid: u32,
 }
 
 /// Params of the `fix_plan` method.

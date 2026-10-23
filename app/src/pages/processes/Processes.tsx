@@ -2,6 +2,8 @@
 // Processes › All Processes and Top Consumers (docs/03-ui-design/05-pages/09-processes.md),
 // with real data. Ending a process goes through the fix engine.
 
+import { atLeast, useUi } from "../../ui";
+import { ProcessExpertDetail } from "./ProcessExpert";
 import { useState } from "react";
 import { type Process, getInventory } from "../../api";
 import { LinkButton } from "../../components/Button";
@@ -43,6 +45,7 @@ function useProcesses() {
 }
 
 export function ProcessesAll() {
+  const { mode } = useUi();
   const { data: processes, error } = useProcesses();
   const [inspect, setInspect] = useState<Process | null>(null);
   const openFix = useFix();
@@ -107,6 +110,7 @@ export function ProcessesAll() {
           onClose={() => setInspect(null)}
         >
           <ProcessDetails process={live ?? inspect} ended={!live} />
+          {live && atLeast(mode, "expert") && <ProcessExpertDetail pid={live.pid} />}
         </Drawer>
       )}
     </>

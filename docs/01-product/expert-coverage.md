@@ -176,14 +176,14 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Process tree, and what started it (app, service, terminal) | Find where a process comes from | `/proc/<pid>/stat` parent, `/proc/<pid>/cgroup` | You | New |
-| Program file, the package it belongs to, working folder | Know what it really is | `/proc/<pid>/exe`, `cwd`, dpkg file lists | You (own) | Partly: command line |
-| Priority, scheduling class, disk priority, which cores it may use | Explains why it is slow or fast | `/proc/<pid>/stat`, `sched`, `ioprio_get`, `Cpus_allowed_list` | You | New |
-| Open files against its limit, and its network connections | Finds leaks before they crash the app | `/proc/<pid>/fd`, `/proc/<pid>/limits` | You (own) | Partly: connections |
-| Threads with their own CPU use | Finds the busy thread | `/proc/<pid>/task` | You | Partly: thread count |
-| Context switches, voluntary and forced | Too many forced ones mean CPU contention | `/proc/<pid>/status` | You | New |
-| Sandbox and security: AppArmor profile, capabilities, seccomp, container | Shows how confined it is | `/proc/<pid>/attr/apparmor/current`, `status`, `/proc/<pid>/ns` | You | New |
-| Disk, memory (PSS), graphics, and wake-ups for this process | All its costs in one place | sections 2, 3, 5, 7 | You (own) | New |
+| Process tree, and what started it (app, service, terminal) | Find where a process comes from | `/proc/<pid>/stat` parent, `/proc/<pid>/cgroup` | You | ✅ Built |
+| Program file, the package it belongs to, working folder | Know what it really is | `/proc/<pid>/exe`, `cwd`, dpkg file lists | You (own) | ✅ Built |
+| Priority, scheduling class, disk priority, which cores it may use | Explains why it is slow or fast | `/proc/<pid>/stat`, `sched`, `ioprio_get`, `Cpus_allowed_list` | You | ✅ Built |
+| Open files against its limit, and its network connections | Finds leaks before they crash the app | `/proc/<pid>/fd`, `/proc/<pid>/limits` | You (own) | ✅ Built (connection count; the list is on Network › Connections) |
+| Threads with their own CPU use | Finds the busy thread | `/proc/<pid>/task` | You | ✅ Built |
+| Context switches, voluntary and forced | Too many forced ones mean CPU contention | `/proc/<pid>/status` | You | ✅ Built |
+| Sandbox and security: AppArmor profile, capabilities, seccomp, container | Shows how confined it is | `/proc/<pid>/attr/apparmor/current`, `status`, `/proc/<pid>/ns` | You | ✅ Built |
+| Disk, memory (PSS), graphics, and wake-ups for this process | All its costs in one place | sections 2, 3, 5, 7 | You (own) | ✅ Built (wake-ups: Admin, later) |
 
 ## 10. Services and startup (Services, System › Boot)
 

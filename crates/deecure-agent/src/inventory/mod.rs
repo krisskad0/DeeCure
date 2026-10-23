@@ -31,6 +31,7 @@ mod pci_detail;
 mod power;
 mod power_detail;
 mod privacy;
+mod process_detail;
 mod process_io;
 pub(crate) mod processes;
 mod security;
@@ -107,6 +108,12 @@ pub const KINDS: &[&str] = &[
     "agent",
     "kb",
 ];
+
+/// Everything about one process. `Err` holds a plain-English reason (such as "not running").
+pub async fn process_detail(pid: u32, agent: &Agent) -> Result<Value, String> {
+    let detail = process_detail::read(&agent.root, pid).await?;
+    serde_json::to_value(detail).map_err(|e| e.to_string())
+}
 
 /// Reads one inventory. `Err` holds a plain-English reason.
 pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {

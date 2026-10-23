@@ -960,6 +960,54 @@ export function getInventory(kind: string): Promise<unknown> {
   return invoke("inventory", { kind });
 }
 
+/** Everything about one process (Expert process drawer). Parts other users' processes hide are left out. */
+export interface ProcessDetail {
+  pid: number;
+  name: string;
+  state: string;
+  user_id?: number;
+  ancestors: { pid: number; name: string }[];
+  children: { pid: number; name: string }[];
+  command_line: string[];
+  program?: string;
+  folder?: string;
+  package?: string;
+  cgroup?: string;
+  started_at?: number;
+  cpu_seconds: number;
+  nice: number;
+  policy: string;
+  realtime_priority: number;
+  disk_priority?: string;
+  cpus_allowed?: string;
+  threads: number;
+  top_threads: { tid: number; name: string; cpu_seconds: number }[];
+  voluntary_switches?: number;
+  forced_switches?: number;
+  open_files?: number;
+  sockets?: number;
+  limits: { name: string; soft: string; hard: string; unit?: string }[];
+  apparmor?: string;
+  capabilities: string[];
+  seccomp?: string;
+  no_new_privileges: boolean;
+  own_namespaces?: string[];
+  rss: number;
+  pss?: number;
+  uss?: number;
+  swap?: number;
+  major_faults: number;
+  oom_score?: number;
+  oom_score_adj?: number;
+  disk_read?: number;
+  disk_write?: number;
+  gpu_ns?: number;
+}
+
+export function getProcessDetail(pid: number): Promise<ProcessDetail> {
+  return invoke<ProcessDetail>("process_detail", { pid });
+}
+
 export function getMachine(): Promise<Machine> {
   return invoke<Machine>("machine");
 }

@@ -91,6 +91,12 @@ async fn inventory(kind: String) -> Result<Value, AppError> {
     ask(method::INVENTORY, Some(json!({ "kind": kind }))).await
 }
 
+/// Everything about one process, for the Expert process drawer.
+#[tauri::command]
+async fn process_detail(pid: u32) -> Result<Value, AppError> {
+    ask(method::PROCESS_DETAIL, Some(json!({ "pid": pid }))).await
+}
+
 /// Points for one metric over a time range (milliseconds since 1970), averaged down
 /// to about `max_points`.
 #[tauri::command]
@@ -419,6 +425,7 @@ fn main() {
             status,
             snapshot,
             inventory,
+            process_detail,
             metrics,
             latest,
             events,
