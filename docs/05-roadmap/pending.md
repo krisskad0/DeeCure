@@ -13,6 +13,20 @@ Last updated: 2026-10-23, after Phase 3.
 | Phase 4 — Ask DeeCure | Not started. Start only when the owner says so. → [Phase 4](phase-4-assistant.md) |
 | After Phase 4 | The owner asked to "optimize everything": speed, size, and code cleanup across the app. |
 
+## 1a. Make the first version complete (before any release work)
+
+The owner's view (2026-10-23): the app is not ready as a first version; too much looks unfinished. Every data source returns real data (checked on a real laptop), but these parts of the UI are fake, stale, or missing. Fix them first, then review every page with the owner.
+
+| Where | Problem |
+| --- | --- |
+| Onboarding › access step | Says "Full · coming soon", but the admin helper exists. The choice does nothing (always Basic). |
+| Settings › Access | The Basic / Full choice is fixed to Basic and only shows a toast. |
+| Settings › Data | "Delete history" says "Later". "Keep history for" is fixed text; the spec has a choice (90 days / 1 year / 2 years). |
+| Settings › General | The spec's "Refresh interval" and "Temperature unit" are missing. |
+| Settings › Assistant, Assistant page | Placeholders until Phase 4. |
+| Top bar › Machines | "Add a machine" is planned for Phase 5. |
+| Every page | Review with the owner which panels look empty or "dummy" on a real computer, and fix each one. |
+
 ## 1b. Areas with no checks yet
 
 Overview › Subsystems shows these as **Not checked**. Each needs a cheap, reliable fact and a rule ([Writing rules](../04-development/writing-rules-and-kb.md)).
