@@ -6,9 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-## [0.1.0-alpha.1] - 2026-10-23
+## [0.1.0-alpha.2] - 2026-10-23
 
-First pre-release, for testing. Install it with one command: see the [install guide](docs/07-user-guide/install.md).
+First published pre-release, for testing (0.1.0-alpha.1 did not finish building). Install it with one command: see the [install guide](docs/07-user-guide/install.md).
 
 ### Changed
 
@@ -101,5 +101,6 @@ First pre-release, for testing. Install it with one command: see the [install gu
 
 ### Fixed
 
+- The agent keeps answering the app and the CLI while it imports history on its first start.
 - Key-value lists in flush panels (24 of them, such as Settings › About) now line up with tables and setting rows.
 - Network totals no longer count container traffic twice, and container links (`veth…`) no longer fill the history.

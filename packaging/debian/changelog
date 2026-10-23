@@ -1,3 +1,10 @@
+deecure (0.1.0~alpha.2-1) noble; urgency=medium
+
+  * First published pre-release: the agent stays responsive while it
+    imports history.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Fri, 23 Oct 2026 15:56:14 +0530
+
 deecure (0.1.0~alpha.1-1) noble; urgency=medium
 
   * First pre-release: the agent, the desktop app, the deecure command,
