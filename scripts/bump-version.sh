@@ -3,7 +3,7 @@
 # AppStream release list. Usage: scripts/bump-version.sh 0.2.0
 set -euo pipefail
 v="${1:?usage: $0 <version, such as 0.2.0>}"
-[[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]] || { echo "not a version: $v" >&2; exit 2; }
+[[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?$ ]] || { echo "not a version: $v (such as 0.2.0, 0.2.0-alpha.1, 0.2.0-rc.1)" >&2; exit 2; }
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo"
 sed -i "0,/^version = \".*\"/s//version = \"$v\"/" Cargo.toml
@@ -31,5 +31,7 @@ fi
 cargo update --workspace --offline >/dev/null 2>&1 || true
 echo "Version set to $v. Next:"
 echo "  1. Move the Unreleased notes in CHANGELOG.md under $v"
-echo "  2. dch -v ${v/-rc./~rc}-1 -D noble \"New upstream release.\"   (in packaging/)"
+# Debian sorts "~" before anything, so 0.2.0~rc.1 comes before 0.2.0.
+echo "  2. dch -v ${v/-/\~}-1 -D noble \"New upstream release.\"   (in packaging/)"
 echo "  3. Commit, then: git tag -s v$v && git push --tags"
+echo "     A tag with -alpha/-beta/-rc is published as a pre-release at once; install.sh can then install it."

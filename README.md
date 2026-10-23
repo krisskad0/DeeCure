@@ -105,7 +105,15 @@ deecure fix storage.free_space    # preview a fix, then run it after you say yes
 deecure undo 12                   # take a fix back
 ```
 
-When it is released, installing will be one command, with updates through Software Updater: see the [install guide](docs/07-user-guide/install.md).
+### Install with one command
+
+As soon as the first pre-release is published, this installs everything (the agent, the app, the `deecure` command, and the libraries they need) on Ubuntu 24.04 or 26.04:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
+```
+
+It installs the newest [GitHub Release](https://github.com/krisskad0/DeeCure/releases) after checking every package's checksum (later: DeeCure's signed APT repository, with updates through Software Updater). No `curl`? Use `wget -qO- … | sudo sh`. Details and options: [install guide](docs/07-user-guide/install.md).
 
 ## FAQ
 

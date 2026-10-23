@@ -13,10 +13,10 @@ How we number versions and ship a release.
 | Kind | Upstream version | Debian version |
 | --- | --- | --- |
 | Release | `0.3.0` | `0.3.0-1~ubuntu24.04`, `0.3.0-1~ubuntu26.04` |
-| Release candidate | `0.3.0-rc.1` | `0.3.0~rc1-1~ubuntu24.04` |
+| Pre-release (alpha, beta, release candidate) | `0.3.0-alpha.1`, `0.3.0-beta.1`, `0.3.0-rc.1` | `0.3.0~alpha.1-1`, `0.3.0~rc.1-1` |
 | Packaging fix only | - | `0.3.0-2~ubuntu24.04` |
 
-The `~` makes a release candidate sort **before** the final release, so apt upgrades from it.
+The `~` makes a pre-release sort **before** the final release, so apt upgrades from it.
 
 ## Branches and tags
 
@@ -35,7 +35,7 @@ The `~` makes a release candidate sort **before** the final release, so apt upgr
    1. Build the `.deb` for each release and CPU, in clean containers.
    2. Run `lintian`, `piuparts`, and `autopkgtest`.
    3. Create `SHA256SUMS` and sign it.
-   4. Create a draft GitHub Release with the files.
+   4. Create the GitHub Release with the two `.deb` files, `SHA256SUMS`, and `install.sh`. A **pre-release tag** (with `-alpha`, `-beta`, or `-rc`) is **published at once**, so the one-command installer can find it. A **stable tag** is created as a **draft**, to publish by hand after step 7.
    5. Publish to the `beta` component of the APT repository.
 7. Smoke test on clean Ubuntu 24.04 and 26.04 VMs: install, open the app, run `deecure status`, upgrade from the last version.
 8. Promote to the `main` component and publish the GitHub Release.

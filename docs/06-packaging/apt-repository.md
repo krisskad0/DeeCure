@@ -29,9 +29,9 @@ https://krisskad0.github.io/DeeCure/apt/          (provisional address)
 | Install script | `packaging/install.sh` (options `--beta`, `--server`, `--dry-run`, `--uninstall`) |
 | Repository builder | `scripts/build-apt-repo.sh <site> <suite> <component> <debs...>` (reprepro; its database lives in `<site>/.reprepro`, so releases add up) |
 | Suites | `packaging/apt-repo/conf/distributions` (`noble`, `resolute`; components `main`, `beta`) |
-| Release workflow | `.github/workflows/release.yml`: on a `v*` tag, builds and tests the packages, makes `SHA256SUMS`, drafts a GitHub Release, and (when the `APT_SIGNING_KEY` secret exists) publishes to the `gh-pages` branch |
+| Release workflow | `.github/workflows/release.yml`: on a `v*` tag, builds and tests the packages, makes `SHA256SUMS`, creates the GitHub Release (published for pre-releases, a draft for stable releases), and (when the `APT_SIGNING_KEY` secret exists) publishes to the `gh-pages` branch |
 | Version bump | `scripts/bump-version.sh 0.2.0` |
-| Test | `make install-test`: in a clean container, builds a repository signed with a throwaway key, checks the signature, then runs `install.sh` (dry run, install twice, unknown option, uninstall) |
+| Test | `make install-test`: in a clean container, builds a repository signed with a throwaway key, checks the signature, then runs `install.sh` (dry run, install twice, unknown option, uninstall), and installs from a local copy of a GitHub Release (including refusing a tampered package) |
 
 ## Tools and hosting
 

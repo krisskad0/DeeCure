@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [User guide](README.md)
 
-> **Not released yet.** The steps below work once the first release is published. The addresses (`krisskad0.github.io/DeeCure`) are provisional.
+> **Not released yet.** Option 1 works as soon as the first pre-release is published on GitHub. The APT repository (`krisskad0.github.io/DeeCure`) comes later; until then Option 1 installs from GitHub Releases.
 
 ## What you need
 
@@ -10,26 +10,44 @@
 - A 64-bit Intel or AMD computer (ARM comes later).
 - Your password, to approve the install.
 
-## Option 1: the install script (recommended)
+## Option 1: one command (recommended)
 
-Open the Terminal (`Ctrl` + `Alt` + `T`). Download the script, read it, then run it:
+Open the Terminal (`Ctrl` + `Alt` + `T`) and paste:
 
 ```bash
-curl -fsSL https://krisskad0.github.io/DeeCure/install.sh -o install.sh
+curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
+```
+
+No `curl`? Ubuntu Desktop always has `wget`:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
+```
+
+Prefer to read it first (a good habit for any install script):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh -o install.sh
 less install.sh
 sudo sh install.sh
 ```
 
-It adds DeeCure's signing key and software source, then installs DeeCure. It changes nothing else, and it is safe to run twice. Options:
+**What it does:**
+
+- When DeeCure's signed APT repository is online, it adds DeeCure's signing key and software source, and installs DeeCure from there. Updates then come through Software Updater.
+- Until then, it installs the newest release from [GitHub Releases](https://github.com/krisskad0/DeeCure/releases): it downloads the two packages, checks each one against the release's `SHA256SUMS` (a package that does not match is never installed), and installs them with apt, which also installs the libraries they need from Ubuntu. **Run the same command again to update.**
+- While there is no stable release yet, it uses the newest pre-release and says so.
+- It changes nothing else, and it is safe to run twice.
 
 | Option | What it does |
 | --- | --- |
 | `--server` | Install only the background agent and the `deecure` command, without the desktop app |
-| `--beta` | Use pre-releases |
-| `--dry-run` | Print the steps without changing anything |
+| `--beta` | Use pre-releases even when a stable release exists |
+| `--from-github` | Always install from GitHub Releases |
+| `--dry-run` | Check and download, but change nothing |
 | `--uninstall` | Remove DeeCure, its key, and its source |
 
-To check the script first: `sha256sum install.sh` must match `install.sh.sha256` on the same site.
+Options go after `sh`, for example `… | sudo sh -s -- --server`.
 
 ## Option 2: download the files
 
@@ -41,7 +59,7 @@ To check the script first: `sha256sum install.sh` must match `install.sh.sha256`
    sudo apt install ./deecure_*_amd64.deb ./deecure-desktop_*_amd64.deb
    ```
 
-Files installed this way do not update by themselves. Use Option 1 to get updates with Ubuntu's normal updates.
+Files installed this way do not update by themselves. Run Option 1 again, or use it once the APT repository is online, to get updates.
 
 ## Option 3: step by step
 

@@ -30,8 +30,16 @@ These download hundreds of MB, so they wait until the main connection works. All
 | --- | --- | --- |
 | Install, use, and purge both packages | `make deb-test` | Agent part passed on 2026-10-23. The desktop part was stopped while it downloaded its libraries (slow network). Run it again: the desktop app now uses the tray library (`libayatana-appindicator3-1`, a Recommends). |
 | Admin helper with real D-Bus and polkit | `make helper-test` | Not run since Phase 3. Run it once. |
-| Install script against a signed test repository | `make install-test` | Not run since Phase 3. Run it once. |
+| Install script against a signed test repository, and from a GitHub Release | `make install-test` | Not run since the GitHub-release mode was added. Run it once. |
 | CI on GitHub | The Actions page of the repository | Check that the run for the newest push is green (all 4 jobs, including the new `make db-size` step). Poll the GitHub API at most once a minute. |
+
+## 2b. First pre-release (owner's go-ahead)
+
+The one-command installer works from GitHub Releases, so a published pre-release is all that is needed for people to install DeeCure:
+
+1. `scripts/bump-version.sh 0.1.0-alpha.1`, move the CHANGELOG notes under it, add the `dch` entry it prints, commit.
+2. `git tag v0.1.0-alpha.1 && git push origin v0.1.0-alpha.1`. The release workflow builds and tests the packages on GitHub and publishes the pre-release.
+3. Check on a clean machine: `curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh`.
 
 ## 3. Phase 2 items that need people, machines, or the owner
 
