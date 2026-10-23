@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- The first health score is no longer delayed by the one-time history import: the import waits until the first check of the computer is done.
+
 - Right after installing, the app said the agent was unreachable until the next login: the package only enabled the agent for future logins. It now starts the agent for everyone signed in (and restarts it after an upgrade, and stops it on removal), and the app and `deecure` start it themselves if it is still not running.
 
 ### Added

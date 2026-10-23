@@ -509,8 +509,24 @@ pub fn backfill_fixes(store: &SharedStore) -> store::Result<()> {
     })
 }
 
-/// Reads history now, then every [`EVERY`], forever.
+/// Waits until the agent has checked the computer once since `started` (at most 30 s),
+/// so the one-time history import never delays the first health score.
+async fn first_check(store: &SharedStore, started: Timestamp) {
+    for _ in 0..60 {
+        let checked = store::lock(store)
+            .setting::<Timestamp>(crate::rules::LAST_CHECK_SETTING)
+            .ok()
+            .flatten();
+        if checked.is_some_and(|at| at >= started) {
+            return;
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
+}
+
+/// Reads history after the first check, then every [`EVERY`], forever.
 pub async fn run(store: SharedStore, root: SystemRoot) {
+    first_check(&store, Timestamp::now()).await;
     if let Err(e) = backfill_fixes(&store) {
         eprintln!("deecure-agent: history: could not add past fixes: {e}");
     }

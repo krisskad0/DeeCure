@@ -10,6 +10,7 @@ MAX_RAM_MB=60
 MAX_FIRST_RESULT_SECONDS=10
 MAX_DB_MB=200
 IDLE_SECONDS=65   # long enough to include one full collection cycle (every 60 s)
+SETTLE_SECONDS=30 # the one-time history import after the first check is startup work, not idle
 REQUESTS=300
 
 repo="$(cd "$(dirname "$0")/.." && pwd)"
@@ -38,6 +39,7 @@ first_ms=$(( ($(date +%s%N) - start_ns) / 1000000 ))
 
 # CPU while idle: CPU ticks used over the window, as a share of one core.
 ticks() { awk '{print $14 + $15}' "/proc/$pid/stat"; }
+sleep "$SETTLE_SECONDS"
 t1=$(ticks); sleep "$IDLE_SECONDS"; t2=$(ticks)
 idle_cpu=$(awk -v d=$((t2 - t1)) -v hz="$(getconf CLK_TCK)" -v s="$IDLE_SECONDS" 'BEGIN {printf "%.2f", d * 100 / (hz * s)}')
 

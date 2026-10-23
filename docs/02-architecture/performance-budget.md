@@ -18,8 +18,8 @@
 | Measure | How |
 | --- | --- |
 | First useful results | Time from starting the agent until `deecure status` shows the rules have run |
-| Agent CPU when idle | CPU time used over 65 seconds with no clients, which includes one full collection cycle |
-| Agent RAM | Peak memory (`VmHWM`) after 300 `status` requests |
+| Agent CPU when idle | CPU time used over 65 seconds with no clients, which includes one full collection cycle. Measuring starts 30 seconds after the first result, so the one-time history import (it waits for the first check, then runs once) is not counted as idle. |
+| Agent RAM | Peak memory (`VmHWM`) after 300 `status` requests; it includes the history import |
 | Database size | Size after the first scan (with 30 days of history read on the first run). Two years of growth are checked by `make db-size` ([Storage](storage.md#size-after-2-years)). |
 
 The limits are at the top of the script. Change them only together with this page.
