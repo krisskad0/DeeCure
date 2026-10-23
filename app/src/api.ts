@@ -321,6 +321,32 @@ export interface TcpTraffic {
   connections: { local: string; remote: string; program?: string; pid?: number; received: number; sent: number; resent: number }[];
 }
 
+/** A setting with the choices the hardware offers. */
+export interface Choice {
+  current?: string;
+  offered: string[];
+}
+
+/** Power in depth (Expert). */
+export interface PowerDetail {
+  batteries: { name: string; volts?: number; volts_min_design?: number; amps?: number; watts?: number; status?: string; temp_c?: number; health?: string; made?: string; serial?: string; charge_start?: number; charge_stop?: number; charge_mode?: Choice; charge_behaviour?: Choice }[];
+  chargers: { name: string; kind: string; online: boolean; usb_type?: Choice; max_watts?: number }[];
+  power_delivery: { name: string; offered: PdOffer[]; accepted: PdOffer[] }[];
+  suspend?: Choice;
+  wake_sources: { name: string; device?: string; pci_address?: string; product?: string; events: number; wakeups: number; active: number; may_wake?: boolean }[];
+  last_wake_irq?: string;
+  last_wake_device?: string;
+  usb: { port: string; product?: string; maker?: string; control?: string; state?: string; keep_awake: boolean; may_wake?: boolean }[];
+}
+
+export interface PdOffer {
+  kind: string;
+  millivolts?: number;
+  max_millivolts?: number;
+  milliamps?: number;
+  milliwatts?: number;
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -887,6 +913,7 @@ export function getInventory(kind: "gpu_detail"): Promise<GpuDetail>;
 export function getInventory(kind: "graphics_stack"): Promise<GraphicsStack>;
 export function getInventory(kind: "net_deep"): Promise<NetDeep>;
 export function getInventory(kind: "tcp_traffic"): Promise<TcpTraffic>;
+export function getInventory(kind: "power_detail"): Promise<PowerDetail>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

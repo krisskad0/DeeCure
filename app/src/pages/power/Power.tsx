@@ -4,6 +4,7 @@
 
 import { atLeast, useUi } from "../../ui";
 import { CpuSleepStates } from "../performance/CpuExpert";
+import { BatteryExpertSections, WakeExpertSections } from "./PowerExpert";
 import { type SleepEvent, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -33,6 +34,7 @@ function NoBattery() {
 }
 
 export function PowerBattery() {
+  const { mode } = useUi();
   const { data: power, error } = usePower();
   const latest = useLatest();
   const battery = power?.batteries[0];
@@ -85,6 +87,7 @@ export function PowerBattery() {
           <div className="chart-empty muted">The trend fills in as DeeCure keeps measuring.</div>
         )}
       </Panel>
+      {atLeast(mode, "expert") && <BatteryExpertSections />}
     </>
   );
 }
@@ -178,7 +181,12 @@ export function PowerSleep() {
       <Panel title="Sleep events" subtitle="last 30 days" source="journal: systemd-sleep" span={12} flush>
         <DataTable rows={events} columns={EVENTS} rowKey={(e) => String(e.at)} pageSize={12} empty="No sleep in the last 30 days, or the journal cannot be read" />
       </Panel>
-      {atLeast(mode, "expert") && <CpuSleepStates />}
+      {atLeast(mode, "expert") && (
+        <>
+          <WakeExpertSections />
+          <CpuSleepStates />
+        </>
+      )}
     </>
   );
 }

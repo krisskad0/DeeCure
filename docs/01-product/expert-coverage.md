@@ -108,13 +108,13 @@ Power gets three Expert sections: **Battery**, **Sleep and wake-ups**, and **Pow
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Charge or drain in watts, now and over time | The real drain, minute by minute | `/sys/class/power_supply/BAT*` `power_now` (or current times voltage) | You | Partly: time left |
-| Drain per hour, by day, with the screen on and while suspended | Shows if sleep drains the battery | stored readings | You | New |
-| Charge limits in use (start and stop), and the range the laptop allows | Know if the battery is kept full all the time | `charge_control_start_threshold`, `charge_control_end_threshold` | You | Partly: stop limit only |
-| Charge behaviour (normal, hold charge, discharge on mains), when the laptop offers it | Some laptops can pause charging | `charge_behaviour` | You | New |
-| Charge mode, when the laptop offers it (for example Standard, Adaptive, Fast, Trickle, Custom on Dell) | Fast charging wears the battery more; Adaptive learns your use | `charge_types` (this test laptop offers all 5 and uses Custom) | You | New |
-| Battery voltage now against its design minimum, manufacture date, serial | Low voltage under load warns of a worn battery | `voltage_now`, `voltage_min_design`, `manufacture_*`, `serial_number` | You | Partly: maker and model |
-| Charger: connected or not, its watts, and USB-C Power Delivery details | A weak charger charges slowly or not at all under load | `/sys/class/power_supply/ucsi-source-psy-*`, `/sys/class/usb_power_delivery/*/source-capabilities` | You | New |
+| Charge or drain in watts, now and over time | The real drain, minute by minute | `/sys/class/power_supply/BAT*` `power_now` (or current times voltage) | You | ✅ Built |
+| Drain per hour, by day, with the screen on and while suspended | Shows if sleep drains the battery | stored readings | You | ✅ Built (drain per suspend; per day: later) |
+| Charge limits in use (start and stop), and the range the laptop allows | Know if the battery is kept full all the time | `charge_control_start_threshold`, `charge_control_end_threshold` | You | ✅ Built (the allowed range is not reported by the kernel) |
+| Charge behaviour (normal, hold charge, discharge on mains), when the laptop offers it | Some laptops can pause charging | `charge_behaviour` | You | ✅ Built |
+| Charge mode, when the laptop offers it (for example Standard, Adaptive, Fast, Trickle, Custom on Dell) | Fast charging wears the battery more; Adaptive learns your use | `charge_types` (this test laptop offers all 5 and uses Custom) | You | ✅ Built |
+| Battery voltage now against its design minimum, manufacture date, serial | Low voltage under load warns of a worn battery | `voltage_now`, `voltage_min_design`, `manufacture_*`, `serial_number` | You | ✅ Built |
+| Charger: connected or not, its watts, and USB-C Power Delivery details | A weak charger charges slowly or not at all under load | `/sys/class/power_supply/ucsi-source-psy-*`, `/sys/class/usb_power_delivery/*/source-capabilities` | You | ✅ Built |
 | Time on mains power against time on battery, last 14 days | Decides if a charge limit makes sense | stored readings of `/sys/class/power_supply/AC*/online` | You | New |
 | Measured chip power (section 1) next to battery drain | Splits CPU power from the rest of the laptop | powercap | Admin | New |
 | **Not shown: watts per app.** | Linux has no exact per-app power meter. Expert shows each app's CPU time, graphics time, and wake-ups instead | - | - | - |
@@ -130,14 +130,14 @@ Two different things, shown apart:
 | --- | --- | --- | --- | --- |
 | Whole-chip deep sleep: share of time the chip reached each sleep level | The chip, not one core, decides the battery drain; this is the number that matters | Intel `pmc_core` (`/sys/kernel/debug/pmc_core`), package C-state counters | Admin | New |
 | Time each core spends in each sleep state | Shows which cores never rest | `/sys/devices/system/cpu/cpu*/cpuidle/state*` | You | ✅ Built |
-| What blocks deep sleep: devices with power saving off, PCIe links with power saving off | The exact reasons, device by device | `/sys/bus/{pci,usb}/devices/*/power/*`, `/sys/bus/pci/devices/*/link/*aspm*` when the kernel exposes it | You | New |
+| What blocks deep sleep: devices with power saving off, PCIe links with power saving off | The exact reasons, device by device | `/sys/bus/{pci,usb}/devices/*/power/*`, `/sys/bus/pci/devices/*/link/*aspm*` when the kernel exposes it | You | ✅ Built (device power saving; PCIe link power saving: later) |
 | Wake-ups per second, per process | Finds the app that keeps waking the CPU | kernel tracing (`sched_wakeup`) through the helper | Admin | New |
-| Interrupts per second, per device | Finds the device that keeps waking the CPU | `/proc/interrupts` | You | New |
-| What woke the computer from suspend, with how often each source fired | Explains a laptop that wakes in the bag | `/sys/class/wakeup/*`, journal | You | New |
-| Devices allowed to wake the computer from suspend | Turn off the ones that should not (7c) | `/sys/devices/*/power/wakeup`, `/proc/acpi/wakeup` | You | New |
-| Suspend type in use and the types offered (light `s2idle` or deep `deep`) | Deep sleep drains less with the lid closed, when the laptop offers it | `/sys/power/mem_sleep` | You | Partly: type in use |
+| Interrupts per second, per device | Finds the device that keeps waking the CPU | `/proc/interrupts` | You | ✅ Built (Performance › CPU) |
+| What woke the computer from suspend, with how often each source fired | Explains a laptop that wakes in the bag | `/sys/class/wakeup/*`, journal | You | ✅ Built (last wake interrupt; per-source counts) |
+| Devices allowed to wake the computer from suspend | Turn off the ones that should not (7c) | `/sys/devices/*/power/wakeup`, `/proc/acpi/wakeup` | You | ✅ Built |
+| Suspend type in use and the types offered (light `s2idle` or deep `deep`) | Deep sleep drains less with the lid closed, when the laptop offers it | `/sys/power/mem_sleep` | You | ✅ Built |
 | Time really spent in low power during each suspend | A light sleep that never reaches low power drains the battery | `/sys/kernel/debug/pmc_core` (Intel), journal | Admin | New |
-| Devices that can save power but do not | Each one is a measured fix, not a general tip | `/sys/bus/{pci,usb}/devices/*/power/{control,runtime_status}` | You | New |
+| Devices that can save power but do not | Each one is a measured fix, not a general tip | `/sys/bus/{pci,usb}/devices/*/power/{control,runtime_status}` | You | ✅ Built |
 
 ### 7c. Power controls
 

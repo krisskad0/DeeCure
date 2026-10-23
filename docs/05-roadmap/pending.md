@@ -24,7 +24,7 @@ Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster install
 0. **Expert build (approved by the owner on 2026-10-23, in progress).** Build all of [View levels](../01-product/view-levels.md), [Expert coverage](../01-product/expert-coverage.md), and [Optimize](../01-product/optimize-catalog.md), in this order. Test each step once, commit, push, and tick it here:
    1. ✅ Three view levels (Beginner, Advanced, Expert): menus, top bar, Settings, first-run screens.
    2. ✅ Tab merges (89 to 77), with old links opening the merged tab at the right part.
-   3. Expert depth without admin, area by area (✅ CPU: Performance › CPU, Hardware › Processor, Power › Sleep; ✅ memory: Performance › Memory, Hardware › Memory; ✅ drives and filesystems: Disk I/O, Storage Devices, Filesystems, PCIe links on Peripherals; ✅ graphics: Performance › GPU, Hardware › Graphics; ✅ network: Interfaces, DNS & VPN, Traffic; next: battery and sleep), in this order: memory, drives, filesystems, graphics, network, battery and sleep, temperature, processes drawer, services and boot, kernel limits, hardware and firmware, ports and USB-C, built-in devices, display and sound, hardware errors, software, security, containers.
+   3. Expert depth without admin, area by area (✅ CPU: Performance › CPU, Hardware › Processor, Power › Sleep; ✅ memory: Performance › Memory, Hardware › Memory; ✅ drives and filesystems: Disk I/O, Storage Devices, Filesystems, PCIe links on Peripherals; ✅ graphics: Performance › GPU, Hardware › Graphics; ✅ network: Interfaces, DNS & VPN, Traffic; ✅ battery and sleep: Power › Battery, Power › Sleep; next: temperature), in this order: memory, drives, filesystems, graphics, network, battery and sleep, temperature, processes drawer, services and boot, kernel limits, hardware and firmware, ports and USB-C, built-in devices, display and sound, hardware errors, software, security, containers.
    4. Power controls (charge limits and mode, wake sources, device power saving, turbo, keyboard backlight, radios, lid), each with undo.
    5. Optimize page, item by item, each on a measured trigger.
    6. Admin reads in the helper, one by one with its security review (BIOS settings, memory slots, power meters, NVMe details, self-tests, wake-up tracing, low-power residency, sudo rules, `sshd -T`); eBPF traffic counters last.
@@ -33,6 +33,8 @@ Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster install
 3. **People and machines** (section 6): the 22 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.
 4. **Public beta:** fix the findings, release `v0.1.0-beta.1`, then `v0.1.0` ([how to release](#7-how-to-release)). When contributors arrive: admin bypass on `main` to "pull requests only", and CodeQL and Dependencies as required checks.
 5. **Next features, on the owner's word:** Phase 4 (assistant; un-hide it in `app/src/visible.ts`), use per app (disk I/O, power, and network traffic; their panels are designed but hidden until a collector exists), "optimize everything", Phase 5 (bring back "Add a machine"), coverage-guided fuzzing.
+
+**Known dependency alert:** Dependabot alert 1 (moderate): `glib` 0.18 `VariantStrIter` unsoundness, fixed in 0.20. It comes only through Tauri's GTK 3 stack (window, tray); DeeCure's own code does not use the affected function. It goes away when Tauri moves its Linux stack to `glib` 0.20 or later; check after each Tauri update.
 
 ## 3. Checks only a real desktop can do
 
