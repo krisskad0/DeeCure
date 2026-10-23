@@ -108,6 +108,9 @@ a.btn { text-decoration: none; }
 .kv { margin: 0; }
 .kv-row { display: grid; grid-template-columns: minmax(120px, 40%) 1fr; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); }
 .kv-row:last-child { border-bottom: 0; }
+/* In a flush panel (no panel padding) the rows bring their own, so text lines up with
+   tables and setting rows and the lines still run edge to edge. */
+.panel-body.flush .kv .kv-row { padding-left: 14px; padding-right: 14px; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
 
