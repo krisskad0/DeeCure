@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Peripherals (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
+import { PortsExpertSections } from "./PlatformExpert";
 import { PcieLinks } from "../performance/DiskExpert";
 import { atLeast, useUi } from "../../ui";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -72,7 +73,12 @@ export function HardwarePeripherals() {
       <Panel title="Devices" source="/sys/bus/{pci,usb} · /proc/bus/input · BlueZ" span={12} flush>
         <DataTable rows={rows} columns={COLUMNS} rowKey={(r) => r.key} search={{ placeholder: "Search devices" }} filter={{ column: "bus", options: ["USB", "PCI", "Bluetooth", "Input"] }} pageSize={14} />
       </Panel>
-      {atLeast(mode, "expert") && <PcieLinks />}
+      {atLeast(mode, "expert") && (
+        <>
+          <PortsExpertSections />
+          <PcieLinks />
+        </>
+      )}
     </>
   );
 }

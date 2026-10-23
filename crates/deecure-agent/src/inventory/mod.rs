@@ -29,6 +29,7 @@ mod network;
 mod os;
 pub(crate) mod packages;
 mod pci_detail;
+mod platform_detail;
 mod power;
 mod power_detail;
 mod privacy;
@@ -77,6 +78,7 @@ pub const KINDS: &[&str] = &[
     "unit_files",
     "service_security",
     "kernel_detail",
+    "platform_detail",
     "os",
     "kernel",
     "update_history",
@@ -150,6 +152,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "unit_files" => serde_json::to_value(services_detail::read_units().await),
         "service_security" => serde_json::to_value(services_detail::read_security().await),
         "kernel_detail" => serde_json::to_value(kernel_detail::read(&agent.root).await),
+        "platform_detail" => serde_json::to_value(platform_detail::read(&agent.root).await),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),

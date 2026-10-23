@@ -2,6 +2,8 @@
 // Hardware › Firmware (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // Installing firmware needs the helper (Phase 2).
 
+import { atLeast, useUi } from "../../ui";
+import { FirmwareExpertSections } from "./PlatformExpert";
 import type { FirmwareInfo } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -26,6 +28,7 @@ const COLUMNS: Column<Device>[] = [
 ];
 
 export function HardwareFirmware() {
+  const { mode } = useUi();
   const { data: hw, error } = useHardware();
   const fw = useFirmware();
   if (!hw) {
@@ -59,6 +62,7 @@ export function HardwareFirmware() {
           <DataTable rows={fw.devices} columns={COLUMNS} rowKey={(d) => `${d.name}-${d.version}`} empty="fwupd knows no devices" />
         )}
       </Panel>
+      {atLeast(mode, "expert") && <FirmwareExpertSections />}
     </>
   );
 }

@@ -395,6 +395,29 @@ export interface KernelDetail {
   time_sync: Record<string, string>;
 }
 
+/** Firmware, platform, and ports (Expert). */
+export interface PlatformDetail {
+  hsi?: string;
+  security_checks: { id: string; name: string; result: string; passed: boolean; runtime: boolean }[];
+  boot_entries: { number: string; name: string; active: boolean; file?: string; order?: number; current: boolean }[];
+  secure_boot?: string;
+  mok_keys?: string[];
+  management_engine?: string;
+  tpm_version?: string;
+  tpm_driver?: string;
+  disk_unlocked_by_tpm: boolean;
+  disk_encrypted: boolean;
+  iommu_units: number;
+  thunderbolt_security?: string;
+  thunderbolt_dma_protection?: boolean;
+  rtc_drift_s?: number;
+  virtualization?: string;
+  kvm_ready: boolean;
+  usb: { port: string; product?: string; maker?: string; version?: string; speed_mbps?: number; max_power_ma?: number; hub: boolean; drivers: string[] }[];
+  typec: { name: string; data_role?: string; power_role?: string; power_mode?: string; revision?: string; connected: boolean; partner_type?: string; partner_power_delivery: boolean; alt_modes: { name: string; active: boolean }[] }[];
+  thunderbolt: { id: string; name?: string; vendor?: string; authorized: boolean }[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -967,6 +990,7 @@ export function getInventory(kind: "boot_detail"): Promise<BootDetail>;
 export function getInventory(kind: "unit_files"): Promise<UnitFile[]>;
 export function getInventory(kind: "service_security"): Promise<Exposure[]>;
 export function getInventory(kind: "kernel_detail"): Promise<KernelDetail>;
+export function getInventory(kind: "platform_detail"): Promise<PlatformDetail>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

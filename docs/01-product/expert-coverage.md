@@ -212,17 +212,17 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Firmware security level, and each check behind it | One clear level instead of many settings | fwupd `HostSecurityAttrs` (D-Bus) | You | New |
-| UEFI boot entries and boot order | Find old or broken boot entries | `/sys/firmware/efi/efivars` | You | New |
-| Secure Boot keys you added (MOK) | Needed for NVIDIA and DKMS drivers | `mokutil --list-enrolled` | You | Partly: Secure Boot on or off |
-| USB devices: speed (USB 2 or 3), power drawn, driver | Finds a fast device on a slow port | `/sys/bus/usb/devices/*/{speed,bMaxPower}` | You | Partly: list of devices |
-| Virtualization: CPU support, turned on in firmware, KVM ready | Why virtual machines are slow or do not start | `/proc/cpuinfo` (`vmx`, `svm`), `/dev/kvm` | You | New |
+| Firmware security level, and each check behind it | One clear level instead of many settings | fwupd `HostSecurityAttrs` (D-Bus) | You | ✅ Built |
+| UEFI boot entries and boot order | Find old or broken boot entries | `/sys/firmware/efi/efivars` | You | ✅ Built |
+| Secure Boot keys you added (MOK) | Needed for NVIDIA and DKMS drivers | `mokutil --list-enrolled` | You | ✅ Built |
+| USB devices: speed (USB 2 or 3), power drawn, driver | Finds a fast device on a slow port | `/sys/bus/usb/devices/*/{speed,bMaxPower}` | You | ✅ Built (Hardware › Peripherals) |
+| Virtualization: CPU support, turned on in firmware, KVM ready | Why virtual machines are slow or do not start | `/proc/cpuinfo` (`vmx`, `svm`), `/dev/kvm` | You | ✅ Built |
 | Every BIOS setting with its current value and allowed values (122 on this test laptop: battery charge, sleep, camera, virtualization, boot, and more) | See firmware settings without restarting into the BIOS | `/sys/class/firmware-attributes/*` (Dell, Lenovo, HP) through the helper | Admin | New |
 | Whether a BIOS admin password is set | Changing BIOS settings from Linux needs it | `/sys/class/firmware-attributes/*/authentication` | Admin | New |
-| Management engine firmware version (Intel ME or AMD PSP) | Known security flaws depend on this version | `/sys/class/mei/mei*/fw_ver` | You | New |
-| TPM: version, maker, firmware version, and whether disk encryption uses it | Know if the TPM is in use and up to date | `/sys/class/tpm/tpm*`, `systemd-cryptenroll` | You / Admin | Partly: TPM present |
-| Protection against attacks through ports (DMA protection, IOMMU) | Thunderbolt and USB4 ports can reach memory without it | `/sys/bus/thunderbolt/devices/domain*/iommu_dma_protection`, `/sys/class/iommu` | You | New |
-| Hardware clock: its time against system time, and whether it keeps local time | A drifting clock breaks dual boot and sign-ins | `/sys/class/rtc/rtc0`, `/etc/adjtime` | You | Partly: local time or UTC |
+| Management engine firmware version (Intel ME or AMD PSP) | Known security flaws depend on this version | `/sys/class/mei/mei*/fw_ver` | You | ✅ Built |
+| TPM: version, maker, firmware version, and whether disk encryption uses it | Know if the TPM is in use and up to date | `/sys/class/tpm/tpm*`, `systemd-cryptenroll` | You / Admin | ✅ Built (version, driver, and disk unlock; maker and firmware: Admin, later) |
+| Protection against attacks through ports (DMA protection, IOMMU) | Thunderbolt and USB4 ports can reach memory without it | `/sys/bus/thunderbolt/devices/domain*/iommu_dma_protection`, `/sys/class/iommu` | You | ✅ Built |
+| Hardware clock: its time against system time, and whether it keeps local time | A drifting clock breaks dual boot and sign-ins | `/sys/class/rtc/rtc0`, `/etc/adjtime` | You | ✅ Built |
 
 **Changing BIOS settings from Linux** is not in the first version. Reading them is safe; a wrong change can stop the computer from starting. A short list of safe changes (for example the battery charge settings) can come later, each with its own review.
 
@@ -257,11 +257,11 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Each USB-C port: what is plugged in, power direction, data direction, USB and USB4 version | Know what each port can do | `/sys/class/typec/port*` | You | New |
-| What a USB-C device or dock offers: power, display (DisplayPort mode), and data | Explains "the dock charges but the screen stays black" | `/sys/class/typec/port*-partner`, alternate modes | You | New |
-| Power Delivery: what the charger offers (volts and amps, PPS) and what the laptop takes | A 45 W charger on a 65 W laptop charges slowly | `/sys/class/usb_power_delivery/*` | You | New |
-| Thunderbolt and USB4: security level, connected devices, approved or not | Unapproved devices do not work, by design | `boltctl`, `/sys/bus/thunderbolt` | You | New |
-| USB tree: hubs, ports, speed per device, power drawn | Finds a slow hub or a device drawing too much | `/sys/bus/usb/devices/*` | You | Partly: device list |
+| Each USB-C port: what is plugged in, power direction, data direction, USB and USB4 version | Know what each port can do | `/sys/class/typec/port*` | You | ✅ Built |
+| What a USB-C device or dock offers: power, display (DisplayPort mode), and data | Explains "the dock charges but the screen stays black" | `/sys/class/typec/port*-partner`, alternate modes | You | ✅ Built (alternate modes in use) |
+| Power Delivery: what the charger offers (volts and amps, PPS) and what the laptop takes | A 45 W charger on a 65 W laptop charges slowly | `/sys/class/usb_power_delivery/*` | You | ✅ Built (Power › Battery) |
+| Thunderbolt and USB4: security level, connected devices, approved or not | Unapproved devices do not work, by design | `boltctl`, `/sys/bus/thunderbolt` | You | ✅ Built |
+| USB tree: hubs, ports, speed per device, power drawn | Finds a slow hub or a device drawing too much | `/sys/bus/usb/devices/*` | You | ✅ Built |
 
 ## 17. Built-in devices (Hardware › Peripherals, Privacy)
 
