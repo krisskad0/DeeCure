@@ -1,3 +1,11 @@
+deecure (0.1.0~alpha.1-1) noble; urgency=medium
+
+  * First pre-release: the agent, the desktop app, the deecure command,
+    history and notifications, safe fixes with undo, and the one-command
+    installer.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Fri, 23 Oct 2026 15:30:56 +0530
+
 deecure (0.1.0-1) noble; urgency=medium
 
   * First package: the agent (collectors, history, rules), the deecure

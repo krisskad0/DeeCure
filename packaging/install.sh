@@ -174,7 +174,8 @@ done
 echo "+ check the downloads against SHA256SUMS"
 for file in $LOCAL; do
   name="${file#./}"
-  expected="$(awk -v n="$name" '$2 == n || $2 == "*" n { print $1 }' "$TMP/SHA256SUMS" | head -1)"
+  # GitHub may turn "~" into "." in file names, so both spellings match.
+  expected="$(awk -v n="$name" '{ f = $2; sub(/^\*/, "", f); gsub(/~/, ".", f); m = n; gsub(/~/, ".", m); if (f == m) print $1 }' "$TMP/SHA256SUMS" | head -1)"
   [ -n "$expected" ] || fail "$name is not listed in SHA256SUMS"
   actual="$(sha256sum "$TMP/$name" | cut -d' ' -f1)"
   [ "$expected" = "$actual" ] || fail "$name does not match its checksum; nothing was installed"

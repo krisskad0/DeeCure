@@ -52,8 +52,16 @@ jobs:
       - name: Test the admin helper with real D-Bus and polkit
         run: docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-helper.sh --throwaway /src/target/deb/deecure_*.deb'
 
-      - name: Checksums
-        run: cd target/deb && sha256sum deecure_*.deb deecure-desktop_*.deb > SHA256SUMS && cat SHA256SUMS
+      - name: Release files with GitHub-safe names, and checksums
+        # GitHub renames uploaded files with "~" (as in 0.1.0~alpha.1), so the names in
+        # SHA256SUMS would not match what people download. The package version lives
+        # inside the .deb, so the file name can change safely.
+        run: |
+          mkdir -p dist
+          for f in target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb; do
+            cp "$f" "dist/$(basename "$f" | tr '~' '.')"
+          done
+          cd dist && sha256sum ./*.deb | sed 's| \./| |' > SHA256SUMS && cat SHA256SUMS
 
       - name: GitHub Release (pre-releases published, stable drafted)
         env:
@@ -66,7 +74,7 @@ jobs:
           case "$GITHUB_REF_NAME" in *-*) mode="--prerelease" ;; esac
           gh release create "$GITHUB_REF_NAME" $mode --title "DeeCure ${GITHUB_REF_NAME#v}" \
             --notes "See CHANGELOG.md for what changed." \
-            target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb target/deb/SHA256SUMS packaging/install.sh
+            dist/deecure_*.deb dist/deecure-desktop_*.deb dist/SHA256SUMS packaging/install.sh
 
       - name: Publish to the APT repository (GitHub Pages)
         env:

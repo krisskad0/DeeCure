@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.1] - 2026-10-23
+
+First pre-release, for testing. Install it with one command: see the [install guide](docs/07-user-guide/install.md).
+
 ### Changed
 
 - Features that are not built yet are hidden instead of shown as placeholders: the Assistant page, Settings › Assistant, and "Add a machine".

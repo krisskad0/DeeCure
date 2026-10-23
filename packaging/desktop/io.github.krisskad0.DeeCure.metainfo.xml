@@ -42,9 +42,9 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
-    <release version="0.1.0" date="2026-10-23">
+    <release version="0.1.0-alpha.1" date="2026-10-23" type="development">
       <description>
-        <p>First release: every page shows real data from this computer, with safe fixes, a what-changed timeline, disk forecasts, notifications, and a weekly summary.</p>
+        <p>First pre-release, for testing: every page shows real data from this computer, with safe fixes, a what-changed timeline, disk forecasts, notifications, and a weekly summary.</p>
       </description>
     </release>
   </releases>

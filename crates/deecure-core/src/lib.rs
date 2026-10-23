@@ -45,8 +45,15 @@ mod tests {
 
     #[test]
     fn version_is_semver() {
-        let parts: Vec<&str> = VERSION.split('.').collect();
+        // MAJOR.MINOR.PATCH, with an optional pre-release such as -alpha.1 or -rc.2.
+        let (core, pre) = VERSION.split_once('-').unwrap_or((VERSION, ""));
+        let parts: Vec<&str> = core.split('.').collect();
         assert_eq!(parts.len(), 3, "version must be MAJOR.MINOR.PATCH");
         assert!(parts.iter().all(|p| p.parse::<u32>().is_ok()));
+        if !pre.is_empty() {
+            let (kind, n) = pre.split_once('.').expect("pre-release looks like alpha.1");
+            assert!(["alpha", "beta", "rc"].contains(&kind), "{pre}");
+            assert!(n.parse::<u32>().is_ok(), "{pre}");
+        }
     }
 }
