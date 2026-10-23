@@ -111,6 +111,24 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
         }
     }
 
+    // Trends: how fast each disk fills, from its last 7 days.
+    for (mount, item) in &mut filesystems {
+        let since = Timestamp(now.as_millis() - super::forecast::WINDOW_MS);
+        let points = store.metrics("disk.used_percent", Some(mount), since, now)?;
+        if let Some(f) = super::forecast::disk(points) {
+            item.fields
+                .insert("percent_per_day".into(), Value::Number(f.percent_per_day));
+            item.fields
+                .insert("filling".into(), Value::Bool(f.days_until_full.is_some()));
+            if let Some(days) = f.days_until_full {
+                // "about 0 days" reads oddly; under a day is "about 1 day".
+                let days = days.round().max(1.0);
+                item.fields
+                    .insert("days_until_full".into(), Value::Number(days));
+            }
+        }
+    }
+
     // The main disk is used so often that it gets its own names: root.used_percent, root.free_gb, …
     if let Some(root) = filesystems.get("/") {
         for (field, value) in &root.fields {
@@ -238,6 +256,25 @@ mod tests {
         };
         assert_eq!(scope.get("item.active"), Some(Value::Text("failed".into())));
         assert_eq!(scope.get("root.used_percent"), Some(Value::Number(94.2)));
+    }
+
+    #[test]
+    fn a_filling_disk_gets_a_forecast() {
+        let store = Store::open_in_memory().unwrap();
+        let day = 86_400_000;
+        let points: Vec<Metric> = (0..=48)
+            .map(|h| Metric {
+                name: "disk.used_percent".into(),
+                subject: Some("/".into()),
+                value: 90.0 + 2.0 * f64::from(h) / 24.0, // 2% a day, 94% now
+                unit: Unit::Percent,
+                at: Timestamp(NOW - 2 * day + i64::from(h) * 3_600_000),
+            })
+            .collect();
+        store.add_metrics(&points).unwrap();
+        let facts = gather(&store, Timestamp(NOW)).unwrap();
+        assert_eq!(facts.get("root.filling"), Some(Value::Bool(true)));
+        assert_eq!(facts.get("root.days_until_full"), Some(Value::Number(3.0)));
     }
 
     #[test]

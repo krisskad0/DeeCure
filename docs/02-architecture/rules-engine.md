@@ -87,15 +87,27 @@ Readings older than 10 minutes are ignored, so a rule never acts on stale data.
 | Fact | Example | From |
 | --- | --- | --- |
 | Every metric without a subject, by its name | `memory.used_percent`, `cpu.usage`, `services.failed` | [Collectors](collectors.md#metric-names) |
-| `root.used_percent`, `root.free_gb`, `root.size_gb`, `root.fs_type`, `root.device`, `root.mount_point` | `root.free_gb` = 13.8 | The `/` filesystem |
+| `root.used_percent`, `root.free_gb`, `root.size_gb`, `root.fs_type`, `root.device`, `root.mount_point`, `root.filling`, `root.days_until_full`, `root.percent_per_day` | `root.free_gb` = 13.8 | The `/` filesystem |
 
 Lists for `for_each`, used as `item.<field>`:
 
 | List | One entry per | Fields |
 | --- | --- | --- |
-| `filesystems` | Mount point | `mount_point`, `used_percent`, `free_gb`, `size_gb`, `fs_type`, `device` |
+| `filesystems` | Mount point | `mount_point`, `used_percent`, `free_gb`, `size_gb`, `fs_type`, `device`, and the trend: `percent_per_day`, `filling` (true or false), `days_until_full` (only while filling) |
 | `batteries` | Battery, such as `BAT0` | `name`, `charge`, `health`, `power` |
 | `services` | `.service` unit | `name`, `description`, `load`, `active`, `sub`, `enabled`, `restarts` |
 
 A list that is not known (no battery, for example) means "unknown", not "empty".
+
+### Trends
+
+The trend fields come from a straight line (least squares) through the last 7 days of hourly averages of `disk.used_percent` (`rules/forecast.rs`).
+
+| Case | `filling` | `days_until_full` |
+| --- | --- | --- |
+| Less than a day of history, or fewer than 12 hours with data | missing | missing (rules say "unknown", nothing changes) |
+| Grows less than 0.05% a day, shrinks, or would take over a year | false | missing |
+| Filling | true | rounded, at least 1 |
+
+Write trend conditions as `item.filling and item.days_until_full <= 3`: when the disk is not filling, `item.filling` is false, so the rule is clear and an open finding closes, even though `days_until_full` is missing.
 

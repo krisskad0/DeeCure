@@ -8,6 +8,7 @@
 mod engine;
 pub mod expr;
 pub mod facts;
+pub mod forecast;
 
 use std::collections::HashSet;
 use std::fmt;

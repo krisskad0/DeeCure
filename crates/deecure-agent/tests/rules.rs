@@ -152,3 +152,52 @@ fn battery_worn() {
     // A desktop with no battery: the rule has nothing to say.
     assert!(evaluate(&rule, &Facts::default()).is_none());
 }
+
+#[test]
+fn filling_up() {
+    let rule = rule("storage.filling_up");
+    let disk = |mount: &str, used: f64, filling: bool, days: Option<f64>| {
+        let mut fields: Vec<(&str, Value)> = vec![
+            ("mount_point", Value::Text(mount.into())),
+            ("used_percent", Value::Number(used)),
+            ("free_gb", Value::Number(20.0)),
+            ("percent_per_day", Value::Number(2.0)),
+            ("filling", Value::Bool(filling)),
+        ];
+        if let Some(d) = days {
+            fields.push(("days_until_full", Value::Number(d)));
+        }
+        fields
+    };
+    let check = |fields: Vec<(&str, Value)>| {
+        let facts = list("filesystems", &[("x", &fields)]);
+        severity(&evaluate(&rule, &facts).unwrap())[0]
+    };
+    assert_eq!(
+        check(disk("/home", 80.0, true, Some(3.0))),
+        Some(Severity::Critical)
+    );
+    assert_eq!(
+        check(disk("/home", 80.0, true, Some(10.0))),
+        Some(Severity::Warning)
+    );
+    assert_eq!(check(disk("/home", 80.0, true, Some(40.0))), None);
+    // Not filling: days are missing, and the rule is clear (an open finding closes).
+    assert_eq!(check(disk("/", 60.0, false, None)), None);
+    // The main disk at 93% already has "almost full"; this one stays quiet.
+    assert_eq!(check(disk("/", 95.0, true, Some(2.0))), None);
+    assert_eq!(
+        check(disk("/", 88.0, true, Some(2.0))),
+        Some(Severity::Critical)
+    );
+
+    let facts = list(
+        "filesystems",
+        &[("/home", &disk("/home", 80.0, true, Some(3.0)))],
+    );
+    let Outcome::Fired { title, explain, .. } = &evaluate(&rule, &facts).unwrap()[0].1 else {
+        panic!("expected a finding");
+    };
+    assert_eq!(title, "/home will be full in about 3 days");
+    assert!(explain.contains("about 2% a day"), "{explain}");
+}
