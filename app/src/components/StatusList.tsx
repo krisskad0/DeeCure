@@ -10,6 +10,8 @@ export interface StatusRow {
   label: string;
   metric?: string;
   status: StatusVariant;
+  /** A word for the badge instead of the usual one, such as "Not checked". */
+  statusLabel?: string;
   href?: string;
 }
 
@@ -24,7 +26,7 @@ export function StatusList({ rows }: { rows: StatusRow[] }) {
               {row.label}
             </span>
             <span className="sl-metric">{row.metric}</span>
-            <StatusBadge variant={row.status} />
+            <StatusBadge variant={row.status} label={row.statusLabel} />
           </>
         );
         return (

@@ -6,6 +6,7 @@
 //! copies of `/proc` and `/sys` from real machines (`tests/fixtures/`).
 //! Metric names and units: `docs/02-architecture/collectors.md`.
 
+mod accounts;
 mod backup;
 mod battery;
 mod boot;
@@ -29,6 +30,7 @@ use tokio::time::{MissedTickBehavior, interval};
 
 use crate::store::{self, SharedStore, Store};
 
+pub use accounts::Accounts;
 pub use backup::Backups;
 pub use battery::Battery;
 pub use boot::{Boot, BootInfo};
@@ -108,6 +110,7 @@ pub async fn run(
         Box::new(DiskIo::default()),
         Box::new(Pressure),
         Box::new(Sensors),
+        Box::new(Accounts),
     ];
     let mut services = Services::default();
     let mut boot = Boot::default();

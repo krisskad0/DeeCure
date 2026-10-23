@@ -1,0 +1,11 @@
+id: packages.updates_available
+category: packages
+title: "Updates are ready to install ({updates.pending})"
+explain: >
+  Newer versions of {updates.pending} installed packages are ready. Besides
+  security fixes, updates bring bug fixes. Install them with the Software
+  Updater when it suits you, or open System › Updates to see the list.
+severity:
+  # Security updates already have their own warning; this one is for the rest.
+  info: "updates.pending > updates.security"
+learn_more: topics/security/updates

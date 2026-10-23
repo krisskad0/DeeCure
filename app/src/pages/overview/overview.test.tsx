@@ -69,7 +69,8 @@ describe("Overview pages", () => {
     expect(screen.getByText("8.6")).toBeTruthy(); // memory used, GB
     expect(screen.getByText("Health 79% · 3 h 10 m left")).toBeTruthy();
     expect(screen.getByText("CPU 57 °C")).toBeTruthy();
-    expect(screen.getAllByText("Not checked yet").length).toBeGreaterThan(0);
+    // Areas without checks say so, instead of a worrying "Unknown".
+    expect(screen.getAllByText("Not checked").length).toBeGreaterThan(0);
     expect(screen.getByText("firefox")).toBeTruthy();
     expect(screen.getByText("−15")).toBeTruthy();
     expect(screen.getByText("Main disk is almost full")).toBeTruthy();

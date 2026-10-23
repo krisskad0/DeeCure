@@ -1,0 +1,12 @@
+id: hardware.cpu_hot
+category: hardware
+title: "The processor is very hot ({temp.cpu} °C)"
+explain: >
+  The processor is at {temp.cpu} °C. Above about 90 °C it slows itself down to
+  avoid damage, so everything feels slow, and very high heat can make the
+  computer switch off. Check that the air vents are free and the fan is not
+  full of dust, and see which app keeps the processor busy.
+severity:
+  critical: "temp.cpu >= 100"
+  warning: "temp.cpu >= 90"
+learn_more: topics/hardware/overheating

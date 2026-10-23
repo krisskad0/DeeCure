@@ -1,0 +1,8 @@
+title: "Get back online"
+summary: "Without a network route, websites, updates, and online apps cannot work."
+steps:
+  - "Check that Wi-Fi is on and Airplane Mode is off, in the top-right menu."
+  - "Choose your Wi-Fi network again, or plug in the network cable."
+  - "Restart the router: unplug it, wait 30 seconds, and plug it back in."
+  - "Open Diagnostics › Network test to see which step fails: the router, the name lookup (DNS), or the internet."
+notes: "This is only information: being offline on purpose is fine."

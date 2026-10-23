@@ -1,0 +1,8 @@
+title: "Cool down a hot processor"
+summary: "A processor that runs too hot slows itself down, and it can switch the computer off to protect itself."
+steps:
+  - "Make sure the air vents are free: do not use a laptop on a bed, a pillow, or your lap for long."
+  - "Open Processes and see which app uses the most CPU. Close it if you do not need it."
+  - "Clean the vents and the fan with short bursts of compressed air, with the computer off."
+  - "If it stays hot when the computer is idle, the fan or the thermal paste may need service."
+notes: "DeeCure warns from 90 °C and calls it critical from 100 °C."

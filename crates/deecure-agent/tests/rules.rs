@@ -201,3 +201,73 @@ fn filling_up() {
     assert_eq!(title, "/home will be full in about 3 days");
     assert!(explain.contains("about 2% a day"), "{explain}");
 }
+
+fn values(pairs: &[(&str, f64)]) -> Facts {
+    let mut facts = Facts::default();
+    for (k, v) in pairs {
+        facts.values.insert((*k).into(), Value::Number(*v));
+    }
+    facts
+}
+
+fn one(id: &str, facts: &Facts) -> Option<Severity> {
+    severity(&evaluate(&rule(id), facts).unwrap())[0]
+}
+
+#[test]
+fn hardware_network_packages_and_accounts() {
+    assert_eq!(
+        one("hardware.cpu_hot", &values(&[("temp.cpu", 62.0)])),
+        None
+    );
+    assert_eq!(
+        one("hardware.cpu_hot", &values(&[("temp.cpu", 93.0)])),
+        Some(Severity::Warning)
+    );
+    assert_eq!(
+        one("hardware.cpu_hot", &values(&[("temp.cpu", 101.0)])),
+        Some(Severity::Critical)
+    );
+
+    assert_eq!(
+        one("network.offline", &values(&[("net.default_route", 1.0)])),
+        None
+    );
+    assert_eq!(
+        one("network.offline", &values(&[("net.default_route", 0.0)])),
+        Some(Severity::Info)
+    );
+
+    let updates = |p, s| values(&[("updates.pending", p), ("updates.security", s)]);
+    assert_eq!(one("packages.updates_available", &updates(0.0, 0.0)), None);
+    assert_eq!(
+        one("packages.updates_available", &updates(4.0, 4.0)),
+        None,
+        "all security: one warning is enough"
+    );
+    assert_eq!(
+        one("packages.updates_available", &updates(12.0, 4.0)),
+        Some(Severity::Info)
+    );
+
+    assert_eq!(
+        one(
+            "accounts.extra_root",
+            &values(&[("accounts.uid0_extra", 0.0)])
+        ),
+        None
+    );
+    assert_eq!(
+        one(
+            "accounts.extra_root",
+            &values(&[("accounts.uid0_extra", 1.0)])
+        ),
+        Some(Severity::Critical)
+    );
+
+    // A computer without a sensor: the rule is unknown, so nothing changes.
+    let Outcome::Unknown = &evaluate(&rule("hardware.cpu_hot"), &Facts::default()).unwrap()[0].1
+    else {
+        panic!("a missing sensor must not clear or open anything");
+    };
+}

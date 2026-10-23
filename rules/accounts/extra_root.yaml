@@ -1,0 +1,12 @@
+id: accounts.extra_root
+category: accounts
+title: "Another account has full admin power"
+explain: >
+  {accounts.uid0_extra} account(s) other than root have user ID 0, which gives
+  them the same full control as root, without asking for a password through
+  sudo. This is almost never wanted, and attackers create such accounts to
+  keep control of a computer. Open Accounts › Users to see which one, and ask
+  someone you trust before changing it.
+severity:
+  critical: "accounts.uid0_extra >= 1"
+learn_more: topics/accounts/extra-root

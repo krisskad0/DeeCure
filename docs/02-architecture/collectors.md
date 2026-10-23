@@ -159,6 +159,9 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 | `updates.pending`, `updates.security` | — | count | Packages with a newer version, and how many of those are security updates |
 | `system.reboot_required` | — | count | 1 when an update asks for a restart, else 0 |
 | `net.listening_all` | — | count | TCP ports listening on every network |
+| `net.default_route` | — | count | 1 when an IPv4 or IPv6 default route is up (the loopback's reject routes do not count), else 0; missing without `/proc/net/route` |
+| `accounts.people` | — | count | Accounts a person can sign in with: UID 1000 and up, a real shell, not `nobody` (from `/etc/passwd`) |
+| `accounts.uid0_extra` | — | count | Accounts other than `root` with UID 0 |
 | `firewall.enabled` | — | count | 1 when ufw is on, 0 when off; missing when ufw is not installed |
 | `backup.configured` | — | count | 1 when Déjà Dup or Timeshift runs on a schedule |
 | `backup.age_days` | — | count | Days since the newest backup or snapshot |

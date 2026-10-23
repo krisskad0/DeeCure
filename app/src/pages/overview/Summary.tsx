@@ -206,7 +206,7 @@ function UsageChart({ history, range }: { history: History; range: Range }) {
 const NOT_YET = "Not checked yet";
 
 function subsystems(report: PageProps["report"], latest: Metric[] | undefined, system: SystemInfo | undefined): StatusRow[] {
-  const status = (id: string) => pageStatus(id, report, null) ?? "off";
+  const checked = new Set(report?.checked ?? []);
   const temp = pick(latest, "temp.cpu");
   const battery = latest?.find((m) => m.name === "battery.health");
   const failed = pick(latest, "services.failed");
@@ -214,26 +214,32 @@ function subsystems(report: PageProps["report"], latest: Metric[] | undefined, s
   const disk = pick(latest, "disk.used_percent", "/");
   const rx = pick(latest, "net.rx");
   const tx = pick(latest, "net.tx");
-  const row = (id: string, icon: StatusRow["icon"], metric: string | undefined, tab: string): StatusRow => ({
-    icon,
-    label: areaLabel(id),
-    metric: metric ?? NOT_YET,
-    status: status(id),
-    href: href(id, tab),
-  });
+  const online = pick(latest, "net.default_route");
+  const pending = pick(latest, "updates.pending");
+  const security = pick(latest, "updates.security");
+  const backupAge = pick(latest, "backup.age_days");
+  const backupOn = pick(latest, "backup.configured");
+  const people = pick(latest, "accounts.people");
+  const firewall = pick(latest, "firewall.enabled");
+  const row = (id: string, icon: StatusRow["icon"], metric: string | undefined, tab: string): StatusRow => {
+    const status = pageStatus(id, report, null) ?? "off";
+    // An area with no checks says so; "Unknown" stays for "the agent has not answered".
+    const notChecked = status === "off" && report?.checked_at !== undefined && !checked.has(id);
+    return { icon, label: areaLabel(id), metric: metric ?? (notChecked ? "Open to see details" : NOT_YET), status, statusLabel: notChecked ? "Not checked" : undefined, href: href(id, tab) };
+  };
   return [
     row("hardware", "chip", temp === undefined ? undefined : `CPU ${Math.round(temp)} °C`, "summary"),
     row("power", "bat", battery ? `Health ${Math.round(battery.value)}%` : latest ? "No battery" : undefined, "battery"),
     row("system", "sys", system ? (system.reboot_required ? "Reboot required" : system.uptime_seconds ? `Up ${duration(system.uptime_seconds)}` : undefined) : undefined, "overview"),
     row("services", "cog", failed ? `${failed} failed` : running !== undefined ? `${running} running` : undefined, "system"),
     row("jobs", "cal", undefined, "calendar"),
-    row("packages", "pkg", undefined, "installed"),
+    row("packages", "pkg", pending === undefined ? undefined : pending ? plural(pending, "update") : "Up to date", "installed"),
     row("containers", "cube", undefined, "containers"),
     row("storage", "db", disk === undefined ? undefined : `${Math.round(disk)}% used`, "overview"),
-    row("backups", "backup", undefined, "jobs"),
-    row("network", "wifi", rx !== undefined && tx !== undefined ? rate(rx + tx) : undefined, "interfaces"),
-    row("accounts", "users", undefined, "users"),
-    row("security", "shield", undefined, "overview"),
+    row("backups", "backup", backupOn === 0 ? "Not set up" : backupAge === undefined ? undefined : backupAge < 1 ? "Today" : `${plural(Math.round(backupAge), "day")} ago`, "jobs"),
+    row("network", "wifi", online === 0 ? "Offline" : rx !== undefined && tx !== undefined ? rate(rx + tx) : online === 1 ? "Connected" : undefined, "interfaces"),
+    row("accounts", "users", people === undefined ? undefined : plural(people, "person", "people"), "users"),
+    row("security", "shield", security ? plural(security, "security update") : firewall === 0 ? "Firewall off" : security === 0 ? "Up to date" : undefined, "overview"),
     row("privacy", "eye", undefined, "access"),
   ];
 }

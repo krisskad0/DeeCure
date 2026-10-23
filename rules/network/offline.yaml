@@ -1,0 +1,10 @@
+id: network.offline
+category: network
+title: "Not connected to a network"
+explain: >
+  This computer has no route to any network right now, so websites, updates,
+  and online apps cannot work. Turn on Wi-Fi or plug in a cable. If it is
+  connected but this stays, restart the router or the computer.
+severity:
+  info: "net.default_route == 0"
+learn_more: topics/network/no-connection

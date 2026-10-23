@@ -13,6 +13,16 @@ Last updated: 2026-10-23, after Phase 3.
 | Phase 4 — Ask DeeCure | Not started. Start only when the owner says so. → [Phase 4](phase-4-assistant.md) |
 | After Phase 4 | The owner asked to "optimize everything": speed, size, and code cleanup across the app. |
 
+## 1b. Areas with no checks yet
+
+Overview › Subsystems shows these as **Not checked**. Each needs a cheap, reliable fact and a rule ([Writing rules](../04-development/writing-rules-and-kb.md)).
+
+| Area | Idea for a first rule |
+| --- | --- |
+| Scheduled Jobs | A timer whose last run failed (needs timer results as a metric or snapshot) |
+| Containers | A container port open to every network (needs Docker state when Docker runs) |
+| Privacy | Apps allowed to use the camera or microphone (needs a light, read-only count) |
+
 ## 2. Heavy checks that need a fast internet connection
 
 These download hundreds of MB, so they wait until the main connection works. All run in throwaway containers and never touch the host.

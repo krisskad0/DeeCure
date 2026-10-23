@@ -1,0 +1,8 @@
+title: "An extra account with root power"
+summary: "Only the root account should have user ID 0. Another one has full control of the computer without sudo, which is a common sign of a break-in."
+steps:
+  - "Open Accounts › Users and find the account with user ID 0 that is not root."
+  - "If you did not create it on purpose, treat the computer as compromised: disconnect it from the network."
+  - "Ask someone you trust, such as your IT team, to remove the account and check the computer."
+  - "Change your passwords from another, clean device."
+notes: "DeeCure only reports this. It never changes accounts by itself."
