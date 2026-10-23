@@ -80,10 +80,40 @@ elif command -v wget >/dev/null 2>&1; then
   fetch() { wget -qO- --tries=3 "$1"; }
   reachable() { wget -q --spider --tries=2 "$1"; }
 else
-  run apt-get install -y curl ca-certificates
+  run apt-get install -y --no-install-recommends curl ca-certificates
   fetch() { curl -fsSL --retry 3 "$1"; }
   reachable() { curl -fsIL --retry 2 "$1" >/dev/null 2>&1; }
 fi
+
+APT="apt-get -o Acquire::Retries=3"
+
+# The one optional extra DeeCure itself uses (the tray icon), when this Ubuntu has it.
+# Everything else "recommended" by the libraries is left out: it is not needed and it
+# makes a first install much bigger (about 30 MB and 57 packages on a new system).
+extras() {
+  case "$PACKAGES" in *deecure-desktop*) ;; *) return 0 ;; esac
+  if apt-cache show libayatana-appindicator3-1 >/dev/null 2>&1; then echo libayatana-appindicator3-1; fi
+}
+
+# Installs packages without the optional extras. If it fails because the package lists
+# are old, it refreshes them and tries once more.
+install_packages() {
+  echo "+ $APT install -y --no-install-recommends $*"
+  [ "$DRY" = yes ] && return 0
+  $APT install -y --no-install-recommends "$@" || {
+    echo "Refreshing the package lists and trying again..."
+    $APT update && $APT install -y --no-install-recommends "$@"
+  }
+}
+
+# Package lists refreshed in the last 6 hours are fresh enough: skip the slow refresh.
+refresh_lists() {
+  if [ -n "$(find /var/lib/apt/lists -maxdepth 1 -name '*_Packages*' -mmin -360 2>/dev/null | head -1)" ]; then
+    echo "Package lists are fresh; not refreshing them."
+  else
+    run $APT update
+  fi
+}
 
 if [ "$FROM" = auto ]; then
   if reachable "$REPO/deecure-archive-keyring.asc"; then FROM=apt; else FROM=github; fi
@@ -108,17 +138,23 @@ Components: $COMPONENT
 Signed-By: $KEYRING
 SOURCES
   fi
-  run apt-get update
-  # shellcheck disable=SC2086 # the package list is meant to split
-  run apt-get install -y $PACKAGES
+  # A new or changed source always needs a refresh, so the newest DeeCure is seen.
+  run $APT update
+  echo "Installing DeeCure and the libraries it needs from Ubuntu (1-3 minutes on a new system)..."
+  # shellcheck disable=SC2086 # the package lists are meant to split
+  install_packages $PACKAGES $(extras)
+  [ "$DRY" = yes ] && { echo "Dry run: nothing was changed."; exit 0; }
   echo "DeeCure is installed. Open it from the app menu, or run: deecure status"
   exit 0
 fi
 
 # From GitHub Releases.
-# python3 reads GitHub's release list; every Ubuntu has it, a bare container may not.
-command -v python3 >/dev/null 2>&1 || run apt-get install -y python3-minimal
-[ "$DRY" = yes ] || command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read the release list"
+# python3 reads GitHub's release list. Every Ubuntu has it; a bare system may not, or
+# may have only python3-minimal, which lacks the json module.
+if ! python3 -c 'import json' >/dev/null 2>&1; then
+  run apt-get install -y --no-install-recommends python3
+fi
+[ "$DRY" = yes ] || python3 -c 'import json' >/dev/null 2>&1 || fail "python3 (with its json module) is needed to read the release list"
 echo "Installing from GitHub Releases: $RELEASES"
 LIST="$(fetch "$RELEASES")" || fail "could not reach GitHub ($RELEASES); check the internet connection"
 
@@ -141,7 +177,12 @@ print(r["tag_name"], "pre-release" if r.get("prerelease") else "release")
 for name, url in sorted(urls.items()):
     if name == "SHA256SUMS" or (name.endswith("_amd64.deb") and name.startswith(("deecure_", "deecure-desktop_"))):
         print(name, url)
-' "$BETA")" || fail "no published release was found yet; see https://github.com/krisskad0/DeeCure/releases"
+' "$BETA")" || {
+  case $? in
+    4) fail "no published release was found yet; see https://github.com/krisskad0/DeeCure/releases" ;;
+    *) fail "could not read GitHub's release list; try again in a minute, or see https://github.com/krisskad0/DeeCure/releases" ;;
+  esac
+}
 
 TAG="$(printf '%s\n' "$CHOICE" | sed -n '1p' | cut -d' ' -f1)"
 KIND="$(printf '%s\n' "$CHOICE" | sed -n '1p' | cut -d' ' -f2)"
@@ -164,7 +205,7 @@ for prefix in $want; do
   [ -n "$line" ] || fail "release $TAG has no ${prefix%_} file for amd64"
   name="${line%% *}"
   url="${line#* }"
-  echo "+ download $name"
+  echo "+ download $name (from GitHub)"
   fetch "$url" > "$TMP/$name" || fail "could not download $name"
   chmod 0644 "$TMP/$name"
   [ "$name" = SHA256SUMS ] || LOCAL="$LOCAL ./$name"
@@ -182,13 +223,10 @@ for file in $LOCAL; do
 done
 echo "  ok"
 
-run apt-get update
-if [ "$DRY" = yes ]; then
-  echo "+ apt-get install -y$LOCAL   (in $TMP)"
-else
-  # shellcheck disable=SC2086 # the file list is meant to split
-  (cd "$TMP" && apt-get install -y $LOCAL)
-fi
+refresh_lists
+echo "Installing DeeCure and the libraries it needs from Ubuntu (1-3 minutes on a new system)..."
+# shellcheck disable=SC2086 # the file and package lists are meant to split
+(cd "$TMP" && install_packages $LOCAL $(extras))
 if [ "$DRY" = yes ]; then
   echo "Dry run: DeeCure $TAG was downloaded and checked; nothing was changed."
   exit 0

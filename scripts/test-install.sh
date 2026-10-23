@@ -23,7 +23,7 @@ export DEECURE_REPO_URL=file:///site/apt
 echo "== dry run changes nothing"
 sh /site/install.sh --dry-run >/tmp/dry.txt
 [ -e /etc/apt/sources.list.d/deecure.sources ] && fail "dry run wrote the source"
-grep -q "apt-get install -y deecure deecure-desktop" /tmp/dry.txt || fail "dry run does not show the install step"
+grep -q "install -y --no-install-recommends deecure deecure-desktop" /tmp/dry.txt || fail "dry run does not show the install step"
 echo "ok"
 
 echo "== install, twice"

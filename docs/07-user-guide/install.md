@@ -41,6 +41,8 @@ Then open **DeeCure** from the app menu, or run `deecure status` in the Terminal
 - While there is no stable release yet, it uses the newest pre-release and says so.
 - It changes nothing else, and it is safe to run twice.
 
+**How long it takes:** DeeCure itself is about 7 MB and downloads in seconds. The rest is the libraries the desktop app needs from Ubuntu (mainly WebKitGTK, the web engine of its window). A normal Ubuntu desktop already has most of them and needs about 40-50 MB; a brand-new minimal system needs about 120 MB, at the speed of your Ubuntu mirror. The script skips optional extras ("recommended" packages, about 30 MB on a new system) and skips refreshing the package lists when they are less than 6 hours old. For a server without a desktop, `--server` installs only the small agent and the `deecure` command.
+
 | Option | What it does |
 | --- | --- |
 | `--server` | Install only the background agent and the `deecure` command, without the desktop app |

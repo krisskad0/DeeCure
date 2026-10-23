@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Changed
+
+- Faster install: `install.sh` skips optional "recommended" packages (about 30 MB and 57 packages less on a new system; the tray library is still installed), skips refreshing package lists that are less than 6 hours old (and refreshes and retries if an install then fails), and says what it is doing while it downloads.
+
+### Fixed
+
+- `install.sh` on a bare system with only `python3-minimal` (no `json` module) now installs `python3`, and says "could not read the release list" instead of "no published release" when it cannot read GitHub's answer.
+
 ## [0.1.0-alpha.3] - 2026-10-23
 
 ### Fixed
