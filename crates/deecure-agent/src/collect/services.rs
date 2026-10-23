@@ -44,6 +44,9 @@ pub struct UnitState {
     /// How many times systemd restarted it since boot.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub restarts: Option<u32>,
+    /// True when a timer with the same name starts it: it is a scheduled job.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub timer: bool,
 }
 
 const SYSTEMD: &str = "org.freedesktop.systemd1";
@@ -116,6 +119,7 @@ impl Services {
                 sub,
                 enabled,
                 restarts,
+                timer: false,
             });
         }
         Ok(units)
@@ -145,9 +149,20 @@ async fn property<T: TryFrom<OwnedValue>>(
 
 /// Turns the unit list into counts and a sorted inventory of `.service` units.
 pub fn summarize(units: Vec<UnitState>, now: Timestamp) -> Sample {
+    let timers: std::collections::HashSet<String> = units
+        .iter()
+        .filter_map(|u| u.name.strip_suffix(".timer").map(str::to_owned))
+        .collect();
     let mut services: Vec<UnitState> = units
         .into_iter()
         .filter(|unit| unit.name.ends_with(".service"))
+        .map(|mut unit| {
+            unit.timer = unit
+                .name
+                .strip_suffix(".service")
+                .is_some_and(|stem| timers.contains(stem));
+            unit
+        })
         .collect();
     services.sort_by(|a, b| a.name.cmp(&b.name));
     let count = |test: fn(&UnitState) -> bool| services.iter().filter(|u| test(u)).count() as f64;
@@ -180,6 +195,7 @@ mod tests {
             sub: sub.into(),
             enabled: None,
             restarts: None,
+            timer: false,
         }
     }
 
@@ -192,6 +208,7 @@ mod tests {
                 unit("apt-daily.service", "inactive", "dead"),
                 unit("docker.socket", "active", "running"),
                 unit("home.mount", "failed", "failed"),
+                unit("apt-daily.timer", "active", "waiting"),
             ],
             Timestamp(0),
         );
@@ -207,6 +224,18 @@ mod tests {
         assert_eq!(
             names,
             ["apt-daily.service", "bluetooth.service", "snapd.service"]
+        );
+        let timers: Vec<bool> = sample.snapshots[0]
+            .data
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|u| u["timer"] == true)
+            .collect();
+        assert_eq!(
+            timers,
+            [true, false, false],
+            "apt-daily.service is started by apt-daily.timer"
         );
     }
 }

@@ -1,0 +1,10 @@
+id: privacy.popcon
+category: privacy
+title: "Your list of installed packages is sent to Ubuntu every week"
+explain: >
+  The package popularity contest is on. Once a week it sends Ubuntu an
+  anonymous list of the packages installed here, to help decide what to ship.
+  It is harmless for most people; turn it off if you prefer to send nothing.
+severity:
+  info: "privacy.popcon == 1"
+learn_more: topics/privacy/popcon

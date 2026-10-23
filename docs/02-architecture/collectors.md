@@ -28,7 +28,7 @@ The code is in `crates/deecure-agent/src/collect/`. Every file collector reads t
 | Memory | `/proc/meminfo` | Every minute | Swap metrics only when the system has swap |
 | Filesystems | `/proc/mounts`, `statvfs` | Every minute | Local types only (ext4, btrfs, xfs, vfat, ntfs…). Network shares are skipped because checking them can hang. Snap images (squashfs) are skipped. One entry per device. |
 | Battery | `/sys/class/power_supply/*` | Every minute | System batteries only. Mouse and keyboard batteries (`scope` = `Device`) are skipped. Missing values are left out, never guessed. |
-| Services | systemd `ListUnits` over D-Bus | Every 5 minutes | `.service` units only |
+| Services | systemd `ListUnits` over D-Bus | Every 5 minutes | `.service` units only. Each is marked `timer` when a `.timer` unit with the same name exists (a scheduled job). |
 | Network | `/proc/net/dev` | Every minute | Rates need two readings. The loopback interface (`lo`) is left out. |
 | Disk I/O | `/proc/diskstats` | Every minute | Whole disks only: partitions, loop devices, and RAM disks are left out. For all disks together, `disk.busy` is the busiest disk. |
 | Pressure | `/proc/pressure/{cpu,memory,io}` | Every minute | The "some" 10-second average. Missing on kernels without PSI. |
@@ -162,6 +162,8 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 | `net.default_route` | — | count | 1 when an IPv4 or IPv6 default route is up (the loopback's reject routes do not count), else 0; missing without `/proc/net/route` |
 | `accounts.people` | — | count | Accounts a person can sign in with: UID 1000 and up, a real shell, not `nobody` (from `/etc/passwd`) |
 | `accounts.uid0_extra` | — | count | Accounts other than `root` with UID 0 |
+| `privacy.popcon` | — | count | 1 when `/etc/popularity-contest.conf` says `PARTICIPATE="yes"`, else 0 (also when it is not installed) |
+| `containers.exposed` | — | count | Running Docker containers with a port on every address (`0.0.0.0`, `::`), every 5 minutes; 0 without Docker; missing when this user may not talk to Docker |
 | `firewall.enabled` | — | count | 1 when ufw is on, 0 when off; missing when ufw is not installed |
 | `backup.configured` | — | count | 1 when Déjà Dup or Timeshift runs on a schedule |
 | `backup.age_days` | — | count | Days since the newest backup or snapshot |

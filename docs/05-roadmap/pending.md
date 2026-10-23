@@ -23,16 +23,6 @@ The owner's view (2026-10-23): the app is not ready as a first version; too much
 | Top bar › Machines | "Add a machine" is planned for Phase 5. |
 | Every page | Review with the owner which panels look empty or "dummy" on a real computer, and fix each one. |
 
-## 1b. Areas with no checks yet
-
-Overview › Subsystems shows these as **Not checked**. Each needs a cheap, reliable fact and a rule ([Writing rules](../04-development/writing-rules-and-kb.md)).
-
-| Area | Idea for a first rule |
-| --- | --- |
-| Scheduled Jobs | A timer whose last run failed (needs timer results as a metric or snapshot) |
-| Containers | A container port open to every network (needs Docker state when Docker runs) |
-| Privacy | Apps allowed to use the camera or microphone (needs a light, read-only count) |
-
 ## 2. Heavy checks that need a fast internet connection
 
 These download hundreds of MB, so they wait until the main connection works. All run in throwaway containers and never touch the host.

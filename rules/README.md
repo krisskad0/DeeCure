@@ -18,7 +18,10 @@ Categories match the app pages: `storage`, `security`, `power`, `services`, `pac
 | `packages.updates_available` | Updates other than security updates are waiting (info) |
 | `accounts.extra_root` | An account other than root has user ID 0 (critical) |
 | `storage.filling_up` | At the last 7 days' rate, a disk is full within 14 days (warning) or 3 days (critical) |
-| `services.unit_failed` | A service failed (warning) |
+| `services.unit_failed` | A service failed (warning); services started by a timer go to `jobs.job_failed` |
+| `jobs.job_failed` | A scheduled job (a service started by a timer of the same name) failed its last run (warning) |
+| `containers.port_exposed` | A running Docker container publishes a port on every network address (warning) |
+| `privacy.popcon` | The package popularity contest sends the package list weekly (info) |
 | `power.battery_worn` | Battery health is under 80% (info) or 60% (warning) |
 
 - Format: [Rules engine](../docs/02-architecture/rules-engine.md#rule-file-reference)

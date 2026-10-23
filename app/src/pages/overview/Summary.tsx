@@ -222,6 +222,9 @@ function subsystems(report: PageProps["report"], latest: Metric[] | undefined, s
   const backupOn = pick(latest, "backup.configured");
   const people = pick(latest, "accounts.people");
   const firewall = pick(latest, "firewall.enabled");
+  const exposed = pick(latest, "containers.exposed");
+  const popcon = pick(latest, "privacy.popcon");
+  const failedJobs = report?.checked_at === undefined ? undefined : (report?.findings.filter((f) => f.rule === "jobs.job_failed").length ?? 0);
   const row = (id: string, icon: StatusRow["icon"], metric: string | undefined, tab: string): StatusRow => {
     const status = pageStatus(id, report, null) ?? "off";
     // An area with no checks says so; "Unknown" stays for "the agent has not answered".
@@ -233,15 +236,15 @@ function subsystems(report: PageProps["report"], latest: Metric[] | undefined, s
     row("power", "bat", battery ? `Health ${Math.round(battery.value)}%` : latest ? "No battery" : undefined, "battery"),
     row("system", "sys", system ? (system.reboot_required ? "Reboot required" : system.uptime_seconds ? `Up ${duration(system.uptime_seconds)}` : undefined) : undefined, "overview"),
     row("services", "cog", failed ? `${failed} failed` : running !== undefined ? `${running} running` : undefined, "system"),
-    row("jobs", "cal", undefined, "calendar"),
+    row("jobs", "cal", failedJobs === undefined ? undefined : failedJobs ? plural(failedJobs, "failed job") : "No failures", "calendar"),
     row("packages", "pkg", pending === undefined ? undefined : pending ? plural(pending, "update") : "Up to date", "installed"),
-    row("containers", "cube", undefined, "containers"),
+    row("containers", "cube", exposed === undefined ? undefined : exposed ? `${plural(exposed, "container")} exposed` : "Nothing exposed", "containers"),
     row("storage", "db", disk === undefined ? undefined : `${Math.round(disk)}% used`, "overview"),
     row("backups", "backup", backupOn === 0 ? "Not set up" : backupAge === undefined ? undefined : backupAge < 1 ? "Today" : `${plural(Math.round(backupAge), "day")} ago`, "jobs"),
     row("network", "wifi", online === 0 ? "Offline" : rx !== undefined && tx !== undefined ? rate(rx + tx) : online === 1 ? "Connected" : undefined, "interfaces"),
     row("accounts", "users", people === undefined ? undefined : plural(people, "person", "people"), "users"),
     row("security", "shield", security ? plural(security, "security update") : firewall === 0 ? "Firewall off" : security === 0 ? "Up to date" : undefined, "overview"),
-    row("privacy", "eye", undefined, "access"),
+    row("privacy", "eye", popcon === undefined ? undefined : popcon ? "Sends package list" : "Nothing sent", "access"),
   ];
 }
 

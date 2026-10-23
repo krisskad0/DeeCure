@@ -35,7 +35,14 @@ pub fn count(passwd: &str) -> (usize, usize) {
     (people, extra_root)
 }
 
-/// `accounts.people` and `accounts.uid0_extra`.
+/// True when `/etc/popularity-contest.conf` says `PARTICIPATE="yes"`.
+pub fn popcon_on(conf: &str) -> bool {
+    conf.lines()
+        .map(str::trim)
+        .any(|l| l == "PARTICIPATE=\"yes\"" || l == "PARTICIPATE=yes")
+}
+
+/// `accounts.people`, `accounts.uid0_extra`, and `privacy.popcon`.
 #[derive(Debug, Default)]
 pub struct Accounts;
 
@@ -50,6 +57,11 @@ impl Collector for Accounts {
             return Err(invalid("/etc/passwd", "no root account"));
         }
         let (people, extra_root) = count(&passwd);
+        // Privacy: the package popularity contest sends the list of installed packages
+        // every week. Not installed means nothing is sent.
+        let popcon = root
+            .read("/etc/popularity-contest.conf")
+            .is_ok_and(|t| popcon_on(&t));
         Ok(Sample {
             metrics: vec![
                 metric("accounts.people", None, people as f64, Unit::Count, now),
@@ -57,6 +69,13 @@ impl Collector for Accounts {
                     "accounts.uid0_extra",
                     None,
                     extra_root as f64,
+                    Unit::Count,
+                    now,
+                ),
+                metric(
+                    "privacy.popcon",
+                    None,
+                    f64::from(u8::from(popcon)),
                     Unit::Count,
                     now,
                 ),
@@ -82,5 +101,12 @@ toor:x:0:0::/root:/bin/sh
 broken line
 ";
         assert_eq!(count(passwd), (2, 1));
+    }
+
+    #[test]
+    fn reads_the_popularity_contest_choice() {
+        assert!(popcon_on("MY_HOSTID=\"abc\"\nPARTICIPATE=\"yes\"\n"));
+        assert!(!popcon_on("PARTICIPATE=\"no\"\n"));
+        assert!(!popcon_on("# PARTICIPATE=\"yes\"\n"));
     }
 }

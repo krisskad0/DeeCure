@@ -10,6 +10,7 @@ mod accounts;
 mod backup;
 mod battery;
 mod boot;
+mod containers;
 mod cpu;
 mod diskio;
 mod filesystems;
@@ -34,6 +35,7 @@ pub use accounts::Accounts;
 pub use backup::Backups;
 pub use battery::Battery;
 pub use boot::{Boot, BootInfo};
+pub use containers::Containers;
 pub use cpu::Cpu;
 pub use diskio::DiskIo;
 pub use filesystems::{Filesystems, FsUsage};
@@ -116,6 +118,7 @@ pub async fn run(
     let mut boot = Boot::default();
     let mut updates = Updates::default();
     let mut backups = Backups::default();
+    let mut containers = Containers;
     // Collectors that are failing right now, so each failure is logged once, not every minute.
     let mut failing = HashSet::new();
     let mut timer = interval(EVERY);
@@ -140,6 +143,8 @@ pub async fn run(
             // Reads once per boot; until the boot has finished, it tries again here.
             let result = boot.collect(&root, now).await;
             merge(&mut sample, &mut failing, Boot::NAME, result);
+            let result = containers.collect(&root, now).await;
+            merge(&mut sample, &mut failing, Containers::NAME, result);
         }
         let result = updates.collect(&root, now).await;
         merge(&mut sample, &mut failing, Updates::NAME, result);

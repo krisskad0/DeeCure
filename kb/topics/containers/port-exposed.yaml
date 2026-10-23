@@ -1,0 +1,8 @@
+title: "Keep a container's port on this computer"
+summary: "A port published on 0.0.0.0 can be reached by other computers on your network, and Docker opens it past the ufw firewall."
+steps:
+  - "Open Containers to see which container and port it is."
+  - "If only this computer needs it, publish it on 127.0.0.1, for example 127.0.0.1:5432:5432 instead of 5432:5432."
+  - "Recreate the container with the new port setting (or change it in your compose file)."
+  - "If other computers must reach it, give the service a strong password."
+notes: "DeeCure only reports this; it never changes your containers."

@@ -149,6 +149,9 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
                         item.fields.insert(field.into(), Value::Text(value));
                     }
                 }
+                // Always known: a service without the field is not started by a timer.
+                let timer = unit.get("timer").and_then(Json::as_bool).unwrap_or(false);
+                item.fields.insert("timer".into(), Value::Bool(timer));
                 if let Some(restarts) = unit.get("restarts").and_then(Json::as_f64) {
                     item.fields
                         .insert("restarts".into(), Value::Number(restarts));

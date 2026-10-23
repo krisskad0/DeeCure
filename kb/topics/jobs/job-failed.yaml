@@ -1,0 +1,8 @@
+title: "A scheduled job failed"
+summary: "A job that runs on a timer, such as a backup or a cleanup, did not finish its last run."
+steps:
+  - "Press Fix to run it again now."
+  - "Open Scheduled Jobs › Timers to see when it runs and how its last runs went."
+  - "Open Logs and search for the job's name to see why it failed."
+  - "If it fails every time, check the program it runs, or ask its maker."
+notes: "Failed services that do not run on a schedule are listed under Services instead."

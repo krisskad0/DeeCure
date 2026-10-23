@@ -7,7 +7,8 @@ explain: >
   running now. Restarting it often helps. If it keeps failing, its log
   shows why.
 severity:
-  warning: "item.active == 'failed'"
+  # A service started by a timer is a scheduled job: jobs.job_failed reports it.
+  warning: "item.active == 'failed' and not item.timer"
 fixes:
   - action: services.restart
 learn_more: topics/services/failed-service

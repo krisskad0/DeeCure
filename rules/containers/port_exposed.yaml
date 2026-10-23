@@ -1,0 +1,11 @@
+id: containers.port_exposed
+category: containers
+title: "A container is open to every network"
+explain: >
+  {containers.exposed} running container(s) publish a port on every network
+  address (0.0.0.0), so other computers on the same Wi-Fi or network can reach
+  them. Docker also skips the ufw firewall for these ports. If only this
+  computer needs the service, publish it on 127.0.0.1 instead.
+severity:
+  warning: "containers.exposed >= 1"
+learn_more: topics/containers/port-exposed

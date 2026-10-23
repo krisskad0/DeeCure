@@ -1,0 +1,7 @@
+title: "The package popularity contest"
+summary: "Once a week it sends Ubuntu an anonymous list of your installed packages. It helps Ubuntu decide what to ship."
+steps:
+  - "Keep it on if you want to help Ubuntu; the list holds package names only."
+  - "To turn it off, set PARTICIPATE to no in the file /etc/popularity-contest.conf (it needs your admin password), or remove the popularity-contest package."
+  - "Open Privacy › Settings to see this and other privacy choices."
+notes: "This is only information; it does not change the health score."

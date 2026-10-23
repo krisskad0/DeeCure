@@ -109,6 +109,7 @@ fn unit_failed() {
                     ("name", text("bluetooth.service")),
                     ("description", text("Bluetooth service")),
                     ("active", text("failed")),
+                    ("timer", Value::Bool(false)),
                 ],
             ),
         ],
@@ -270,4 +271,71 @@ fn hardware_network_packages_and_accounts() {
     else {
         panic!("a missing sensor must not clear or open anything");
     };
+}
+
+#[test]
+fn jobs_containers_and_privacy() {
+    let unit = |active: &str, timer: bool| {
+        list(
+            "services",
+            &[(
+                "apt-daily.service",
+                &[
+                    ("name", Value::Text("apt-daily.service".into())),
+                    (
+                        "description",
+                        Value::Text("Daily apt download activities".into()),
+                    ),
+                    ("active", Value::Text(active.into())),
+                    ("timer", Value::Bool(timer)),
+                ],
+            )],
+        )
+    };
+    let job = rule("jobs.job_failed");
+    let service = rule("services.unit_failed");
+    // A failed job is reported once, under Scheduled Jobs, not also under Services.
+    assert_eq!(
+        severity(&evaluate(&job, &unit("failed", true)).unwrap()),
+        [Some(Severity::Warning)]
+    );
+    assert_eq!(
+        severity(&evaluate(&service, &unit("failed", true)).unwrap()),
+        [None]
+    );
+    assert_eq!(
+        severity(&evaluate(&job, &unit("failed", false)).unwrap()),
+        [None]
+    );
+    assert_eq!(
+        severity(&evaluate(&service, &unit("failed", false)).unwrap()),
+        [Some(Severity::Warning)]
+    );
+    assert_eq!(
+        severity(&evaluate(&job, &unit("inactive", true)).unwrap()),
+        [None]
+    );
+
+    assert_eq!(
+        one(
+            "containers.port_exposed",
+            &values(&[("containers.exposed", 0.0)])
+        ),
+        None
+    );
+    assert_eq!(
+        one(
+            "containers.port_exposed",
+            &values(&[("containers.exposed", 2.0)])
+        ),
+        Some(Severity::Warning)
+    );
+    assert_eq!(
+        one("privacy.popcon", &values(&[("privacy.popcon", 0.0)])),
+        None
+    );
+    assert_eq!(
+        one("privacy.popcon", &values(&[("privacy.popcon", 1.0)])),
+        Some(Severity::Info)
+    );
 }

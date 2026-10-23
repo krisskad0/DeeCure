@@ -1,0 +1,13 @@
+id: jobs.job_failed
+category: jobs
+for_each: services
+title: "The scheduled job {item.name} failed"
+explain: >
+  "{item.description}" runs on a schedule, and its last run failed, so what it
+  does (a backup, a cleanup, an update check) did not happen. Running it again
+  often works. If it keeps failing, its log shows why.
+severity:
+  warning: "item.active == 'failed' and item.timer"
+fixes:
+  - action: services.restart
+learn_more: topics/jobs/job-failed

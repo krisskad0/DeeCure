@@ -31,4 +31,4 @@ The table above describes the prototype's sample data. The app works it out from
 
 The sidebar shows a dot only for Warning (yellow) and Critical (red). Overview shows the number of open findings.
 
-Areas with rules (October 2026): System, Hardware, Power, Services, Packages, Storage, Backups, Network, Accounts, Security. Not checked yet: Scheduled Jobs, Containers, Privacy (and the pages with no status of their own).
+Areas with rules (October 2026): all 13 in Overview › Subsystems: System, Hardware, Power, Services, Scheduled Jobs, Packages, Containers, Storage, Backups, Network, Accounts, Security, Privacy.
