@@ -10,6 +10,8 @@ import { Panel } from "../../components/Panel";
 import { GaugeGroup } from "../../components/charts/Gauge";
 import { bytes, pick } from "../../metrics";
 import { useLatest } from "../performance/shared";
+import { ProcessorExpertSections } from "../performance/CpuExpert";
+import { atLeast, useUi } from "../../ui";
 import { NoData } from "../NoData";
 import { GHZ, useHardware } from "./shared";
 
@@ -46,6 +48,7 @@ function rows(p: HardwareInfo["processor"], latest: ReturnType<typeof useLatest>
 }
 
 export function HardwareProcessor() {
+  const { mode } = useUi();
   const { data: hw, error } = useHardware();
   const latest = useLatest();
   if (!hw) {
@@ -86,6 +89,7 @@ export function HardwareProcessor() {
       <Panel title="Cores" subtitle="utilization over the last minute" source="/sys/devices/system/cpu" span={12} flush>
         <DataTable rows={rows(p, latest)} columns={COLUMNS} rowKey={(r) => r.label} pageSize={16} />
       </Panel>
+      {atLeast(mode, "expert") && <ProcessorExpertSections />}
     </>
   );
 }

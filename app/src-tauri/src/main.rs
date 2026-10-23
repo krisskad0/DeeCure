@@ -34,7 +34,12 @@ impl From<ClientError> for AppError {
                 message: e.to_string(),
             },
             // The app is newer than the agent that runs (it was started before an update).
-            ClientError::Agent(ref rpc) if rpc.code == deecure_core::rpc::RpcError::METHOD_NOT_FOUND => AppError {
+            // An older agent also does not know newer inventories.
+            ClientError::Agent(ref rpc)
+                if rpc.code == deecure_core::rpc::RpcError::METHOD_NOT_FOUND
+                    || (rpc.code == deecure_core::rpc::RpcError::INVALID_PARAMS
+                        && rpc.message.starts_with("unknown inventory")) =>
+            AppError {
                 kind: "agent_outdated",
                 message: "The background agent is older than this app, so it cannot answer this yet. Restart the agent to use the new version.".into(),
             },

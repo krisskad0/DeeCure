@@ -2,6 +2,8 @@
 // Power › Battery, Power Profile, and Sleep (docs/03-ui-design/05-pages/07-power.md), with real data.
 // Changing the power mode and the low-battery power-off go through the fix engine.
 
+import { atLeast, useUi } from "../../ui";
+import { CpuSleepStates } from "../performance/CpuExpert";
 import { type SleepEvent, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -152,6 +154,7 @@ const EVENTS: Column<SleepEvent>[] = [
 ];
 
 export function PowerSleep() {
+  const { mode } = useUi();
   const { data: events, error } = useLive(loadSleep, 300_000);
   if (!events) {
     return (
@@ -175,6 +178,7 @@ export function PowerSleep() {
       <Panel title="Sleep events" subtitle="last 30 days" source="journal: systemd-sleep" span={12} flush>
         <DataTable rows={events} columns={EVENTS} rowKey={(e) => String(e.at)} pageSize={12} empty="No sleep in the last 30 days, or the journal cannot be read" />
       </Panel>
+      {atLeast(mode, "expert") && <CpuSleepStates />}
     </>
   );
 }

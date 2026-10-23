@@ -9,6 +9,7 @@ pub(crate) mod backups;
 mod bluetooth;
 pub(crate) mod command;
 mod containers;
+mod cpu_detail;
 mod diagnostics;
 mod display;
 mod firmware;
@@ -47,6 +48,7 @@ pub const KINDS: &[&str] = &[
     "processes",
     "network",
     "gpu",
+    "cpu_detail",
     "os",
     "kernel",
     "update_history",
@@ -97,6 +99,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         ),
         "network" => serde_json::to_value(network::read(&agent.root)),
         "gpu" => serde_json::to_value(gpu::read(&agent.root)),
+        "cpu_detail" => serde_json::to_value(cpu_detail::read(&agent.root)),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),

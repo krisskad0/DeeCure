@@ -140,6 +140,40 @@ export interface NetworkInfo {
   connections: { tcp_established: number; tcp_listening: number; udp: number };
 }
 
+/** Deep processor details (Expert); counters are totals since start. */
+export interface CpuDetail {
+  /** When it was read, ms since 1970: two readings give rates. */
+  at: number;
+  driver?: string;
+  driver_mode?: string;
+  turbo?: boolean;
+  vendor?: string;
+  family?: number;
+  model?: number;
+  stepping?: number;
+  microcode_loaded?: string;
+  microcode_on_disk?: string;
+  package_throttle_count?: number;
+  package_throttle_max_ms?: number;
+  cores: {
+    cpu: number;
+    now_khz?: number;
+    min_khz?: number;
+    max_khz?: number;
+    hardware_max_khz?: number;
+    governor?: string;
+    energy_preference?: string;
+    highest_perf?: number;
+    throttle_count?: number;
+    throttle_max_ms?: number;
+    idle: { name: string; description?: string; latency_us?: number; entries?: number; time_us?: number; disabled: boolean }[];
+  }[];
+  caches: { level: number; kind: string; bytes: number; shared_cpus: string; copies: number }[];
+  power_limits: { zone: string; name: string; watts: number; window_s?: number; enabled?: boolean }[];
+  flaws: { name: string; state: "not_affected" | "mitigated" | "vulnerable" | "unknown"; detail: string }[];
+  interrupts: { irq: string; count: number; device: string }[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -695,6 +729,7 @@ export function getInventory(kind: "system"): Promise<SystemInfo>;
 export function getInventory(kind: "processes"): Promise<Process[]>;
 export function getInventory(kind: "network"): Promise<NetworkInfo>;
 export function getInventory(kind: "gpu"): Promise<Gpu[]>;
+export function getInventory(kind: "cpu_detail"): Promise<CpuDetail>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

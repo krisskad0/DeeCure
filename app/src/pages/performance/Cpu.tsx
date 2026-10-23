@@ -9,7 +9,9 @@ import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { BarChart } from "../../components/charts/BarChart";
 import { pick, pickAll } from "../../metrics";
+import { atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
+import { CpuExpertSections } from "./CpuExpert";
 import { TimeChart, compact, spark, useHistory, useLatest } from "./shared";
 
 const loadSystem = () => getInventory("system");
@@ -25,6 +27,7 @@ const COLUMNS: Column<Process>[] = [
 const ghz = (hz: number) => (hz / 1e9).toFixed(1);
 
 export function PerformanceCpu() {
+  const { mode } = useUi();
   const latest = useLatest();
   const system = useLive<SystemInfo>(loadSystem, 300_000).data;
   const processes = useLive(loadProcesses, 10_000).data;
@@ -76,6 +79,7 @@ export function PerformanceCpu() {
       <Panel title="Top CPU consumers" subtitle="% of one CPU" source="/proc/[pid]/stat" span={6} flush>
         {processes ? <DataTable rows={processes.slice(0, 7)} columns={COLUMNS} rowKey={(p) => String(p.pid)} pageSize={7} /> : <div className="empty muted">Loading…</div>}
       </Panel>
+      {atLeast(mode, "expert") && <CpuExpertSections waitingForDisk={processes?.filter((p) => p.state === "D").map((p) => p.name)} />}
     </>
   );
 }

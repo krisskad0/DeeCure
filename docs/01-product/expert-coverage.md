@@ -7,26 +7,26 @@
 What Expert mode adds, page by page. Every item is read from a named source on this computer. Nothing is estimated unless the row says so.
 
 - **Access:** "You" works with no password. "Admin" needs Full access and goes through the admin helper. "You (own)" reads your own processes without a password; other users' processes need Admin.
-- **Today:** "New" is not read yet. "Partly" is read in part; the row says what is missing.
+- **Today:** "New" is not read yet. "Partly" is read in part; the row says what is missing. "✅ Built" is in the app (Expert level).
 - Sources were checked on a real Ubuntu 24.04 laptop on 2026-10-23. Items that exist only on some hardware say so. When a source is missing, the row shows "Not reported by this computer", never a blank or a guess.
 
 ## 1. Processor (Performance › CPU, Hardware › Processor)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Clock speed of each core now, its minimum and maximum, and whether turbo is on | Shows if the CPU can reach full speed | `/sys/devices/system/cpu/cpu*/cpufreq`, `intel_pstate/no_turbo` or `cpufreq/boost` | You | Partly: one average clock |
-| Speed policy of each core (governor and energy preference) | Explains a slow or hot CPU; the power mode sets it | `scaling_governor`, `energy_performance_preference` | You | New |
-| Heat slowdowns: how many times and how long each core was slowed by heat | Proves heat throttling instead of guessing | `/sys/devices/system/cpu/cpu*/thermal_throttle` (Intel) | You | New |
+| Clock speed of each core now, its minimum and maximum, and whether turbo is on | Shows if the CPU can reach full speed | `/sys/devices/system/cpu/cpu*/cpufreq`, `intel_pstate/no_turbo` or `cpufreq/boost` | You | ✅ Built |
+| Speed policy of each core (governor and energy preference) | Explains a slow or hot CPU; the power mode sets it | `scaling_governor`, `energy_performance_preference` | You | ✅ Built |
+| Heat slowdowns: how many times and how long each core was slowed by heat | Proves heat throttling instead of guessing | `/sys/devices/system/cpu/cpu*/thermal_throttle` (Intel) | You | ✅ Built |
 | CPU sleep and wake-ups | Shown with the battery, where they matter: [7b. Sleep and wake-ups](#7b-sleep-and-wake-ups) | - | - | - |
 | CPU power in watts: whole chip, cores, built-in graphics, memory | Measured power, not a model | `/sys/class/powercap/intel-rapl*` (Intel, and AMD Zen) | Admin | New |
-| Interrupts per device per second | Finds a device that keeps the CPU busy | `/proc/interrupts`, `/proc/softirqs` | You | New |
-| Processes waiting for the disk | High load with low CPU use comes from these | process state `D` in `/proc/<pid>/stat` | You | New |
-| Each known CPU security flaw and whether it is fixed | Real exposure, flaw by flaw | `/sys/devices/system/cpu/vulnerabilities` | You | New |
-| Microcode: version loaded, and whether a newer installed one waits for a restart | Microcode fixes CPU bugs | `/proc/cpuinfo`, `intel-microcode` or `amd64-microcode` package version | You | Partly: version only |
-| Power limits: long-term and short-term watts, and how long the short boost may last | Explains a CPU that is fast for 30 seconds, then slows | `/sys/class/powercap/intel-rapl:*/constraint_*` (readable here without a password) | You | New |
-| Cache sizes per level, and which cores share them | Real facts for comparing CPUs | `/sys/devices/system/cpu/cpu*/cache/index*` | You | New |
-| Preferred cores: which cores the firmware marks as the fastest | The system puts heavy work on them first | `/sys/devices/system/cpu/cpu*/acpi_cppc/highest_perf` | You | New |
-| CPU family, model, and stepping | Exact chip revision, for known bugs and firmware | `/proc/cpuinfo` | You | Partly: model name |
+| Interrupts per device per second | Finds a device that keeps the CPU busy | `/proc/interrupts`, `/proc/softirqs` | You | ✅ Built |
+| Processes waiting for the disk | High load with low CPU use comes from these | process state `D` in `/proc/<pid>/stat` | You | ✅ Built |
+| Each known CPU security flaw and whether it is fixed | Real exposure, flaw by flaw | `/sys/devices/system/cpu/vulnerabilities` | You | ✅ Built |
+| Microcode: version loaded, and whether a newer installed one waits for a restart | Microcode fixes CPU bugs | `/proc/cpuinfo`, `intel-microcode` or `amd64-microcode` package version | You | ✅ Built |
+| Power limits: long-term and short-term watts, and how long the short boost may last | Explains a CPU that is fast for 30 seconds, then slows | `/sys/class/powercap/intel-rapl:*/constraint_*` (readable here without a password) | You | ✅ Built |
+| Cache sizes per level, and which cores share them | Real facts for comparing CPUs | `/sys/devices/system/cpu/cpu*/cache/index*` | You | ✅ Built |
+| Preferred cores: which cores the firmware marks as the fastest | The system puts heavy work on them first | `/sys/devices/system/cpu/cpu*/acpi_cppc/highest_perf` | You | ✅ Built |
+| CPU family, model, and stepping | Exact chip revision, for known bugs and firmware | `/proc/cpuinfo` | You | ✅ Built |
 
 ## 2. Memory (Performance › Memory, Hardware › Memory)
 
@@ -129,7 +129,7 @@ Two different things, shown apart:
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
 | Whole-chip deep sleep: share of time the chip reached each sleep level | The chip, not one core, decides the battery drain; this is the number that matters | Intel `pmc_core` (`/sys/kernel/debug/pmc_core`), package C-state counters | Admin | New |
-| Time each core spends in each sleep state | Shows which cores never rest | `/sys/devices/system/cpu/cpu*/cpuidle/state*` | You | New |
+| Time each core spends in each sleep state | Shows which cores never rest | `/sys/devices/system/cpu/cpu*/cpuidle/state*` | You | ✅ Built |
 | What blocks deep sleep: devices with power saving off, PCIe links with power saving off | The exact reasons, device by device | `/sys/bus/{pci,usb}/devices/*/power/*`, `/sys/bus/pci/devices/*/link/*aspm*` when the kernel exposes it | You | New |
 | Wake-ups per second, per process | Finds the app that keeps waking the CPU | kernel tracing (`sched_wakeup`) through the helper | Admin | New |
 | Interrupts per second, per device | Finds the device that keeps waking the CPU | `/proc/interrupts` | You | New |
