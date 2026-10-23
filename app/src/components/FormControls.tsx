@@ -30,14 +30,14 @@ export function Select<T extends string>(props: { value: T; options: readonly { 
 export function RadioCards<T extends string>(props: {
   name: string;
   value: T;
-  options: readonly { value: T; title: string; description: string }[];
+  options: readonly { value: T; title: string; description: string; disabled?: boolean }[];
   onChange: (value: T) => void;
 }) {
   return (
     <div className="radio-cards" role="radiogroup">
       {props.options.map((o) => (
-        <label key={o.value} className={`radio-card ${o.value === props.value ? "checked" : ""}`}>
-          <input type="radio" name={props.name} value={o.value} checked={o.value === props.value} onChange={() => props.onChange(o.value)} />
+        <label key={o.value} className={`radio-card ${o.value === props.value ? "checked" : ""} ${o.disabled ? "disabled" : ""}`}>
+          <input type="radio" name={props.name} value={o.value} checked={o.value === props.value} disabled={o.disabled} onChange={() => props.onChange(o.value)} />
           <span>
             <span className="rc-title">{o.title}</span>
             <span className="rc-desc">{o.description}</span>

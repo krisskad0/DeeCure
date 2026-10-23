@@ -206,6 +206,7 @@ a.btn { text-decoration: none; }
 .radio-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding: 12px 14px; }
 .radio-card { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; }
 .radio-card.checked { border-color: var(--accent); background: var(--accent-soft); }
+.radio-card.disabled { opacity: .6; cursor: not-allowed; }
 .radio-card input { margin: 2px 0 0; accent-color: var(--accent); }
 .rc-title { display: block; font-weight: 600; }
 .rc-desc { display: block; font-size: 12px; color: var(--muted); }

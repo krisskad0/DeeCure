@@ -5,6 +5,7 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { type AppError, type UnitState, getInventory, getLatest, getSnapshot, getStatus, toAppError } from "../api";
 import { Button } from "../components/Button";
+import { accessOptions, useAccess } from "../access";
 import { RadioCards } from "../components/FormControls";
 import { Icon } from "../components/Icon";
 import { NoData } from "../pages/NoData";
@@ -149,6 +150,7 @@ const PROMISES: [IconName, string][] = [
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
+  const access = useAccess();
   const next = () => setStep((s) => Math.min(3, s + 1));
   let body: ReactNode;
   let title: string;
@@ -171,15 +173,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     title = "How much should DeeCure see?";
     body = (
       <>
-        <RadioCards
-          name="onb-access"
-          value="basic"
-          options={[
-            { value: "basic", title: "Basic", description: "No password · everything your account can read" },
-            { value: "full", title: "Full · coming soon", description: "Approve a small admin helper once · disk health, firewall rules, all users' jobs, and fixes" },
-          ]}
-          onChange={() => undefined}
-        />
+        <RadioCards name="onb-access" value={access.chosen === "full" && access.helper ? "full" : "basic"} options={accessOptions(access.helper)} onChange={access.set} />
         <p className="muted">You can change this later in Settings › Access.</p>
       </>
     );

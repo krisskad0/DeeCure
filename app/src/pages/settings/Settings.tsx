@@ -16,7 +16,7 @@ import { useToast } from "../../shell/Toast";
 import type { Mode, Range } from "../../ui";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
-import { useHelperInstalled } from "../../components/AdminRead";
+import { accessOptions, useAccess } from "../../access";
 
 const loadAgent = () => getInventory("agent");
 const RANGES = [
@@ -79,25 +79,28 @@ export function SettingsGeneral() {
 
 export function SettingsAccess() {
   const toast = useToast();
-  const helper = useHelperInstalled();
+  const access = useAccess();
+  const helper = access.helper;
   return (
     <>
       <Panel title="Access level" span={8}>
         <RadioCards
           name="access"
-          value="basic"
-          options={[
-            { value: "basic", title: "Basic", description: "No password · everything you can read yourself" },
-            { value: "full", title: "Full", description: "Admin helper · disk health, firewall rules, all users' jobs, admin fixes · the password is asked each time" },
-          ]}
-          onChange={(v) => v === "full" && toast(helper ? "Full access is on: admin read-outs and fixes ask for your password when used." : "Full access needs the admin helper: install the deecure package from DeeCure's repository.")}
+          value={access.full ? "full" : "basic"}
+          options={accessOptions(helper)}
+          onChange={(v) => {
+            access.set(v);
+            toast(v === "full" ? "Full access is on: admin read-outs and admin fixes ask for your password each time." : "Basic access: DeeCure will not ask for your password. Admin read-outs and admin fix steps are off.");
+          }}
         />
+        {helper === false && <p className="muted panel-pad">Full access needs the admin helper. It comes with the deecure package installed from DeeCure's repository; a development build does not install it.</p>}
       </Panel>
       <Panel title="Admin helper" span={4} flush>
         <KeyValueList
           rows={[
             ["Service", <code key="s">deecure-helper</code>],
             ["Status", helper === null ? "Checking…" : <StatusBadge key="st" variant={helper ? "ok" : "off"} label={helper ? "Installed" : "Not installed"} />],
+            ["Access level", access.full ? "Full" : "Basic"],
             ["Activation", "D-Bus, on demand; exits after 2 idle minutes"],
             ["Allowed actions", "12 fixed actions and 6 read-outs"],
             ["Approval", "polkit asks for your password for each action"],

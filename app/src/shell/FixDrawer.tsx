@@ -11,6 +11,7 @@ import { Icon } from "../components/Icon";
 import { StatusBadge } from "../components/StatusBadge";
 import { bytes } from "../metrics";
 import { useUi } from "../ui";
+import { useAccess } from "../access";
 import { Drawer } from "./Drawer";
 
 /** Opens the fix drawer from anywhere: `openFix("storage.free_space")`. */
@@ -23,6 +24,8 @@ type Phase = { kind: "loading" } | { kind: "error"; message: string } | { kind: 
 
 export function FixDrawer({ action, subject, onClose, onDone }: { action: string; subject?: string; onClose: () => void; onDone?: () => void }) {
   const { mode } = useUi();
+  const access = useAccess();
+  const isAdmin = (op: string) => !USER_CALLS.includes(op);
   const [plan, setPlan] = useState<FixPlan | null>(null);
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
@@ -50,7 +53,10 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
       // Outside Tauri (tests) there are no events; results arrive at the end.
     }
     try {
-      const { run } = await applyFix(plan, [...chosen]);
+      const { run } = await applyFix(
+        plan,
+        picked.map((s) => s.id),
+      );
       setResults(run.steps);
       // The agent checks again right away; give it a moment, then see if the finding is gone.
       let fixed: boolean | null = null;
@@ -68,9 +74,11 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
     }
   };
 
-  const picked = plan?.steps.filter((s) => chosen.has(s.id)) ?? [];
+  // In Basic access, admin steps cannot be chosen (and are taken out if access changes).
+  const picked = plan?.steps.filter((s) => chosen.has(s.id) && (access.full || !isAdmin(s.call.op))) ?? [];
+  const blocked = plan?.steps.some((s) => isAdmin(s.call.op)) && !access.full;
   const total = picked.reduce((sum, s) => sum + (s.size ?? 0), 0);
-  const admin = picked.some((s) => !USER_CALLS.includes(s.call.op));
+  const admin = picked.some((s) => isAdmin(s.call.op));
   const running = phase.kind === "running";
   const result = (id: string) => results.find((r) => r.id === id);
 
@@ -82,7 +90,7 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
       onClose={() => !running && onClose()}
       actions={
         phase.kind === "preview" && plan && plan.steps.length > 0 ? (
-          <Button variant="primary" disabled={chosen.size === 0} onClick={() => void apply()}>
+          <Button variant="primary" disabled={picked.length === 0} onClick={() => void apply()}>
             {total ? `Apply · frees ${bytes(total)}` : "Apply"}
           </Button>
         ) : phase.kind === "done" || phase.kind === "error" ? (
@@ -93,11 +101,19 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
       {phase.kind === "loading" && <p className="muted">Working out what this fix would do…</p>}
       {phase.kind === "error" && <AlertBanner tone="crit" title="The fix could not run" text={phase.message} />}
       {plan && plan.steps.length === 0 && phase.kind === "preview" && <p className="muted">Nothing to do right now: there is nothing this fix could change.</p>}
+      {blocked && phase.kind === "preview" && (
+        <AlertBanner
+          tone="info"
+          title="Some steps need Full access"
+          text={access.helper ? "Steps marked Admin are off in Basic access. Turn on Full access in Settings › Access to use them; your password is asked each time." : "Steps marked Admin need the DeeCure admin helper, which is not installed. The other steps work."}
+        />
+      )}
       {plan && plan.steps.length > 0 && phase.kind !== "loading" && (
         <ul className="fix-steps">
           {plan.steps.map((s) => {
             const r = result(s.id);
-            const on = chosen.has(s.id);
+            const locked = isAdmin(s.call.op) && !access.full;
+            const on = chosen.has(s.id) && !locked;
             return (
               <li key={s.id} className={on ? "" : "off"}>
                 {phase.kind === "preview" ? (
@@ -105,6 +121,7 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
                     type="checkbox"
                     aria-label={s.title}
                     checked={on}
+                    disabled={locked}
                     onChange={() => {
                       const next = new Set(chosen);
                       if (on) next.delete(s.id);

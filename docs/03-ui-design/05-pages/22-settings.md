@@ -30,6 +30,8 @@ What is built (Phase 3): **Tray icon** (off by default). When on, closing the wi
 
 Radio group name: `access`.
 
+What is built: the choice is saved in the app (`access` preference, default Basic) and is the same one as in onboarding. **Basic:** DeeCure never asks for the password; admin read-outs say how to turn on Full, and admin fix steps are locked (other steps still run). **Full:** admin read-outs and admin steps can be used, and polkit asks for the password each time. Full can be picked only when the admin helper is installed; otherwise its card is greyed out and says why.
+
 2. **Key-value list** — "Admin helper" · span 4
 
 | Key | Value |

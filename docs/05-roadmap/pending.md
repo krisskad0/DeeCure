@@ -19,8 +19,6 @@ The owner's view (2026-10-23): the app is not ready as a first version; too much
 
 | Where | Problem |
 | --- | --- |
-| Onboarding › access step | Says "Full · coming soon", but the admin helper exists. The choice does nothing (always Basic). |
-| Settings › Access | The Basic / Full choice is fixed to Basic and only shows a toast. |
 | Settings › Data | "Delete history" says "Later". "Keep history for" is fixed text; the spec has a choice (90 days / 1 year / 2 years). |
 | Settings › General | The spec's "Refresh interval" and "Temperature unit" are missing. |
 | Settings › Assistant, Assistant page | Placeholders until Phase 4. |
