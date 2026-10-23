@@ -72,6 +72,9 @@ flowchart TB
 
 - `deecure-agent.socket` starts the agent the first time the app or CLI connects.
 - `deecure-agent.service` runs the agent. The "Start at login" setting enables it, so data is collected in the background.
+- Right after install, the package starts the socket for everyone signed in (and restarts the agent after an upgrade), so nobody has to log out first ([Debian package](../06-packaging/debian-package.md)).
+- If the socket is still missing, the app and `deecure` start it themselves (`systemctl --user daemon-reload`, then `start deecure-agent.socket`), at most once a minute, then wait up to 5 s and try again. Only for the default socket path.
+- The first history import waits until the first check is done, so the first health score comes fast.
 
 **How the helper starts:** D-Bus activation. The D-Bus service file points to a systemd system unit, `deecure-helper.service`, so the helper can use systemd sandboxing options.
 

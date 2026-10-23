@@ -18,7 +18,7 @@
 | 7. First 20 fixes | Built: 22. Tested: unit tests, and the helper path end to end in a container with real D-Bus and polkit. Still to do: apply → verify → undo of each fix in a full VM. |
 | 8. Undo screens | ✅ Done. Activity › DeeCure Actions and Backups › Restore Points list every run with Undo; `deecure history` and `deecure undo`. |
 | 9. Security review | Needs two human reviewers. The [review checklist](../02-architecture/security-model.md#helper-review-checklist) is met by the code and its tests. |
-| 10. Distribution | ✅ Built and tested, not published: install script, signed APT repository builder, release workflow on `v*` tags, `SHA256SUMS`, draft GitHub Releases, version bump script. To go live: create the signing key and add it as the `APT_SIGNING_KEY` secret, turn on GitHub Pages for `gh-pages`, then push a tag. |
+| 10. Distribution | ✅ Published: pre-releases `v0.1.0-alpha.2` and `v0.1.0-alpha.3` on GitHub Releases, with `SHA256SUMS`, SBOM, and signed provenance. One-command install from GitHub Releases, tested on clean 24.04 and 26.04 (`make clean-install-test`). The signed APT repository is built and tested but not online: it needs the signing key as the `APT_SIGNING_KEY` secret and GitHub Pages for `gh-pages` (decision #12). |
 | 11. User docs | ✅ Done. [Install, update, and uninstall](../07-user-guide/install.md). |
 | 12. Open decisions | Need the owner: contact emails (#11), the signing key owner (#12), the final app ID (#6), supported systems (#9), and health score points (#15). |
 

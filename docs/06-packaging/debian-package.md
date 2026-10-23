@@ -50,7 +50,10 @@ The Debian files live in `packaging/debian/`. `scripts/build-deb.sh` copies the 
 | `deecure.manpages`, `deecure-desktop.manpages` | Install the man pages from `packaging/man/` |
 | `deecure.lintian-overrides`, `deecure-desktop.lintian-overrides` | `initial-upload-closes-no-bugs`: only applies to uploads to the Debian archive |
 
-Planned later: `deecure.postinst`/`postrm` and a debconf question (offer to add the APT repository), and `tests/control` for `autopkgtest`.
+| `deecure.postinst` | After install: starts the agent socket for everyone signed in now, so the app works at once (debhelper only enables it for future logins). After an upgrade it also stops the old agent, so the socket starts the new one. Uses `systemctl --user --machine=<user>@` with a 15 s limit per person, skips system accounts, and can never make the install fail. |
+| `deecure.prerm` | On removal (not upgrade): stops the agent and its socket for everyone signed in, so nothing runs from deleted files |
+
+Planned later: a debconf question (offer to add the APT repository), and `tests/control` for `autopkgtest`.
 
 ## Decisions in the package
 

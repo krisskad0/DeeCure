@@ -70,7 +70,12 @@ The `Makefile` gives short names to the real commands:
 | `make deb-test` | Installs, uses, and purges the packages in a clean Ubuntu container (needs Docker) |
 | `make helper-test` | Tests the root helper with real D-Bus and polkit in a container (needs Docker) |
 | `make install-test` | Tests `install.sh` against a signed throwaway APT repository in a container (needs Docker) |
+| `make clean-install-test` | The real one-command install from the newest GitHub release on clean Ubuntu 24.04 (curl) and 26.04 (wget), then update and uninstall (needs Docker and internet) |
 | `make help` | Lists all commands |
+
+**Long tests take minutes** (`make deb`, the container tests, `make perf`). Run them in a second terminal or in the background. Build `make deb` once; each container test target builds it again first. Never rebuild while a container test is running.
+
+**GitHub from the terminal:** with `gh auth login` done, `gh run list`, `gh run view --log-failed`, and `gh release view` show CI and releases.
 
 **Never test write paths on your own computer.** Fixes, the helper, and package installs are tested in containers or fixtures only. Reading the system (running the agent) is fine.
 

@@ -11,7 +11,7 @@
 
 > **In one sentence:** DeeCure tells you *what is wrong with your Linux PC, why, and how to fix it*, the way a good friend who knows Linux would.
 
-> **Status:** in active development. The first pre-release, [v0.1.0-alpha.2](https://github.com/krisskad0/DeeCure/releases), is out for testing. The agent, the desktop app, the command line, history, notifications, and safe fixes are built and tested (Phases 0-3). See the [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
+> **Status:** in active development. The newest pre-release, [v0.1.0-alpha.3](https://github.com/krisskad0/DeeCure/releases), is out for testing. The agent, the desktop app, the command line, history, notifications, and safe fixes are built and tested (Phases 0-3). See the [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
 
 ## Install with one command
 
