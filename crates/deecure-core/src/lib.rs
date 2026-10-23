@@ -14,6 +14,7 @@ mod finding;
 pub mod fix;
 pub mod health;
 mod id;
+pub mod local;
 mod metric;
 pub mod rpc;
 mod severity;

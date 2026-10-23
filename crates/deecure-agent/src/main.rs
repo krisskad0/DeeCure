@@ -17,7 +17,7 @@ use std::time::Duration;
 use deecure_agent::collect::{self, SystemRoot};
 use deecure_agent::context::{Agent, Facts};
 use deecure_agent::store::{self, SharedStore, Store};
-use deecure_agent::{kb, rules, server, socket};
+use deecure_agent::{history, kb, rules, server, socket};
 use deecure_core::rpc::default_socket_path;
 use deecure_core::{Metric, Timestamp, Unit, VERSION, health};
 use tokio::signal::unix::{SignalKind, signal};
@@ -153,6 +153,7 @@ async fn run(
     };
 
     let agent = Agent::new(store.clone(), SystemRoot::real());
+    tokio::spawn(history::run(store.clone(), SystemRoot::real()));
     tokio::spawn(collect::run(
         store.clone(),
         SystemRoot::real(),

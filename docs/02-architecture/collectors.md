@@ -88,6 +88,34 @@ Safety rules for live reads:
 
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.
 
+## History events
+
+The code is in `crates/deecure-agent/src/history/`. A separate task reads these sources at start and then every 5 minutes, and saves what is new in the `event` table ([Storage › Events](storage.md#events)). Each event has a key, so reading a source twice stores nothing twice. A failing source is logged once and skipped; the others still run.
+
+| Source | Reads | Events | Notes |
+| --- | --- | --- | --- |
+| apt | `/var/log/apt/history.log`, plus the newest rotated copy (`.1` or `.1.gz`) | One per package installed, upgraded, downgraded, removed, or purged, with versions and who started the run | Read only when a log's inode, size, or time changed. A run with no `End-Date` (power loss) counts as one hour long. |
+| dpkg | `/var/log/dpkg.log` and its newest rotated copy | Packages changed with `dpkg -i` or `dpkg -r`, outside every apt run | apt runs are already counted. A purge right after a remove is one change. |
+| snap, Flatpak | `snap list` (only when `/run/snapd.socket` exists), `flatpak list --app` | Apps installed, updated, or removed since the last list | The first list is only remembered. A failing command changes nothing, so it never looks like every app was removed. |
+| Journal | `journalctl --grep` for USB plug lines, segfaults, out-of-memory kills, core dumps, and `Failed with result` | Devices connected and disconnected, crashes, memory kills, failed services | Grouped per hour ("crashed 14 times"). Each read starts at the hour of the last one, so counts are complete. The first read goes back 30 days, at most 20,000 entries. |
+| Boots | `journalctl --list-boots` (at start, then every 6 hours) | Each start, "Started with a new kernel X (was Y)", and unclean shutdowns | |
+| Config files | `/etc`, `~/.config/autostart`, `~/.config/systemd/user`, `crontab -l` | Files added, changed (with a diff for small text files), or removed | See below. |
+| Fixes | The `fix_record` and `fix_undone` calls | Fixes applied and undone, with the run number for undo | Fixes from before history existed are added once at start. |
+
+### Config files
+
+- **No inotify.** Watching all of `/etc` would use hundreds of the watches that editors and IDEs need. Instead, every 5 minutes the folders are listed and each file's time and size are compared with the last scan (about 3,600 entries, a few milliseconds). This also finds changes made while the agent was not running.
+- Only files that look different are read. A file whose content is the same (only touched) gives no event.
+- Text files up to 64 KB are kept (`watched_file`), so the next change shows a diff of up to 8 KB. Bigger or binary files are compared by a fingerprint (FNV-1a) up to 8 MB, and by time and size above that. Files the user cannot read are compared by time and size.
+- **The first scan** only remembers, except files changed in the last 30 days, which are shown as changes without a diff.
+- **When:** the file's own time when it is newer than the last scan. Package managers keep the package's old file times, so then the folder's time is used, and if that is old too, the scan time.
+- **Who:** "apt" (or "unattended-upgrades", "Software Updater") when it happened during an apt run, "DeeCure" during a fix, otherwise the file's owner.
+- **Removed** only when the folder could be listed (or is gone too). A folder that becomes unreadable does not make its files look removed. A scan that hits 20,000 entries reports no removals.
+- **Limits:** changes to one file on one day are one event that counts them. At most 200 events per scan; the rest become one "N more configuration files changed" event.
+- **Left out:** `/etc/ssl/certs`, `/etc/ld.so.cache`, `/etc/apparmor.d/cache`, `/etc/mtab`, `/etc/.pwd.lock`, and CUPS files that change on every print job.
+
+On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 days and kept 2,908 files (3.6 MB).
+
 ## Metric names
 
 | Name | Subject | Unit | Meaning |

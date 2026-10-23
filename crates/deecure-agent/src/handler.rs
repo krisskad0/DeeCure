@@ -106,7 +106,13 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
             Err(e) => Err(e),
         },
         method::FIX_RECORD => params::<FixRecordParams>(&request).and_then(|p| {
-            let id = store().add_fix_run(&p.run).map_err(store_failed)?;
+            let store = store();
+            let id = store.add_fix_run(&p.run).map_err(store_failed)?;
+            let mut run = p.run.clone();
+            run.id = id;
+            let (key, event) = crate::history::fix_event(&run, None);
+            store.add_event(&key, &event).map_err(store_failed)?;
+            drop(store);
             // Check again now, so the app can show whether the problem is gone.
             agent.recheck.notify_one();
             to_result(&id)
@@ -114,7 +120,8 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
         method::FIX_RUNS => no_params(&request)
             .and_then(|()| to_result(&store().fix_runs(200).map_err(store_failed)?)),
         method::FIX_UNDONE => params::<FixUndoneParams>(&request).and_then(|p| {
-            let changed = store()
+            let store = store();
+            let changed = store
                 .set_fix_status(p.id, deecure_core::fix::RunStatus::Undone)
                 .map_err(store_failed)?;
             if !changed {
@@ -123,6 +130,14 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
                     format!("no fix run {}", p.id),
                 ));
             }
+            if let Some(run) = store.fix_run(p.id).map_err(store_failed)? {
+                let (key, event) = crate::history::fix_event(&run, Some(Timestamp::now()));
+                store.add_event(&key, &event).map_err(store_failed)?;
+                // The applied event no longer offers an undo.
+                let (key, event) = crate::history::fix_event(&run, None);
+                store.put_event(&key, &event).map_err(store_failed)?;
+            }
+            drop(store);
             agent.recheck.notify_one();
             to_result(&true)
         }),

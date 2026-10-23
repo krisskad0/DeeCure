@@ -418,6 +418,8 @@ pub async fn read_crashes(root: &SystemRoot) -> Vec<Crash> {
 /// One boot.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Boot {
+    /// The journal's boot ID.
+    pub id: String,
     pub started: i64,
     /// Last journal entry of that boot.
     pub ended: i64,
@@ -501,6 +503,7 @@ pub async fn read_boots() -> Vec<Boot> {
             }
         };
         out.push(Boot {
+            id: id.to_owned(),
             started: first / 1000,
             ended: last / 1000,
             shutdown,

@@ -22,6 +22,7 @@ authors = ["DeeCure contributors"]
 clap = { version = "4.6", features = ["derive"] }
 deecure-fix = { path = "crates/deecure-fix" }
 deecure-core = { path = "crates/deecure-core" }
+jiff = { version = "0.2.38", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde-saphyr = "1.3"

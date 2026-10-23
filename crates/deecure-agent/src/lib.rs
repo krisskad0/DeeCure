@@ -8,6 +8,7 @@ pub mod collect;
 pub mod context;
 pub mod fixes;
 pub mod handler;
+pub mod history;
 pub mod inventory;
 pub mod kb;
 pub mod rules;

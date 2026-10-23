@@ -5,6 +5,7 @@
 //! Tables, units, and how long data is kept: `docs/02-architecture/storage.md`.
 
 mod error;
+mod files;
 mod findings;
 mod fixes;
 mod metrics;
@@ -24,6 +25,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 pub use error::StoreError;
+pub use files::WatchedFile;
 pub use retention::RetentionReport;
 
 /// A short name for results in this module.
