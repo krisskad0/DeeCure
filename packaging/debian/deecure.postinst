@@ -1,0 +1,38 @@
+#!/bin/sh
+# Starts the agent for everyone who is signed in now, so the app works at once instead
+# of after the next login, and runs the new agent right away after an upgrade.
+# debhelper only enables the user units for future logins; this fills the gap.
+# Nothing here can make the install fail.
+set -e
+
+#DEBHELPER#
+
+# Runs "systemctl --user $*" in the user manager of every person signed in now.
+for_each_user() {
+  [ -d /run/systemd/system ] || return 0
+  command -v systemctl >/dev/null 2>&1 || return 0
+  for dir in /run/user/[0-9]*; do
+    [ -d "$dir" ] || continue
+    uid="${dir##*/}"
+    # People only: system accounts are below 1000 (the units skip them too).
+    [ "$uid" -ge 1000 ] 2>/dev/null || continue
+    [ -S "$dir/systemd/private" ] || continue
+    user="$(getent passwd "$uid" | cut -d: -f1)" || continue
+    [ -n "$user" ] || continue
+    timeout 15 systemctl --user --machine="$user@" "$@" >/dev/null 2>&1 || true
+  done
+}
+
+case "$1" in
+  configure)
+    for_each_user daemon-reload
+    # An upgrade ($2 is the old version): stop the old agent; the socket starts the new
+    # one on the next request, and the app reconnects by itself.
+    if [ -n "${2:-}" ]; then
+      for_each_user try-restart deecure-agent.service
+    fi
+    for_each_user start deecure-agent.socket
+    ;;
+esac
+
+exit 0

@@ -1,0 +1,28 @@
+#!/bin/sh
+# On removal (not on upgrade), stops the agent of everyone signed in, so nothing keeps
+# running from files that are about to be deleted. Nothing here can stop the removal.
+set -e
+
+for_each_user() {
+  [ -d /run/systemd/system ] || return 0
+  command -v systemctl >/dev/null 2>&1 || return 0
+  for dir in /run/user/[0-9]*; do
+    [ -d "$dir" ] || continue
+    uid="${dir##*/}"
+    [ "$uid" -ge 1000 ] 2>/dev/null || continue
+    [ -S "$dir/systemd/private" ] || continue
+    user="$(getent passwd "$uid" | cut -d: -f1)" || continue
+    [ -n "$user" ] || continue
+    timeout 15 systemctl --user --machine="$user@" "$@" >/dev/null 2>&1 || true
+  done
+}
+
+case "$1" in
+  remove)
+    for_each_user stop deecure-agent.service deecure-agent.socket
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

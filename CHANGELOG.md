@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- Right after installing, the app said the agent was unreachable until the next login: the package only enabled the agent for future logins. It now starts the agent for everyone signed in (and restarts it after an upgrade, and stops it on removal), and the app and `deecure` start it themselves if it is still not running.
+
+### Added
+
+- `make clean-install-test`: the real one-command install from GitHub on clean Ubuntu 24.04 (curl) and 26.04 (wget) containers, run again to update, then uninstall.
+
 ## [0.1.0-alpha.2] - 2026-10-23
 
 First published pre-release, for testing (0.1.0-alpha.1 did not finish building). Install it with one command: see the [install guide](docs/07-user-guide/install.md).

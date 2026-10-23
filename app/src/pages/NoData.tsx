@@ -10,9 +10,9 @@ export function NoData({ error, waiting }: { error: AppError | null; waiting: st
     return (
       <div className="empty">
         <StatusBadge variant="off" label="Agent not running" />
-        <p>DeeCure's background agent is not running, so there is nothing to show yet.</p>
-        <p>Start it with:</p>
-        <Command>systemctl --user start deecure-agent.socket</Command>
+        <p>DeeCure's background agent is not running, so there is nothing to show yet. DeeCure tried to start it; if this stays, start it with:</p>
+        <Command>systemctl --user daemon-reload && systemctl --user start deecure-agent.socket</Command>
+        <p>Signing out and in again also starts it.</p>
         <p>Working from a source checkout? Run:</p>
         <Command>make agent</Command>
       </div>

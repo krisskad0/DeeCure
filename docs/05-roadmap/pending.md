@@ -37,9 +37,10 @@ These download hundreds of MB, so they wait until the main connection works. All
 
 | Check | Command | State |
 | --- | --- | --- |
-| Install, use, and purge both packages | `make deb-test` | Agent part passed on 2026-10-23. The desktop part was stopped while it downloaded its libraries (slow network). Run it again: the desktop app now uses the tray library (`libayatana-appindicator3-1`, a Recommends). |
-| Admin helper with real D-Bus and polkit | `make helper-test` | Not run since Phase 3. Run it once. |
-| Install script against a signed test repository, and from a GitHub Release | `make install-test` | Not run since the GitHub-release mode was added. Run it once. |
+| Install, use, and purge both packages | `make deb-test` | ✅ Passed on 2026-10-23 |
+| Admin helper with real D-Bus and polkit | `make helper-test` | ✅ Passed on 2026-10-23 |
+| Install script against a signed test repository, and from a GitHub Release | `make install-test` | ✅ Passed on 2026-10-23 |
+| Real one-command install from GitHub on clean 24.04 (curl) and 26.04 (wget) | `make clean-install-test` | ✅ Passed on 2026-10-23 (containers). Still to do: once on a real desktop with someone signed in, to see the agent start at once (the fix for "agent unreachable" right after installing). |
 | CI on GitHub | `gh run list` (gh is logged in as `krisskad0`) | Green on 2026-10-23 (CI, CodeQL, Dependencies, Scorecard). Check the newest push after each change; poll at most once a minute. |
 
 ## 2b. Releases

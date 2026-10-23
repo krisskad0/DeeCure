@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status app web perf db-size deb deb-test helper-test install-test clean
+.PHONY: help build test lint fmt agent status app web perf db-size deb deb-test helper-test install-test clean-install-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -49,6 +49,10 @@ helper-test: deb ## Test the admin helper with real D-Bus and polkit in a clean 
 
 install-test: deb ## Build a signed APT repository and test install.sh against it in a clean container (needs Docker)
 	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash -c '/src/scripts/test-install.sh --throwaway /src/target/deb/deecure_*.deb /src/target/deb/deecure-desktop_*.deb'
+
+clean-install-test: ## The real one-command install from GitHub on clean Ubuntu 24.04 (curl) and 26.04 (wget) containers (needs Docker)
+	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash /src/scripts/test-clean-install.sh --throwaway curl
+	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:26.04 bash /src/scripts/test-clean-install.sh --throwaway wget
 
 clean: ## Remove build output
 	$(CARGO) clean

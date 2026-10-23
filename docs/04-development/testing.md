@@ -23,6 +23,7 @@
 | Install, use, purge in a clean container | `make deb-test` | Every push | ✅ |
 | Root helper with real D-Bus and polkit | `make helper-test` | Every push | ✅ |
 | Install script against a signed test repository | `make install-test` | Before a release | ✅ |
+| The real one-command install from GitHub, on clean Ubuntu 24.04 (curl) and 26.04 (wget) | `make clean-install-test` | After each release | ✅ Passed with v0.1.0-alpha.2 on 2026-10-23 |
 | Desktop notifications | A fake notification server on a private session bus (`dbus-run-session`), never the real desktop | By hand | ✅ |
 | Dependency checks | `cargo-deny` (known vulnerabilities, licenses, sources; `deny.toml`) and `npm audit` | Every push, pull request, and weekly | ✅ |
 | Code scanning | CodeQL for Rust, TypeScript, and the workflows | Every push, pull request, and weekly | ✅ |

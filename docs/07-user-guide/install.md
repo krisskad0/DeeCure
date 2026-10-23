@@ -124,6 +124,6 @@ Your history stays in your home folder. To delete it too: `rm -rf ~/.local/share
 | --- | --- |
 | `apt update` shows a key error | Run Option 3's first two commands again to refresh the key. |
 | DeeCure is not in the app menu | Install `deecure-desktop`, then log out and back in. |
-| "Agent not running" in the app | Run `systemctl --user start deecure-agent.socket` |
+| "Agent not running" in the app | It starts by itself right after the install (and the app starts it if needed). If it stays: `systemctl --user daemon-reload && systemctl --user start deecure-agent.socket`, or sign out and in again |
 | "Requires Full access" | The admin helper is part of the `deecure` package; if Settings › Access says "Not installed", reinstall `deecure`. |
 | Something else | Open an issue on GitHub with the output of `deecure --version` and `lsb_release -a`. |
