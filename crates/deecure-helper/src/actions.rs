@@ -475,3 +475,220 @@ mod tests {
         assert_eq!(action, None);
     }
 }
+
+/// Randomized tests: thousands of random and hostile inputs (shell characters, option
+/// tricks such as `--root=/`, very long and non-ASCII text) against every check, with a
+/// fake system that says yes to everything, so only the input checks stand in the way.
+/// No extra dependencies: a small fixed-seed generator makes every run the same.
+#[cfg(test)]
+mod randomized {
+    use super::*;
+
+    struct Rng(u64);
+    impl Rng {
+        fn next(&mut self) -> u64 {
+            // xorshift64
+            self.0 ^= self.0 << 13;
+            self.0 ^= self.0 >> 7;
+            self.0 ^= self.0 << 17;
+            self.0
+        }
+        fn below(&mut self, n: u64) -> u64 {
+            self.next() % n
+        }
+        /// A string built from pieces that often break programs.
+        fn hostile(&mut self) -> String {
+            const PIECES: &[&str] = &[
+                "a", "z", "0", "9", "-", "--", ".", "..", "/", "@", ":", "_", "+", " ", "\t", "\n",
+                ";", "|", "&", "$", "`", "$(id)", "'", "\"", "\\", "*", "?", "<", ">", "\0", "é",
+                "ß", "日", "\u{202e}", "service", ".service", "linux", "6.8.0", "-41", "-generic",
+                "--root=/", "-rf", "x1", "nvme0n1", "sda", "mmcblk0", "A", "Z",
+            ];
+            let parts = self.below(12);
+            let mut s = String::new();
+            for _ in 0..parts {
+                s.push_str(PIECES[self.below(PIECES.len() as u64) as usize]);
+            }
+            if self.below(50) == 0 {
+                s = s.repeat(40); // very long
+            }
+            // Half the time: a valid name, unchanged or with one hostile piece inserted,
+            // so the tests hit the edge between accepted and refused.
+            if self.below(2) == 0 {
+                const VALID: &[&str] = &[
+                    "cups.service",
+                    "dbus.service",
+                    "htop",
+                    "libc6",
+                    "g++",
+                    "firefox",
+                    "core22",
+                    "4793",
+                    "6.8.0-41-generic",
+                    "6.8.0-45-lowlatency",
+                ];
+                let mut base = VALID[self.below(VALID.len() as u64) as usize].to_owned();
+                if self.below(2) == 0 {
+                    let at = (self.below(base.len() as u64 + 1)) as usize;
+                    if base.is_char_boundary(at) {
+                        base.insert_str(at, &s);
+                    }
+                }
+                return base;
+            }
+            s
+        }
+    }
+
+    /// A fake system that confirms whatever it is asked about.
+    struct Yes {
+        snap: (String, String),
+        kernels: Vec<String>,
+    }
+    impl Probe for Yes {
+        fn unit_loaded(&self, _: &str) -> bool {
+            true
+        }
+        fn package_state(&self, name: &str) -> Option<String> {
+            Some(if name.len().is_multiple_of(2) { "ii" } else { "rc" }.into())
+        }
+        fn disabled_snaps(&self) -> Vec<(String, String)> {
+            vec![self.snap.clone()]
+        }
+        fn running_kernel(&self) -> String {
+            "6.8.0-99-generic".into()
+        }
+        fn installed_kernels(&self) -> Vec<String> {
+            self.kernels.clone()
+        }
+        fn has(&self, _: &str) -> bool {
+            true
+        }
+    }
+
+    /// Characters an accepted input may contain: nothing a shell or an option parser
+    /// could misread.
+    fn safe(s: &str) -> bool {
+        !s.is_empty()
+            && !s.starts_with('-')
+            && s.chars()
+                .all(|c| c.is_ascii_alphanumeric() || "@._:+-".contains(c))
+    }
+
+    #[test]
+    fn accepted_inputs_contain_only_safe_characters() {
+        let mut rng = Rng(0x00de_ec0e_5eed);
+        for _ in 0..50_000 {
+            let s = rng.hostile();
+            for (name, ok) in [
+                ("unit", is_unit(&s)),
+                ("package", is_package(&s)),
+                ("snap", is_snap(&s)),
+                ("kernel", is_kernel(&s)),
+                ("disk", crate::reads::is_disk(&s)),
+            ] {
+                if ok {
+                    assert!(safe(&s), "{name} check accepted {s:?}");
+                    assert!(s.len() <= 200, "{name} check accepted {} bytes", s.len());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn hostile_input_never_becomes_an_option_or_a_shell_character() {
+        let mut rng = Rng(0x0bad_c0de_1234);
+        let mut built_from_input = 0;
+        for round in 0..20_000 {
+            let a = rng.hostile();
+            let b = rng.hostile();
+            let list: Vec<String> = (0..rng.below(4)).map(|_| rng.hostile()).collect();
+            let sys = Yes {
+                snap: (a.clone(), b.clone()),
+                kernels: list.clone(),
+            };
+            // Each call, with the inputs it really uses.
+            let (call, used): (Call, Vec<String>) = match round % 8 {
+                0 => (
+                    Call::RemoveSnapRevision {
+                        name: a.clone(),
+                        revision: b.clone(),
+                    },
+                    vec![a.clone(), b.clone()],
+                ),
+                1 => (
+                    Call::PurgeResidual {
+                        packages: list.clone(),
+                    },
+                    list.clone(),
+                ),
+                2 => (
+                    Call::UpgradePackages {
+                        packages: list.clone(),
+                    },
+                    list.clone(),
+                ),
+                3 => (Call::RestartService { unit: a.clone() }, vec![a.clone()]),
+                4 => (
+                    Call::SetServiceEnabled {
+                        unit: a.clone(),
+                        enabled: round % 3 == 0,
+                    },
+                    vec![a.clone()],
+                ),
+                5 => (
+                    Call::RemoveKernels {
+                        versions: list.clone(),
+                    },
+                    list.clone(),
+                ),
+                6 => (
+                    Call::SetBatteryAction {
+                        action: a.clone(),
+                        percent: rng.below(40) as u32,
+                    },
+                    vec![a.clone()],
+                ),
+                _ => (
+                    Call::VacuumJournal {
+                        keep_mb: rng.below(20_000) as u32,
+                    },
+                    vec![],
+                ),
+            };
+            // It may refuse, but it must never panic.
+            let Ok(commands) = prepare(&call, &sys) else {
+                continue;
+            };
+            if !used.is_empty() {
+                built_from_input += 1;
+            }
+            for c in &commands {
+                assert!(
+                    c.program.starts_with("/usr/"),
+                    "{round}: program {}",
+                    c.program
+                );
+                for arg in &c.args {
+                    assert!(
+                        !arg.contains('\0') && !arg.chars().any(char::is_whitespace),
+                        "{round}: {arg:?}"
+                    );
+                    // An argument that is one of this call's inputs passed the strict checks.
+                    if used.iter().any(|input| input == arg) {
+                        assert!(
+                            safe(arg),
+                            "{round}: input {arg:?} reached {} unchecked",
+                            c.program
+                        );
+                    }
+                }
+            }
+        }
+        // The generator must also make inputs that pass, or the test proves nothing.
+        assert!(
+            built_from_input > 100,
+            "only {built_from_input} calls with input were accepted"
+        );
+    }
+}

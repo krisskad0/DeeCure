@@ -24,7 +24,11 @@
 | Root helper with real D-Bus and polkit | `make helper-test` | Every push | ✅ |
 | Install script against a signed test repository | `make install-test` | Before a release | ✅ |
 | Desktop notifications | A fake notification server on a private session bus (`dbus-run-session`), never the real desktop | By hand | ✅ |
-| Dependency checks | `cargo-deny`, `cargo-audit`, `npm audit` | Every push | Planned |
+| Dependency checks | `cargo-deny` (known vulnerabilities, licenses, sources; `deny.toml`) and `npm audit` | Every push, pull request, and weekly | ✅ |
+| Code scanning | CodeQL for Rust, TypeScript, and the workflows | Every push, pull request, and weekly | ✅ |
+| Security practices | OpenSSF Scorecard | Every push to `main` and weekly | ✅ |
+| Randomized input tests of the root helper | 50,000 hostile inputs against every input check, and 20,000 calls with a system that says yes to everything (`cargo test`) | Every push | ✅ |
+| Fuzzing with coverage | `cargo-fuzz` on the helper's input checks | Nightly | Planned |
 | End-to-end UI tests | WebDriver with `tauri-driver` | Before release | Planned |
 | `piuparts`, `autopkgtest` | Package install → upgrade → purge leaves nothing; smoke tests | Release builds | Planned |
 | VM matrix and fix safety | Ubuntu 24.04 and 26.04 VMs: each fix passes apply → verify → undo | Before every release | Pending ([Pending work](../05-roadmap/pending.md)) |

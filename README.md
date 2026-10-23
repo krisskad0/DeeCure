@@ -5,6 +5,7 @@
 ![Platform: Ubuntu 24.04 | 26.04](https://img.shields.io/badge/platform-Ubuntu%2024.04%20%7C%2026.04-E95420)
 ![Status: in development](https://img.shields.io/badge/status-in%20development-yellow)
 [![Release](https://img.shields.io/github/v/release/krisskad0/DeeCure?include_prereleases&label=pre-release)](https://github.com/krisskad0/DeeCure/releases)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/krisskad0/DeeCure/badge)](https://securityscorecards.dev/viewer/?uri=github.com/krisskad0/DeeCure)
 
 **DeeCure is a free, open-source "doctor" for your Linux computer.** It checks your whole PC (hardware, Ubuntu, apps, services, storage, network, and security), explains every problem in plain English, and fixes it safely with a preview and an undo button. Everything stays on your computer.
 
@@ -83,7 +84,8 @@ DeeCure is built like system software, not like a script collection:
 - **Safe by design:** read-only by default; the root helper has a fixed list of actions, strict input checks, no shell, systemd sandboxing, and an audit log. No fix runs without a preview.
 - **Honest data:** a value DeeCure cannot read is shown as unknown, never guessed. Rules never act on stale or missing data.
 - **No surprises:** DeeCure never starts a service by asking it something, never uses up your editor's file watchers (config changes are found by comparing scans), and never sends data anywhere.
-- **Well tested:** about 270 Rust tests and 120 UI tests, replays of real machines' `/proc` and `/sys`, container tests of the `.deb` packages, and an end-to-end test of the root helper with real D-Bus and polkit.
+- **Supply-chain safety:** releases carry signed build provenance and an SBOM, CI actions are pinned to exact commits, dependencies are checked for vulnerabilities and licenses, and code is scanned with CodeQL ([SECURITY.md](SECURITY.md)).
+- **Well tested:** about 270 Rust tests and 120 UI tests, randomized tests that throw hostile input at the root helper's checks, replays of real machines' `/proc` and `/sys`, container tests of the `.deb` packages, and an end-to-end test of the root helper with real D-Bus and polkit.
 
 ## Use cases
 

@@ -1,0 +1,52 @@
+# cargo-deny: checks every Rust dependency for known security problems, licenses we
+# accept, and where it comes from. Runs in CI (.github/workflows/dependencies.yml).
+# Docs: https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+# The systems DeeCure ships for (amd64 now, arm64 next).
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
+
+[advisories]
+version = 2
+# Known vulnerabilities and unsound code always fail. A yanked crate fails too.
+yanked = "deny"
+# "Unmaintained" warnings only for crates we use directly; deep dependencies of Tauri
+# are its maintainers' to replace.
+unmaintained = "workspace"
+# Every ignored advisory needs an id and a reason, reviewed when Tauri updates:
+ignore = []
+
+[licenses]
+version = 2
+# Licenses that fit an Apache-2.0 project shipped as a binary package. Checked against
+# all 347 crates in Cargo.lock on 2026-10-23.
+allow = [
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "MIT",
+  "MIT-0",
+  "BSD-3-Clause",
+  "ISC",
+  "Zlib",
+  "0BSD",
+  "CC0-1.0",
+  "Unlicense",
+  "Unicode-3.0",
+  # Weak, file-level copyleft (used by parts of Tauri's HTML parser); fine to ship
+  # unchanged alongside Apache-2.0 code.
+  "MPL-2.0",
+]
+confidence-threshold = 0.9
+
+[bans]
+# Two versions of one crate happen in big dependency trees; warn, do not fail.
+multiple-versions = "warn"
+# Version "*" is never allowed for crates from crates.io; our own path crates are fine.
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+# Only crates.io. No other registries, no git dependencies.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

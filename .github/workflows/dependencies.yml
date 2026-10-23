@@ -1,0 +1,51 @@
+# Dependency safety: known vulnerabilities, licenses, and sources of every Rust crate
+# (cargo-deny with deny.toml), and known vulnerabilities in the app's npm packages.
+# Runs on changes, and every Monday, because new advisories appear for old versions.
+name: Dependencies
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deps-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Rust crates (cargo-deny)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check advisories licenses bans sources
+
+  npm:
+    name: npm packages (npm audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      # Only packages that ship in the app; build tools run on our machines, not users'.
+      - name: Known vulnerabilities in shipped packages
+        run: npm audit --omit=dev --audit-level=high
+      - name: All packages, for information
+        run: npm audit --audit-level=critical || true

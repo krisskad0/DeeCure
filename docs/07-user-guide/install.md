@@ -51,6 +51,8 @@ Then open **DeeCure** from the app menu, or run `deecure status` in the Terminal
 
 Options go after `sh`, for example `… | sudo sh -s -- --server`.
 
+**Check where a package came from (optional):** every release file has signed build provenance. With the GitHub command (`sudo apt install gh`), `gh attestation verify deecure_<version>_amd64.deb --repo krisskad0/DeeCure` confirms it was built by DeeCure's release workflow from the tagged source.
+
 ## Option 2: download the files
 
 1. From the [Releases page](https://github.com/krisskad0/DeeCure/releases), download `deecure_<version>_amd64.deb` and `deecure-desktop_<version>_amd64.deb`.

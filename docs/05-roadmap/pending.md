@@ -44,6 +44,19 @@ These download hundreds of MB, so they wait until the main connection works. All
 
 Done on 2026-10-23 through the GitHub API (as `krisskad0`): the 5 rulesets are active, squash merge only, branches deleted after merge, Discussions on, wiki off, Actions approval for all outside contributors, read-only default workflow permissions, private vulnerability reporting, Dependabot alerts and security updates, secret scanning with push protection, and the 27 labels. Still the owner's choice later: change the admin bypass on `main` to "pull requests only" when contributors arrive ([Repository settings](../08-contributing/06-repository-settings.md)).
 
+## 2d. Security practices still open
+
+Done on 2026-10-23: actions pinned to commits, least-privilege release workflow, signed build provenance and SBOM for releases, cargo-deny and npm audit, CodeQL, OpenSSF Scorecard, randomized tests of the helper's input checks.
+
+| Open item | Needs |
+| --- | --- |
+| Contact emails in `SECURITY.md` and `CODE_OF_CONDUCT.md` (still "TODO") | Owner (decision #11) |
+| Signed commits and tags | The owner's SSH or GPG signing key (`git config commit.gpgsign true`, `git tag -s`) |
+| A second maintainer, so two-person review of the helper can really happen | People |
+| OpenSSF Best Practices badge | Owner registers at bestpractices.dev |
+| Coverage-guided fuzzing (`cargo-fuzz`, nightly CI job) | Developer time and a fast connection |
+| Make **Dependencies** and **CodeQL** required checks, once they have been green for a few weeks | Owner (ruleset) |
+
 ## 3. Phase 2 items that need people, machines, or the owner
 
 → [Phase 2](phase-2-fix-safely.md)

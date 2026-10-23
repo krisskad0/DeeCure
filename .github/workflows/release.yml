@@ -1,7 +1,13 @@
 # Builds and publishes a release when a version tag (v0.2.0, v0.2.0-rc.1) is pushed.
-# Nothing here runs on normal pushes. Publishing the APT repository needs the
-# APT_SIGNING_KEY secret (an armored signing subkey); without it, only the draft
-# GitHub Release is made.
+# Nothing here runs on normal pushes.
+#
+# Two jobs, least privilege:
+# - build: read-only. Builds and tests the packages, makes checksums and an SBOM (the
+#   list of every component inside), and hands them to the next job.
+# - publish: the only job that can write. It signs build provenance for every file
+#   (Sigstore, so anyone can check a file came from this workflow and this commit),
+#   creates the GitHub Release, and, when the APT_SIGNING_KEY secret exists, updates
+#   the APT repository on GitHub Pages.
 name: Release
 
 on:
@@ -9,19 +15,23 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
   APT_OPTIONS: -o Acquire::Retries=3 -o Acquire::http::Timeout=30
 
 jobs:
-  release:
-    name: Build, test, and publish
+  build:
+    name: Build and test
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: The tag matches the version in Cargo.toml
         run: |
@@ -32,9 +42,9 @@ jobs:
         run: |
           sudo apt-get $APT_OPTIONS update
           sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
-            build-essential libsqlite3-dev libwebkit2gtk-4.1-dev debhelper devscripts lintian pkgconf reprepro gnupg
+            build-essential libsqlite3-dev libwebkit2gtk-4.1-dev debhelper devscripts lintian pkgconf
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -61,7 +71,55 @@ jobs:
           for f in target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb; do
             cp "$f" "dist/$(basename "$f" | tr '~' '.')"
           done
-          cd dist && sha256sum ./*.deb | sed 's| \./| |' > SHA256SUMS && cat SHA256SUMS
+          cp packaging/install.sh dist/
+          cd dist && sha256sum ./*.deb ./install.sh | sed 's| \./| |' > SHA256SUMS && cat SHA256SUMS
+
+      - name: SBOM (every Rust and npm component, with versions and licenses)
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: .
+          format: spdx-json
+          output-file: dist/deecure-sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-files
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Sign and publish
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write      # create the release, push the APT repository
+      id-token: write      # sign provenance with Sigstore (no long-lived key)
+      attestations: write  # store the signed provenance on GitHub
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-files
+          path: dist
+
+      - name: Sign build provenance for every file
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: |
+            dist/*.deb
+            dist/install.sh
+            dist/SHA256SUMS
+
+      - name: Sign the SBOM for the packages
+        uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2.4.0
+        with:
+          subject-path: dist/*.deb
+          sbom-path: dist/deecure-sbom.spdx.json
 
       - name: GitHub Release (pre-releases published, stable drafted)
         env:
@@ -73,20 +131,22 @@ jobs:
           mode="--draft"
           case "$GITHUB_REF_NAME" in *-*) mode="--prerelease" ;; esac
           gh release create "$GITHUB_REF_NAME" $mode --title "DeeCure ${GITHUB_REF_NAME#v}" \
-            --notes "See CHANGELOG.md for what changed." \
-            dist/deecure_*.deb dist/deecure-desktop_*.deb dist/SHA256SUMS packaging/install.sh
+            --notes "See CHANGELOG.md for what changed. Check a file: gh attestation verify <file> --repo $GITHUB_REPOSITORY" \
+            dist/deecure_*.deb dist/deecure-desktop_*.deb dist/SHA256SUMS dist/install.sh dist/deecure-sbom.spdx.json
 
       - name: Publish to the APT repository (GitHub Pages)
         env:
           APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
         if: env.APT_SIGNING_KEY != ''
         run: |
+          sudo apt-get $APT_OPTIONS update
+          sudo apt-get $APT_OPTIONS install -y --no-install-recommends reprepro gnupg
           echo "$APT_SIGNING_KEY" | gpg --batch --import
           component=main
           case "$GITHUB_REF_NAME" in *-*) component=beta ;; esac
           git fetch origin gh-pages || true
           git worktree add site origin/gh-pages 2>/dev/null || { git worktree add --orphan -b gh-pages site; }
-          scripts/build-apt-repo.sh site noble "$component" target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb
+          scripts/build-apt-repo.sh site noble "$component" dist/deecure_*.deb dist/deecure-desktop_*.deb
           cd site
           git add -A
           git -c user.name="DeeCure release" -c user.email="krisskad0@users.noreply.github.com" commit -m "APT repository: $GITHUB_REF_NAME ($component)"

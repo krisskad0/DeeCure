@@ -29,6 +29,8 @@ A pull request can merge only when all of these are green ([.github/workflows](.
 
 The branch must also be up to date with `main` before merging (GitHub shows **Update branch**).
 
+Also run on every pull request, and read by reviewers (not yet required, because a new advisory for an old dependency can appear on any day): **Dependencies** (`cargo-deny`, `npm audit`) and **CodeQL**. A new finding in code the pull request touches must be fixed before merging.
+
 ## Review
 
 - At least **one approval** from a maintainer, and from the **code owner** of every area the pull request touches ([.github/CODEOWNERS](../../.github/CODEOWNERS)).
