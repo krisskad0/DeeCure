@@ -15,6 +15,10 @@ Durations are rough estimates for a team of 2–3 engineers.
 
 **Launch the public beta after Phase 2.** Before that, the app can show problems but cannot fix them, and "safe fixes" is the main promise.
 
+## Pending work
+
+**Continuing the work? Read [pending.md](pending.md) first.** It lists everything not done yet: the next phase, heavy checks to run, items that need people or the owner, and the owner's working rules.
+
 ## Phase files
 
 Build in this order. Each file lists the goal, the tasks in order, the specs to read, and a "Done when" check.
