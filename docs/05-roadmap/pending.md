@@ -4,7 +4,16 @@
 
 Everything that is not done yet, in one place. **Read this first when you continue the work.** When an item is done, delete it here and note it in the phase's Progress table and in `CHANGELOG.md`.
 
-Last updated: 2026-10-23, after Phase 3.
+Last updated: 2026-10-23, after Phase 3 and the first pre-release.
+
+## Recommended order
+
+1. **First version complete** (owner and developer, no internet needed): the owner reviews every page and names what looks empty or "dummy"; fix each one (1a). Real-desktop checks: a test notification, the tray switch (5).
+2. **Heavy checks** with a fast connection: `make deb-test`, `make helper-test`, `make install-test`, and one real install on clean Ubuntu 24.04 and 26.04 (2, 2b).
+3. **Owner decisions** before a stable release: contact emails (#11), app ID (#6), signing key (#12, also turns on the APT repository and signed commits and tags), supported systems (#9), health points (#15); optional: domain, Launchpad, trademark, Best Practices badge (2d, 4).
+4. **People and machines:** the 22 fixes in real VMs, 5-10 beginner testers, a second maintainer and a full helper security review (3, 5).
+5. **Public beta:** fix the findings, release `v0.1.0-beta.1`, then `v0.1.0`; when contributors arrive, admin bypass to "pull requests only" and CodeQL and Dependencies as required checks (2c, 2d).
+6. **Next features, on the owner's word:** Phase 4 (assistant), "optimize everything", Phase 5, coverage-guided fuzzing (1, 2d).
 
 ## 1. Next step: wait for the owner
 
@@ -31,7 +40,7 @@ These download hundreds of MB, so they wait until the main connection works. All
 | Install, use, and purge both packages | `make deb-test` | Agent part passed on 2026-10-23. The desktop part was stopped while it downloaded its libraries (slow network). Run it again: the desktop app now uses the tray library (`libayatana-appindicator3-1`, a Recommends). |
 | Admin helper with real D-Bus and polkit | `make helper-test` | Not run since Phase 3. Run it once. |
 | Install script against a signed test repository, and from a GitHub Release | `make install-test` | Not run since the GitHub-release mode was added. Run it once. |
-| CI on GitHub | The Actions page of the repository | Check that the run for the newest push is green (all 4 jobs, including the new `make db-size` step). Poll the GitHub API at most once a minute. |
+| CI on GitHub | `gh run list` (gh is logged in as `krisskad0`) | Green on 2026-10-23 (CI, CodeQL, Dependencies, Scorecard). Check the newest push after each change; poll at most once a minute. |
 
 ## 2b. Releases
 
