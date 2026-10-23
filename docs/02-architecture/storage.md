@@ -5,11 +5,15 @@
 | Table | Holds |
 | --- | --- |
 | `snapshot` | Inventory at a point in time (apps, services, users, jobs, ports, hardware) |
-| `metric` | Time series (CPU, RAM, temperature, disk, battery) |
-| `event` | Things that happened (install, update, crash, OOM, login fail, device plugged) |
+| `series` | One row per metric name and subject, with its unit |
+| `metric` | Time series points (CPU, RAM, temperature, disk, battery), by series number |
+| `event` | Things that happened (install, update, crash, OOM, device plugged, config changed, fix) |
 | `finding` | Current problems and warnings from rules, with severity and status |
 | `fix_run` | Each fix applied: steps, commands, result, undo data |
 | `setting` | User settings |
+| `watched_file` | What each watched config file looked like last time, to show what changed |
+| `notification` | Desktop notifications sent, so the same alert never repeats within 24 hours |
+| `report` | Weekly summaries |
 
 **Retention:** 1-minute data is kept 7 days, 15-minute averages 90 days, and daily averages 2 years. The target database size is under 200 MB.
 
@@ -27,7 +31,9 @@ The code is in `crates/deecure-agent/src/store/`.
 
 ### How metrics are stored
 
+- Each metric name and subject (such as `disk.used_percent` for `/`) is one row in `series`. A point stores only the series number, the resolution, the time, the average, and the sample count: about 44 bytes on disk.
 - Readings in the same minute are averaged into one point. The `samples` column counts the readings, so later averages stay correct.
+- Container network links (`veth…`) are not recorded: each container gets a new one, and their traffic is already counted on the bridge.
 - The cleanup job runs when the agent starts and then every hour:
 
 | Data | Kept as is for | Then |
@@ -35,10 +41,38 @@ The code is in `crates/deecure-agent/src/store/`.
 | 1-minute points | 7 days | Rolled up into 15-minute averages |
 | 15-minute points | 90 days | Rolled up into daily averages |
 | Daily points | 2 years | Deleted |
-| Events | 2 years | Deleted |
-| Snapshots | 90 days | Deleted, except the newest of each kind |
+| A series with no points left | — | Deleted (it comes back with the next reading) |
+| Events | 2 years, and never more than 200,000 | Deleted, oldest first |
+| Weekly reports | 2 years | Deleted |
+| Snapshots | 1 day as is, then the newest of each hour; after 7 days the newest of each day | Deleted after 90 days, except the newest of each kind |
+| Sent notifications | 90 days | Deleted |
 | Findings that are no longer open | 90 days | Deleted |
-| Open findings, settings | Always | — |
+| Open findings, settings, fix runs, watched files | Always | — |
 
-The retention times for events, snapshots, and closed findings were chosen during Phase 0 to keep the database under 200 MB. Change them in `store/retention.rs`, and update this table.
+Change these times in `store/retention.rs`, and update this table.
+
+### Size after 2 years
+
+`make db-size` (also in CI) builds what 2 years leave behind on a big machine and measures the file. It writes in the agent's order (every series at each step), so pages fill like on a real computer. The last 7 days go through the real write path, then the real cleanup runs.
+
+| Simulated | Size |
+| --- | --- |
+| 150 metric series (16 cores, 30 sensors, 6 network interfaces, 3 disks, 3 filesystems), 29,200 events with details, 515 services snapshots of 32 KB, 2,000 config file copies, 270 notifications, 104 weekly reports | **124 MB** (budget 200 MB) |
+
+Each metric series costs about 0.85 MB at the end of 2 years (10,080 minute points, 8,640 quarter-hour points, 730 daily points). Before schema version 2, names were stored in every point and the same data took about 250 MB.
+
+### Events
+
+Every event has a `key`. Reading the same log twice finds the same keys, so nothing is stored twice, even after a restart. Events that grow, such as "crashed 3 times this hour", replace the stored row with the same key.
+
+`data` holds details that depend on the kind:
+
+| Kind | `data` fields |
+| --- | --- |
+| `package_installed`, `package_upgraded`, `package_removed` | `action` (install, upgrade, downgrade, remove, purge, reinstall), `from`, `to`, `format` (deb, snap, flatpak), `run` (the apt run's start, to group a run) |
+| `config_changed` | `change` (added, changed, removed), `diff` (for small text files), `added`, `removed` (line counts) |
+| `device_added`, `device_removed` | `bus`, `id` (`vendor:product`), `count` |
+| `crash`, `out_of_memory_kill`, `service_failed` | `signal` or `result`, `count` (in that hour) |
+| `boot`, `unclean_shutdown` | `boot_id`, `kernel` |
+| `fix_applied`, `fix_undone` | `run_id`, `status`, `undoable` |
 

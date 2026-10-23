@@ -91,6 +91,9 @@ jobs:
       - name: Check the agent against the budget
         run: make perf
 
+      - name: Check that 2 years of history stay under 200 MB
+        run: make db-size
+
   package:
     name: Build and test the .deb
     runs-on: ubuntu-24.04

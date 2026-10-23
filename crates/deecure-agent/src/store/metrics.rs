@@ -3,7 +3,7 @@
 //! Time series: CPU, memory, temperature, disk, battery.
 
 use deecure_core::{Metric, Timestamp, Unit};
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, OptionalExtension, params};
 
 use super::{Result, Store, from_text, subject_from_db, subject_to_db, to_text};
 
@@ -19,22 +19,50 @@ pub(super) fn floor_to(ms: i64, step: i64) -> i64 {
     ms.div_euclid(step) * step
 }
 
+/// The series number for `name` and `subject`, created on first use. A changed unit is
+/// saved, so the newest reading decides the unit.
+fn series_id(conn: &Connection, name: &str, subject: &str, unit: &str) -> Result<i64> {
+    let found = conn
+        .prepare_cached("SELECT id, unit FROM series WHERE name = ?1 AND subject = ?2")?
+        .query_row(params![name, subject], |row| {
+            Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?))
+        })
+        .optional()?;
+    match found {
+        Some((id, stored)) => {
+            if stored != unit {
+                conn.prepare_cached("UPDATE series SET unit = ?1 WHERE id = ?2")?
+                    .execute(params![unit, id])?;
+            }
+            Ok(id)
+        }
+        None => {
+            conn.prepare_cached("INSERT INTO series (name, subject, unit) VALUES (?1, ?2, ?3)")?
+                .execute(params![name, subject, unit])?;
+            Ok(conn.last_insert_rowid())
+        }
+    }
+}
+
 fn insert_metric(conn: &Connection, metric: &Metric) -> Result<()> {
-    conn.execute(
-        "INSERT INTO metric (name, subject, resolution, at, value, samples, unit)
-         VALUES (?1, ?2, 60, ?3, ?4, 1, ?5)
-         ON CONFLICT (name, subject, resolution, at) DO UPDATE SET
-             value = (value * samples + excluded.value) / (samples + 1),
-             samples = samples + 1,
-             unit = excluded.unit",
-        params![
-            metric.name,
-            subject_to_db(metric.subject.as_deref()),
-            floor_to(metric.at.as_millis(), MINUTE_MS),
-            metric.value,
-            to_text(&metric.unit)?,
-        ],
+    let series = series_id(
+        conn,
+        &metric.name,
+        subject_to_db(metric.subject.as_deref()),
+        &to_text(&metric.unit)?,
     )?;
+    conn.prepare_cached(
+        "INSERT INTO metric (series, resolution, at, value, samples)
+         VALUES (?1, 60, ?2, ?3, 1)
+         ON CONFLICT (series, resolution, at) DO UPDATE SET
+             value = (value * samples + excluded.value) / (samples + 1),
+             samples = samples + 1",
+    )?
+    .execute(params![
+        series,
+        floor_to(metric.at.as_millis(), MINUTE_MS),
+        metric.value,
+    ])?;
     Ok(())
 }
 
@@ -57,11 +85,12 @@ impl Store {
     /// The newest 1-minute point of every metric and subject that has one from `since` on.
     pub fn latest_metrics(&self, since: Timestamp) -> Result<Vec<Metric>> {
         let mut stmt = self.conn.prepare_cached(
-            "SELECT name, subject, at, value, unit FROM metric AS m
-             WHERE resolution = 60 AND at >= ?1
-               AND at = (SELECT max(at) FROM metric
-                         WHERE name = m.name AND subject = m.subject AND resolution = 60)
-             ORDER BY name, subject",
+            "SELECT s.name, s.subject, m.at, m.value, s.unit
+             FROM series AS s JOIN metric AS m
+               ON m.series = s.id AND m.resolution = 60
+              AND m.at = (SELECT max(at) FROM metric WHERE series = s.id AND resolution = 60)
+             WHERE m.at >= ?1
+             ORDER BY s.name, s.subject",
         )?;
         let rows = stmt.query_map(params![since.as_millis()], |row| {
             Ok((
@@ -96,34 +125,35 @@ impl Store {
         since: Timestamp,
         until: Timestamp,
     ) -> Result<Vec<Metric>> {
+        let subject_db = subject_to_db(subject);
+        let Some((series, unit)) = self
+            .conn
+            .prepare_cached("SELECT id, unit FROM series WHERE name = ?1 AND subject = ?2")?
+            .query_row(params![name, subject_db], |row| {
+                Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?))
+            })
+            .optional()?
+        else {
+            return Ok(Vec::new());
+        };
+        let unit = from_text::<Unit>(unit)?;
+        // Naming each resolution lets SQLite use the primary key for all three ranges.
         let mut stmt = self.conn.prepare_cached(
-            "SELECT subject, at, value, unit FROM metric
-             WHERE name = ?1 AND subject = ?2 AND at BETWEEN ?3 AND ?4
+            "SELECT at, value FROM metric
+             WHERE series = ?1 AND resolution IN (60, 900, 86400) AND at BETWEEN ?2 AND ?3
              ORDER BY at",
         )?;
         let rows = stmt.query_map(
-            params![
-                name,
-                subject_to_db(subject),
-                since.as_millis(),
-                until.as_millis()
-            ],
-            |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, i64>(1)?,
-                    row.get::<_, f64>(2)?,
-                    row.get::<_, String>(3)?,
-                ))
-            },
+            params![series, since.as_millis(), until.as_millis()],
+            |row| Ok((row.get::<_, i64>(0)?, row.get::<_, f64>(1)?)),
         )?;
         rows.map(|row| {
-            let (subject, at, value, unit) = row?;
+            let (at, value) = row?;
             Ok(Metric {
                 name: name.to_owned(),
-                subject: subject_from_db(subject),
+                subject: subject.map(str::to_owned),
                 value,
-                unit: from_text::<Unit>(unit)?,
+                unit,
                 at: Timestamp(at),
             })
         })

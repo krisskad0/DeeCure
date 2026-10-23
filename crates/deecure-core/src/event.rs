@@ -24,6 +24,9 @@ pub enum EventKind {
     DeviceRemoved,
     /// The computer started.
     Boot,
+    /// The computer stopped without an orderly shutdown: power loss, a freeze, or a
+    /// forced power-off.
+    UncleanShutdown,
     /// A service failed.
     ServiceFailed,
     /// A program crashed.
@@ -39,8 +42,11 @@ pub enum EventKind {
 }
 
 /// Something that happened at one moment.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Event {
+    /// The stored event's number; `None` before it is saved.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<i64>,
     /// What kind of thing happened.
     pub kind: EventKind,
     /// When it happened.
@@ -55,6 +61,10 @@ pub struct Event {
     pub subject: Option<String>,
     /// Where DeeCure learned about it, such as `dpkg`, `journal`, or `udev`.
     pub source: String,
+    /// Details that depend on the kind, such as package versions or a file's diff
+    /// (`docs/02-architecture/storage.md#events`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub data: Option<serde_json::Value>,
 }
 
 #[cfg(test)]
@@ -65,6 +75,8 @@ mod tests {
     #[test]
     fn json_shape_is_stable() {
         let event = Event {
+            id: None,
+            data: None,
             kind: EventKind::OutOfMemoryKill,
             at: Timestamp(7),
             title: "Chrome was stopped: memory ran out".into(),

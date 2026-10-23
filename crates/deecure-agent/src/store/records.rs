@@ -10,52 +10,107 @@ use serde::de::DeserializeOwned;
 use super::{Result, Store, from_text, to_text};
 
 impl Store {
-    /// Records something that happened.
-    pub fn add_event(&self, event: &Event) -> Result<()> {
-        self.conn.execute(
-            "INSERT INTO event (kind, at, title, detail, subject, source)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-            params![
+    /// Records something that happened, once: an event whose `key` is already stored is
+    /// left as it is. Returns `true` if it was new.
+    pub fn add_event(&self, key: &str, event: &Event) -> Result<bool> {
+        Ok(self
+            .conn
+            .prepare_cached(
+                "INSERT INTO event (key, kind, at, title, detail, subject, source, data)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                 ON CONFLICT (key) DO NOTHING",
+            )?
+            .execute(params![
+                key,
                 to_text(&event.kind)?,
                 event.at.as_millis(),
                 event.title,
                 event.detail,
                 event.subject,
                 event.source,
-            ],
-        )?;
+                event.data.as_ref().map(serde_json::to_string).transpose()?,
+            ])?
+            == 1)
+    }
+
+    /// Records an event, or replaces the stored one with the same `key` (keeping its
+    /// number). For events that grow, such as "crashed 3 times this hour".
+    pub fn put_event(&self, key: &str, event: &Event) -> Result<()> {
+        self.conn
+            .prepare_cached(
+                "INSERT INTO event (key, kind, at, title, detail, subject, source, data)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                 ON CONFLICT (key) DO UPDATE SET
+                     kind = excluded.kind, at = excluded.at, title = excluded.title,
+                     detail = excluded.detail, subject = excluded.subject,
+                     source = excluded.source, data = excluded.data",
+            )?
+            .execute(params![
+                key,
+                to_text(&event.kind)?,
+                event.at.as_millis(),
+                event.title,
+                event.detail,
+                event.subject,
+                event.source,
+                event.data.as_ref().map(serde_json::to_string).transpose()?,
+            ])?;
         Ok(())
     }
 
-    /// Events from `since` onward, newest first, at most `limit` of them.
-    pub fn events_since(&self, since: Timestamp, limit: usize) -> Result<Vec<Event>> {
+    /// Events from `since` to `until` (both included), newest first, at most `limit`.
+    /// With `kinds`, only those kinds.
+    pub fn events(
+        &self,
+        since: Timestamp,
+        until: Timestamp,
+        kinds: &[EventKind],
+        limit: usize,
+    ) -> Result<Vec<Event>> {
+        let kinds = kinds.iter().map(to_text).collect::<Result<Vec<_>>>()?;
+        // A JSON list keeps the statement fixed, so it can be cached.
+        let kinds = (!kinds.is_empty()).then(|| serde_json::Value::from(kinds).to_string());
         let mut stmt = self.conn.prepare_cached(
-            "SELECT kind, at, title, detail, subject, source FROM event
-             WHERE at >= ?1 ORDER BY at DESC, id DESC LIMIT ?2",
+            "SELECT id, kind, at, title, detail, subject, source, data FROM event
+             WHERE at BETWEEN ?1 AND ?2
+               AND (?3 IS NULL OR kind IN (SELECT value FROM json_each(?3)))
+             ORDER BY at DESC, id DESC LIMIT ?4",
         )?;
         let limit = i64::try_from(limit).unwrap_or(i64::MAX);
-        let rows = stmt.query_map(params![since.as_millis(), limit], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, i64>(1)?,
-                row.get::<_, String>(2)?,
-                row.get::<_, Option<String>>(3)?,
-                row.get::<_, Option<String>>(4)?,
-                row.get::<_, String>(5)?,
-            ))
-        })?;
+        let rows = stmt.query_map(
+            params![since.as_millis(), until.as_millis(), kinds, limit],
+            |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, i64>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, Option<String>>(4)?,
+                    row.get::<_, Option<String>>(5)?,
+                    row.get::<_, String>(6)?,
+                    row.get::<_, Option<String>>(7)?,
+                ))
+            },
+        )?;
         rows.map(|row| {
-            let (kind, at, title, detail, subject, source) = row?;
+            let (id, kind, at, title, detail, subject, source, data) = row?;
             Ok(Event {
+                id: Some(id),
                 kind: from_text::<EventKind>(kind)?,
                 at: Timestamp(at),
                 title,
                 detail,
                 subject,
                 source,
+                data: data.map(|d| serde_json::from_str(&d)).transpose()?,
             })
         })
         .collect()
+    }
+
+    /// Events from `since` onward, newest first, at most `limit` of them.
+    pub fn events_since(&self, since: Timestamp, limit: usize) -> Result<Vec<Event>> {
+        self.events(since, Timestamp(i64::MAX), &[], limit)
     }
 
     /// Stores an inventory.
@@ -136,6 +191,8 @@ mod tests {
 
     fn event(at: i64, title: &str) -> Event {
         Event {
+            id: None,
+            data: None,
             kind: EventKind::PackageUpgraded,
             at: Timestamp(at),
             title: title.into(),
@@ -149,7 +206,7 @@ mod tests {
     fn events_come_back_newest_first_from_since() {
         let store = Store::open_in_memory().unwrap();
         for (at, title) in [(10, "a"), (30, "c"), (20, "b")] {
-            store.add_event(&event(at, title)).unwrap();
+            assert!(store.add_event(title, &event(at, title)).unwrap());
         }
         let titles: Vec<_> = store
             .events_since(Timestamp(15), 10)
@@ -158,10 +215,52 @@ mod tests {
             .map(|e| e.title)
             .collect();
         assert_eq!(titles, ["c", "b"]);
+        let newest = &store.events_since(Timestamp(0), 1).unwrap()[0];
+        assert_eq!(newest.id, Some(2));
+        assert_eq!(newest.title, "c");
+    }
+
+    #[test]
+    fn an_event_seen_twice_is_stored_once() {
+        let store = Store::open_in_memory().unwrap();
+        assert!(store.add_event("k", &event(1, "first")).unwrap());
+        assert!(!store.add_event("k", &event(1, "again")).unwrap());
+        let all = store.events_since(Timestamp(0), 10).unwrap();
+        assert_eq!(all.len(), 1);
+        assert_eq!(all[0].title, "first");
+    }
+
+    #[test]
+    fn put_event_replaces_and_keeps_the_number() {
+        let store = Store::open_in_memory().unwrap();
+        store.put_event("crash", &event(1, "crashed once")).unwrap();
+        let mut grown = event(5, "crashed 3 times");
+        grown.data = Some(json!({"count": 3}));
+        store.put_event("crash", &grown).unwrap();
+        let all = store.events_since(Timestamp(0), 10).unwrap();
+        assert_eq!(all.len(), 1);
         assert_eq!(
-            store.events_since(Timestamp(0), 1).unwrap()[0],
-            event(30, "c")
+            (all[0].id, all[0].at, all[0].title.as_str()),
+            (Some(1), Timestamp(5), "crashed 3 times")
         );
+        assert_eq!(all[0].data, Some(json!({"count": 3})));
+    }
+
+    #[test]
+    fn events_filter_by_time_and_kind() {
+        let store = Store::open_in_memory().unwrap();
+        store.add_event("a", &event(10, "upgrade")).unwrap();
+        let mut boot = event(20, "boot");
+        boot.kind = EventKind::Boot;
+        store.add_event("b", &boot).unwrap();
+        store.add_event("c", &event(30, "later")).unwrap();
+        let only_boots = store
+            .events(Timestamp(0), Timestamp(100), &[EventKind::Boot], 10)
+            .unwrap();
+        assert_eq!(only_boots.len(), 1);
+        assert_eq!(only_boots[0].title, "boot");
+        let window = store.events(Timestamp(10), Timestamp(20), &[], 10).unwrap();
+        assert_eq!(window.len(), 2);
     }
 
     #[test]

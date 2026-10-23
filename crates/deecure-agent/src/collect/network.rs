@@ -44,7 +44,9 @@ pub fn listening_on_all(tcp: &str) -> usize {
         .count()
 }
 
-/// Receive and send rates, in total and per interface. The loopback interface is left out.
+/// Receive and send rates, in total and per interface. The loopback interface is left out,
+/// and so are container links (`veth…`): each container gets a new one, and their traffic
+/// is already counted on the bridge, so keeping them would only fill the history.
 /// Also whether the ufw firewall is on, and how many ports listen on every network.
 #[derive(Debug, Default)]
 pub struct Network {
@@ -58,7 +60,7 @@ impl Collector for Network {
 
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
         let mut counters = parse_net_dev(&root.read("/proc/net/dev")?);
-        counters.remove("lo");
+        counters.retain(|name, _| name != "lo" && !name.starts_with("veth"));
         let at = Instant::now();
         let mut sample = Sample::default();
         if let Some((before, old)) = self.previous.replace((at, counters.clone())) {

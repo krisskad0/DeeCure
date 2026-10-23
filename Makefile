@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status app web perf deb deb-test helper-test install-test clean
+.PHONY: help build test lint fmt agent status app web perf db-size deb deb-test helper-test install-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -34,6 +34,9 @@ web: ## Test, type-check, and build the web UI
 
 perf: ## Check the agent against the performance budget (takes about 80 s)
 	scripts/perf-check.sh
+
+db-size: ## Check that 2 years of history stay under 200 MB (takes about 1 min)
+	$(CARGO) test --release --locked -p deecure-agent --lib two_years -- --ignored --nocapture
 
 deb: ## Build the .deb package into target/deb/ and check it with lintian
 	scripts/build-deb.sh
