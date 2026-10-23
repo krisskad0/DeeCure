@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // Sidebar (docs/03-ui-design/02-shell/sidebar.md): groups of pages, each with a sub-page tree.
+// Beginner mode shows fewer pages and sub-pages (see menuPages in visible.ts).
 
 import { useState } from "react";
 import type { StatusVariant } from "../components/StatusBadge";
 import { Icon } from "../components/Icon";
 import { href, type Route } from "../route";
 import type { PageSpec } from "../spec/pages";
-import { VISIBLE_PAGES as PAGES } from "../visible";
-
-const GROUPS = [...new Set(PAGES.filter((p) => p.group !== "Footer").map((p) => p.group))];
-const SETTINGS = PAGES.find((p) => p.group === "Footer");
+import { useUi } from "../ui";
+import { menuPages } from "../visible";
 
 export function Sidebar(props: {
   route: Route;
@@ -21,6 +20,9 @@ export function Sidebar(props: {
   onNavigate: () => void;
 }) {
   const { route, rail } = props;
+  const pages = menuPages(useUi().mode, { pageId: route.page.id, tabId: route.tab.id });
+  const groups = [...new Set(pages.filter((p) => p.group !== "Footer").map((p) => p.group))];
+  const settings = pages.find((p) => p.group === "Footer");
   // Which pages have their sub-page tree open. The current page starts open.
   const [open, setOpen] = useState<Record<string, boolean>>({ [route.page.id]: true });
 
@@ -79,15 +81,15 @@ export function Sidebar(props: {
   return (
     <nav className={`sidebar ${rail ? "rail" : ""} ${props.drawerOpen ? "drawer-open" : ""}`} aria-label="Pages">
       <div className="nav-scroll">
-        {GROUPS.map((group) => (
+        {groups.map((group) => (
           <div className="nav-group" key={group}>
             <div className="group-label">{group}</div>
-            <ul>{PAGES.filter((p) => p.group === group).map(item)}</ul>
+            <ul>{pages.filter((p) => p.group === group).map(item)}</ul>
           </div>
         ))}
       </div>
       <div className="nav-footer">
-        <ul>{SETTINGS && item(SETTINGS)}</ul>
+        <ul>{settings && item(settings)}</ul>
         <button className="nav-item collapse" type="button" onClick={() => props.onRail(!rail)}>
           <Icon name="rail" size={17} />
           <span className="nav-label">{rail ? "Expand" : "Collapse"}</span>

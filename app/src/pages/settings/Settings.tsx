@@ -69,7 +69,7 @@ export function SettingsGeneral() {
   const [, setOnboarded] = usePref<boolean>("onboarded", true);
   return (
     <Panel title="General" span={8}>
-      <FieldRow label="Expert mode" description="Show data sources, commands, and raw columns">
+      <FieldRow label="Expert mode" description="Show every page and tab, data sources, commands, and raw columns">
         <Switch checked={mode === "expert"} onChange={(on) => setMode(on ? "expert" : "beginner")} label="Expert mode" />
       </FieldRow>
       <FieldRow label="Default time range" description="Used by charts; also in the top bar">

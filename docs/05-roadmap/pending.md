@@ -4,7 +4,7 @@
 
 **Read this first when you continue the work.** It says where the project stands, what is left in order, and how to work here. When an item is done, delete it here and note it in the phase's Progress table and in `CHANGELOG.md`.
 
-Last updated: 2026-10-23, after the release `v0.1.0-alpha.3` and the faster installer.
+Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster installer, and the light Beginner mode.
 
 ## 1. Where the project stands
 
@@ -40,7 +40,7 @@ Containers have nobody signed in, so these need a real Ubuntu desktop (not done 
 
 ## 4. First version: what the owner still has to review
 
-All 91 tabs show real data and every data source was checked on a real laptop. Fake or stale parts found so far are fixed (access level, Settings › Data and General, hidden placeholders for the assistant and multi-PC). What is left is the owner's eye: which panels look empty or unclear on a real computer. Fix each one, page by page.
+All 91 tabs show real data and every data source was checked on a real laptop. Fake or stale parts found so far are fixed (access level, Settings › Data and General, hidden placeholders for the assistant and multi-PC). Beginner mode (the default) now shows only 8 pages and 19 sub-pages, so the app feels light for newcomers ([Beginner mode](../03-ui-design/02-shell/sidebar.md#beginner-mode)); the list is `BEGINNER` in `app/src/visible.ts`. What is left is the owner's eye: which panels look empty or unclear on a real computer, and whether the Beginner list is right. Fix each one, page by page.
 
 ## 5. Owner decisions
 

@@ -58,6 +58,9 @@ import { Sidebar } from "./shell/Sidebar";
 import { type Mode, type Range, TopBar } from "./shell/TopBar";
 import { findingsFor, pageStatus } from "./status";
 import { UiContext } from "./ui";
+import { inBeginner } from "./visible";
+import { AlertBanner } from "./components/AlertBanner";
+import { Button } from "./components/Button";
 import { Gallery } from "./dev/Gallery";
 
 const REFRESH_MS = 10_000;
@@ -190,6 +193,16 @@ export default function App() {
     content = <NotBuilt route={route} findings={pageFindings} {...shared} />;
   }
 
+  // A link can open a page that Beginner mode leaves out of the menus: say so, with a way out.
+  const expertNote = mode !== "expert" && !route.gallery && !inBeginner(route.page.id, route.tab.id) && (
+    <AlertBanner
+      tone="info"
+      title="This page is part of Expert mode"
+      text="Beginner mode shows the pages most people need. You can still use this one."
+      actions={<Button small onClick={() => setMode("expert")}>Switch to Expert mode</Button>}
+    />
+  );
+
   if (!onboarded && !route.gallery) {
     return <Onboarding onDone={() => setOnboarded(true)} />;
   }
@@ -255,7 +268,10 @@ export default function App() {
             }}
           />
         )}
-        <div className="grid">{content}</div>
+        <div className="grid">
+          {expertNote}
+          {content}
+        </div>
       </main>
     </div>
     </UiContext.Provider>

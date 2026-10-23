@@ -14,15 +14,16 @@
 
 > **Real-life example:** Riya follows a YouTube tip, pastes one command, and enters her password once. Two minutes later DeeCure is in her app list.
 
-## First launch (3 short screens)
+## First launch (4 short screens)
 
 1. **Welcome:** "DeeCure checks your computer and explains problems in simple words."
 2. **Privacy promise:** "Everything stays on this computer. No account. No data sent anywhere."
-3. **Choose access level:**
+3. **New to Linux?** "Yes, keep it simple" (Beginner mode, the default) or "No, show me everything" (Expert mode).
+4. **Choose access level:**
    - **Basic (no password):** sees about 80% of insights.
    - **Full:** uses the DeeCure admin helper. This unlocks disk health, firewall rules, all users' cron jobs, and admin fixes. The admin password is asked each time one is used (a deliberate safety choice, see [Security model](../02-architecture/security-model.md)). Full needs the helper, which comes with the package from DeeCure's repository.
 
-The user can switch the level later in Settings.
+The user can switch the level later in Settings, and the mode at any time in the top bar.
 
 ## First scan (about 30-60 seconds)
 
@@ -102,9 +103,9 @@ The app opens on a dashboard, not a list of cards. See `deecure-dashboard.html` 
 
 ## Growing into an expert
 
-- **Beginner mode** (default) shows the dashboard with plain labels, info tooltips, and one-click fixes.
-- **Expert mode** adds the data source on every panel (for example `ss -tulpn`), extra table columns (MAC address, swap per process, threads), and full logs.
-- Every fix always shows its exact command before it runs, so beginners learn real Linux commands slowly.
+- **Beginner mode** (default) keeps the app light: 8 pages and 19 sub-pages (Overview, Performance, Activity, System, Power, Storage, Security, Settings), plain labels, info tooltips, and one-click fixes.
+- **Expert mode** adds every other page and sub-page (logs, services, jobs, containers, network, accounts, and more), the data source on every panel (for example `ss -tulpn`), extra table columns (MAC address, swap per process, threads), and the exact command of every fix step.
+- Links inside a page still open Expert pages in Beginner mode, with a note and a **Switch to Expert mode** button, so nothing is ever out of reach.
 
 ## Uninstall
 

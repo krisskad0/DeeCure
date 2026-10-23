@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // Command palette (docs/03-ui-design/02-shell/overlays.md): Ctrl/Cmd+K, search everything, jump.
 // Results: every page and sub-page, and the services the agent knows. Packages and jobs
-// join when their collectors exist.
+// join when their collectors exist. Beginner mode lists only its own pages (menuPages in
+// visible.ts) and no services, and says that Expert mode finds more.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type UnitState, getSnapshot } from "../api";
 import { Icon } from "../components/Icon";
 import { href } from "../route";
-import { VISIBLE_PAGES as PAGES } from "../visible";
+import type { PageSpec } from "../spec/pages";
+import { useUi } from "../ui";
+import { menuPages } from "../visible";
 
 interface Entry {
   label: string;
@@ -17,15 +20,18 @@ interface Entry {
 
 const MAX_RESULTS = 40;
 
-const PAGE_ENTRIES: Entry[] = PAGES.flatMap((page) =>
-  page.tabs.length === 1
-    ? [{ label: page.label, kind: "Page" as const, target: href(page.id, page.tabs[0].id) }]
-    : page.tabs.map((tab) => ({ label: `${page.label} › ${tab.label}`, kind: "Page" as const, target: href(page.id, tab.id) })),
-);
+function pageEntries(pages: PageSpec[]): Entry[] {
+  return pages.flatMap((page) =>
+    page.tabs.length === 1
+      ? [{ label: page.label, kind: "Page" as const, target: href(page.id, page.tabs[0].id) }]
+      : page.tabs.map((tab) => ({ label: `${page.label} › ${tab.label}`, kind: "Page" as const, target: href(page.id, tab.id) })),
+  );
+}
 
 const DEV_ENTRIES: Entry[] = import.meta.env.DEV ? [{ label: "Component gallery", kind: "Dev", target: "#/gallery" }] : [];
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
+  const expert = useUi().mode === "expert";
   const [query, setQuery] = useState("");
   const [services, setServices] = useState<Entry[]>([]);
   const [highlight, setHighlight] = useState(0);
@@ -34,19 +40,29 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     input.current?.focus();
+    if (!expert) {
+      setServices([]);
+      return;
+    }
+    let alive = true;
     getSnapshot<UnitState[]>("services").then(
       (snapshot) =>
+        alive &&
         setServices(
           (snapshot?.data ?? []).map((unit) => ({ label: unit.name, kind: "Service", target: href("services", "system") })),
         ),
-      () => setServices([]),
+      () => alive && setServices([]),
     );
-  }, []);
+    return () => {
+      alive = false;
+    };
+  }, [expert]);
 
+  const pages = useMemo(() => pageEntries(menuPages(expert ? "expert" : "beginner")), [expert]);
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return [...DEV_ENTRIES, ...PAGE_ENTRIES, ...services].filter((e) => e.label.toLowerCase().includes(needle)).slice(0, MAX_RESULTS);
-  }, [query, services]);
+    return [...DEV_ENTRIES, ...pages, ...services].filter((e) => e.label.toLowerCase().includes(needle)).slice(0, MAX_RESULTS);
+  }, [query, pages, services]);
 
   useEffect(() => setHighlight(0), [query]);
   useEffect(() => {
@@ -88,7 +104,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           <kbd>Esc</kbd>
         </div>
         <ul className="palette-results" ref={list} role="listbox">
-          {results.length === 0 && <li className="palette-empty muted">No matches</li>}
+          {results.length === 0 && <li className="palette-empty muted">{expert ? "No matches" : "No matches. Expert mode shows every page and service."}</li>}
           {results.map((entry, i) => (
             <li key={`${entry.kind}|${entry.label}`} role="option" aria-selected={i === highlight}>
               <button

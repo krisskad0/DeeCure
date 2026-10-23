@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- A light Beginner mode (the default): the sidebar, page tabs, and search show only 8 pages and 19 sub-pages (Overview, Performance, Activity, System, Power, Storage, Security, Settings). Expert mode shows every page. Links inside pages still open Expert pages, which start with a note and a **Switch to Expert mode** button. The first-run screens now ask "Are you new to Linux?" to pick the mode. Your saved mode is kept.
+
 ### Changed
 
 - Faster install: `install.sh` skips optional "recommended" packages (about 30 MB and 57 packages less on a new system; the tray library is still installed), skips refreshing package lists that are less than 6 hours old (and refreshes and retries if an install then fails), and says what it is doing while it downloads.

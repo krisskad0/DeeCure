@@ -12,15 +12,20 @@ curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/in
 
 ## 1. First launch
 
-DeeCure shows three short screens:
+DeeCure shows four short screens:
 
 1. **Welcome:** what DeeCure does.
 2. **Privacy:** everything stays on this computer. No account. Nothing is sent anywhere.
-3. **Access level:**
+3. **New to Linux?**
+   - **Yes, keep it simple** (Beginner mode): only the pages most people need.
+   - **No, show me everything** (Expert mode): every page and tab, plus technical details.
+4. **Access level:**
    - **Basic** (no password): DeeCure sees everything your account can read. That is most things.
    - **Full**: DeeCure can also read admin-only things (disk health, firewall rules) and run admin fixes. Your password is asked each time, in the normal Ubuntu box.
 
 Then a first check runs. Each area turns green, yellow, or red as it finishes. You can change the access level later in **Settings › Access**.
+
+**Beginner or Expert:** switch any time with **Beginner / Expert** at the top. Beginner mode shows 8 pages: Overview, Performance, Activity, System, Power, Storage, Security, and Settings. Expert mode adds logs, services, scheduled jobs, containers, network, accounts, and more. If a link opens an Expert page while you are in Beginner mode, a note at the top offers **Switch to Expert mode**.
 
 ## 2. The home screen
 
@@ -74,7 +79,7 @@ Change all of this in **Settings › Notifications**. **Send a test notification
 
 | Where | Setting |
 | --- | --- |
-| Settings › General | **Expert mode** (data sources, commands, raw columns), default time range, **refresh interval** (2 s, 5 s, 15 s, or Manual), **temperature unit** (°C or °F), narrow sidebar, **tray icon** |
+| Settings › General | **Expert mode** (every page and tab, data sources, commands, raw columns), default time range, **refresh interval** (2 s, 5 s, 15 s, or Manual), **temperature unit** (°C or °F), narrow sidebar, **tray icon** |
 | Settings › Access | Basic or Full access |
 | Settings › Notifications | Critical, warnings, weekly summary, quiet hours |
 | Settings › Data | Keep history for 90 days, 1 year, or 2 years; database size; **Export report** (an HTML file in your Downloads folder); **Delete history** (restore points and settings are kept) |

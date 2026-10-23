@@ -50,7 +50,7 @@ These are the screen types the UI team builds. The full page tree is in [05-page
 | 12 | Settings forms | Toggles, selects, radio cards | Settings |
 | 13 | Command palette | Search across everything | Ctrl K |
 
-Screens 1 and 2 still need a design. The user journey describes them: [First launch](../01-product/user-journey.md#first-launch-3-short-screens) and [First scan](../01-product/user-journey.md#first-scan-about-3060-seconds).
+Screens 1 and 2 still need a design. The user journey describes them: [First launch](../01-product/user-journey.md#first-launch-4-short-screens) and [First scan](../01-product/user-journey.md#first-scan-about-3060-seconds).
 
 ## Prototype rules vs the real app
 

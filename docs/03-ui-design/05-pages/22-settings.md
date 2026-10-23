@@ -11,7 +11,7 @@
 
 | Label | Description | Control | Initial | Control ID |
 | --- | --- | --- | --- | --- |
-| Expert mode | Show data sources, commands and raw columns | Switch | Off | `set-expert` |
+| Expert mode | Show every page and tab, data sources, commands, and raw columns | Switch | Off | `set-expert` |
 | Default time range |  | Select: 1h / 24h / 7d / 30d | 24h | `set-range` |
 | Refresh interval | Live metrics | Select: 2 s / 5 s / 15 s / Manual | 5 s | `set-refresh` |
 | Temperature unit |  | Select: Celsius / Fahrenheit | Celsius | `set-temp` |

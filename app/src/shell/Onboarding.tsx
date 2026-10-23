@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Onboarding and first scan (docs/03-ui-design/05-pages/00-onboarding.md): three short
+// Onboarding and first scan (docs/03-ui-design/05-pages/00-onboarding.md): four short
 // screens, then a first check where each area is a real request to the agent.
 
 import { type ReactNode, useEffect, useState } from "react";
@@ -9,7 +9,9 @@ import { accessOptions, useAccess } from "../access";
 import { RadioCards } from "../components/FormControls";
 import { Icon } from "../components/Icon";
 import { NoData } from "../pages/NoData";
+import { usePref } from "../prefs";
 import type { IconName } from "../spec/icons";
+import type { Mode } from "../ui";
 
 interface Area {
   name: string;
@@ -148,10 +150,19 @@ const PROMISES: [IconName, string][] = [
   ["eye", "It only reads. Changes always need your OK, with a preview and undo."],
 ];
 
+const MODES = [
+  { value: "beginner" as const, title: "Yes, keep it simple", description: "Beginner mode · the pages most people need, in plain words" },
+  { value: "expert" as const, title: "No, show me everything", description: "Expert mode · every page and tab, data sources, commands, and raw columns" },
+];
+
+/** The first check is the last step. */
+const CHECK = 4;
+
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
   const access = useAccess();
-  const next = () => setStep((s) => Math.min(3, s + 1));
+  const [mode, setMode] = usePref<Mode>("mode", "beginner");
+  const next = () => setStep((s) => Math.min(CHECK, s + 1));
   let body: ReactNode;
   let title: string;
   if (step === 0) {
@@ -170,6 +181,14 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       </ul>
     );
   } else if (step === 2) {
+    title = "Are you new to Linux?";
+    body = (
+      <>
+        <RadioCards name="onb-mode" value={mode === "expert" ? "expert" : "beginner"} options={MODES} onChange={setMode} />
+        <p className="muted">You can switch any time with Beginner / Expert at the top.</p>
+      </>
+    );
+  } else if (step === 3) {
     title = "How much should DeeCure see?";
     body = (
       <>
@@ -186,15 +205,15 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <div className="onb-card">
         <div className="onb-top">
           <img src="/deecure.svg" alt="" width={48} height={48} onError={(e) => (e.currentTarget.style.display = "none")} />
-          <span className="onb-dots" aria-label={`Step ${step + 1} of 4`}>
-            {[0, 1, 2, 3].map((i) => (
+          <span className="onb-dots" aria-label={`Step ${step + 1} of ${CHECK + 1}`}>
+            {Array.from({ length: CHECK + 1 }, (_, i) => (
               <i key={i} className={i < step ? "done" : i === step ? "current" : ""} />
             ))}
           </span>
         </div>
         <h1>{title}</h1>
         {body}
-        {step < 3 && (
+        {step < CHECK && (
           <div className="onb-actions">
             <span>
               {step > 0 && (
@@ -207,7 +226,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               </Button>
             </span>
             <Button variant="primary" onClick={next} autoFocus>
-              {step === 2 ? "Start the first check" : "Next"}
+              {step === CHECK - 1 ? "Start the first check" : "Next"}
             </Button>
           </div>
         )}

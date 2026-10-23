@@ -3,7 +3,8 @@
 
 import { describe, expect, it } from "vitest";
 import { parseHash } from "./route";
-import { VISIBLE_PAGES } from "./visible";
+import { PAGES } from "./spec/pages";
+import { VISIBLE_PAGES, inBeginner, menuPages } from "./visible";
 
 describe("visible pages", () => {
   it("leaves out the assistant until it is built", () => {
@@ -17,5 +18,37 @@ describe("visible pages", () => {
     expect(parseHash("#/assistant/chat").page.id).toBe("overview");
     const r = parseHash("#/settings/assistant");
     expect([r.page.id, r.tab.id]).toEqual(["settings", "general"]);
+  });
+
+  it("Beginner mode keeps the menus short, Expert mode shows everything", () => {
+    expect(menuPages("expert")).toBe(VISIBLE_PAGES);
+    const beginner = menuPages("beginner");
+    expect(beginner.map((p) => p.id)).toEqual(["overview", "performance", "activity", "system", "power", "storage", "security", "settings"]);
+    expect(beginner.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory"]);
+    expect(beginner.find((p) => p.id === "settings")?.tabs.map((t) => t.id)).not.toContain("assistant");
+    expect(beginner.reduce((n, p) => n + p.tabs.length, 0)).toBeLessThan(25);
+  });
+
+  it("the page the user is on stays in the Beginner menus", () => {
+    const onKernel = menuPages("beginner", { pageId: "logs", tabId: "kernel" });
+    expect(onKernel.find((p) => p.id === "logs")?.tabs.map((t) => t.id)).toEqual(["kernel"]);
+    const onGpu = menuPages("beginner", { pageId: "performance", tabId: "gpu" });
+    expect(onGpu.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "gpu"]);
+  });
+
+  it("every Beginner sub-page is a real one (a typo would hide it)", () => {
+    const shown = menuPages("beginner").flatMap((p) => p.tabs.map((t) => `${p.id}/${t.id}`));
+    expect(shown).toEqual([
+      "overview/summary", "overview/issues", "overview/score",
+      "performance/cpu", "performance/memory",
+      "activity/timeline",
+      "system/overview", "system/updates",
+      "power/battery", "power/profile", "power/sleep",
+      "storage/overview", "storage/cleanup",
+      "security/overview",
+      "settings/general", "settings/access", "settings/notifications", "settings/data", "settings/about",
+    ]);
+    expect(inBeginner("jobs", "cron")).toBe(false);
+    expect(PAGES.some((p) => p.id === "jobs")).toBe(true);
   });
 });

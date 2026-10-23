@@ -26,15 +26,21 @@ vi.mock("../api", () => ({
 afterEach(() => {
   cleanup();
   running = true;
+  localStorage.clear();
 });
 
 describe("onboarding", () => {
-  it("walks through the three screens and runs a real first check", async () => {
+  it("walks through the four screens and runs a real first check", async () => {
     const done = vi.fn();
     render(<Onboarding onDone={done} />);
     expect(screen.getByRole("heading", { name: "Welcome to DeeCure" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByText("Nothing is sent anywhere. DeeCure works offline.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByRole("heading", { name: "Are you new to Linux?" })).toBeTruthy();
+    expect((screen.getByRole("radio", { name: /keep it simple/ }) as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(screen.getByRole("radio", { name: /show me everything/ }));
+    expect(localStorage.getItem("deecure.mode")).toBe('"expert"');
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     fireEvent.click(screen.getByRole("button", { name: "Start the first check" }));
     await waitFor(() => expect(screen.getByText("Latitude 3450 · 12 threads")).toBeTruthy());
@@ -56,7 +62,7 @@ describe("onboarding", () => {
     cleanup();
     running = false;
     render(<Onboarding onDone={done} />);
-    for (const name of ["Next", "Next", "Start the first check"]) fireEvent.click(screen.getByRole("button", { name }));
+    for (const name of ["Next", "Next", "Next", "Start the first check"]) fireEvent.click(screen.getByRole("button", { name }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy());
   });
 });

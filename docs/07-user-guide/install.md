@@ -92,7 +92,7 @@ sudo apt install deecure deecure-desktop
 
 ## Start DeeCure
 
-Open the app menu and search for **DeeCure**. The first time, three short screens explain what DeeCure does and run a first check. In the terminal, run `deecure status`.
+Open the app menu and search for **DeeCure**. The first time, four short screens explain what DeeCure does and run a first check. In the terminal, run `deecure status`.
 
 **Access:** DeeCure reads everything your account can read without a password. Some details (disk health, firewall rules) and fixes that change the system need the admin helper, which comes with the package. When you use one of them, Ubuntu asks for your password, each time. Nothing runs as admin without your OK.
 

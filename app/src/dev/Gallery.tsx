@@ -351,7 +351,7 @@ export function Gallery() {
       </Panel>
 
       <Panel title="21 Form controls" subtitle="Settings › General and Access" span={8} flush>
-        <FieldRow label="Expert mode" description="Show data sources, commands and raw columns">
+        <FieldRow label="Expert mode" description="Show every page and tab, data sources, commands, and raw columns">
           <Switch checked={expertSwitch} onChange={setExpertSwitch} label="Expert mode" />
         </FieldRow>
         <FieldRow label="Refresh interval" description="Live metrics">
