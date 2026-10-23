@@ -5,6 +5,7 @@
 
 import { getInventory } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
+import { Button } from "../../components/Button";
 import { FieldRow, RadioCards, Select, Switch } from "../../components/FormControls";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
@@ -28,6 +29,7 @@ export function SettingsGeneral() {
   const [mode, setMode] = usePref<Mode>("mode", "beginner");
   const [range, setRange] = usePref<Range>("range", "24h");
   const [rail, setRail] = usePref<boolean>("rail", false);
+  const [, setOnboarded] = usePref<boolean>("onboarded", true);
   return (
     <Panel title="General" span={8}>
       <FieldRow label="Expert mode" description="Show data sources, commands, and raw columns">
@@ -38,6 +40,11 @@ export function SettingsGeneral() {
       </FieldRow>
       <FieldRow label="Narrow sidebar" description="Show only icons in the sidebar">
         <Switch checked={rail} onChange={setRail} label="Narrow sidebar" />
+      </FieldRow>
+      <FieldRow label="Welcome screens" description="Show the first-launch screens and the first check again">
+        <Button small onClick={() => setOnboarded(false)}>
+          Show again
+        </Button>
       </FieldRow>
       <FieldRow label="Start at login" description="The background agent starts by itself when you sign in (systemd user service)">
         <StatusBadge variant="ok" label="On" />

@@ -21,6 +21,6 @@ These came up while setting up the repo. Each one has a proposed default, so wor
 | 10 | ~~Charts in the real app~~ | **Decided 2026-10-23: our own SVG components** ([ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)) | [UI design](../03-ui-design/README.md) |
 | 11 | Contact emails | One address for security, one for the code of conduct, and the package maintainer address (now a placeholder: `krisskad0@users.noreply.github.com`) | `SECURITY.md`, `CODE_OF_CONDUCT.md`, `packaging/debian/control` |
 | 12 | APT signing key | Who owns it and where the offline primary key is kept | [APT repository](../06-packaging/apt-repository.md) |
-| 13 | Missing insights catalog | Add `insights-catalog.md` (was `linux-system-insights.md`) | [Product](README.md), [Roadmap](../05-roadmap/README.md) |
-| 14 | Onboarding and first-scan screens | Design them. They are not in the prototype. | [Phase 1](../05-roadmap/phase-1-mvp.md) |
+| 13 | ~~Missing insights catalog~~ | **Done 2026-10-23: [Insights catalog](insights-catalog.md)** | [Product](README.md), [Roadmap](../05-roadmap/README.md) |
+| 14 | ~~Onboarding and first-scan screens~~ | **Decided 2026-10-23: 3 short screens and a live first check** ([Onboarding](../03-ui-design/05-pages/00-onboarding.md)) | [Phase 1](../05-roadmap/phase-1-mvp.md) |
 | 15 | Health score points | The plan takes 15 points per critical finding and 5 per warning. The prototype uses smaller, hand-picked deductions (score 82). Pick one before Phase 1, task 9. The code currently follows the plan. | [Health score](../02-architecture/health-score.md), [State model](../03-ui-design/04-behavior/state-model.md) |

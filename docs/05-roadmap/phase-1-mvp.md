@@ -21,12 +21,14 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 | 11. Performance check | ✅ Done. Diagnostics › Performance Check with the runner. |
 | 13. Desktop integration | ✅ Done. A second package, `deecure-desktop`: the app with a menu entry, icons, AppStream data, and a man page. Tested by installing in a clean container. |
 | 8. Knowledge base | ✅ Done. 125 entries: 59 services, 26 ports, 20 errors, 12 packages, and 8 how-to topics (one per rule). Used in issues, services, ports, errors, and packages. |
-| 1, 6, 12 | Not started |
+| 1. Insights catalog | ✅ Done. [Insights catalog](../01-product/insights-catalog.md). |
+| 6. Behavior | ✅ Done. Shared view settings (mode, time range, rail) that stay in step across the app, Beginner/Expert columns, page status rules, Ctrl K palette, Esc closes overlays. |
+| 12. Onboarding | ✅ Done. Three short screens and a live first check ([design](../03-ui-design/05-pages/00-onboarding.md)); can be shown again from Settings. |
 
 ## Tasks (in order)
 
 1. **Write the insights catalog:** every check, marked Yes / Admin / No. This phase builds all "Yes" checks.
-   → [Product](../01-product/README.md#missing-document)
+   → [Insights catalog](../01-product/insights-catalog.md)
 2. **App scaffold:** Tauri v2 + React + TypeScript in `app/`. The Tauri side connects to the agent socket.
    → [ADR 0002](../02-architecture/decisions/0002-tauri-react-desktop-ui.md)
 3. **Foundations:** design tokens for light and dark, bundled fonts, icons.

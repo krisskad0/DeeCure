@@ -49,6 +49,7 @@ import { SystemServices } from "./pages/services/SystemServices";
 import { usePref } from "./prefs";
 import { useRoute } from "./route";
 import { CommandPalette } from "./shell/CommandPalette";
+import { Onboarding } from "./shell/Onboarding";
 import { PageHeader } from "./shell/PageHeader";
 import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
 import { Sidebar } from "./shell/Sidebar";
@@ -112,6 +113,7 @@ export default function App() {
   const [rail, setRail] = usePref<boolean>("rail", false);
   const [mode, setMode] = usePref<Mode>("mode", "beginner");
   const [range, setRange] = usePref<Range>("range", "24h");
+  const [onboarded, setOnboarded] = usePref<boolean>("onboarded", false);
   const [drawer, setDrawer] = useState(false);
   const [palette, setPalette] = useState(false);
   const [popover, setPopover] = useState<{ kind: "bell" | "machine"; anchor: HTMLElement } | null>(null);
@@ -182,6 +184,10 @@ export default function App() {
     content = <SystemServices />;
   } else {
     content = <NotBuilt route={route} findings={pageFindings} {...shared} />;
+  }
+
+  if (!onboarded && !route.gallery) {
+    return <Onboarding onDone={() => setOnboarded(true)} />;
   }
 
   return (

@@ -6,6 +6,8 @@ Each insight category is its own page. Each page has sub-pages, shown as tabs un
 
 Each file below covers one page. Each sub-page lists its header actions (if any) and its widgets in grid order. Read [Notation](../01-foundations/notation.md) first.
 
+Before the shell, the first launch shows [Onboarding and first scan](00-onboarding.md).
+
 ## Index
 
 | # | Group | Page | Sub-pages (tabs) |
