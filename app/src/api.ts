@@ -42,7 +42,7 @@ export interface Machine {
 }
 
 export interface AppError {
-  kind: "agent_not_running" | "other";
+  kind: "agent_not_running" | "agent_outdated" | "other";
   message: string;
 }
 

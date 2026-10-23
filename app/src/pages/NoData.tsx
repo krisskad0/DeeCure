@@ -18,6 +18,17 @@ export function NoData({ error, waiting }: { error: AppError | null; waiting: st
       </div>
     );
   }
+  if (error?.kind === "agent_outdated") {
+    return (
+      <div className="empty">
+        <StatusBadge variant="warn" label="Agent needs a restart" />
+        <p>DeeCure's background agent is older than this app, so it cannot show this page yet. Restart the agent to use the new version.</p>
+        <Command>systemctl --user restart deecure-agent.service</Command>
+        <p>Working from a source checkout? Stop the running agent (Ctrl+C in its terminal), then run:</p>
+        <Command>make agent</Command>
+      </div>
+    );
+  }
   if (error) {
     return (
       <div className="empty">

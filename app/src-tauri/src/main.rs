@@ -20,7 +20,7 @@ use tauri::{Emitter, Manager};
 /// An error the UI can show: `kind` tells it which screen to show, `message` is for people.
 #[derive(Debug, Serialize)]
 struct AppError {
-    /// `agent_not_running` or `other`.
+    /// `agent_not_running`, `agent_outdated`, or `other`.
     kind: &'static str,
     /// A plain-English sentence.
     message: String,
@@ -28,13 +28,20 @@ struct AppError {
 
 impl From<ClientError> for AppError {
     fn from(e: ClientError) -> Self {
-        let kind = match e {
-            ClientError::NotRunning(_) => "agent_not_running",
-            _ => "other",
-        };
-        AppError {
-            kind,
-            message: e.to_string(),
+        match e {
+            ClientError::NotRunning(_) => AppError {
+                kind: "agent_not_running",
+                message: e.to_string(),
+            },
+            // The app is newer than the agent that runs (it was started before an update).
+            ClientError::Agent(ref rpc) if rpc.code == deecure_core::rpc::RpcError::METHOD_NOT_FOUND => AppError {
+                kind: "agent_outdated",
+                message: "The background agent is older than this app, so it cannot answer this yet. Restart the agent to use the new version.".into(),
+            },
+            _ => AppError {
+                kind: "other",
+                message: e.to_string(),
+            },
         }
     }
 }
