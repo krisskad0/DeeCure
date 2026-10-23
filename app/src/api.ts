@@ -347,6 +347,12 @@ export interface PdOffer {
   milliwatts?: number;
 }
 
+/** Thermal zones and cooling devices (Expert). */
+export interface ThermalInfo {
+  zones: { zone: string; kind: string; celsius?: number; policy?: string; trips: { kind: string; celsius: number }[] }[];
+  cooling: { kind: string; count: number; level: number; max_level: number }[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -914,6 +920,7 @@ export function getInventory(kind: "graphics_stack"): Promise<GraphicsStack>;
 export function getInventory(kind: "net_deep"): Promise<NetDeep>;
 export function getInventory(kind: "tcp_traffic"): Promise<TcpTraffic>;
 export function getInventory(kind: "power_detail"): Promise<PowerDetail>;
+export function getInventory(kind: "thermal"): Promise<ThermalInfo>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

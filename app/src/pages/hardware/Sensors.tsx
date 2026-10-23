@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Sensors (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
+import { atLeast, useUi } from "../../ui";
+import { ThermalExpertSections } from "./ThermalExpert";
 import { temp as tempText, tempUnit, tempValue } from "../../units";
 import type { Metric } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
@@ -27,6 +29,7 @@ const FANS: Column<Metric>[] = [
 ];
 
 export function HardwareSensors() {
+  const { mode } = useUi();
   const latest = useLatest();
   const temps = pickAll(latest, "temp");
   const fans = pickAll(latest, "fan");
@@ -70,6 +73,7 @@ export function HardwareSensors() {
       ) : (
         latest && <AlertBanner tone="info" title="Fan speed not reported" text="This computer's embedded controller does not expose fan speed to Linux." />
       )}
+      {atLeast(mode, "expert") && <ThermalExpertSections />}
     </>
   );
 }

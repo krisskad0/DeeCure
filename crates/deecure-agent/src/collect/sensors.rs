@@ -17,8 +17,9 @@ const CPU_CHIPS: &[(&str, &[&str])] = &[
     ("acpitz", &[]),
 ];
 
-/// One `temp` metric per sensor (subject `<chip>/<label>`), one `fan` per fan, and
-/// `temp.cpu` from the best CPU sensor found.
+/// One `temp` metric per sensor (subject `<chip>/<label>`), one `fan` per fan,
+/// `temp.cpu` from the best CPU sensor found, and `cpu.throttle_total`: the times heat slowed
+/// the whole chip since start (Intel), so history shows slowdowns next to the temperature.
 #[derive(Debug, Default)]
 pub struct Sensors;
 
@@ -29,6 +30,15 @@ impl Collector for Sensors {
 
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
         let mut sample = Sample::default();
+        if let Some(count) = read_trimmed(
+            &root.path("/sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_count"),
+        )
+        .and_then(|v| v.parse::<f64>().ok())
+        {
+            sample
+                .metrics
+                .push(metric("cpu.throttle_total", None, count, Unit::Count, now));
+        }
         let dir = root.path("/sys/class/hwmon");
         let Ok(entries) = std::fs::read_dir(&dir) else {
             return Ok(sample); // no sensors exposed

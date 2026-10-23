@@ -168,9 +168,9 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Each thermal zone with the temperatures where the system slows down and where it shuts down | Shows how close the computer is to its limits | `/sys/class/thermal/thermal_zone*/trip_point_*` | You | New |
-| Cooling devices (fans, CPU limits) and their current level | Shows what the system does to cool down | `/sys/class/thermal/cooling_device*` | You | New |
-| Heat slowdowns on the same chart as temperature | Proves cause and effect | throttle counters and temperature history | You | New |
+| Each thermal zone with the temperatures where the system slows down and where it shuts down | Shows how close the computer is to its limits | `/sys/class/thermal/thermal_zone*/trip_point_*` | You | ✅ Built |
+| Cooling devices (fans, CPU limits) and their current level | Shows what the system does to cool down | `/sys/class/thermal/cooling_device*` | You | ✅ Built |
+| Heat slowdowns on the same chart as temperature | Proves cause and effect | throttle counters and temperature history | You | ✅ Built |
 
 ## 9. Processes (detail drawer on each row)
 
