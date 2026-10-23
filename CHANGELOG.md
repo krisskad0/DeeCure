@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.3] - 2026-10-23
+
 ### Fixed
 
 - Right after installing, the app said the agent was unreachable until the next login: the package only enabled the agent for future logins. It now starts the agent for everyone signed in (and restarts it after an upgrade, and stops it on removal), and the app and `deecure` start it themselves if it is still not running.
