@@ -5,6 +5,8 @@
 **Goal:** users ask questions in plain words. A local AI answers using real data and shows its sources.
 **Rough time:** 4–6 weeks.
 
+> The Assistant page and Settings › Assistant are hidden in the app until this phase: `app/src/visible.ts` lists them in `LATER_PAGES` and `LATER_TABS`. Remove them there when the assistant works.
+
 ## Tasks (in order)
 
 1. **Ollama integration:** find a running Ollama, guide the user to install it if needed, pick a model (3B fast or 8B better).

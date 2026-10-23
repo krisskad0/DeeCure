@@ -2,7 +2,6 @@
 // The notifications and machines popovers (docs/03-ui-design/02-shell/overlays.md).
 
 import type { Finding, Machine } from "../api";
-import { Icon } from "../components/Icon";
 import { href } from "../route";
 import { PAGES } from "../spec/pages";
 import { pageOf } from "../status";
@@ -48,7 +47,7 @@ export function NotificationsPopover(props: { anchor: HTMLElement; findings: Fin
   );
 }
 
-export function MachinesPopover(props: { anchor: HTMLElement; machine: Machine | null; onClose: () => void; onPlanned: () => void }) {
+export function MachinesPopover(props: { anchor: HTMLElement; machine: Machine | null; onClose: () => void }) {
   return (
     <Popover anchor={props.anchor} align="left" label="Machines" onClose={props.onClose}>
       <div className="pop-head">
@@ -61,17 +60,6 @@ export function MachinesPopover(props: { anchor: HTMLElement; machine: Machine |
             <span>
               <span className="pop-title">{props.machine?.hostname ?? "This computer"}</span>
               <span className="pop-sub">This computer · {props.machine?.os ?? "unknown OS"}</span>
-            </span>
-          </button>
-        </li>
-        <li>
-          <button className="pop-item" type="button" onClick={props.onPlanned}>
-            <span className="pop-icon">
-              <Icon name="ext" size={14} />
-            </span>
-            <span>
-              <span className="pop-title">Add a machine</span>
-              <span className="pop-sub">Planned · small office view</span>
             </span>
           </button>
         </li>

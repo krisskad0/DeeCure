@@ -10,7 +10,8 @@ Last updated: 2026-10-23, after Phase 3.
 
 | Item | Detail |
 | --- | --- |
-| Phase 4 — Ask DeeCure | Not started. Start only when the owner says so. → [Phase 4](phase-4-assistant.md) |
+| Phase 4 — Ask DeeCure | Not started. Start only when the owner says so. → [Phase 4](phase-4-assistant.md). The Assistant page and Settings › Assistant are hidden until then: remove them from `LATER_PAGES` and `LATER_TABS` in `app/src/visible.ts`. |
+| Phase 5 — many PCs | The machines menu shows only this computer; add "Add a machine" back with the multi-PC view. |
 | After Phase 4 | The owner asked to "optimize everything": speed, size, and code cleanup across the app. |
 
 ## 1a. Make the first version complete (before any release work)
@@ -19,8 +20,6 @@ The owner's view (2026-10-23): the app is not ready as a first version; too much
 
 | Where | Problem |
 | --- | --- |
-| Settings › Assistant, Assistant page | Placeholders until Phase 4. |
-| Top bar › Machines | "Add a machine" is planned for Phase 5. |
 | Every page | Review with the owner which panels look empty or "dummy" on a real computer, and fix each one. |
 
 ## 2. Heavy checks that need a fast internet connection

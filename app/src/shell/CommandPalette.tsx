@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { type UnitState, getSnapshot } from "../api";
 import { Icon } from "../components/Icon";
 import { href } from "../route";
-import { PAGES } from "../spec/pages";
+import { VISIBLE_PAGES as PAGES } from "../visible";
 
 interface Entry {
   label: string;

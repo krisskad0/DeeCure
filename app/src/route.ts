@@ -2,7 +2,8 @@
 // Where the user is: #/<page>/<sub-page>. Unknown parts fall back to the first page or tab.
 
 import { useEffect, useState } from "react";
-import { PAGES, type PageSpec } from "./spec/pages";
+import type { PageSpec } from "./spec/pages";
+import { VISIBLE_PAGES as PAGES } from "./visible";
 
 export interface Route {
   page: PageSpec;

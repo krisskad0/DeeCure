@@ -1,5 +1,7 @@
 # Assistant (`assistant`)
 
+> **In the app:** hidden until Phase 4, so the first version has no placeholder pages (`app/src/visible.ts`).
+
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
 - Group: Tools · Icon: `chat` · Status badge: none

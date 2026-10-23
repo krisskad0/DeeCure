@@ -55,7 +55,6 @@ import { Onboarding } from "./shell/Onboarding";
 import { PageHeader } from "./shell/PageHeader";
 import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
 import { Sidebar } from "./shell/Sidebar";
-import { useToast } from "./shell/Toast";
 import { type Mode, type Range, TopBar } from "./shell/TopBar";
 import { findingsFor, pageStatus } from "./status";
 import { UiContext } from "./ui";
@@ -119,7 +118,6 @@ export default function App() {
   const [drawer, setDrawer] = useState(false);
   const [palette, setPalette] = useState(false);
   const [popover, setPopover] = useState<{ kind: "bell" | "machine"; anchor: HTMLElement } | null>(null);
-  const toast = useToast();
   const [fix, setFix] = useState<{ action: string; subject?: string } | null>(null);
   const openFix = useCallback((action: string, subject?: string) => setFix({ action, subject }), []);
 
@@ -225,10 +223,6 @@ export default function App() {
           anchor={popover.anchor}
           machine={machine}
           onClose={() => setPopover(null)}
-          onPlanned={() => {
-            setPopover(null);
-            toast("Multi-machine view is planned for a later phase.");
-          }}
         />
       )}
       {drawer && <div className="scrim" onClick={() => setDrawer(false)} />}

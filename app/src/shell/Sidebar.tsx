@@ -5,7 +5,8 @@ import { useState } from "react";
 import type { StatusVariant } from "../components/StatusBadge";
 import { Icon } from "../components/Icon";
 import { href, type Route } from "../route";
-import { PAGES, type PageSpec } from "../spec/pages";
+import type { PageSpec } from "../spec/pages";
+import { VISIBLE_PAGES as PAGES } from "../visible";
 
 const GROUPS = [...new Set(PAGES.filter((p) => p.group !== "Footer").map((p) => p.group))];
 const SETTINGS = PAGES.find((p) => p.group === "Footer");
