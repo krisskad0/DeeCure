@@ -537,6 +537,21 @@ export function exportReport(): Promise<string> {
   return invoke<string>("export_report");
 }
 
+export type KeepHistory = "90d" | "1y" | "2y";
+
+export function getDataSettings(): Promise<{ keep_history: KeepHistory }> {
+  return invoke<{ keep_history: KeepHistory }>("data_settings");
+}
+
+export function setDataSettings(settings: { keep_history: KeepHistory }): Promise<{ keep_history: KeepHistory }> {
+  return invoke<{ keep_history: KeepHistory }>("set_data_settings", { settings });
+}
+
+/** Deletes all history; restore points and settings stay. */
+export function deleteHistory(): Promise<{ rows: number; bytes_freed: number }> {
+  return invoke<{ rows: number; bytes_freed: number }>("delete_history");
+}
+
 export interface TrayState {
   enabled: boolean;
   active: boolean;

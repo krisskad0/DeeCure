@@ -76,6 +76,32 @@ pub mod method {
     pub const REPORT: &str = "report";
     /// Returns the last 8 weekly [`Report`](crate::report::Report)s, newest first. Takes no params.
     pub const WEEKLY_REPORTS: &str = "weekly_reports";
+    /// Returns the [`DataSettings`](crate::notify::DataSettings). Takes no params.
+    pub const DATA_SETTINGS: &str = "data_settings";
+    /// Saves new [`DataSettings`](crate::notify::DataSettings), cleans up at once, and
+    /// returns them. Takes [`SetDataSettingsParams`](super::SetDataSettingsParams).
+    pub const SET_DATA_SETTINGS: &str = "set_data_settings";
+    /// Deletes all history (metrics, events, reports, notifications, old snapshots, closed
+    /// findings). Fix runs (restore points), settings, and open findings stay. Returns
+    /// [`Deleted`](crate::notify::Deleted). Takes `{"confirm": true}`.
+    pub const DELETE_HISTORY: &str = "delete_history";
+}
+
+/// Params of the `set_data_settings` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SetDataSettingsParams {
+    /// The new settings.
+    pub settings: crate::notify::DataSettings,
+}
+
+/// Params of the `delete_history` method: `confirm` must be `true`, so a stray call
+/// cannot wipe anything.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DeleteHistoryParams {
+    /// Must be `true`.
+    pub confirm: bool,
 }
 
 /// Params of the `report` method. Both are optional: the default is the last 7 days.

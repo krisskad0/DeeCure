@@ -51,6 +51,10 @@ The code is in `crates/deecure-agent/src/store/`.
 
 Change these times in `store/retention.rs`, and update this table.
 
+**Settings › Data › Keep history for** (90 days, 1 year, or 2 years; setting `data`) shortens the 2-year times for daily points, events, and weekly reports. A shorter choice cleans up at once.
+
+**Delete history** (agent call `delete_history` with `{"confirm": true}`) deletes metrics and series, events, reports, sent notifications, every snapshot but the newest of each kind, and closed findings. It keeps fix runs (restore points), settings, open findings, and what config files look like now. The moment is saved (`history.deleted_at`); events from before it are never stored again, so package logs and the journal, which still hold old lines, cannot bring the history back.
+
 ### Size after 2 years
 
 `make db-size` (also in CI) builds what 2 years leave behind on a big machine and measures the file. It writes in the agent's order (every series at each step), so pages fill like on a real computer. The last 7 days go through the real write path, then the real cleanup runs.

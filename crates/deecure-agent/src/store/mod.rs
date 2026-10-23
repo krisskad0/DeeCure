@@ -27,7 +27,7 @@ use serde_json::Value;
 
 pub use error::StoreError;
 pub use files::WatchedFile;
-pub use retention::RetentionReport;
+pub use retention::{DATA_SETTING, RetentionReport};
 
 /// A short name for results in this module.
 pub type Result<T> = std::result::Result<T, StoreError>;
@@ -44,7 +44,13 @@ pub fn lock(store: &Mutex<Store>) -> MutexGuard<'_, Store> {
 /// An open DeeCure database.
 pub struct Store {
     conn: Connection,
+    /// Events from before this moment (ms) are not stored: the person deleted history
+    /// then, and logs still holding older lines must not bring it back.
+    history_floor: std::cell::Cell<i64>,
 }
+
+/// The setting that holds [`Store::history_floor`].
+pub const HISTORY_DELETED_AT: &str = "history.deleted_at";
 
 impl Store {
     /// Where the database lives by default: `$XDG_DATA_HOME/deecure/deecure.db`,
@@ -89,7 +95,14 @@ impl Store {
             conn.pragma_update(None, "synchronous", "NORMAL")?;
         }
         schema::migrate(&conn)?;
-        Ok(Store { conn })
+        let store = Store {
+            conn,
+            history_floor: std::cell::Cell::new(i64::MIN),
+        };
+        if let Some(at) = store.setting::<i64>(HISTORY_DELETED_AT)? {
+            store.history_floor.set(at);
+        }
+        Ok(store)
     }
 
     /// The schema version stored in the database.

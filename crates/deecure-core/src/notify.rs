@@ -78,10 +78,61 @@ pub struct SentNotification {
     pub body: String,
 }
 
+/// How long history is kept (Settings › Data).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum KeepHistory {
+    /// 90 days.
+    #[serde(rename = "90d")]
+    Days90,
+    /// 1 year.
+    #[serde(rename = "1y")]
+    Year1,
+    /// 2 years (the default).
+    #[default]
+    #[serde(rename = "2y")]
+    Years2,
+}
+
+impl KeepHistory {
+    /// In days.
+    pub fn days(self) -> i64 {
+        match self {
+            KeepHistory::Days90 => 90,
+            KeepHistory::Year1 => 365,
+            KeepHistory::Years2 => 730,
+        }
+    }
+}
+
+/// Data settings.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct DataSettings {
+    /// How long history is kept.
+    pub keep_history: KeepHistory,
+}
+
+/// What `delete_history` removed.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Deleted {
+    /// Rows deleted.
+    pub rows: u64,
+    /// Bytes the database file gave back.
+    pub bytes_freed: u64,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn keep_history_choices() {
+        assert_eq!(DataSettings::default().keep_history.days(), 730);
+        let d: DataSettings = serde_json::from_value(json!({"keep_history": "90d"})).unwrap();
+        assert_eq!(d.keep_history.days(), 90);
+        assert!(serde_json::from_value::<DataSettings>(json!({"keep_history": "5y"})).is_err());
+    }
 
     #[test]
     fn quiet_hours_cross_midnight() {

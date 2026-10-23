@@ -27,6 +27,9 @@ const SNAPSHOTS_DAILY_AFTER_MS: i64 = 7 * DAY_MS;
 const MAX_EVENTS: i64 = 200_000;
 const HOUR_MS: i64 = 60 * 60_000;
 
+/// The setting that holds [`deecure_core::notify::DataSettings`].
+pub const DATA_SETTING: &str = "data";
+
 /// What one cleanup run did.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct RetentionReport {
@@ -46,7 +49,14 @@ impl Store {
         // Cut at period boundaries, so only complete periods are rolled up.
         let minute_cutoff = floor_to(now - KEEP_MINUTE_POINTS_MS, QUARTER_HOUR_MS);
         let quarter_cutoff = floor_to(now - KEEP_QUARTER_POINTS_MS, DAY_MS);
-        let history_cutoff = now - KEEP_HISTORY_MS;
+        // Settings › Data › Keep history for: 90 days, 1 year, or 2 years.
+        let keep = self
+            .setting::<deecure_core::notify::DataSettings>(DATA_SETTING)?
+            .unwrap_or_default()
+            .keep_history
+            .days()
+            * DAY_MS;
+        let history_cutoff = now - keep.min(KEEP_HISTORY_MS);
         let recent_cutoff = now - KEEP_RECENT_MS;
 
         // One series at a time, so every statement walks the primary key.
@@ -102,6 +112,52 @@ impl Store {
         // Give freed pages back to the file system.
         self.conn.execute_batch("PRAGMA incremental_vacuum")?;
         Ok(report)
+    }
+}
+
+impl Store {
+    /// Deletes all history: metrics, events, reports, sent notifications, every snapshot
+    /// but the newest of each kind, and closed findings. Fix runs (restore points),
+    /// settings, open findings, and what config files look like now are kept. Events
+    /// from before `now` are never stored again, even if a log still holds them.
+    pub fn delete_history(&self, now: Timestamp) -> Result<deecure_core::notify::Deleted> {
+        let size = |s: &Store| -> Result<u64> {
+            let pages: i64 = s
+                .conn
+                .pragma_query_value(None, "page_count", |r| r.get(0))?;
+            let free: i64 = s
+                .conn
+                .pragma_query_value(None, "freelist_count", |r| r.get(0))?;
+            let page: i64 = s.conn.pragma_query_value(None, "page_size", |r| r.get(0))?;
+            Ok(u64::try_from((pages - free) * page).unwrap_or(0))
+        };
+        let before = size(self)?;
+        let tx = self.conn.unchecked_transaction()?;
+        let mut rows = 0;
+        for sql in [
+            "DELETE FROM metric",
+            "DELETE FROM series",
+            "DELETE FROM event",
+            "DELETE FROM notification",
+            "DELETE FROM report",
+            "DELETE FROM snapshot WHERE id NOT IN (SELECT max(id) FROM snapshot GROUP BY kind)",
+            "DELETE FROM finding WHERE state != 'open'",
+        ] {
+            rows += tx.execute(sql, [])?;
+        }
+        tx.execute(
+            "INSERT INTO setting (key, value) VALUES (?1, ?2)
+             ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+            params![super::HISTORY_DELETED_AT, now.as_millis().to_string()],
+        )?;
+        tx.commit()?;
+        self.history_floor.set(now.as_millis());
+        self.conn.execute_batch("PRAGMA incremental_vacuum")?;
+        let after = size(self)?;
+        Ok(deecure_core::notify::Deleted {
+            rows: rows as u64,
+            bytes_freed: before.saturating_sub(after),
+        })
     }
 }
 
@@ -314,6 +370,78 @@ mod tests {
             .map(|e| e.at.as_millis())
             .collect();
         assert_eq!(left, [5, 4, 3]);
+    }
+
+    #[test]
+    fn keep_history_follows_the_setting() {
+        let store = Store::open_in_memory().unwrap();
+        let event = |at| Event {
+            id: None,
+            data: None,
+            kind: EventKind::Boot,
+            at: Timestamp(at),
+            title: "Started".into(),
+            detail: None,
+            subject: None,
+            source: "journal".into(),
+        };
+        store.add_event("a", &event(NOW - 200 * DAY_MS)).unwrap();
+        store.add_metric(&cpu(NOW - 200 * DAY_MS, 5.0)).unwrap();
+        store.apply_retention(Timestamp(NOW)).unwrap();
+        assert_eq!(
+            store.events_since(Timestamp(0), 10).unwrap().len(),
+            1,
+            "2 years by default"
+        );
+        store
+            .set_setting(DATA_SETTING, &serde_json::json!({"keep_history": "90d"}))
+            .unwrap();
+        store.apply_retention(Timestamp(NOW)).unwrap();
+        assert!(store.events_since(Timestamp(0), 10).unwrap().is_empty());
+        assert!(points(&store).is_empty());
+    }
+
+    #[test]
+    fn deleted_history_stays_deleted() {
+        let store = Store::open_in_memory().unwrap();
+        let event = |at| Event {
+            id: None,
+            data: None,
+            kind: EventKind::PackageUpgraded,
+            at: Timestamp(at),
+            title: "Upgraded x".into(),
+            detail: None,
+            subject: None,
+            source: "apt".into(),
+        };
+        store.add_event("apt:1", &event(NOW - DAY_MS)).unwrap();
+        store.add_metric(&cpu(NOW - MINUTE_MS, 5.0)).unwrap();
+        for at in [1, 2] {
+            store
+                .add_snapshot(&Snapshot {
+                    kind: SnapshotKind::Services,
+                    taken_at: Timestamp(at),
+                    data: json!({"n": at}),
+                })
+                .unwrap();
+        }
+        let gone = store.delete_history(Timestamp(NOW)).unwrap();
+        assert_eq!(
+            gone.rows, 4,
+            "an event, a point, its series, and the older snapshot"
+        );
+        assert!(store.events_since(Timestamp(0), 10).unwrap().is_empty());
+        assert!(points(&store).is_empty());
+        assert!(
+            store
+                .latest_snapshot(SnapshotKind::Services)
+                .unwrap()
+                .is_some(),
+            "the newest stays"
+        );
+        // A log read again does not bring the old event back; new ones are stored.
+        assert!(!store.add_event("apt:1", &event(NOW - DAY_MS)).unwrap());
+        assert!(store.add_event("apt:2", &event(NOW + 1)).unwrap());
     }
 
     /// Phase 3 "done when": the database stays under 200 MB after 2 years.

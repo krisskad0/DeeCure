@@ -13,6 +13,9 @@ impl Store {
     /// Records something that happened, once: an event whose `key` is already stored is
     /// left as it is. Returns `true` if it was new.
     pub fn add_event(&self, key: &str, event: &Event) -> Result<bool> {
+        if event.at.as_millis() < self.history_floor.get() {
+            return Ok(false);
+        }
         Ok(self
             .conn
             .prepare_cached(
@@ -36,6 +39,9 @@ impl Store {
     /// Records an event, or replaces the stored one with the same `key` (keeping its
     /// number). For events that grow, such as "crashed 3 times this hour".
     pub fn put_event(&self, key: &str, event: &Event) -> Result<()> {
+        if event.at.as_millis() < self.history_floor.get() {
+            return Ok(());
+        }
         self.conn
             .prepare_cached(
                 "INSERT INTO event (key, kind, at, title, detail, subject, source, data)

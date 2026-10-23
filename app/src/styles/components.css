@@ -264,3 +264,4 @@ a.btn { text-decoration: none; }
 .diff { margin: 0; padding: 10px 12px; border-radius: 6px; background: var(--panel-2, var(--track)); font-family: var(--mono, monospace); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .diff-add { color: var(--good); }
 .diff-del { color: var(--crit); }
+.confirm-row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; }

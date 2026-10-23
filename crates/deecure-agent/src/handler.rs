@@ -204,6 +204,39 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
         method::WEEKLY_REPORTS => {
             no_params(&request).and_then(|()| to_result(&store().reports(8).map_err(store_failed)?))
         }
+        method::DATA_SETTINGS => no_params(&request).and_then(|()| {
+            let settings: deecure_core::notify::DataSettings = store()
+                .setting(crate::store::DATA_SETTING)
+                .map_err(store_failed)?
+                .unwrap_or_default();
+            to_result(&settings)
+        }),
+        method::SET_DATA_SETTINGS => {
+            params::<deecure_core::rpc::SetDataSettingsParams>(&request).and_then(|p| {
+                let store = store();
+                store
+                    .set_setting(crate::store::DATA_SETTING, &p.settings)
+                    .map_err(store_failed)?;
+                // A shorter time takes effect now, so the space comes back right away.
+                store
+                    .apply_retention(Timestamp::now())
+                    .map_err(store_failed)?;
+                to_result(&p.settings)
+            })
+        }
+        method::DELETE_HISTORY => params::<deecure_core::rpc::DeleteHistoryParams>(&request)
+            .and_then(|p| {
+                if !p.confirm {
+                    return Err(RpcError::new(
+                        RpcError::INVALID_PARAMS,
+                        "delete_history needs {\"confirm\": true}",
+                    ));
+                }
+                let deleted = store()
+                    .delete_history(Timestamp::now())
+                    .map_err(store_failed)?;
+                to_result(&deleted)
+            }),
         other => Err(RpcError::method_not_found(other)),
     };
     match result {
@@ -531,5 +564,40 @@ mod tests {
         )
         .await;
         assert_eq!(reply["result"], json!([]));
+    }
+
+    #[tokio::test]
+    async fn delete_history_needs_confirmation() {
+        let agent = agent();
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":1,"method":"delete_history","params":{"confirm":false}}"#,
+        )
+        .await;
+        assert_eq!(reply["error"]["code"], RpcError::INVALID_PARAMS);
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":2,"method":"delete_history"}"#,
+        )
+        .await;
+        assert_eq!(reply["error"]["code"], RpcError::INVALID_PARAMS);
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":3,"method":"delete_history","params":{"confirm":true}}"#,
+        )
+        .await;
+        assert!(reply["result"]["rows"].is_number());
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":4,"method":"set_data_settings","params":{"settings":{"keep_history":"1y"}}}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["keep_history"], "1y");
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":5,"method":"data_settings"}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["keep_history"], "1y");
     }
 }

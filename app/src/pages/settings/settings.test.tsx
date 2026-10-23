@@ -9,6 +9,7 @@ import { DiagnosticsHardware, DiagnosticsNetwork, DiagnosticsPerformance } from 
 import { SettingsAbout, SettingsData, SettingsGeneral, SettingsNotifications } from "./Settings";
 
 const saved: unknown[] = [];
+const deletes: number[] = [];
 
 vi.mock("../../api", () => ({
   getInventory: (kind: string) =>
@@ -18,6 +19,12 @@ vi.mock("../../api", () => ({
         ? Promise.reject({ kind: "agent_not_running", message: "The agent is not running." })
         : Promise.resolve({ version: "0.1.0", database: "/home/riya/.local/share/deecure/deecure.db", database_bytes: 74e6, rules: 8, rules_dir: "/usr/share/deecure/rules", uptime_seconds: 3700, memory_bytes: 9e6 }),
   getLatest: () => Promise.resolve([{ name: "temp.cpu", value: 54, unit: "celsius", at: 0 }]),
+  getDataSettings: () => Promise.resolve({ keep_history: "2y" }),
+  setDataSettings: (d: unknown) => Promise.resolve(d),
+  deleteHistory: () => {
+    deletes.push(1);
+    return Promise.resolve({ rows: 42, bytes_freed: 5e6 });
+  },
   getTrayState: () => Promise.resolve({ enabled: false, active: false, available: false }),
   setTray: () => Promise.reject("this desktop has no tray area"),
   getNotifySettings: () => Promise.resolve({ critical: true, warnings: false, weekly: true, quiet_hours: "22-07" }),
@@ -89,6 +96,19 @@ describe("Settings and Assistant", () => {
     const before = toggle.checked;
     fireEvent.click(toggle);
     expect(toggle.checked).toBe(!before);
+  });
+
+  it("delete history asks first, and the retention choice is real", async () => {
+    render(<SettingsData />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Keep history for" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Delete…" }));
+    expect(deletes).toEqual([]);
+    expect(screen.getByText("Delete all history? This cannot be undone.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(deletes).toEqual([]);
+    fireEvent.click(screen.getByRole("button", { name: "Delete…" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete history" }));
+    await waitFor(() => expect(deletes).toEqual([1]));
   });
 
   it("data and about show the agent's facts", async () => {

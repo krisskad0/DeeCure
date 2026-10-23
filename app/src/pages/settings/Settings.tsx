@@ -3,7 +3,7 @@
 // (docs/03-ui-design/05-pages/22-settings.md). View settings work now; settings for
 // features that come later are shown honestly as "later".
 
-import { type NotifySettings, type TrayState, exportReport, getInventory, getTrayState, setTray, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
+import { type KeepHistory, type NotifySettings, type TrayState, deleteHistory, exportReport, getDataSettings, setDataSettings, getInventory, getTrayState, setTray, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
 import { useState } from "react";
 import { Button } from "../../components/Button";
 import { FieldRow, RadioCards, Select, Switch } from "../../components/FormControls";
@@ -215,12 +215,69 @@ function ExportButton() {
   );
 }
 
-export function SettingsData() {
-  const { data: agent, error } = useLive(loadAgent, 60_000);
+const loadData = () => getDataSettings();
+const KEEP = [
+  { value: "90d", label: "90 days" },
+  { value: "1y", label: "1 year" },
+  { value: "2y", label: "2 years" },
+] as const;
+
+function DeleteHistory({ onDone }: { onDone: () => void }) {
+  const toast = useToast();
+  const [stage, setStage] = useState<"idle" | "confirm" | "busy">("idle");
+  if (stage === "idle")
+    return (
+      <Button small onClick={() => setStage("confirm")}>
+        Delete…
+      </Button>
+    );
+  const run = async () => {
+    setStage("busy");
+    try {
+      const r = await deleteHistory();
+      toast(`History deleted · ${bytes(r.bytes_freed)} freed. New history starts now.`);
+      onDone();
+    } catch (e) {
+      toast(`Not deleted: ${toAppError(e).message}`);
+    }
+    setStage("idle");
+  };
   return (
-    <Panel title="Data retention" span={8}>
-      <FieldRow label="Keep history for" description="Fixed for now: detail fades with age to keep the database small">
-        <span>1-minute points 7 days · 15-minute 90 days · daily 2 years</span>
+    <span className="confirm-row">
+      <span className="muted">Delete all history? This cannot be undone.</span>
+      <Button small variant="danger" disabled={stage === "busy"} onClick={() => void run()}>
+        {stage === "busy" ? "Deleting…" : "Delete history"}
+      </Button>
+      <Button small disabled={stage === "busy"} onClick={() => setStage("idle")}>
+        Cancel
+      </Button>
+    </span>
+  );
+}
+
+export function SettingsData() {
+  const toast = useToast();
+  const { data: agent, error } = useLive(loadAgent, 60_000);
+  const data = useLive(loadData, 600_000).data;
+  const [keep, setKeep] = useState<KeepHistory | null>(null);
+  const [version, setVersion] = useState(0);
+  const current = keep ?? data?.keep_history;
+  const change = async (next: KeepHistory) => {
+    const before = current ?? null;
+    setKeep(next);
+    try {
+      await setDataSettings({ keep_history: next });
+      toast(next === "2y" ? "History is kept 2 years." : `History older than ${next === "90d" ? "90 days" : "1 year"} is deleted now and from now on.`);
+      setVersion((v) => v + 1);
+    } catch (e) {
+      setKeep(before);
+      toast(`Not saved: ${toAppError(e).message}`);
+    }
+  };
+  return (
+    <Panel title="Data retention" span={8} key={version}>
+      <FieldRow label="Keep history for" description="Metrics and change history. Detail fades with age: 1-minute points for 7 days, 15-minute for 90 days, then daily">
+        {current ? <Select value={current} options={KEEP} onChange={(v) => void change(v)} label="Keep history for" /> : <span className="muted">…</span>}
       </FieldRow>
       <FieldRow label="Database size" description={agent?.database ?? "~/.local/share/deecure/deecure.db"}>
         <span>{agent ? bytes(agent.database_bytes) : error ? "—" : "…"}</span>
@@ -228,8 +285,8 @@ export function SettingsData() {
       <FieldRow label="Export report" description="The last 7 days as one HTML file in your Downloads folder, to keep or share">
         <ExportButton />
       </FieldRow>
-      <FieldRow label="Delete history" description="Restore points are kept">
-        <span className="muted">Later</span>
+      <FieldRow label="Delete history" description="Metrics, change history, reports, and notifications. Restore points (DeeCure's fixes) and settings are kept">
+        <DeleteHistory onDone={() => setVersion((v) => v + 1)} />
       </FieldRow>
     </Panel>
   );

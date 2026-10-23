@@ -76,6 +76,8 @@ What is built (Phase 3): the choices are saved by the agent, which sends the not
 | Export report | HTML or JSON snapshot of all pages | [Export](act:toast:Report export is disabled in the prototype.) | — | `—` |
 | Delete history | Restore points are kept | [Delete…](act:toast:Prototype: nothing was deleted.) | — | `—` |
 
+What is built: **Keep history for** is a real choice saved by the agent; a shorter time deletes older history at once. **Delete…** asks "Delete all history? This cannot be undone." before anything happens, then says how much space came back. Restore points and settings are kept ([Storage](../../02-architecture/storage.md)).
+
 ## Settings › About — `settings/about`
 
 1. **Key-value list** — "About" · span 6

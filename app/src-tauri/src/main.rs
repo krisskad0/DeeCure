@@ -156,6 +156,28 @@ async fn notifications() -> Result<Value, AppError> {
     ask(method::NOTIFICATIONS, None).await
 }
 
+/// How long history is kept.
+#[tauri::command]
+async fn data_settings() -> Result<Value, AppError> {
+    ask(method::DATA_SETTINGS, None).await
+}
+
+/// Saves how long history is kept; a shorter time cleans up at once.
+#[tauri::command]
+async fn set_data_settings(settings: Value) -> Result<Value, AppError> {
+    ask(
+        method::SET_DATA_SETTINGS,
+        Some(json!({ "settings": settings })),
+    )
+    .await
+}
+
+/// Deletes all history (restore points and settings stay).
+#[tauri::command]
+async fn delete_history() -> Result<Value, AppError> {
+    ask(method::DELETE_HISTORY, Some(json!({ "confirm": true }))).await
+}
+
 /// A report of the last 7 days, made now.
 #[tauri::command]
 async fn report() -> Result<Value, AppError> {
@@ -402,6 +424,9 @@ fn main() {
             notifications,
             report,
             weekly_reports,
+            data_settings,
+            set_data_settings,
+            delete_history,
             export_report,
             machine,
             fix_plan,
