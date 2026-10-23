@@ -537,6 +537,22 @@ export function exportReport(): Promise<string> {
   return invoke<string>("export_report");
 }
 
+export interface TrayState {
+  enabled: boolean;
+  active: boolean;
+  /** This desktop has a tray area. */
+  available: boolean;
+}
+
+export function getTrayState(): Promise<TrayState> {
+  return invoke<TrayState>("tray_state");
+}
+
+/** Rejects with a plain-English reason when this desktop has no tray area. */
+export function setTray(on: boolean): Promise<TrayState> {
+  return invoke<TrayState>("set_tray", { on });
+}
+
 export interface PackageChange {
   /** Local time as apt wrote it: `YYYY-MM-DD  HH:MM:SS`. */
   start: string;

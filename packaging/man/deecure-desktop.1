@@ -3,6 +3,7 @@
 deecure-desktop \- the DeeCure desktop app
 .SH SYNOPSIS
 .B deecure-desktop
+.RB [ \-\-hidden ]
 .SH DESCRIPTION
 .B deecure-desktop
 opens the DeeCure window. It shows what the DeeCure agent found on this
@@ -14,10 +15,24 @@ The app talks to the agent over a private socket in
 .IR $XDG_RUNTIME_DIR/deecure/agent.sock .
 The agent starts by itself when the app asks for it (systemd socket
 activation). Everything stays on this computer.
+.PP
+Only one copy runs. Starting it again shows the window of the copy that runs.
+.SH OPTIONS
+.TP
+.B \-\-hidden
+Start with only the tray icon, when the tray icon is turned on in
+Settings and the desktop has a tray area. Otherwise the window opens as
+usual. The login entry DeeCure writes for the tray uses this.
 .SH FILES
 .TP
 .I ~/.local/share/deecure/deecure.db
 The agent's history and findings.
+.TP
+.I ~/.config/deecure/desktop.json
+The app's own settings, such as the tray icon.
+.TP
+.I ~/.config/autostart/io.github.krisskad0.DeeCure.desktop
+Starts DeeCure in the tray at login, while the tray icon is on.
 .SH SEE ALSO
 .BR deecure (1)
 .SH BUGS

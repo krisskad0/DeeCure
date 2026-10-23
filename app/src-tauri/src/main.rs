@@ -5,6 +5,8 @@
 //! The UI never talks to the agent directly. It calls the commands below, and
 //! they talk to the agent over its private socket (`docs/02-architecture/ipc-protocol.md`).
 
+mod tray;
+
 use std::path::PathBuf;
 
 use deecure_core::client::{self, ClientError};
@@ -13,7 +15,7 @@ use deecure_core::rpc::{StatusReport, default_socket_path, method};
 use deecure_core::{Metric, Snapshot};
 use serde::Serialize;
 use serde_json::{Value, json};
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 
 /// An error the UI can show: `kind` tells it which screen to show, `message` is for people.
 #[derive(Debug, Serialize)]
@@ -344,7 +346,41 @@ fn machine() -> Machine {
 }
 
 fn main() {
+    // A copy already runs (maybe only in the tray): it shows its window instead.
+    if tray::instance::signal_running() {
+        return;
+    }
     let result = tauri::Builder::default()
+        .setup(|app| {
+            let handle = app.handle().clone();
+            tray::instance::listen(handle.clone());
+            let hidden = std::env::args().any(|a| a == "--hidden");
+            let tray_on = tray::load().tray
+                && tauri::async_runtime::block_on(tray::host_available())
+                && match tray::create(&handle) {
+                    Ok(()) => true,
+                    Err(e) => {
+                        eprintln!("deecure-desktop: no tray icon: {e}");
+                        false
+                    }
+                };
+            // Start hidden only when the tray icon is there to bring the window back.
+            if hidden
+                && tray_on
+                && let Some(window) = app.get_webview_window("main")
+            {
+                let _ = window.hide();
+            }
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event
+                && tray::ACTIVE.load(std::sync::atomic::Ordering::SeqCst)
+            {
+                api.prevent_close();
+                let _ = window.hide();
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             status,
             snapshot,
@@ -366,7 +402,9 @@ fn main() {
             fix_runs,
             fix_undo,
             helper_status,
-            helper_read
+            helper_read,
+            tray::tray_state,
+            tray::set_tray
         ])
         .run(tauri::generate_context!());
     if let Err(e) = result {

@@ -22,6 +22,7 @@ deecure-fix.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tauri.workspace = true
+zbus.workspace = true
 
 [features]
 # Serves the built UI from inside the binary. Release builds turn it on; `tauri dev` does not.

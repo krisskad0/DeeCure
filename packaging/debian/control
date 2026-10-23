@@ -26,6 +26,7 @@ Description: explains your Linux computer and helps fix it safely
 Package: deecure-desktop
 Architecture: any
 Depends: deecure (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Recommends: libayatana-appindicator3-1
 Description: desktop app for DeeCure
  The DeeCure window: a health score, problems explained in plain English,
  live performance, hardware and sensors, storage, services, logs,

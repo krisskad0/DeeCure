@@ -17,6 +17,8 @@
 | Temperature unit |  | Select: Celsius / Fahrenheit | Celsius | `set-temp` |
 | Start at login | Collector runs in the background | Switch | On | `set-start` |
 
+What is built (Phase 3): **Tray icon** (off by default). When on, closing the window keeps DeeCure in the tray (menu: Open DeeCure, Quit DeeCure), and a login entry (`~/.config/autostart/io.github.krisskad0.DeeCure.desktop`, `deecure-desktop --hidden`) starts it there. It can only be turned on when the desktop has a tray area (`org.kde.StatusNotifierWatcher`; on Ubuntu the AppIndicator extension), so the window can never be hidden with no way back. Only one copy of the app runs: starting it again shows the running window. The setting lives in `~/.config/deecure/desktop.json`; DeeCure removes only a login entry it wrote itself.
+
 ## Settings › Access — `settings/access`
 
 1. **Radio cards ([Form controls](../03-components/21-form-controls.md))** — "Access level" · span 8

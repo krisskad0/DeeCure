@@ -3,7 +3,7 @@
 // (docs/03-ui-design/05-pages/22-settings.md). View settings work now; settings for
 // features that come later are shown honestly as "later".
 
-import { type NotifySettings, exportReport, getInventory, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
+import { type NotifySettings, type TrayState, exportReport, getInventory, getTrayState, setTray, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
 import { useState } from "react";
 import { Button } from "../../components/Button";
 import { FieldRow, RadioCards, Select, Switch } from "../../components/FormControls";
@@ -26,6 +26,28 @@ const RANGES = [
   { value: "30d", label: "30 days" },
 ] as const;
 
+const loadTray = () => getTrayState();
+
+function TrayRow() {
+  const toast = useToast();
+  const { data } = useLive(loadTray, 600_000);
+  const [state, setState] = useState<TrayState | null>(null);
+  const current = state ?? data;
+  const change = async (on: boolean) => {
+    try {
+      setState(await setTray(on));
+      toast(on ? "DeeCure now stays in the tray when you close the window, and starts there at login." : "Tray icon turned off.");
+    } catch (e) {
+      toast(`Tray icon not turned on: ${typeof e === "string" ? e : toAppError(e).message}`);
+    }
+  };
+  return (
+    <FieldRow label="Tray icon" description={current && !current.available ? "This desktop has no tray area" : "Keep DeeCure in the tray when the window closes, and start it there at login"}>
+      <Switch checked={current?.enabled ?? false} onChange={(on) => void change(on)} label="Tray icon" />
+    </FieldRow>
+  );
+}
+
 export function SettingsGeneral() {
   const [mode, setMode] = usePref<Mode>("mode", "beginner");
   const [range, setRange] = usePref<Range>("range", "24h");
@@ -47,6 +69,7 @@ export function SettingsGeneral() {
           Show again
         </Button>
       </FieldRow>
+      <TrayRow />
       <FieldRow label="Start at login" description="The background agent starts by itself when you sign in (systemd user service)">
         <StatusBadge variant="ok" label="On" />
       </FieldRow>

@@ -18,6 +18,8 @@ vi.mock("../../api", () => ({
         ? Promise.reject({ kind: "agent_not_running", message: "The agent is not running." })
         : Promise.resolve({ version: "0.1.0", database: "/home/riya/.local/share/deecure/deecure.db", database_bytes: 74e6, rules: 8, rules_dir: "/usr/share/deecure/rules", uptime_seconds: 3700, memory_bytes: 9e6 }),
   getLatest: () => Promise.resolve([{ name: "temp.cpu", value: 54, unit: "celsius", at: 0 }]),
+  getTrayState: () => Promise.resolve({ enabled: false, active: false, available: false }),
+  setTray: () => Promise.reject("this desktop has no tray area"),
   getNotifySettings: () => Promise.resolve({ critical: true, warnings: false, weekly: true, quiet_hours: "22-07" }),
   setNotifySettings: (s: unknown) => {
     saved.push(s);
@@ -95,6 +97,15 @@ describe("Settings and Assistant", () => {
     cleanup();
     render(<SettingsAbout />);
     await waitFor(() => expect(screen.getByText("8 from /usr/share/deecure/rules")).toBeTruthy());
+  });
+
+  it("the tray switch says when the desktop has no tray area", async () => {
+    render(<SettingsGeneral />);
+    await waitFor(() => expect(screen.getByText("This desktop has no tray area")).toBeTruthy());
+    const tray = screen.getByRole("switch", { name: "Tray icon" }) as HTMLInputElement;
+    expect(tray.checked).toBe(false);
+    fireEvent.click(tray);
+    await waitFor(() => expect((screen.getByRole("switch", { name: "Tray icon" }) as HTMLInputElement).checked).toBe(false));
   });
 
   it("notification choices are saved in the agent", async () => {
