@@ -22,6 +22,17 @@ https://krisskad0.github.io/DeeCure/apt/          (provisional address)
 - **Suite** = the Ubuntu codename (`noble`, `resolute`).
 - **Component** = `main` for stable, `beta` for pre-releases.
 
+## What is built
+
+| Piece | File |
+| --- | --- |
+| Install script | `packaging/install.sh` (options `--beta`, `--server`, `--dry-run`, `--uninstall`) |
+| Repository builder | `scripts/build-apt-repo.sh <site> <suite> <component> <debs...>` (reprepro; its database lives in `<site>/.reprepro`, so releases add up) |
+| Suites | `packaging/apt-repo/conf/distributions` (`noble`, `resolute`; components `main`, `beta`) |
+| Release workflow | `.github/workflows/release.yml`: on a `v*` tag, builds and tests the packages, makes `SHA256SUMS`, drafts a GitHub Release, and (when the `APT_SIGNING_KEY` secret exists) publishes to the `gh-pages` branch |
+| Version bump | `scripts/bump-version.sh 0.2.0` |
+| Test | `make install-test`: in a clean container, builds a repository signed with a throwaway key, checks the signature, then runs `install.sh` (dry run, install twice, unknown option, uninstall) |
+
 ## Tools and hosting
 
 - Build the repository with `reprepro`. Its config lives in `packaging/apt-repo/conf/`.

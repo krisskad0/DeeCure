@@ -65,6 +65,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Fix engine: 22 fixes with a preview (untick steps, undo and admin badges), live progress, verification, history, and undo. Fix buttons across the app; `deecure fix`, `deecure history`, and `deecure undo` in the terminal.
 - Full-access read-outs: SMART disk health, firewall rules, memory modules, and the serial number.
 - `make helper-test` (also in CI) tests the helper end to end with a real system D-Bus and polkit in a container.
+- Distribution, ready but not published: `packaging/install.sh` (with `--server`, `--beta`, `--dry-run`, `--uninstall`), a signed APT repository builder, a release workflow for `v*` tags, and `scripts/bump-version.sh`. `make install-test` checks the whole path against a repository signed with a throwaway key.
+- Install guide rewritten to match what is built.
 - Data table (search, filter chips, unit-aware sorting, paging with totals, row selection with a bulk action, Expert-only columns, empty text) and form controls (switch, select, radio cards, field rows, state tiles).
 - First real page: Services › System Services, with a KPI row, an alert per failed service, and a searchable, filterable units table. The services collector now also records each service's enabled-at-boot state and restarts since boot.
 - Pinned Rust 1.99.1 (`rust-toolchain.toml`), shared lints, `Makefile` (`build`, `test`, `lint`, `fmt`), and a GitHub Actions CI workflow.

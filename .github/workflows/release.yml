@@ -1,0 +1,82 @@
+# Builds and publishes a release when a version tag (v0.2.0, v0.2.0-rc.1) is pushed.
+# Nothing here runs on normal pushes. Publishing the APT repository needs the
+# APT_SIGNING_KEY secret (an armored signing subkey); without it, only the draft
+# GitHub Release is made.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  APT_OPTIONS: -o Acquire::Retries=3 -o Acquire::http::Timeout=30
+
+jobs:
+  release:
+    name: Build, test, and publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The tag matches the version in Cargo.toml
+        run: |
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME but Cargo.toml says $version"; exit 1; }
+
+      - name: Install tools
+        run: |
+          sudo apt-get $APT_OPTIONS update
+          sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
+            build-essential libsqlite3-dev libwebkit2gtk-4.1-dev debhelper devscripts lintian pkgconf reprepro gnupg
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install the pinned Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Build the packages and check them with lintian
+        run: make deb
+
+      - name: Install, use, and purge them
+        run: sudo scripts/test-deb.sh --throwaway target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb
+
+      - name: Test the admin helper with real D-Bus and polkit
+        run: docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-helper.sh --throwaway /src/target/deb/deecure_*.deb'
+
+      - name: Checksums
+        run: cd target/deb && sha256sum deecure_*.deb deecure-desktop_*.deb > SHA256SUMS && cat SHA256SUMS
+
+      - name: Draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=""
+          case "$GITHUB_REF_NAME" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" --draft $prerelease --title "DeeCure ${GITHUB_REF_NAME#v}" \
+            --notes "See CHANGELOG.md for what changed." \
+            target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb target/deb/SHA256SUMS packaging/install.sh
+
+      - name: Publish to the APT repository (GitHub Pages)
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        if: env.APT_SIGNING_KEY != ''
+        run: |
+          echo "$APT_SIGNING_KEY" | gpg --batch --import
+          component=main
+          case "$GITHUB_REF_NAME" in *-*) component=beta ;; esac
+          git fetch origin gh-pages || true
+          git worktree add site origin/gh-pages 2>/dev/null || { git worktree add --orphan -b gh-pages site; }
+          scripts/build-apt-repo.sh site noble "$component" target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb
+          cd site
+          git add -A
+          git -c user.name="DeeCure release" -c user.email="krisskad0@users.noreply.github.com" commit -m "APT repository: $GITHUB_REF_NAME ($component)"
+          git push origin HEAD:gh-pages

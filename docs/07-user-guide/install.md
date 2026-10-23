@@ -2,40 +2,50 @@
 
 [Docs](../README.md) › [User guide](README.md)
 
-> **Not released yet.** These steps work from the public beta onward. Addresses marked "provisional" may change.
+> **Not released yet.** The steps below work once the first release is published. The addresses (`krisskad0.github.io/DeeCure`) are provisional.
 
 ## What you need
 
 - Ubuntu 24.04 LTS or Ubuntu 26.04 LTS.
-- A 64-bit Intel or AMD computer (ARM support comes later).
+- A 64-bit Intel or AMD computer (ARM comes later).
 - Your password, to approve the install.
 
-## Option 1: one command (recommended)
+## Option 1: the install script (recommended)
 
-Open the Terminal (press `Ctrl` + `Alt` + `T`) and paste:
+Open the Terminal (`Ctrl` + `Alt` + `T`). Download the script, read it, then run it:
 
 ```bash
-curl -fsSL https://krisskad0.github.io/DeeCure/install.sh | sudo bash
+curl -fsSL https://krisskad0.github.io/DeeCure/install.sh -o install.sh
+less install.sh
+sudo sh install.sh
 ```
 
-This adds the DeeCure software source to your computer and installs DeeCure. You can [read the script](https://krisskad0.github.io/DeeCure/install.sh) before you run it.
+It adds DeeCure's signing key and software source, then installs DeeCure. It changes nothing else, and it is safe to run twice. Options:
 
-## Option 2: download the file
+| Option | What it does |
+| --- | --- |
+| `--server` | Install only the background agent and the `deecure` command, without the desktop app |
+| `--beta` | Use pre-releases |
+| `--dry-run` | Print the steps without changing anything |
+| `--uninstall` | Remove DeeCure, its key, and its source |
 
-1. Download `deecure_<version>_amd64.deb` from the [Releases page](https://github.com/krisskad0/DeeCure/releases) (provisional address).
-2. Double-click the file. It opens in App Center. Click **Install**.
+To check the script first: `sha256sum install.sh` must match `install.sh.sha256` on the same site.
 
-   Or, in the Terminal, from your Downloads folder:
+## Option 2: download the files
+
+1. From the [Releases page](https://github.com/krisskad0/DeeCure/releases), download `deecure_<version>_amd64.deb` and `deecure-desktop_<version>_amd64.deb`.
+2. Check them (optional): `sha256sum --check --ignore-missing SHA256SUMS` should say `OK` for both.
+3. Install both, from your Downloads folder:
 
    ```bash
-   sudo apt install ./deecure_*_amd64.deb
+   sudo apt install ./deecure_*_amd64.deb ./deecure-desktop_*_amd64.deb
    ```
 
-3. When asked "Add the DeeCure repository for updates?", choose **Yes** to get updates automatically.
+Files installed this way do not update by themselves. Use Option 1 to get updates with Ubuntu's normal updates.
 
 ## Option 3: step by step
 
-Use this if you want to see every step. It does the same thing as Option 1.
+The same as Option 1, by hand:
 
 ```bash
 sudo install -d -m 0755 /etc/apt/keyrings
@@ -51,31 +61,20 @@ Signed-By: /etc/apt/keyrings/deecure.asc
 EOF
 
 sudo apt update
-sudo apt install deecure
+sudo apt install deecure deecure-desktop
 ```
 
-## Check your download (optional)
-
-Each release has a `SHA256SUMS` file and its signature. In the folder with your download:
-
-```bash
-sha256sum --check --ignore-missing SHA256SUMS
-```
-
-You should see `OK`.
+`Signed-By` means Ubuntu trusts this key only for DeeCure's packages.
 
 ## Start DeeCure
 
-Open the app menu and search for **DeeCure**. On first launch, DeeCure asks you to choose an access level:
+Open the app menu and search for **DeeCure**. The first time, three short screens explain what DeeCure does and run a first check. In the terminal, run `deecure status`.
 
-- **Basic:** no password. About 80% of the checks.
-- **Full (recommended):** approve the DeeCure helper once with your password. All checks.
-
-You can change this later in Settings › Access.
+**Access:** DeeCure reads everything your account can read without a password. Some details (disk health, firewall rules) and fixes that change the system need the admin helper, which comes with the package. When you use one of them, Ubuntu asks for your password, each time. Nothing runs as admin without your OK.
 
 ## Update
 
-DeeCure updates come with your normal Ubuntu updates, through **Software Updater**. Or run:
+Updates come with your normal Ubuntu updates, in **Software Updater**. Or run:
 
 ```bash
 sudo apt update && sudo apt upgrade
@@ -83,25 +82,26 @@ sudo apt update && sudo apt upgrade
 
 ## Uninstall
 
-1. **Optional:** to delete your DeeCure history, open DeeCure › Settings › Data › **Delete history** first. Removing the package does not touch your home folder.
-2. Remove the app:
+```bash
+sudo sh install.sh --uninstall
+```
 
-   ```bash
-   sudo apt purge deecure
-   ```
+Or by hand:
 
-3. Remove the software source (only if you added it):
+```bash
+sudo apt purge deecure-desktop deecure
+sudo rm -f /etc/apt/sources.list.d/deecure.sources /etc/apt/keyrings/deecure.asc
+sudo apt update
+```
 
-   ```bash
-   sudo rm /etc/apt/sources.list.d/deecure.sources /etc/apt/keyrings/deecure.asc
-   sudo apt update
-   ```
+Your history stays in your home folder. To delete it too: `rm -rf ~/.local/share/deecure`
 
 ## Problems?
 
 | Problem | Try this |
 | --- | --- |
 | `apt update` shows a key error | Run Option 3's first two commands again to refresh the key. |
-| DeeCure is not in the app menu | Log out and log back in. |
-| "Requires Full access" appears | Settings › Access › choose **Full**. |
-| Something else | Open an issue on GitHub and include the output of `deecure --version` and `lsb_release -a`. |
+| DeeCure is not in the app menu | Install `deecure-desktop`, then log out and back in. |
+| "Agent not running" in the app | Run `systemctl --user start deecure-agent.socket` |
+| "Requires Full access" | The admin helper is part of the `deecure` package; if Settings › Access says "Not installed", reinstall `deecure`. |
+| Something else | Open an issue on GitHub with the output of `deecure --version` and `lsb_release -a`. |

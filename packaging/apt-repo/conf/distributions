@@ -1,0 +1,17 @@
+Origin: DeeCure
+Label: DeeCure
+Codename: noble
+Suite: noble
+Architectures: amd64
+Components: main beta
+Description: DeeCure for Ubuntu 24.04
+SignWith: default
+
+Origin: DeeCure
+Label: DeeCure
+Codename: resolute
+Suite: resolute
+Architectures: amd64
+Components: main beta
+Description: DeeCure for Ubuntu 26.04
+SignWith: default
