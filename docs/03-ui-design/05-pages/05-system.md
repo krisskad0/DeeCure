@@ -72,7 +72,7 @@ Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label
 
 ## System › Updates: `system/updates`
 
-Header actions: [**Install security updates**](act:fix:sec) (hidden once done), then Refresh and Export.
+Header actions: [**Install security updates**](act:fix:sec) (hidden once done), then Refresh.
 
 Tab count pill: 12.
 

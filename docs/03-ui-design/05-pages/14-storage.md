@@ -124,7 +124,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 
 ## Storage › Cleanup: `storage/cleanup`
 
-Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Refresh and Export.
+Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Refresh.
 
 1. **KPI row** · span 12
 

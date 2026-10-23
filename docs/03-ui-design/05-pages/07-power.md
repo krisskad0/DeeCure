@@ -35,7 +35,8 @@
 - Series: Health (slot 1, data [83,82,81,80,79,78,77,76,75,74,72,71])
 - X labels: Nov, Dec, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct
 
-5. **Data table**: "Top power consumers" · span 6
+5. **Data table**: "Top power consumers" · span 6 (the Health trend takes the full width until then)
+- **Not in this version:** this needs a per-process collector that DeeCure does not have yet, so the panel is hidden rather than shown empty ([pending work](../../05-roadmap/pending.md)).
 - Subtitle: "estimate"
 - Source chip (Expert): `powertop`
 - Empty text: "Requires Full access"

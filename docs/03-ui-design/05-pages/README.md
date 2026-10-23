@@ -40,7 +40,7 @@ That is 22 pages and 91 sub-pages in total.
 ## Every page uses the same layout
 
 1. Breadcrumb (Group › Page › Sub-page).
-2. Page title, status badge, and page actions (for example Free up space, Refresh, Export).
+2. Page title, status badge, and page actions (for example Free up space, Refresh).
 3. Tabs for the sub-pages, with a count badge where useful (Issues 8, Updates 12).
 4. A 12-column grid of panels. Each panel has a title, an optional info tooltip, the data source (shown in Expert mode), and its own actions.
 

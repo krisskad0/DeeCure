@@ -251,9 +251,6 @@ export function NetworkTraffic() {
       <Panel title="Throughput" source="/proc/net/dev" span={12}>
         <TimeChart history={history} names={["Download", "Upload"]} unit="MB/s" scale={(v) => v / MB} />
       </Panel>
-      <Panel title="Traffic by application" subtitle="today" span={12}>
-        <div className="empty muted">Requires Full access · Settings › Access</div>
-      </Panel>
     </>
   );
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Performance › Disk I/O (docs/03-ui-design/05-pages/02-performance.md), with real data.
-// Queue depth is not collected yet. Per-process disk use needs admin rights (Phase 2).
+// Queue depth and disk use per process are not collected yet, so they are not shown.
 // Each device shows its type (SSD, hard disk, USB drive) from the hardware inventory.
 
 import type { HardwareInfo, Metric } from "../../api";
@@ -78,11 +78,8 @@ export function PerformanceDisk() {
       <Panel title="Throughput" source="/proc/diskstats" span={12}>
         <TimeChart history={history} names={["Read", "Write"]} unit="MB/s" scale={(v) => v / MB} />
       </Panel>
-      <Panel title="Devices" subtitle="last minute" source="/proc/diskstats" span={6} flush>
+      <Panel title="Devices" subtitle="last minute" source="/proc/diskstats" span={12} flush>
         <DataTable rows={devices(latest, disks)} columns={COLUMNS} rowKey={(d) => d.name} empty="Measuring… (needs two readings, one minute apart)" />
-      </Panel>
-      <Panel title="Top I/O processes" source="/proc/[pid]/io" span={6} flush>
-        <div className="empty muted">Requires Full access · Settings › Access</div>
       </Panel>
     </>
   );

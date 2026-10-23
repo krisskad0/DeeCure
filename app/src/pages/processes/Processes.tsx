@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Processes › All Processes and Top Consumers (docs/03-ui-design/05-pages/09-processes.md),
-// with real data. Ending a process comes with the fix engine (Phase 2).
+// with real data. Ending a process goes through the fix engine.
 
 import { useState } from "react";
 import { type Process, getInventory } from "../../api";

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Memory (docs/03-ui-design/05-pages/06-hardware.md), with real data.
-// Module type, speed, and slots come from dmidecode, which needs Full access (Phase 2).
+// Module type, speed, and slots come from dmidecode through the admin helper (Full access).
 
 import { LinkButton } from "../../components/Button";
 import { type Check, Checklist } from "../../components/Checklist";

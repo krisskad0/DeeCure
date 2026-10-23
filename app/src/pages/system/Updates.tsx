@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // System › Updates (docs/03-ui-design/05-pages/05-system.md), with real data.
-// Installing updates needs the helper (Phase 2); until then the page only shows them.
+// Installing updates goes through the fix engine and the admin helper.
 
 import { type AptRun, type UpdatesInfo, getInventory, getSnapshot } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";

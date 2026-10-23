@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // System › Kernel (docs/03-ui-design/05-pages/05-system.md), with real data.
-// Removing old kernels needs the helper (Phase 2).
+// Removing old kernels goes through the fix engine and the admin helper.
 
 import { type KernelInfo, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";

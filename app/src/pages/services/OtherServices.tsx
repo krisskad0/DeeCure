@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Services › User Services and Startup Applications (docs/03-ui-design/05-pages/10-services.md),
-// with real data. Turning startup apps on and off comes with the fix engine (Phase 2).
+// with real data. Turning startup apps on and off goes through the fix engine.
 
 import { type StartupApp, type UserService, getInventory, getMachine } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";

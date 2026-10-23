@@ -74,7 +74,7 @@ describe("Network", () => {
     await shows(NetworkPorts, "Not filtered");
     await shows(NetworkFirewall, "The firewall is off");
     await shows(NetworkDns, "Office");
-    await shows(NetworkTraffic, "Requires Full access · Settings › Access");
+    await shows(NetworkTraffic, "Throughput");
   });
 });
 

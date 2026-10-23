@@ -70,7 +70,7 @@ describe("Performance tabs", () => {
     await waitFor(() => expect(screen.getByText("nvme0n1")).toBeTruthy());
     await waitFor(() => expect(screen.getByText("SSD (NVMe)")).toBeTruthy());
     expect(screen.getByText("512 GB")).toBeTruthy();
-    expect(screen.getByText("Requires Full access · Settings › Access")).toBeTruthy();
+    expect(screen.queryByText(/Requires Full access/)).toBeNull();
     expect(screen.getByText("0.4")).toBeTruthy();
   });
 

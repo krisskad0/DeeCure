@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Power › Battery, Power Profile, and Sleep (docs/03-ui-design/05-pages/07-power.md), with real data.
-// Changing the power mode or battery policies comes with the fix engine (Phase 2).
+// Changing the power mode and the low-battery power-off go through the fix engine.
 
 import { type SleepEvent, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -76,15 +76,12 @@ export function PowerBattery() {
           </>
         )}
       </Panel>
-      <Panel title="Health trend" subtitle="30 days" span={6}>
+      <Panel title="Health trend" subtitle="30 days" span={12}>
         {trend.length >= 2 ? (
           <LineChart series={[{ name: "Health", data: trend.map((p) => p.value), slot: 1 }]} x={{ kind: "time", times: trend.map((p) => p.at), range: "30d" }} height={180} min={Math.max(0, Math.floor(Math.min(...trend.map((p) => p.value)) / 10) * 10 - 10)} max={100} unit="%" />
         ) : (
           <div className="chart-empty muted">The trend fills in as DeeCure keeps measuring.</div>
         )}
-      </Panel>
-      <Panel title="Top power consumers" subtitle="estimate" span={6}>
-        <div className="empty muted">Requires Full access · Settings › Access</div>
       </Panel>
     </>
   );

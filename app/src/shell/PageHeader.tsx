@@ -8,8 +8,6 @@ import { href, type Route } from "../route";
 import { useUi } from "../ui";
 import { menuPages } from "../visible";
 
-const TOOLS = new Set(["diagnostics", "assistant", "settings"]);
-
 export function PageHeader(props: {
   route: Route;
   status: StatusVariant | null;
@@ -47,12 +45,6 @@ export function PageHeader(props: {
             <Icon name="ref" size={15} />
             <span className="btn-label">Refresh</span>
           </button>
-          {!TOOLS.has(page.id) && (
-            <button className="btn" type="button" disabled title="Export comes with Settings › Data">
-              <Icon name="dl" size={15} />
-              <span className="btn-label">Export</span>
-            </button>
-          )}
         </div>
       </div>
       {single ? (

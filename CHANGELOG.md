@@ -13,7 +13,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- The package details panel points to Packages › Cleanup for removing packages no longer needed, instead of saying it "comes with the fix engine".
 - Faster install: `install.sh` skips optional "recommended" packages (about 30 MB and 57 packages less on a new system; the tray library is still installed), skips refreshing package lists that are less than 6 hours old (and refreshes and retries if an install then fails), and says what it is doing while it downloads.
+
+### Removed
+
+- The greyed-out **Export** button on every page, which did nothing. Settings › Data › **Export report** exports the whole report.
+- Three panels that said "Requires Full access" but could not show anything even with Full access: Disk I/O › Top I/O processes, Power › Top power consumers, and Network › Traffic by application. They come back when DeeCure can measure use per app.
 
 ### Fixed
 

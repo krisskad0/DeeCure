@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Storage › Overview, Filesystems, Disk Usage, and Cleanup (docs/03-ui-design/05-pages/14-storage.md),
-// with real data. Cleaning itself comes with the fix engine (Phase 2); this page only shows.
+// with real data. Cleaning goes through the fix engine, with a preview and undo.
 
 import { type Metric, type SizedPath, type StorageInfo, getInventory, getMetrics, getSnapshot } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";

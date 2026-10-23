@@ -18,7 +18,7 @@
 | --- | --- | --- | --- |
 | 01 | [Panel](01-panel.md) | The frame around every widget: title, info tooltip, source chip, actions | Every panel on every page |
 | 02 | [Status badge](02-status-badge.md) | Healthy / Warning / Critical / Info / Unknown, plus neutral tags | Page status, table cells |
-| 03 | [Buttons](03-buttons.md) | Default, primary, small, link, danger, icon | Resolve, Refresh, Export |
+| 03 | [Buttons](03-buttons.md) | Default, primary, small, link, danger, icon | Resolve, Refresh, Apply |
 | 04 | [KPI tile and KPI row](04-kpi-tile.md) | One headline number + sparkline or bar | Memory 5.9 GB, 78% of 7.6 GB |
 | 05 | [Data table](05-data-table.md) | Lists of records | Services, processes, packages, ports |
 | 06 | [Inline meter](06-inline-meter.md) | A small usage bar inside a table cell | Disk use per mount |

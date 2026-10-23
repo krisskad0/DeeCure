@@ -141,6 +141,7 @@
 - X axis: time (current range)
 
 2. **Data table**: "Traffic by application" · span 12
+- **Not in this version:** this needs a per-process collector that DeeCure does not have yet, so the panel is hidden rather than shown empty ([pending work](../../05-roadmap/pending.md)).
 - Subtitle: "today"
 - Source chip (Expert): `nethogs (admin)`
 - Empty text: "Requires Full access"

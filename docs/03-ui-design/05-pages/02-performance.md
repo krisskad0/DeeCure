@@ -117,7 +117,8 @@
 
 - Whole disks only (no partitions, loop, or RAM disks). Type, Model, and Size come from the hardware inventory (the same as Hardware › Storage Devices): SSD (NVMe), SSD, Hard disk, USB drive, or Memory card. A drive plugged in since the last inventory shows "-" until the next one (within 30 s).
 
-4. **Data table**: "Top I/O processes" · span 6
+4. **Data table**: "Top I/O processes" · span 6 (the Devices table takes the full width until then)
+- **Not in this version:** this needs a per-process collector that DeeCure does not have yet, so the panel is hidden rather than shown empty ([pending work](../../05-roadmap/pending.md)).
 - Source chip (Expert): `iotop -b -n1`
 - Empty text: "Requires Full access · Settings › Access"
 

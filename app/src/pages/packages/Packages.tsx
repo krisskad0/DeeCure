@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Packages › Installed, Sources, Cleanup, Permissions (docs/03-ui-design/05-pages/13-packages.md),
-// with real data. Removing packages comes with the fix engine (Phase 2).
+// with real data. Cleanup removes packages no longer needed and leftover settings through
+// the fix engine; removing any one package is not offered.
 
 import { useState } from "react";
 import { type PackageInfo, type PackagesInfo, getInventory } from "../../api";
@@ -79,7 +80,7 @@ export function PackagesInstalled() {
         />
       </Panel>
       {inspect && (
-        <Drawer title={inspect.name} subtitle={`${LABEL[inspect.source]} package`} note="Removing packages comes with the fix engine" onClose={() => setInspect(null)}>
+        <Drawer title={inspect.name} subtitle={`${LABEL[inspect.source]} package`} note="To remove packages no longer needed, use Packages › Cleanup" onClose={() => setInspect(null)}>
           <KeyValueList
             rows={[
               ["Version", inspect.version ? <code key="v">{inspect.version}</code> : "-"],
