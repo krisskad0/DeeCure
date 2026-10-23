@@ -39,6 +39,7 @@ mod process_detail;
 mod process_io;
 pub(crate) mod processes;
 mod security;
+mod security_detail;
 mod services_detail;
 mod sleep;
 mod sockets;
@@ -86,6 +87,7 @@ pub const KINDS: &[&str] = &[
     "devices_detail",
     "hw_errors",
     "software_health",
+    "security_detail",
     "package_verify",
     "package_verify_run",
     "os",
@@ -180,6 +182,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "devices_detail" => serde_json::to_value(devices_detail::read(&agent.root).await),
         "hw_errors" => serde_json::to_value(hw_errors::read(&agent.root).await),
         "software_health" => serde_json::to_value(software_detail::read_health().await),
+        "security_detail" => serde_json::to_value(security_detail::read(&agent.root)),
         "package_verify" => serde_json::to_value(verify_answer(agent)),
         "package_verify_run" => {
             software_detail::start_verify(&agent.verify);

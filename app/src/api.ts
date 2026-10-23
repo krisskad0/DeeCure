@@ -457,6 +457,14 @@ export interface VerifyAnswer {
   failed?: string;
 }
 
+/** Security in depth (Expert): AppArmor per process, automatic updates. */
+export interface SecurityDetail {
+  confinement: { profile: string; mode: string; processes: number; names: string[] }[];
+  periodic: [string, string][];
+  unattended_installed: boolean;
+  upgrade_runs?: { at: string; level: string; message: string }[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -964,9 +972,10 @@ export interface PackagesInfo {
 
 export interface ContainersInfo {
   docker: "running" | "not running" | "no access" | "not installed";
-  containers: { name: string; image: string; status: string; state: string; ports: string[]; cpu?: string; memory?: string }[];
+  containers: { name: string; image: string; status: string; state: string; ports: string[]; cpu?: string; memory?: string; net_io?: string; block_io?: string }[];
   images: { repository: string; tag: string; size: string; created: string; containers: number }[];
   volumes: { name: string; size: string; links: number }[];
+  build_cache?: { size: string; in_use: boolean; last_used: string }[];
   vms: { name: string; engine: string; running: boolean }[];
 }
 
@@ -1033,6 +1042,7 @@ export function getInventory(kind: "platform_detail"): Promise<PlatformDetail>;
 export function getInventory(kind: "devices_detail"): Promise<DevicesDetail>;
 export function getInventory(kind: "hw_errors"): Promise<HwErrors>;
 export function getInventory(kind: "software_health"): Promise<SoftwareHealth>;
+export function getInventory(kind: "security_detail"): Promise<SecurityDetail>;
 export function getInventory(kind: "package_verify" | "package_verify_run"): Promise<VerifyAnswer>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;

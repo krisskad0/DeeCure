@@ -26,6 +26,19 @@ pub struct Container {
     pub cpu: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub memory: Option<String>,
+    /// Network and disk bytes since it started, as Docker says them, such as "1.2MB / 3.4MB".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub net_io: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub block_io: Option<String>,
+}
+
+/// One build cache entry from `docker system df -v`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CacheEntry {
+    pub size: String,
+    pub in_use: bool,
+    pub last_used: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -62,6 +75,7 @@ pub struct ContainersInfo {
     pub containers: Vec<Container>,
     pub images: Vec<Image>,
     pub volumes: Vec<Volume>,
+    pub build_cache: Vec<CacheEntry>,
     pub vms: Vec<Vm>,
 }
 
@@ -77,6 +91,10 @@ fn s(v: &Value, k: &str) -> String {
 
 /// Parses `docker ps -a --format '{{json .}}'` and `docker stats --no-stream --format '{{json .}}'`.
 pub fn parse_containers(ps: &str, stats: &str) -> Vec<Container> {
+    let io: HashMap<String, (String, String)> = lines_json(stats)
+        .iter()
+        .map(|v| (s(v, "Name"), (s(v, "NetIO"), s(v, "BlockIO"))))
+        .collect();
     let usage: HashMap<String, (String, String)> = lines_json(stats)
         .iter()
         .map(|v| {
@@ -109,6 +127,8 @@ pub fn parse_containers(ps: &str, stats: &str) -> Vec<Container> {
                     .collect(),
                 cpu: u.map(|u| u.0.clone()).filter(|c| !c.is_empty()),
                 memory: u.map(|u| u.1.clone()).filter(|m| !m.is_empty()),
+                net_io: io.get(&name).map(|x| x.0.clone()).filter(|n| !n.is_empty()),
+                block_io: io.get(&name).map(|x| x.1.clone()).filter(|b| !b.is_empty()),
                 name,
             }
         })
@@ -119,6 +139,23 @@ pub fn parse_containers(ps: &str, stats: &str) -> Vec<Container> {
             .then_with(|| a.name.cmp(&b.name))
     });
     out
+}
+
+/// The build cache entries of `docker system df -v --format '{{json .}}'`.
+pub fn parse_build_cache(text: &str) -> Vec<CacheEntry> {
+    let Ok(v) = serde_json::from_str::<Value>(text.trim()) else {
+        return Vec::new();
+    };
+    v.get("BuildCache")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|c| CacheEntry {
+            size: s(c, "Size"),
+            in_use: s(c, "InUse") == "true",
+            last_used: s(c, "LastUsedSince"),
+        })
+        .collect()
 }
 
 /// Parses `docker system df -v --format '{{json .}}'`.
@@ -205,6 +242,7 @@ pub async fn read(root: &SystemRoot) -> ContainersInfo {
                 .await
                 .unwrap_or_default();
                 (info.images, info.volumes) = parse_df(&df);
+                info.build_cache = parse_build_cache(&df);
                 "running".into()
             }
         }
@@ -249,8 +287,19 @@ mod tests {
         let ps = r#"{"Names":"redis-dev","Image":"redis:7","Status":"Up 12 hours","State":"running","Ports":"127.0.0.1:6379->6379/tcp"}
 {"Names":"old","Image":"x","Status":"Exited (0) 2 days ago","State":"exited","Ports":""}
 {"Names":"pg-dev","Image":"postgres:16","Status":"Up 12 hours","State":"running","Ports":"0.0.0.0:5432->5432/tcp, :::5432->5432/tcp"}"#;
-        let stats = r#"{"Name":"pg-dev","CPUPerc":"0.20%","MemUsage":"142MiB / 7.6GiB"}"#;
+        let stats = r#"{"Name":"pg-dev","CPUPerc":"0.20%","MemUsage":"142MiB / 7.6GiB","NetIO":"1.2MB / 3.4MB","BlockIO":"10MB / 0B"}"#;
         let c = parse_containers(ps, stats);
+        assert_eq!(
+            c.iter()
+                .find(|x| x.name == "pg-dev")
+                .and_then(|x| x.net_io.as_deref()),
+            Some("1.2MB / 3.4MB")
+        );
+        let cache = parse_build_cache(
+            r#"{"Images":[],"BuildCache":[{"Size":"12MB","InUse":"false","LastUsedSince":"28 hours ago"},{"Size":"0B","InUse":"true","LastUsedSince":"now"}]}"#,
+        );
+        assert_eq!(cache.len(), 2);
+        assert!(!cache[0].in_use && cache[1].in_use);
         assert_eq!(
             c.iter().map(|x| x.name.as_str()).collect::<Vec<_>>(),
             ["pg-dev", "redis-dev", "old"]

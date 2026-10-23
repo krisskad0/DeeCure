@@ -2,6 +2,8 @@
 // Containers › Containers, Images, Volumes, Virtual Machines
 // (docs/03-ui-design/05-pages/12-containers.md), with real data. Read-only.
 
+import { KeyValueList } from "../../components/KeyValueList";
+import { atLeast, useUi } from "../../ui";
 import { type ContainersInfo, getInventory } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -48,6 +50,8 @@ const CONTAINERS: Column<Container>[] = [
   { key: "ports", label: "Ports", text: (c) => c.ports.join(" "), render: (c) => (c.ports.length ? <span className="cell-two">{c.ports.filter((p) => !p.startsWith(":::")).map((p) => <code key={p}>{p.replace("->", "→")}</code>)}{public_(c).length > 0 && <StatusBadge variant="warn" label="Every network" />}</span> : "-") },
   { key: "cpu", label: "CPU", text: (c) => c.cpu ?? "-", numeric: true },
   { key: "memory", label: "Memory", text: (c) => c.memory ?? "-", numeric: true },
+  { key: "net", label: "Network in / out", text: (c) => c.net_io ?? "-", numeric: true, expert: true },
+  { key: "block", label: "Disk read / written", text: (c) => c.block_io ?? "-", numeric: true, expert: true },
 ];
 
 export function ContainersList() {
@@ -85,6 +89,7 @@ const IMAGES: Column<Image>[] = [
 ];
 
 export function ContainersImages() {
+  const { mode } = useUi();
   const { data: info, error } = useContainers();
   const openFix = useFix();
   if (!info) return <Panel title="Images" span={12}><NoData error={error} waiting="Asking Docker…" /></Panel>;
@@ -100,6 +105,23 @@ export function ContainersImages() {
       <Panel title="Images" source="docker system df -v" span={8} flush actions={unused > 0 && <Button small onClick={() => openFix("storage.prune_docker_images")}>Prune unused…</Button>}>
         <DataTable rows={info.images} columns={IMAGES} rowKey={(i) => `${i.repository}:${i.tag}`} empty="No images" />
       </Panel>
+      {atLeast(mode, "expert") && info.build_cache && (
+        <Panel
+          title="Build cache"
+          subtitle={`${info.build_cache.length} entries · ${info.build_cache.filter((c) => c.in_use).length} in use`}
+          info="Layers Docker keeps from builds to make the next build faster. Entries not in use can be removed; they are rebuilt when needed."
+          source="docker system df -v"
+          span={12}
+          actions={info.build_cache.some((c) => !c.in_use) && <Button small onClick={() => openFix("storage.prune_docker_build_cache")}>Remove unused…</Button>}
+        >
+          <KeyValueList
+            rows={[
+              ["Size of all entries", `${(info.build_cache.reduce((n, c) => n + dockerBytes(c.size), 0) / 1e9).toFixed(2)} GB`],
+              ["Not in use (can be removed)", `${(info.build_cache.filter((c) => !c.in_use).reduce((n, c) => n + dockerBytes(c.size), 0) / 1e9).toFixed(2)} GB`],
+            ]}
+          />
+        </Panel>
+      )}
     </>
   );
 }

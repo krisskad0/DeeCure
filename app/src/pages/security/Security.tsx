@@ -2,6 +2,8 @@
 // Security › Overview, Vulnerabilities, Hardening, File Integrity, Malware Scan
 // (docs/03-ui-design/05-pages/18-security.md), with real data. All checks are read-only.
 
+import { atLeast, useUi } from "../../ui";
+import { SecurityExpertSections } from "./SecurityExpert";
 import { FileCheck } from "../packages/SoftwareExpert";
 import { type SecurityInfo, type UpdatesInfo, getInventory, getSnapshot } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
@@ -35,6 +37,7 @@ function Waiting({ title, error }: { title: string; error: Parameters<typeof NoD
 }
 
 export function SecurityOverview() {
+  const { mode } = useUi();
   const { data: sec, error } = useLive(loadSecurity, 300_000);
   const updates = useLive(loadUpdates, 300_000).data?.data;
   const net = useLive(loadNet, 300_000).data;
@@ -86,6 +89,7 @@ export function SecurityOverview() {
           center={{ value: `${count("pass")}/${checks.length}`, subtitle: "passing" }}
         />
       </Panel>
+      {atLeast(mode, "expert") && <SecurityExpertSections />}
     </>
   );
 }
