@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright DeeCure contributors -->
+<component type="desktop-application">
+  <id>io.github.krisskad0.DeeCure</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <name>DeeCure</name>
+  <summary>Understand your Linux computer and fix it safely</summary>
+  <developer id="io.github.krisskad0">
+    <name>DeeCure contributors</name>
+  </developer>
+  <description>
+    <p>
+      DeeCure looks at your whole computer: hardware, the operating system, apps,
+      services, storage, networks, and security. It explains what it finds in plain
+      words, and tells you what needs attention first.
+    </p>
+    <ul>
+      <li>A health score and a short list of problems, most serious first</li>
+      <li>Live performance charts, processes, sensors, battery health, and disks</li>
+      <li>Logs, crashes, boots, and every change made to the system</li>
+      <li>Security and privacy checks that need no password</li>
+      <li>A performance check that finds why the computer is slow</li>
+    </ul>
+    <p>Everything stays on this computer. There is no account, and nothing is sent anywhere.</p>
+  </description>
+  <launchable type="desktop-id">io.github.krisskad0.DeeCure.desktop</launchable>
+  <url type="homepage">https://github.com/krisskad0/DeeCure</url>
+  <url type="bugtracker">https://github.com/krisskad0/DeeCure/issues</url>
+  <categories>
+    <category>System</category>
+    <category>Monitor</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+  <requires>
+    <display_length compare="ge">900</display_length>
+  </requires>
+  <provides>
+    <binary>deecure-desktop</binary>
+  </provides>
+  <releases>
+    <release version="0.1.0" date="2026-10-23">
+      <description>
+        <p>First release: every page shows real data from this computer.</p>
+      </description>
+    </release>
+  </releases>
+</component>

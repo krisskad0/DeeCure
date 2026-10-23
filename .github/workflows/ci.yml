@@ -94,7 +94,7 @@ jobs:
   package:
     name: Build and test the .deb
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -102,7 +102,13 @@ jobs:
         run: |
           sudo apt-get $APT_OPTIONS update
           sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
-            build-essential libsqlite3-dev debhelper devscripts lintian pkgconf
+            build-essential libsqlite3-dev libwebkit2gtk-4.1-dev debhelper devscripts lintian pkgconf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
 
       - name: Install the pinned Rust toolchain
         run: rustup show active-toolchain || rustup toolchain install
@@ -113,7 +119,7 @@ jobs:
         run: make deb
 
       - name: Install, use, and purge it
-        run: sudo scripts/test-deb.sh --throwaway target/deb/deecure_*.deb
+        run: sudo scripts/test-deb.sh --throwaway target/deb/deecure_*.deb target/deb/deecure-desktop_*.deb
 
       - uses: actions/upload-artifact@v4
         with:

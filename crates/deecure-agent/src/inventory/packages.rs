@@ -62,33 +62,30 @@ pub struct PackagesInfo {
     pub removable: Vec<Removable>,
 }
 
-/// Reads `/var/lib/dpkg/status`; `auto` holds packages APT installed as dependencies.
-/// Returns installed packages, and the names of removed packages that left config files.
-pub fn parse_dpkg(status: &str, auto: &HashSet<String>) -> (Vec<Package>, Vec<String>) {
+/// The `dpkg-query` format DeeCure asks for: one tab-separated line per package.
+pub const DPKG_FORMAT: &str = "${Package}\t${Version}\t${Installed-Size}\t${Section}\t${db:Status-Abbrev}\t${binary:Summary}\n";
+
+/// Reads `dpkg-query -W -f=DPKG_FORMAT` output; `auto` holds packages APT installed as
+/// dependencies. Returns installed packages, and removed packages that left config files.
+pub fn parse_dpkg(lines: &str, auto: &HashSet<String>) -> (Vec<Package>, Vec<String>) {
     let mut installed = Vec::new();
     let mut residual = Vec::new();
-    for block in status.split("\n\n") {
-        let field = |k: &str| {
-            block
-                .lines()
-                .find_map(|l| l.strip_prefix(&format!("{k}: ")))
-                .unwrap_or("")
-        };
-        let name = field("Package");
-        if name.is_empty() {
+    for line in lines.lines() {
+        let f: Vec<&str> = line.split('\t').collect();
+        let (Some(name), Some(status)) = (f.first().filter(|n| !n.is_empty()), f.get(4)) else {
             continue;
-        }
-        match field("Status") {
-            "install ok installed" => installed.push(Package {
-                name: name.to_owned(),
-                version: field("Version").to_owned(),
+        };
+        match status.trim() {
+            "ii" => installed.push(Package {
+                name: (*name).to_owned(),
+                version: f.get(1).copied().unwrap_or("").to_owned(),
                 source: "apt".into(),
-                size: field("Installed-Size").parse::<u64>().unwrap_or(0) * 1024,
-                manual: !auto.contains(name),
-                summary: field("Description").chars().take(90).collect(),
-                section: field("Section").to_owned(),
+                size: f.get(2).and_then(|s| s.parse::<u64>().ok()).unwrap_or(0) * 1024,
+                manual: !auto.contains(*name),
+                summary: f.get(5).copied().unwrap_or("").chars().take(90).collect(),
+                section: f.get(3).copied().unwrap_or("").to_owned(),
             }),
-            "deinstall ok config-files" => residual.push(name.to_owned()),
+            "rc" => residual.push((*name).to_owned()),
             _ => {}
         }
     }
@@ -199,10 +196,15 @@ pub async fn read(root: &SystemRoot) -> PackagesInfo {
             .read("/var/lib/apt/extended_states")
             .unwrap_or_default(),
     );
-    let (mut packages, residual) = parse_dpkg(
-        &root.read("/var/lib/dpkg/status").unwrap_or_default(),
-        &auto,
-    );
+    // dpkg-query is dpkg's supported interface; its database files are private to dpkg.
+    let list = command::output(
+        "dpkg-query",
+        &["-W", "-f", DPKG_FORMAT],
+        Duration::from_secs(30),
+    )
+    .await
+    .unwrap_or_default();
+    let (mut packages, residual) = parse_dpkg(&list, &auto);
     let apt_sizes: HashMap<String, u64> =
         packages.iter().map(|p| (p.name.clone(), p.size)).collect();
     let mut snap_disabled = 0u64;
@@ -365,7 +367,7 @@ mod tests {
         let auto = auto_installed(
             "Package: libfoo\nArchitecture: amd64\nAuto-Installed: 1\n\nPackage: htop\nAuto-Installed: 0\n",
         );
-        let status = "Package: htop\nStatus: install ok installed\nInstalled-Size: 300\nSection: utils\nVersion: 3.3.0\nDescription: interactive viewer\n more\n\nPackage: libfoo\nStatus: install ok installed\nInstalled-Size: 10\nVersion: 1\n\nPackage: oldapp\nStatus: deinstall ok config-files\nVersion: 2\n";
+        let status = "htop\t3.3.0\t300\tutils\tii \tinteractive viewer\nlibfoo\t1\t10\tlibs\tii \t\noldapp\t2\t\t\trc \told app\n";
         let (pkgs, residual) = parse_dpkg(status, &auto);
         assert_eq!(
             pkgs.iter()

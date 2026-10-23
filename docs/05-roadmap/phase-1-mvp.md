@@ -18,7 +18,9 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 | 9. Health score | ✅ Done. Score and per-area deductions in `status`, saved as `health.score` after each check, shown in the CLI and the app. Equal 15-point shares until open decision #15. |
 | 10. Pages | ✅ Done. All 22 pages and their 91 tabs show real data from this computer. What needs admin rights says "Requires Full access" (Phase 2); what needs the fix engine (cleaning, installing, ending processes, changing settings) only shows. Still to come: CVE numbers, firewall rules, per-app traffic, camera and microphone history, full file verification, and the assistant (Phase 4). Diagnostics run real checks: a performance check and a network test. |
 | 7. Collectors | Started. Network, disk I/O (rates, IOPS, busy, wait), pressure (some and full), sensors, per-core CPU, load, clock speed, context switches, memory and swap breakdown, and battery time left, boot timing, and pending updates, plus live `system`, `os`, `kernel`, `update_history`, `processes`, `network`, and `gpu` inventories. New rules: `security.updates_pending`, `system.reboot_required`, `security.firewall_off`, `backups.none`, `backups.overdue`. |
-| 1, 6, 8, 11–13 | Not started |
+| 11. Performance check | ✅ Done. Diagnostics › Performance Check with the runner. |
+| 13. Desktop integration | ✅ Done. A second package, `deecure-desktop`: the app with a menu entry, icons, AppStream data, and a man page. Tested by installing in a clean container. |
+| 1, 6, 8, 12 | Not started |
 
 ## Tasks (in order)
 

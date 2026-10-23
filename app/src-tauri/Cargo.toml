@@ -22,5 +22,9 @@ serde.workspace = true
 serde_json.workspace = true
 tauri.workspace = true
 
+[features]
+# Serves the built UI from inside the binary. Release builds turn it on; `tauri dev` does not.
+custom-protocol = ["tauri/custom-protocol"]
+
 [lints]
 workspace = true

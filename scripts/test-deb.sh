@@ -7,10 +7,11 @@
 set -euo pipefail
 
 if [ "${1:-}" != "--throwaway" ] || [ -z "${2:-}" ]; then
-  echo "Usage: $0 --throwaway <deecure.deb>   (only on a container or CI machine)" >&2
+  echo "Usage: $0 --throwaway <deecure.deb> [deecure-desktop.deb]   (only on a container or CI machine)" >&2
   exit 2
 fi
 deb="$(realpath "$2")"
+app="${3:+$(realpath "$3")}"
 [ "$(id -u)" = 0 ] || { echo "$0: must run as root" >&2; exit 2; }
 export DEBIAN_FRONTEND=noninteractive
 fail() { echo "FAIL: $*" >&2; exit 1; }
@@ -51,8 +52,24 @@ su deecure-test -c '
 grep -q '"generated_at"' /tmp/deecure-test.json || fail "status --json did not print the report"
 echo "ok: agent ran, loaded the rules, and kept its database private"
 
+if [ -n "$app" ]; then
+  echo "== desktop app"
+  apt-get install -y -qq "$app" >/dev/null
+  dpkg-query -W -f='${Package} ${Version} ${Status}\n' deecure-desktop
+  id=io.github.krisskad0.DeeCure
+  for f in /usr/bin/deecure-desktop /usr/share/applications/$id.desktop /usr/share/metainfo/$id.metainfo.xml /usr/share/icons/hicolor/scalable/apps/$id.svg; do
+    [ -e "$f" ] || fail "missing $f"
+  done
+  # Every library the app needs came with its dependencies.
+  missing="$(ldd /usr/bin/deecure-desktop | grep "not found" || true)"
+  [ -z "$missing" ] || fail "missing libraries: $missing"
+  grep -q "^Exec=deecure-desktop$" /usr/share/applications/$id.desktop || fail "the menu entry does not start the app"
+  echo "ok: app, menu entry, icon, and AppStream data installed; all libraries found"
+fi
+
 echo "== purge"
+[ -z "$app" ] || apt-get purge -y -qq deecure-desktop >/dev/null
 apt-get purge -y -qq deecure >/dev/null
-left="$(ls -d /usr/bin/deecure /usr/libexec/deecure /usr/share/deecure /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* 2>/dev/null || true)"
+left="$(ls -d /usr/bin/deecure /usr/bin/deecure-desktop /usr/libexec/deecure /usr/share/deecure /usr/share/applications/io.github.krisskad0.DeeCure.desktop /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* 2>/dev/null || true)"
 [ -z "$left" ] || fail "left behind: $left"
 echo "ok: nothing left behind"

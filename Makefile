@@ -39,7 +39,7 @@ deb: ## Build the .deb package into target/deb/ and check it with lintian
 	scripts/build-deb.sh
 
 deb-test: deb ## Install, use, and purge the .deb in a clean Ubuntu 24.04 container (needs Docker)
-	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-deb.sh --throwaway /src/target/deb/deecure_*.deb'
+	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-deb.sh --throwaway /src/target/deb/deecure_*.deb /src/target/deb/deecure-desktop_*.deb'
 
 clean: ## Remove build output
 	$(CARGO) clean

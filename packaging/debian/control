@@ -2,7 +2,7 @@ Source: deecure
 Section: admin
 Priority: optional
 Maintainer: DeeCure maintainers <krisskad0@users.noreply.github.com>
-Build-Depends: debhelper-compat (= 13), libsqlite3-dev, pkgconf
+Build-Depends: debhelper-compat (= 13), libsqlite3-dev, libwebkit2gtk-4.1-dev, pkgconf
 Standards-Version: 4.6.2
 Homepage: https://github.com/krisskad0/DeeCure
 Vcs-Browser: https://github.com/krisskad0/DeeCure
@@ -22,3 +22,16 @@ Description: explains your Linux computer and helps fix it safely
  the terminal, and as JSON for scripts.
  .
  Everything stays on this computer. Nothing is sent anywhere.
+
+Package: deecure-desktop
+Architecture: any
+Depends: deecure (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: desktop app for DeeCure
+ The DeeCure window: a health score, problems explained in plain English,
+ live performance, hardware and sensors, storage, services, logs,
+ networks, security, and privacy, with one page for each part of the
+ computer.
+ .
+ It shows what the deecure background agent collects. Everything stays
+ on this computer. Nothing is sent anywhere.
+

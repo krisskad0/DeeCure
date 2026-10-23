@@ -1,0 +1,24 @@
+.TH DEECURE-DESKTOP 1 "October 2026" "DeeCure 0.1.0" "User Commands"
+.SH NAME
+deecure-desktop \- the DeeCure desktop app
+.SH SYNOPSIS
+.B deecure-desktop
+.SH DESCRIPTION
+.B deecure-desktop
+opens the DeeCure window. It shows what the DeeCure agent found on this
+computer: a health score, problems explained in plain English, and one page
+for each part of the computer, such as performance, hardware, storage,
+services, logs, networks, security, and privacy.
+.PP
+The app talks to the agent over a private socket in
+.IR $XDG_RUNTIME_DIR/deecure/agent.sock .
+The agent starts by itself when the app asks for it (systemd socket
+activation). Everything stays on this computer.
+.SH FILES
+.TP
+.I ~/.local/share/deecure/deecure.db
+The agent's history and findings.
+.SH SEE ALSO
+.BR deecure (1)
+.SH BUGS
+Report problems at https://github.com/krisskad0/DeeCure/issues
