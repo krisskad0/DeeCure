@@ -4,12 +4,23 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 ![Platform: Ubuntu 24.04 | 26.04](https://img.shields.io/badge/platform-Ubuntu%2024.04%20%7C%2026.04-E95420)
 ![Status: in development](https://img.shields.io/badge/status-in%20development-yellow)
+[![Release](https://img.shields.io/github/v/release/krisskad0/DeeCure?include_prereleases&label=pre-release)](https://github.com/krisskad0/DeeCure/releases)
 
 **DeeCure is a free, open-source "doctor" for your Linux computer.** It checks your whole PC (hardware, Ubuntu, apps, services, storage, network, and security), explains every problem in plain English, and fixes it safely with a preview and an undo button. Everything stays on your computer.
 
 > **In one sentence:** DeeCure tells you *what is wrong with your Linux PC, why, and how to fix it*, the way a good friend who knows Linux would.
 
-> **Status:** in active development, not released yet. The agent, the desktop app, the command line, history, notifications, and safe fixes are built and tested (Phases 0-3). See the [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
+> **Status:** in active development. The first pre-release, [v0.1.0-alpha.2](https://github.com/krisskad0/DeeCure/releases), is out for testing. The agent, the desktop app, the command line, history, notifications, and safe fixes are built and tested (Phases 0-3). See the [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
+
+## Install with one command
+
+On Ubuntu 24.04 or 26.04, open the Terminal (`Ctrl` + `Alt` + `T`) and paste:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
+```
+
+That installs everything: the background agent, the desktop app, the `deecure` command, and the libraries they need. Then open **DeeCure** from the app menu. Run the same command again to update. More options (server only, uninstall, read the script first): [install guide](docs/07-user-guide/install.md).
 
 ---
 
@@ -83,7 +94,7 @@ DeeCure is built like system software, not like a script collection:
 
 ## Try it (developers)
 
-DeeCure is not released yet. To build and run it from source on Ubuntu 24.04 or newer:
+To build and run DeeCure from source on Ubuntu 24.04 or newer:
 
 ```bash
 git clone https://github.com/krisskad0/DeeCure.git
@@ -105,15 +116,9 @@ deecure fix storage.free_space    # preview a fix, then run it after you say yes
 deecure undo 12                   # take a fix back
 ```
 
-### Install with one command
+### Install details
 
-As soon as the first pre-release is published, this installs everything (the agent, the app, the `deecure` command, and the libraries they need) on Ubuntu 24.04 or 26.04:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
-```
-
-It installs the newest [GitHub Release](https://github.com/krisskad0/DeeCure/releases) after checking every package's checksum (later: DeeCure's signed APT repository, with updates through Software Updater). No `curl`? Use `wget -qO- … | sudo sh`. Details and options: [install guide](docs/07-user-guide/install.md).
+The one-command install takes the newest [GitHub Release](https://github.com/krisskad0/DeeCure/releases) and checks every package against its checksum before installing; a package that does not match is never installed. Later it will use DeeCure's signed APT repository, with updates through Software Updater. No `curl`? Use `wget -qO- https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh`. All options: [install guide](docs/07-user-guide/install.md).
 
 ## FAQ
 

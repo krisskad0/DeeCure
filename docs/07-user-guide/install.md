@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [User guide](README.md)
 
-> **Not released yet.** Option 1 works as soon as the first pre-release is published on GitHub. The APT repository (`krisskad0.github.io/DeeCure`) comes later; until then Option 1 installs from GitHub Releases.
+> **Pre-release for testing:** [v0.1.0-alpha.2](https://github.com/krisskad0/DeeCure/releases) is out. Option 1 installs it. DeeCure's signed APT repository comes later; until then Option 1 installs from GitHub Releases.
 
 ## What you need
 
@@ -31,6 +31,8 @@ curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/in
 less install.sh
 sudo sh install.sh
 ```
+
+Then open **DeeCure** from the app menu, or run `deecure status` in the Terminal.
 
 **What it does:**
 

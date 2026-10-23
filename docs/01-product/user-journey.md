@@ -7,7 +7,7 @@
 1. The user finds DeeCure on the website or in a blog post.
 2. They copy one command:
    ```bash
-   curl -fsSL https://<site>/install.sh | sudo bash
+   curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
    ```
    This adds the DeeCure apt repository and installs the `.deb` package. A normal `.deb` download is offered too.
 3. After install, DeeCure appears in the app menu.

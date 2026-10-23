@@ -4,6 +4,12 @@
 
 Everything you need for everyday use, in short steps.
 
+Not installed yet? On Ubuntu 24.04 or 26.04, paste this in the Terminal, then open DeeCure from the app menu ([details](install.md)):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
+```
+
 ## 1. First launch
 
 DeeCure shows three short screens:

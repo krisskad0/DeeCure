@@ -26,7 +26,7 @@ https://krisskad0.github.io/DeeCure/apt/          (provisional address)
 
 | Piece | File |
 | --- | --- |
-| Install script | `packaging/install.sh` (options `--beta`, `--server`, `--dry-run`, `--uninstall`) |
+| Install script | `packaging/install.sh` (options `--beta`, `--server`, `--from-github`, `--dry-run`, `--uninstall`). Uses this repository when it is online, otherwise the newest GitHub Release with checksum checks ([Install guide](../07-user-guide/install.md)). |
 | Repository builder | `scripts/build-apt-repo.sh <site> <suite> <component> <debs...>` (reprepro; its database lives in `<site>/.reprepro`, so releases add up) |
 | Suites | `packaging/apt-repo/conf/distributions` (`noble`, `resolute`; components `main`, `beta`) |
 | Release workflow | `.github/workflows/release.yml`: on a `v*` tag, builds and tests the packages, makes `SHA256SUMS`, creates the GitHub Release (published for pre-releases, a draft for stable releases), and (when the `APT_SIGNING_KEY` secret exists) publishes to the `gh-pages` branch |

@@ -2,7 +2,7 @@
 
 Start here. Each folder covers one area. Each file covers one topic and stays short.
 
-> **Status:** Phases 0-3 are built. **To continue the work, start with [Pending work](05-roadmap/pending.md)**: what is left, what waits for the owner, and the heavy checks still to run.
+> **Status:** Phases 0-3 are built. The first pre-release is out: [install it with one command](07-user-guide/install.md). **To continue the work, start with [Pending work](05-roadmap/pending.md)**: what is left, what waits for the owner, and the heavy checks still to run.
 
 ## Reading order
 
