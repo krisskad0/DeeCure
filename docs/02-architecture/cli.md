@@ -15,7 +15,7 @@ deecure status --json     # for scripts and servers
 
 The CLI also makes DeeCure usable on servers with no desktop.
 
-## What is built (Phase 0)
+## What is built
 
 The code is in `crates/deecure-cli/`. Commands not listed here are still planned.
 
@@ -23,6 +23,12 @@ The code is in `crates/deecure-cli/`. Commands not listed here are still planned
 | --- | --- |
 | `deecure status` | Open problems, most serious first, in plain English, and when the agent last checked |
 | `deecure status --json` | The same report as JSON, for scripts and servers |
+| `deecure history` | What changed, newest first, one heading per local day. `--since` takes `30m`, `24h`, `7d` (default), `2w`, or a date like `2026-10-01`. `--kind` (repeatable): `packages`, `config`, `devices`, `system`, `services`, `crashes`, `deecure`. `--json` prints the raw `events` answer. The packages of one apt run are one line; a fix shows its number and the undo command. |
+| `deecure history --fixes` | Only DeeCure's fixes, with the numbers `deecure undo` takes |
+| `deecure report` | A summary of the last 7 days (`--since` as above): health and its change, problems, what changed, disks with "full in", and one tip |
+| `deecure report --html FILE` | The same as one HTML file that works offline and prints well. It is written to a temporary file first, so a failed write leaves nothing half done. `-` prints it. `--json` prints the raw report. |
+| `deecure fix ACTION [TARGET]` | Preview a fix and run it after a yes (`--yes` skips the question, `--list` lists them) |
+| `deecure undo NUMBER` | Take back a fix |
 | `deecure --socket PATH …` | Talk to an agent at another socket (for development) |
 | `deecure --version`, `deecure --help` | Version and help |
 

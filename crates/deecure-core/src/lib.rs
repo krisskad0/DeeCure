@@ -17,6 +17,7 @@ mod id;
 pub mod local;
 mod metric;
 pub mod notify;
+pub mod report;
 pub mod rpc;
 mod severity;
 mod snapshot;

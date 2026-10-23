@@ -161,10 +161,154 @@ pub async fn show(agent: &Agent, title: &str, body: &str, critical: bool) -> Res
     Ok(())
 }
 
+/// Setting: the weekly slot (Sunday 18:00, ms) last handled.
+const WEEKLY_DONE: &str = "notify.weekly_done";
+/// Setting: the weekly slot whose notification still waits to be shown.
+const WEEKLY_PENDING: &str = "notify.weekly_pending";
+/// A weekly notification not shown within a day is dropped (the report is kept).
+const WEEKLY_RETRY_MS: i64 = 24 * 60 * 60 * 1000;
+/// The weekly summary needs this much history, so a new install does not send an empty one.
+const WEEKLY_MIN_HISTORY_MS: i64 = 2 * 24 * 60 * 60 * 1000;
+const WEEK_MS: i64 = 7 * 24 * 60 * 60 * 1000;
+
+/// The latest Sunday 18:00 (local time) at or before `now`.
+pub fn weekly_slot(now: Timestamp, tz: &local::TimeZone) -> Option<Timestamp> {
+    let p = local::parts_in(now, tz)?;
+    let back = i32::from(p.weekday % 7); // Sunday is 7, so 0 days back
+    for extra in [0, 7] {
+        let day = local::day_start_in(now, -(back + extra), tz)?;
+        let d = local::parts_in(day, tz)?;
+        let slot = local::at_in(d.year, d.month, d.day, 18, 0, tz)?;
+        if slot <= now {
+            return Some(slot);
+        }
+    }
+    None
+}
+
+/// What the weekly step should do now.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Weekly {
+    /// Nothing.
+    Wait,
+    /// Mark the slot as handled without a report (turned off, or too little history).
+    Skip(Timestamp),
+    /// Make the report for the slot, save it, and show it.
+    Make(Timestamp),
+}
+
+/// Decides the weekly step. `history_since` is the oldest health score kept.
+pub fn weekly_due(
+    slot: Option<Timestamp>,
+    done: Option<Timestamp>,
+    settings: &NotifySettings,
+    history_since: Option<Timestamp>,
+) -> Weekly {
+    let Some(slot) = slot else {
+        return Weekly::Wait;
+    };
+    if done.is_some_and(|d| d >= slot) {
+        return Weekly::Wait;
+    }
+    let enough =
+        history_since.is_some_and(|h| slot.as_millis() - h.as_millis() >= WEEKLY_MIN_HISTORY_MS);
+    if !settings.weekly || !enough {
+        return Weekly::Skip(slot);
+    }
+    // A computer that was off on Sunday sends it once, as soon as it is on again.
+    Weekly::Make(slot)
+}
+
+async fn weekly(agent: &Agent, now: Timestamp, minute: u16) -> Result<(), String> {
+    let tz = local::zone();
+    let slot = weekly_slot(now, &tz);
+    let step = {
+        let s = store::lock(&agent.store);
+        let settings = settings(&s).map_err(|e| e.to_string())?;
+        let done = s
+            .setting::<Timestamp>(WEEKLY_DONE)
+            .map_err(|e| e.to_string())?;
+        let oldest = s
+            .metrics("health.score", None, Timestamp(0), now)
+            .map_err(|e| e.to_string())?
+            .first()
+            .map(|m| m.at);
+        weekly_due(slot, done, &settings, oldest)
+    };
+    match step {
+        Weekly::Wait => {}
+        Weekly::Skip(slot) => {
+            store::lock(&agent.store)
+                .set_setting(WEEKLY_DONE, &slot)
+                .map_err(|e| e.to_string())?;
+        }
+        Weekly::Make(slot) => {
+            let s = store::lock(&agent.store);
+            let report = crate::report::build(
+                &s,
+                &agent.root,
+                Timestamp(slot.as_millis() - WEEK_MS),
+                now,
+                now,
+            )
+            .map_err(|e| e.to_string())?;
+            s.batch(|s| {
+                s.add_report(&report)?;
+                s.set_setting(WEEKLY_PENDING, &slot)?;
+                s.set_setting(WEEKLY_DONE, &slot)
+            })
+            .map_err(|e| e.to_string())?;
+        }
+    }
+    // Show a waiting weekly summary, outside quiet hours, for up to a day.
+    let pending = {
+        let s = store::lock(&agent.store);
+        let pending = s
+            .setting::<Timestamp>(WEEKLY_PENDING)
+            .map_err(|e| e.to_string())?;
+        match pending {
+            Some(_) => s.reports(1).map_err(|e| e.to_string())?.into_iter().next(),
+            None => None,
+        }
+    };
+    let Some(report) = pending else { return Ok(()) };
+    if now.as_millis() - report.created_at.as_millis() > WEEKLY_RETRY_MS {
+        store::lock(&agent.store)
+            .set_setting(WEEKLY_PENDING, &Option::<Timestamp>::None)
+            .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+    let quiet = store::lock(&agent.store)
+        .setting::<NotifySettings>(SETTING)
+        .map_err(|e| e.to_string())?
+        .unwrap_or_default()
+        .quiet_hours
+        .contains(minute);
+    if quiet {
+        return Ok(());
+    }
+    let title = "Your weekly DeeCure summary";
+    let body = format!("{}\nTip: {}", report.summary(), short(&report.tip));
+    show(agent, title, &body, false).await?;
+    let s = store::lock(&agent.store);
+    s.batch(|s| {
+        s.add_notification("weekly", now, title, &body)?;
+        s.set_setting(WEEKLY_PENDING, &Option::<Timestamp>::None)
+    })
+    .map_err(|e| e.to_string())
+}
+
 /// Finds what is due and shows it. Returns a reason when nothing could be shown.
 pub async fn check(agent: &Agent, now: Timestamp) -> Result<(), String> {
+    let alerts = alerts(agent, now).await;
     let minute = local::parts(now).map_or(12 * 60, |p| p.minute_of_day());
-    let alerts = {
+    let weekly = weekly(agent, now, minute).await;
+    alerts.and(weekly)
+}
+
+async fn alerts(agent: &Agent, now: Timestamp) -> Result<(), String> {
+    let minute = local::parts(now).map_or(12 * 60, |p| p.minute_of_day());
+    let due_now = {
         let s = store::lock(&agent.store);
         let settings = settings(&s).map_err(|e| e.to_string())?;
         let findings = s.open_findings().map_err(|e| e.to_string())?;
@@ -177,7 +321,7 @@ pub async fn check(agent: &Agent, now: Timestamp) -> Result<(), String> {
         }
         due(&findings, &settings, &last, now, minute)
     };
-    for alert in alerts {
+    for alert in due_now {
         show(agent, &alert.title, &alert.body, alert.critical).await?;
         let s = store::lock(&agent.store);
         s.batch(|s| {
@@ -336,6 +480,40 @@ mod tests {
                 .body
                 .ends_with("and 2 more. Open DeeCure to see them.")
         );
+    }
+
+    #[test]
+    fn the_weekly_slot_is_the_last_sunday_at_six() {
+        let tz = local::fixed(5);
+        let at = |d, h, m| local::at_in(2026, 10, d, h, m, &tz).unwrap();
+        // 2026-10-25 is a Sunday.
+        assert_eq!(weekly_slot(at(25, 18, 0), &tz), Some(at(25, 18, 0)));
+        assert_eq!(weekly_slot(at(25, 17, 59), &tz), Some(at(18, 18, 0)));
+        assert_eq!(weekly_slot(at(28, 9, 0), &tz), Some(at(25, 18, 0)));
+        assert_eq!(weekly_slot(at(31, 23, 0), &tz), Some(at(25, 18, 0)));
+    }
+
+    #[test]
+    fn the_weekly_summary_comes_once_and_not_on_a_new_install() {
+        let s = NotifySettings::default();
+        let at = Timestamp(10 * 86_400_000);
+        let slot = Some(at);
+        let old = Some(Timestamp(0));
+        assert_eq!(weekly_due(slot, None, &s, old), Weekly::Make(at));
+        assert_eq!(
+            weekly_due(slot, slot, &s, old),
+            Weekly::Wait,
+            "already handled"
+        );
+        let fresh = Some(Timestamp(9 * 86_400_000));
+        assert_eq!(
+            weekly_due(slot, None, &s, fresh),
+            Weekly::Skip(at),
+            "one day of history"
+        );
+        let off = NotifySettings { weekly: false, ..s };
+        assert_eq!(weekly_due(slot, None, &off, old), Weekly::Skip(at));
+        assert_eq!(weekly_due(None, None, &s, old), Weekly::Wait);
     }
 
     #[test]

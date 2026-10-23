@@ -3,7 +3,7 @@
 // Rule (docs/02-architecture/health-score.md): open critical −15, warning −5, info 0;
 // each area loses at most 15 points. The agent saves the score after every check.
 
-import { getMetrics } from "../../api";
+import { type Report, getMetrics, getWeeklyReports } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
@@ -16,6 +16,32 @@ import { type PageProps, areaLabel, worst } from "./shared";
 
 /** The most points one area can take off. Mirrors `AREA_SHARE` in deecure-core. */
 const AREA_SHARE = 15;
+
+const loadWeekly = () => getWeeklyReports();
+
+function WeeklySummaries() {
+  const { data, error } = useLive(loadWeekly, 600_000);
+  return (
+    <Panel title="Weekly summaries" subtitle="Sunday 18:00" info="DeeCure saves one each week, and shows it as a notification when Settings › Notifications › Weekly summary is on." span={12} flush>
+      {!data ? (
+        <NoData error={error} waiting="Loading…" />
+      ) : data.length ? (
+        <DataTable rows={data} columns={WEEKLY} rowKey={(r) => String(r.created_at)} empty="" />
+      ) : (
+        <div className="empty muted">The first weekly summary comes on Sunday, after DeeCure has watched this computer for a few days.</div>
+      )}
+    </Panel>
+  );
+}
+
+const total = (r: Report) => Object.values(r.changes).reduce((a, b) => a + b, 0);
+const WEEKLY: Column<Report>[] = [
+  { key: "week", label: "Week", text: (r) => String(r.since), render: (r) => `${new Date(r.since).toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${new Date(r.until).toLocaleDateString(undefined, { day: "numeric", month: "short" })}` },
+  { key: "score", label: "Health", text: (r) => (r.score === undefined ? "—" : String(r.score)) },
+  { key: "changes", label: "Changes", text: (r) => String(total(r)) },
+  { key: "problems", label: "Problems", text: (r) => String(r.findings.filter((f) => f.severity !== "info").length) },
+  { key: "tip", label: "Tip", text: (r) => r.tip, wrap: true },
+];
 
 const loadTrend = () => {
   const until = Date.now();
@@ -77,6 +103,7 @@ export function OverviewScore({ report, error }: PageProps) {
       <Panel title="Score breakdown" subtitle="Areas DeeCure checks today" span={12} flush>
         <DataTable rows={rows} columns={COLUMNS} rowKey={(r) => r.area} empty="No areas are checked yet" />
       </Panel>
+      <WeeklySummaries />
     </>
   );
 }

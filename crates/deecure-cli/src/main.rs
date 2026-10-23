@@ -5,6 +5,7 @@
 //! Commands are listed in `docs/02-architecture/cli.md`.
 
 mod fix;
+mod history;
 mod render;
 
 use std::path::{Path, PathBuf};
@@ -47,9 +48,34 @@ enum Command {
         #[arg(long)]
         list: bool,
     },
-    /// Show what DeeCure changed, newest first
-    History,
-    /// Take back a fix by its number from `deecure history`
+    /// Show what changed on this computer, newest first
+    History {
+        /// How far back: 30m, 24h, 7d, 2w, or a date like 2026-10-01
+        #[arg(long, default_value = "7d", value_name = "WHEN")]
+        since: String,
+        /// Only these: packages, config, devices, system, services, crashes, deecure (repeatable)
+        #[arg(long, value_name = "KIND")]
+        kind: Vec<String>,
+        /// Show only what DeeCure changed, with the numbers for `deecure undo`
+        #[arg(long)]
+        fixes: bool,
+        /// Print the raw data as JSON, for scripts
+        #[arg(long)]
+        json: bool,
+    },
+    /// Summarize a period: health, problems, what changed, disks, and one tip
+    Report {
+        /// How far back: 24h, 7d, 30d, or a date like 2026-10-01
+        #[arg(long, default_value = "7d", value_name = "WHEN")]
+        since: String,
+        /// Save it as one HTML file to share (`-` prints it)
+        #[arg(long, value_name = "FILE")]
+        html: Option<PathBuf>,
+        /// Print the raw data as JSON, for scripts
+        #[arg(long)]
+        json: bool,
+    },
+    /// Take back a fix by its number from `deecure history --fixes`
     Undo {
         /// The run number
         id: i64,
@@ -70,7 +96,13 @@ fn main() -> ExitCode {
             yes,
             list,
         } => fix::fix(&socket, action, target, yes, list),
-        Command::History => fix::history(&socket),
+        Command::History { fixes: true, .. } => fix::history(&socket),
+        Command::History {
+            since, kind, json, ..
+        } => history::history(&socket, &since, &kind, json),
+        Command::Report { since, html, json } => {
+            history::report(&socket, &since, html.as_deref(), json)
+        }
         Command::Undo { id } => fix::undo(&socket, id),
     }
 }

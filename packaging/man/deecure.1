@@ -9,6 +9,33 @@ deecure \- explains your Linux computer and helps fix it safely
 .RB [ \-\-json ]
 .br
 .B deecure
+.B history
+.RB [ \-\-since
+.IR WHEN ]
+.RB [ \-\-kind
+.IR KIND ]...
+.RB [ \-\-fixes ]
+.RB [ \-\-json ]
+.br
+.B deecure
+.B report
+.RB [ \-\-since
+.IR WHEN ]
+.RB [ \-\-html
+.IR FILE ]
+.RB [ \-\-json ]
+.br
+.B deecure
+.B fix
+.RI [ ACTION " [" TARGET ]]
+.RB [ \-\-yes ]
+.RB [ \-\-list ]
+.br
+.B deecure
+.B undo
+.I NUMBER
+.br
+.B deecure
 .RB [ \-\-version | \-\-help ]
 .SH DESCRIPTION
 .B deecure
@@ -25,6 +52,38 @@ that found it. If the agent has not checked the computer yet, it says so.
 .TP
 .B status \-\-json
 Prints the same report as JSON, for scripts and servers.
+.TP
+.B history
+Shows what changed on this computer, newest first, one heading per day:
+packages (apt, dpkg, snap, Flatpak), configuration files, devices plugged in
+and out, starts and unclean shutdowns, failed services, crashes, and the fixes
+DeeCure made. The packages of one apt run are one line.
+.B \-\-since
+takes 30m, 24h, 7d (the default), 2w, or a date such as 2026\-10\-01.
+.B \-\-kind
+shows only packages, config, devices, system, services, crashes, or deecure,
+and can be given more than once.
+.B \-\-fixes
+lists only DeeCure's fixes, with the numbers
+.B undo
+takes.
+.TP
+.B report
+Summarizes a period (7 days by default): the health score and how it moved,
+open problems, what changed, disks and when they fill up, and one tip.
+.BI \-\-html " FILE"
+saves it as one HTML file that works offline and prints well; a FILE of
+.B \-
+prints the HTML.
+.TP
+.B fix
+Shows a fix's steps, with their commands and whether each can be undone, and
+runs them after you say yes. Admin steps ask for your password.
+.B \-\-list
+lists every fix.
+.TP
+.BI undo " NUMBER"
+Takes back a fix by its number.
 .SH OPTIONS
 .TP
 .BI \-\-socket " PATH"

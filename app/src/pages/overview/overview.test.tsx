@@ -28,6 +28,7 @@ const LATEST: Metric[] = [
 ];
 
 vi.mock("../../api", () => ({
+  getWeeklyReports: () => Promise.resolve([{ created_at: Date.now(), since: Date.now() - 7 * 86_400_000, until: Date.now(), host: "riya-laptop", os: "Ubuntu", score: 82, score_trend: [], findings: [], changes: { packages: 12, config: 3, devices: 0, crashes: 0, failed_services: 0, boots: 2, unclean_shutdowns: 0, fixes: 0 }, highlights: [], disks: [], tip: "Set up backups." }]),
   getEvents: () => Promise.resolve({ events: [{ id: 1, kind: "boot", at: Date.now() - 3_600_000, title: "Computer started", source: "journal", detail: "Kernel 6.8.0-47-generic" }], truncated: false }),
   getLatest: () => Promise.resolve(LATEST),
   getMetrics: (name: string) => Promise.resolve([0, 1, 2].map((i) => ({ ...metric(name, 10 + i, "percent"), at: at - (2 - i) * 60_000 }))),
@@ -87,6 +88,8 @@ describe("Overview pages", () => {
     expect(cells[0]).toBe("Storage");
     expect(cells).toContain("−5");
     expect(cells).toContain("Services");
+    await waitFor(() => expect(screen.getByText("Set up backups.")).toBeTruthy());
+    expect(screen.getByText("17")).toBeTruthy();
   });
 
   it("before the first check there is no score", () => {

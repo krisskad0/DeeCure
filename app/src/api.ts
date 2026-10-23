@@ -511,6 +511,32 @@ export function getNotifications(): Promise<SentNotification[]> {
   return invoke<SentNotification[]>("notifications");
 }
 
+// Reports (deecure-core report.rs).
+
+export interface Report {
+  created_at: number;
+  since: number;
+  until: number;
+  host: string;
+  os: string;
+  score?: number;
+  score_trend: [number, number][];
+  findings: Finding[];
+  changes: { packages: number; config: number; devices: number; crashes: number; failed_services: number; boots: number; unclean_shutdowns: number; fixes: number };
+  highlights: HistoryEvent[];
+  disks: { mount_point: string; used_percent: number; free_bytes: number; days_until_full?: number }[];
+  tip: string;
+}
+
+export function getWeeklyReports(): Promise<Report[]> {
+  return invoke<Report[]>("weekly_reports");
+}
+
+/** Saves a 7-day report as HTML in the downloads folder; returns the file's path. */
+export function exportReport(): Promise<string> {
+  return invoke<string>("export_report");
+}
+
 export interface PackageChange {
   /** Local time as apt wrote it: `YYYY-MM-DD  HH:MM:SS`. */
   start: string;

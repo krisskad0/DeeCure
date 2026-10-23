@@ -3,7 +3,7 @@
 // (docs/03-ui-design/05-pages/22-settings.md). View settings work now; settings for
 // features that come later are shown honestly as "later".
 
-import { type NotifySettings, getInventory, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
+import { type NotifySettings, exportReport, getInventory, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
 import { useState } from "react";
 import { Button } from "../../components/Button";
 import { FieldRow, RadioCards, Select, Switch } from "../../components/FormControls";
@@ -170,6 +170,25 @@ export function SettingsAssistant() {
   );
 }
 
+function ExportButton() {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    setBusy(true);
+    try {
+      toast(`Saved: ${await exportReport()}`);
+    } catch (e) {
+      toast(`Not saved: ${toAppError(e).message}`);
+    }
+    setBusy(false);
+  };
+  return (
+    <Button small disabled={busy} onClick={() => void run()}>
+      {busy ? "Saving…" : "Export"}
+    </Button>
+  );
+}
+
 export function SettingsData() {
   const { data: agent, error } = useLive(loadAgent, 60_000);
   return (
@@ -180,8 +199,8 @@ export function SettingsData() {
       <FieldRow label="Database size" description={agent?.database ?? "~/.local/share/deecure/deecure.db"}>
         <span>{agent ? bytes(agent.database_bytes) : error ? "—" : "…"}</span>
       </FieldRow>
-      <FieldRow label="Export report" description="HTML or JSON snapshot of all pages">
-        <span className="muted">Later</span>
+      <FieldRow label="Export report" description="The last 7 days as one HTML file in your Downloads folder, to keep or share">
+        <ExportButton />
       </FieldRow>
       <FieldRow label="Delete history" description="Restore points are kept">
         <span className="muted">Later</span>

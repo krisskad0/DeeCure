@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-//! Sent notifications, so the same alert never repeats within 24 hours.
+//! Sent notifications, so the same alert never repeats within 24 hours, and weekly reports.
 
 use deecure_core::Timestamp;
 use deecure_core::notify::SentNotification;
@@ -50,6 +50,39 @@ impl Store {
             })
         })?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
+}
+
+impl Store {
+    /// Saves a weekly report.
+    pub fn add_report(&self, report: &deecure_core::report::Report) -> Result<()> {
+        self.conn
+            .prepare_cached(
+                "INSERT INTO report (created_at, since, until, data) VALUES (?1, ?2, ?3, ?4)",
+            )?
+            .execute(params![
+                report.created_at.as_millis(),
+                report.since.as_millis(),
+                report.until.as_millis(),
+                serde_json::to_string(report)?,
+            ])?;
+        Ok(())
+    }
+
+    /// The newest weekly reports, newest first. One that cannot be read (from a much older
+    /// DeeCure) is skipped, not an error.
+    pub fn reports(&self, limit: u32) -> Result<Vec<deecure_core::report::Report>> {
+        let mut stmt = self
+            .conn
+            .prepare_cached("SELECT data FROM report ORDER BY created_at DESC, id DESC LIMIT ?1")?;
+        let rows = stmt.query_map(params![limit], |row| row.get::<_, String>(0))?;
+        let mut out = Vec::new();
+        for row in rows {
+            if let Ok(r) = serde_json::from_str(&row?) {
+                out.push(r);
+            }
+        }
+        Ok(out)
     }
 }
 

@@ -36,6 +36,11 @@ impl LocalTime {
     }
 }
 
+/// A zone `hours` ahead of UTC with no clock changes, for tests and fixed offsets.
+pub fn fixed(hours: i8) -> TimeZone {
+    TimeZone::fixed(jiff::tz::offset(hours))
+}
+
 /// The computer's time zone.
 pub fn zone() -> TimeZone {
     TimeZone::system()

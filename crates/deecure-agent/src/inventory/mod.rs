@@ -29,7 +29,7 @@ mod security;
 mod sleep;
 mod sockets;
 pub(crate) mod storage;
-mod system;
+pub(crate) mod system;
 pub(crate) mod units;
 mod usage;
 

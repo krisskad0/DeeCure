@@ -17,7 +17,12 @@ use crate::inventory::logs::{self, Boot, Entry};
 
 pub const HOUR_MS: i64 = 3_600_000;
 /// The journal pattern for everything this module reads.
-pub const GREP: &str = "^usb .*(New USB device found|Product:|USB disconnect)|segfault at|Out of memory: Killed|code=dumped|: Failed with result";
+pub const GREP: &str = "^usb .*(New USB device found|Product:|USB disconnect)|segfault at|Out of memory: Killed|code=dumped|: Failed with result|Reached target .*shutdown.target";
+/// Key prefixes of the events this module makes, so a new read can replace them.
+pub const KEY_PREFIXES: &[&str] = &["usb:", "crash:", "failed:"];
+/// Services stopped around a shutdown or logout often "fail"; that is not a problem.
+const SHUTDOWN_BEFORE_MS: i64 = 120_000;
+const SHUTDOWN_AFTER_MS: i64 = 30_000;
 
 /// One group: the newest time and how many.
 #[derive(Debug, Clone, Copy)]
@@ -42,11 +47,34 @@ fn times(count: u64) -> String {
     }
 }
 
-/// "bluetooth.service: Failed with result 'exit-code'." → ("bluetooth.service", "exit-code")
+/// Undoes systemd's name escaping: `dm_crypt\x2d0` → `dm_crypt-0`.
+pub fn unescape(name: &str) -> String {
+    let mut out = String::with_capacity(name.len());
+    let mut rest = name;
+    while let Some(i) = rest.find("\\x") {
+        out.push_str(&rest[..i]);
+        let hex = rest.get(i + 2..i + 4);
+        match hex.and_then(|h| u8::from_str_radix(h, 16).ok()) {
+            Some(b) if b.is_ascii() && !b.is_ascii_control() => {
+                out.push(char::from(b));
+                rest = &rest[i + 4..];
+            }
+            _ => {
+                out.push_str("\\x");
+                rest = &rest[i + 2..];
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// "bluetooth.service: Failed with result 'exit-code'." → ("bluetooth.service", "exit-code").
+/// Session scopes (`….scope`) are left out: they end with every logout.
 fn failed_unit(message: &str) -> Option<(String, String)> {
     let (unit, rest) = message.split_once(": Failed with result '")?;
     let result = rest.split('\'').next()?;
-    (!unit.contains(' ')).then(|| (unit.to_owned(), result.to_owned()))
+    (!unit.contains(' ') && !unit.ends_with(".scope")).then(|| (unescape(unit), result.to_owned()))
 }
 
 /// Turns journal entries (oldest first) into grouped events, as `(key, event)`.
@@ -109,9 +137,23 @@ pub fn events(entries: &[Entry]) -> Vec<(String, Event)> {
         ));
     }
 
+    let shutdowns: Vec<i64> = entries
+        .iter()
+        .filter(|e| {
+            e.message.starts_with("Reached target") && e.message.contains("shutdown.target")
+        })
+        .map(|e| e.at)
+        .collect();
+    let near_shutdown = |at: i64| {
+        shutdowns
+            .iter()
+            .any(|s| at >= s - SHUTDOWN_BEFORE_MS && at <= s + SHUTDOWN_AFTER_MS)
+    };
     let mut failed = BTreeMap::new();
     for e in entries {
-        if let Some((unit, result)) = failed_unit(&e.message) {
+        if let Some((unit, result)) = failed_unit(&e.message)
+            && !near_shutdown(e.at)
+        {
             add(&mut failed, (unit, result), e.at);
         }
     }
@@ -230,6 +272,11 @@ mod tests {
         assert!(titles.contains(&"chrome was stopped: memory ran out"));
         assert!(titles.contains(&"bluetooth.service failed"));
         assert!(titles.contains(&"something failed"));
+        assert_eq!(
+            unescape("systemd-cryptsetup@dm_crypt\\x2d0.service"),
+            "systemd-cryptsetup@dm_crypt-0.service"
+        );
+        assert_eq!(unescape("odd\\xZZ\\x"), "odd\\xZZ\\x");
         let (key, crash) = events
             .iter()
             .find(|(_, e)| e.title.ends_with("(14 times)"))
@@ -237,6 +284,24 @@ mod tests {
         assert_eq!(key, "crash:bluetoothd:SIGSEGV:10");
         assert_eq!(crash.at, Timestamp(h + 13 * 60_000));
         assert_eq!(crash.data.as_ref().unwrap()["count"], 14);
+    }
+
+    #[test]
+    fn failures_at_shutdown_or_logout_and_scopes_are_left_out() {
+        let entries = [
+            entry(1_000_000, "gdm.service: Failed with result 'exit-code'."),
+            entry(
+                1_010_000,
+                "app-gnome-x.scope: Failed with result 'resources'.",
+            ),
+            entry(
+                1_020_000,
+                "Reached target shutdown.target - System Shutdown.",
+            ),
+            entry(9_000_000, "cups.service: Failed with result 'exit-code'."),
+        ];
+        let titles: Vec<String> = events(&entries).into_iter().map(|(_, e)| e.title).collect();
+        assert_eq!(titles, ["cups.service failed"]);
     }
 
     #[test]

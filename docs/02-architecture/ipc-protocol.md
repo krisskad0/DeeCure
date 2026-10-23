@@ -49,6 +49,8 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | `set_notify_settings` | `{"settings": {…}}` (missing fields take their defaults) | The saved settings. Unknown fields or values are a `-32602` error. | Phase 3 |
 | `notify_test` | none | `true` when a test notification was shown; otherwise an error saying why (such as no desktop session) | Phase 3 |
 | `notifications` | none | `[{"at": <ms>, "title": …, "body": …}, …]`: the last 30 shown, newest first | Phase 3 |
+| `report` | `{"since": <ms>?, "until": <ms>?}` (default: the last 7 days) | A report: `created_at`, `since`, `until`, `host`, `os`, `score`?, `score_trend` (`[[<ms>, <score>], …]`, daily), `findings`, `changes` (counts by type), `highlights` (at most 12 events), `disks` (with `days_until_full` while filling), and `tip` | Phase 3 |
+| `weekly_reports` | none | The last 8 weekly reports, newest first | Phase 3 |
 
 `?` marks an optional field. Unknown param fields are rejected. Metric names are listed in [Collectors](collectors.md#metric-names).
 

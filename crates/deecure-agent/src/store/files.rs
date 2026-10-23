@@ -79,6 +79,21 @@ impl Store {
         Ok(())
     }
 
+    /// Deletes events whose key starts with one of `prefixes`, from `from` on.
+    pub fn delete_events_from(&self, prefixes: &[&str], from: Timestamp) -> Result<usize> {
+        let mut deleted = 0;
+        for prefix in prefixes {
+            // `substr` instead of LIKE, so `_` and `%` in a prefix mean themselves.
+            deleted += self
+                .conn
+                .prepare_cached(
+                    "DELETE FROM event WHERE at >= ?1 AND substr(key, 1, length(?2)) = ?2",
+                )?
+                .execute(params![from.as_millis(), prefix])?;
+        }
+        Ok(deleted)
+    }
+
     /// The stored event with number `id`, if any.
     pub fn event_by_id(&self, id: i64) -> Result<Option<Event>> {
         let key = self

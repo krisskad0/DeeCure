@@ -29,6 +29,14 @@ Every minute the agent looks at the open findings and decides what to show:
 - The hint `desktop-entry` is the app ID (`deecure_core::APP_ID`), so the desktop shows DeeCure's icon and opens the app when the notification is clicked.
 - DeeCure asks whether the service is running first (`NameHasOwner`), so it never starts one. When none runs (a server without a desktop, or right after login while the desktop starts), nothing is recorded and the next minute tries again. The failure is logged once.
 
+### Weekly summary
+
+- The slot is **Sunday 18:00, local time** (`notify::weekly_slot`). A computer that was off then makes it once, as soon as it is on again; several missed weeks make one, not several.
+- The report covers the 7 days before the slot ([report](cli.md), `crates/deecure-agent/src/report.rs`) and is **saved** (`report` table, kept 2 years), even on a server with no desktop. The app lists the last 8 on Overview › Health Score.
+- The notification says, for example, "Health 82 (+3 this week) · 18 changes · 2 warnings" and the tip. It waits for quiet hours to end, and is tried every minute for a day; then it is dropped (the report stays).
+- No summary when **Weekly summary** is off, or when DeeCure has less than 2 days of history (a new install). That week is marked done, so turning it on later waits for the next Sunday.
+- **The tip** is the most urgent of: a critical problem; a disk full within 30 days; waiting security updates; no backups; a restart needed for updates; programs that crashed. Otherwise "everything looks good".
+
 ### Settings
 
 Kept by the agent (setting `notify`), edited in Settings › Notifications, and checked when saved (unknown values are refused).

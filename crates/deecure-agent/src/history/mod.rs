@@ -34,7 +34,7 @@ const BOOTS_EVERY: Duration = Duration::from_secs(6 * 60 * 60);
 /// The first journal read goes back this far.
 const FIRST_LOOK_BACK_MS: i64 = 30 * 86_400_000;
 /// At most this many journal entries per read (the newest), so a log flood stays cheap.
-const MAX_JOURNAL_ENTRIES: &str = "20000";
+const MAX_JOURNAL_ENTRIES: usize = 20_000;
 const LIMIT: Duration = Duration::from_secs(30);
 /// Setting: where the next journal read starts (ms, the start of an hour).
 const JOURNAL_SINCE: &str = "history.journal_since";
@@ -294,6 +294,7 @@ impl History {
             .unwrap_or(now.as_millis() - FIRST_LOOK_BACK_MS);
         let since = since.div_euclid(journal::HOUR_MS) * journal::HOUR_MS;
         let since_arg = format!("@{}", since / 1000);
+        let max_arg = MAX_JOURNAL_ENTRIES.to_string();
         // `--grep` exits with 1 when nothing matches, so any finished run counts.
         let text = command::output_any(
             "journalctl",
@@ -306,7 +307,7 @@ impl History {
                 "--since",
                 &since_arg,
                 "-n",
-                MAX_JOURNAL_ENTRIES,
+                &max_arg,
                 "--grep",
                 journal::GREP,
             ],
@@ -314,10 +315,24 @@ impl History {
         )
         .await
         .ok_or("journalctl is missing or took too long")?;
-        let events = journal::events(&logs::parse_entries(&text));
+        let entries = logs::parse_entries(&text);
+        // When the entry limit cut the read short, only the hours after the oldest entry
+        // read are complete; older hours keep what was stored before.
+        let full = entries.len() >= MAX_JOURNAL_ENTRIES;
+        let from = match entries.first() {
+            Some(first) if full => (first.at.div_euclid(journal::HOUR_MS) + 1) * journal::HOUR_MS,
+            _ => since,
+        };
+        let events: Vec<_> = journal::events(&entries)
+            .into_iter()
+            .filter(|(_, e)| e.at.as_millis() >= from)
+            .collect();
         let next = now.as_millis().div_euclid(journal::HOUR_MS) * journal::HOUR_MS;
         store::lock(store)
             .batch(|s| {
+                // The hours from `from` on were read in full: what is stored for them is
+                // replaced, so a failure that turned out to be part of a shutdown goes away.
+                s.delete_events_from(journal::KEY_PREFIXES, Timestamp(from))?;
                 for (key, event) in &events {
                     s.put_event(key, event)?;
                 }

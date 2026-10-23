@@ -178,6 +178,32 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
         },
         method::NOTIFICATIONS => no_params(&request)
             .and_then(|()| to_result(&store().recent_notifications(30).map_err(store_failed)?)),
+        method::REPORT => {
+            // A missing or empty params object means the last 7 days.
+            let p = match &request.params {
+                None | Some(Value::Null) => Ok(deecure_core::rpc::ReportParams::default()),
+                Some(_) => params::<deecure_core::rpc::ReportParams>(&request),
+            };
+            p.and_then(|p| {
+                let now = Timestamp::now();
+                let until = p.until.unwrap_or(now);
+                let since = p
+                    .since
+                    .unwrap_or(Timestamp(until.as_millis() - 7 * 86_400_000));
+                if since > until {
+                    return Err(RpcError::new(
+                        RpcError::INVALID_PARAMS,
+                        "since is after until",
+                    ));
+                }
+                let report = crate::report::build(&store(), &agent.root, since, until, now)
+                    .map_err(store_failed)?;
+                to_result(&report)
+            })
+        }
+        method::WEEKLY_REPORTS => {
+            no_params(&request).and_then(|()| to_result(&store().reports(8).map_err(store_failed)?))
+        }
         other => Err(RpcError::method_not_found(other)),
     };
     match result {

@@ -72,6 +72,22 @@ pub mod method {
     /// Returns the last 30 [`SentNotification`](crate::notify::SentNotification)s, newest
     /// first. Takes no params.
     pub const NOTIFICATIONS: &str = "notifications";
+    /// Returns a [`Report`](crate::report::Report) made now. Takes [`ReportParams`](super::ReportParams).
+    pub const REPORT: &str = "report";
+    /// Returns the last 8 weekly [`Report`](crate::report::Report)s, newest first. Takes no params.
+    pub const WEEKLY_REPORTS: &str = "weekly_reports";
+}
+
+/// Params of the `report` method. Both are optional: the default is the last 7 days.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields, default)]
+pub struct ReportParams {
+    /// Start of the period; 7 days before `until` when missing.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub since: Option<Timestamp>,
+    /// End of the period; now when missing.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub until: Option<Timestamp>,
 }
 
 /// Params of the `set_notify_settings` method.

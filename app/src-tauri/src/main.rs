@@ -147,6 +147,87 @@ async fn notifications() -> Result<Value, AppError> {
     ask(method::NOTIFICATIONS, None).await
 }
 
+/// A report of the last 7 days, made now.
+#[tauri::command]
+async fn report() -> Result<Value, AppError> {
+    ask(method::REPORT, None).await
+}
+
+/// The last weekly summaries, newest first.
+#[tauri::command]
+async fn weekly_reports() -> Result<Value, AppError> {
+    ask(method::WEEKLY_REPORTS, None).await
+}
+
+/// The folder for downloads: `XDG_DOWNLOAD_DIR` from `~/.config/user-dirs.dirs`, else
+/// `~/Downloads`, else the home folder.
+fn downloads() -> Option<PathBuf> {
+    let home = PathBuf::from(std::env::var_os("HOME").filter(|h| !h.is_empty())?);
+    let config = std::env::var_os("XDG_CONFIG_HOME")
+        .filter(|c| !c.is_empty())
+        .map_or_else(|| home.join(".config"), PathBuf::from);
+    let named = std::fs::read_to_string(config.join("user-dirs.dirs"))
+        .ok()
+        .and_then(|text| {
+            text.lines().find_map(|l| {
+                let v = l
+                    .trim()
+                    .strip_prefix("XDG_DOWNLOAD_DIR=")?
+                    .trim_matches('"');
+                let v = v.replace("$HOME", &home.to_string_lossy());
+                (v.starts_with('/')).then(|| PathBuf::from(v))
+            })
+        });
+    [named, Some(home.join("Downloads"))]
+        .into_iter()
+        .flatten()
+        .find(|d| d.is_dir())
+        .or(Some(home))
+}
+
+/// Saves a report of the last 7 days as one HTML file in the downloads folder, never over
+/// an existing file. Returns where it is.
+#[tauri::command]
+async fn export_report() -> Result<String, AppError> {
+    let report: deecure_core::report::Report = ask(method::REPORT, None).await?;
+    let tz = deecure_core::local::zone();
+    let page = deecure_core::report::html(&report, &tz);
+    let dir =
+        downloads().ok_or_else(|| other("HOME is not set, so there is no folder to save to"))?;
+    let day = deecure_core::local::format_in(report.created_at, "%Y-%m-%d", &tz);
+    tauri::async_runtime::spawn_blocking(move || {
+        use std::io::Write;
+        for n in 1..1000 {
+            let name = if n == 1 {
+                format!("deecure-report-{day}.html")
+            } else {
+                format!("deecure-report-{day}-{n}.html")
+            };
+            let path = dir.join(name);
+            // create_new: an existing file is never replaced.
+            match std::fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&path)
+            {
+                Ok(mut file) => {
+                    return file
+                        .write_all(page.as_bytes())
+                        .map(|()| path.to_string_lossy().into_owned())
+                        .map_err(|e| other(format!("could not write {}: {e}", path.display())));
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
+                Err(e) => return Err(other(format!("could not save in {}: {e}", dir.display()))),
+            }
+        }
+        Err(other(
+            "too many reports with today's name in the downloads folder",
+        ))
+    })
+    .await
+    .map_err(|e| other(e.to_string()))?
+}
+
 /// A fix's plan: what it will do, before anything runs.
 #[tauri::command]
 async fn fix_plan(action: String, subject: Option<String>) -> Result<Plan, AppError> {
@@ -276,6 +357,9 @@ fn main() {
             set_notify_settings,
             notify_test,
             notifications,
+            report,
+            weekly_reports,
+            export_report,
             machine,
             fix_plan,
             fix_apply,
