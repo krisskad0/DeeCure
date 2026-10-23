@@ -303,6 +303,24 @@ export interface GraphicsStack {
   firmware: string[];
 }
 
+/** Network in depth (Expert); counters are totals since start. */
+export interface NetDeep {
+  at: number;
+  wifi: { interface: string; ssid: string; channel?: number; frequency_mhz?: number; band?: string; rate_mbps?: number; signal_percent?: number; signal_dbm?: number; noise_dbm?: number; security?: string; power_save?: boolean }[];
+  interfaces: { name: string; rx_errors: number; tx_errors: number; rx_dropped: number; tx_dropped: number; collisions: number; carrier_changes?: number }[];
+  /** /proc/net/snmp counters such as "Tcp.RetransSegs". */
+  counters: Record<string, number>;
+  dns?: { link: string; current?: string; servers: string[]; default_route: boolean; dnssec?: string; dns_over_tls: boolean }[];
+  routes: { destination: string; gateway?: string; device?: string; metric?: number; protocol?: string; down: boolean; family: number }[];
+  extra_rules: number;
+}
+
+/** Open TCP connections with their bytes (TCP only). */
+export interface TcpTraffic {
+  at: number;
+  connections: { local: string; remote: string; program?: string; pid?: number; received: number; sent: number; resent: number }[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -867,6 +885,8 @@ export function getInventory(kind: "process_io"): Promise<ProcessesIo>;
 export function getInventory(kind: "pci_detail"): Promise<PciDevice[]>;
 export function getInventory(kind: "gpu_detail"): Promise<GpuDetail>;
 export function getInventory(kind: "graphics_stack"): Promise<GraphicsStack>;
+export function getInventory(kind: "net_deep"): Promise<NetDeep>;
+export function getInventory(kind: "tcp_traffic"): Promise<TcpTraffic>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

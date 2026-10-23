@@ -23,6 +23,7 @@ pub(crate) mod kernel;
 pub(crate) mod logs;
 mod memory_detail;
 pub(crate) mod net;
+mod net_deep;
 mod network;
 mod os;
 pub(crate) mod packages;
@@ -63,6 +64,8 @@ pub const KINDS: &[&str] = &[
     "pci_detail",
     "gpu_detail",
     "graphics_stack",
+    "net_deep",
+    "tcp_traffic",
     "os",
     "kernel",
     "update_history",
@@ -122,6 +125,8 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "pci_detail" => serde_json::to_value(pci_detail::read(&agent.root)),
         "gpu_detail" => serde_json::to_value(gpu_detail::read(&agent.root)),
         "graphics_stack" => serde_json::to_value(gpu_detail::read_stack(&agent.root).await),
+        "net_deep" => serde_json::to_value(net_deep::read(&agent.root).await),
+        "tcp_traffic" => serde_json::to_value(net_deep::read_tcp().await),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),

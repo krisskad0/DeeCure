@@ -2,6 +2,8 @@
 // Network › Interfaces, Connections, Open Ports, Firewall, DNS & VPN, Traffic
 // (docs/03-ui-design/05-pages/16-network.md), with real data.
 
+import { atLeast, useUi } from "../../ui";
+import { DnsRoutesExpert, InterfacesExpert, TrafficExpert } from "./NetworkExpert";
 import { type SocketInfo, getInventory } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -57,6 +59,7 @@ const INTERFACES: Column<Row>[] = [
 const CONNECTIVITY: Record<string, [StatusVariant, string]> = { full: ["ok", "Online"], limited: ["warn", "Limited"], portal: ["warn", "Sign-in page (captive portal)"], none: ["crit", "Offline"], unknown: ["off", "Unknown"] };
 
 export function NetworkInterfaces() {
+  const { mode } = useUi();
   const { data: d, error } = useLive(loadDetails, 15_000);
   const ifaces = useLive(loadInterfaces, 15_000).data;
   if (!d || !ifaces) return <Waiting title="Interfaces" error={error} />;
@@ -97,6 +100,7 @@ export function NetworkInterfaces() {
           ]}
         />
       </Panel>
+      {atLeast(mode, "expert") && <InterfacesExpert />}
     </>
   );
 }
@@ -216,6 +220,7 @@ export function NetworkFirewall() {
 }
 
 export function NetworkDns() {
+  const { mode } = useUi();
   const { data: d, error } = useLive(loadDetails, 30_000);
   if (!d) return <Waiting title="DNS" error={error} />;
   return (
@@ -240,17 +245,20 @@ export function NetworkDns() {
           empty="No VPN connections are set up"
         />
       </Panel>
+      {atLeast(mode, "expert") && <DnsRoutesExpert />}
     </>
   );
 }
 
 export function NetworkTraffic() {
+  const { mode } = useUi();
   const history = useHistory(["net.rx", "net.tx"]);
   return (
     <>
       <Panel title="Throughput" source="/proc/net/dev" span={12}>
         <TimeChart history={history} names={["Download", "Upload"]} unit="MB/s" scale={(v) => v / MB} />
       </Panel>
+      {atLeast(mode, "expert") && <TrafficExpert />}
     </>
   );
 }

@@ -94,11 +94,11 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Traffic per app, download and upload (brings back "Traffic by application") | Exact for all traffic needs Admin. Without Admin: TCP only, labelled "TCP only" (QUIC and other UDP are not counted) | Admin: eBPF counters in the helper. You: TCP socket counters (`sock_diag`) | Admin, or You (TCP only) | New |
-| Wi-Fi: signal and noise in dBm, link speed, band and channel, Wi-Fi generation, power saving | Explains slow Wi-Fi | NetworkManager (D-Bus), `/proc/net/wireless`, `iw` when installed | You | Partly: signal and network name |
-| Errors, dropped packets, and TCP resends | Bad cable, weak Wi-Fi, or a busy network | `/sys/class/net/*/statistics`, `/proc/net/snmp` | You | New |
-| DNS: which server answers, DNSSEC and DNS-over-TLS state, answer time | Slow DNS feels like slow internet | systemd-resolved (D-Bus) | You | Partly: servers only |
-| Routes: which connection carries internet traffic, VPN routes | Explains "VPN on but traffic goes outside" | `ip -j route` | You | Partly: default route |
+| Traffic per app, download and upload (brings back "Traffic by application") | Exact for all traffic needs Admin. Without Admin: TCP only, labelled "TCP only" (QUIC and other UDP are not counted) | Admin: eBPF counters in the helper. You: TCP socket counters (`sock_diag`) | Admin, or You (TCP only) | ✅ Built (TCP only, labelled; exact with Admin: later) |
+| Wi-Fi: signal and noise in dBm, link speed, band and channel, Wi-Fi generation, power saving | Explains slow Wi-Fi | NetworkManager (D-Bus), `/proc/net/wireless`, `iw` when installed | You | ✅ Built (Wi-Fi generation needs `iw`: later) |
+| Errors, dropped packets, and TCP resends | Bad cable, weak Wi-Fi, or a busy network | `/sys/class/net/*/statistics`, `/proc/net/snmp` | You | ✅ Built |
+| DNS: which server answers, DNSSEC and DNS-over-TLS state, answer time | Slow DNS feels like slow internet | systemd-resolved (D-Bus) | You | ✅ Built (answer time: Diagnostics › Network Test) |
+| Routes: which connection carries internet traffic, VPN routes | Explains "VPN on but traffic goes outside" | `ip -j route` | You | ✅ Built |
 
 ## 7. Power and battery (Power)
 
