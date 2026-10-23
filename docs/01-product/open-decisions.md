@@ -14,7 +14,7 @@ These came up while setting up the repo. Each one has a proposed default, so wor
 
 | # | Decision | Proposed default | Where it is used |
 | --- | --- | --- | --- |
-| 6 | GitHub organization and app ID | `io.github.krisskad0.DeeCure` (matches the GitHub repo). Use `com.deecure.DeeCure` instead if you register `deecure.com`. Decide before the first release: the app ID must never change after that. | `.desktop` file, AppStream, D-Bus, polkit |
+| 6 | GitHub organization and app ID | `io.github.krisskad0.DeeCure` (matches the GitHub repo). Use `com.deecure.DeeCure` instead if you register `deecure.com`. Decide before the first release: the app ID must never change after that. | `.desktop` file, AppStream, D-Bus, polkit, notifications and the tray login entry (`deecure_core::APP_ID` in code) |
 | 7 | License (closes #2) | Apache-2.0, matching the prototype's About page | [ADR 0004](../02-architecture/decisions/0004-license-apache-2.0.md), `LICENSE` |
 | 8 | ~~Rust vs Go (closes #5)~~ | **Decided: Rust** | [ADR 0001](../02-architecture/decisions/0001-rust-for-agent-helper-cli.md) |
 | 9 | Supported systems | Ubuntu 24.04 LTS and 26.04 LTS on amd64 first, then arm64, then Debian 13 | [Packaging](../06-packaging/README.md) |

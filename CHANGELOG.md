@@ -12,6 +12,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Phase 3 — history and trends.**
+- History: the agent saves what changed as events, every 5 minutes: apt and dpkg package changes (also from the newest rotated log), snap and Flatpak apps, USB devices, crashes, memory kills, and failed services from the journal (grouped per hour; failures around a shutdown or logout are left out), boots with kernel changes and unclean shutdowns, config files in `/etc`, autostart, systemd user units, and the crontab (with diffs, without inotify), and DeeCure's own fixes.
+- Activity pages read the saved history: the timeline groups apt runs and config files, shows a "new kernel" tip with how to start the previous one, and has Undo for fixes and View for config diffs. Package History adds snap and Flatpak.
+- New agent calls: `events`, `event`, `notify_settings`, `set_notify_settings`, `notify_test`, `notifications`, `report`, and `weekly_reports`.
+- Disk forecast in the agent: `filling`, `days_until_full`, and `percent_per_day` for every filesystem, and the rule `storage.filling_up`.
+- Desktop notifications from the agent: critical problems right away, warnings when asked, quiet hours, no repeats within 24 hours, bursts as one summary. Settings › Notifications saves to the agent and can send a test.
+- Weekly summary on Sunday 18:00 (saved, and shown as a notification), listed on Overview › Health Score.
+- `deecure history` (what changed, `--since`, `--kind`, `--json`, `--fixes`) and `deecure report` (text, `--html FILE`, `--json`); Export report in Settings › Data.
+- Optional tray icon (off by default), with start at login, and one running copy of the app.
+- Storage schema version 2: metric names stored once, so 2 years of history on a big machine take 124 MB instead of about 250 MB (`make db-size`, in CI). Old snapshots are thinned, and events are capped.
+- KB topic: start once with the previous kernel.
+
 - Rust workspace with `deecure-core`, `deecure-agent`, and `deecure-cli` (version and help only for now).
 - Shared types in `deecure-core`: categories, severity and UI status, rule and fix IDs, findings, metrics, events, snapshots, timestamps, and JSON-RPC 2.0 messages (`version`, `status`).
 - Agent skeleton: listens on a private Unix socket (mode 0600, same user only), supports systemd socket activation, answers `version` and `status`, and cleans up on stop. systemd user units in `packaging/systemd/`, a dev script to install them, and `make agent`.
@@ -74,3 +86,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Project documentation in `docs/`: product, architecture, UI design (foundations, shell, 24 components, 22 pages), development, roadmap, packaging, and user guide.
 - Repository folder structure for the Rust crates, desktop app, rules, knowledge base, packaging, scripts, and tests.
 - Community files: README, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, LICENSE (Apache-2.0, proposed).
+
+### Fixed
+
+- Network totals no longer count container traffic twice, and container links (`veth…`) no longer fill the history.
