@@ -211,10 +211,17 @@ fn card(root: &SystemRoot, name: &str, all: &[String]) -> CardDetail {
     c
 }
 
-/// The `drm-*` keys of one `fdinfo` file that describe a graphics client.
-pub fn parse_fdinfo(
-    text: &str,
-) -> Option<(String, Option<String>, BTreeMap<String, u64>, Option<u64>)> {
+/// One graphics client, from the `drm-*` keys of an `fdinfo` file.
+#[derive(Debug, PartialEq)]
+pub struct FdClient {
+    pub client: String,
+    pub pdev: Option<String>,
+    pub engines: BTreeMap<String, u64>,
+    pub memory: Option<u64>,
+}
+
+/// Reads one `fdinfo` file; `None` when it is not a graphics client.
+pub fn parse_fdinfo(text: &str) -> Option<FdClient> {
     let mut client = None;
     let mut pdev = None;
     let mut engines = BTreeMap::new();
@@ -250,7 +257,12 @@ pub fn parse_fdinfo(
             memory = Some(memory.unwrap_or(0) + n * factor);
         }
     }
-    Some((client?, pdev, engines, memory))
+    Some(FdClient {
+        client: client?,
+        pdev,
+        engines,
+        memory,
+    })
 }
 
 /// Every graphics client of the user's processes, each client once.
@@ -276,7 +288,12 @@ fn clients(root: &SystemRoot) -> Vec<GpuClient> {
             let Some(n) = fd.file_name().to_str().map(str::to_owned) else {
                 continue;
             };
-            let Some((client, pdev, engines, memory)) = root
+            let Some(FdClient {
+                client,
+                pdev,
+                engines,
+                memory,
+            }) = root
                 .read(&format!("/proc/{pid}/fdinfo/{n}"))
                 .ok()
                 .and_then(|t| parse_fdinfo(&t))
@@ -459,7 +476,12 @@ mod tests {
 
     #[test]
     fn fdinfo_gives_engines_and_memory() {
-        let (client, pdev, engines, memory) = parse_fdinfo(
+        let FdClient {
+            client,
+            pdev,
+            engines,
+            memory,
+        } = parse_fdinfo(
             "pos:\t0\ndrm-driver:\ti915\ndrm-client-id:\t17\ndrm-pdev:\t0000:00:02.0\ndrm-resident-system0:\t194328 KiB\ndrm-resident-stolen-system0:\t0\ndrm-engine-render:\t293668527516 ns\ndrm-engine-video:\t0 ns\ndrm-engine-capacity-video:\t2\n",
         )
         .unwrap();
