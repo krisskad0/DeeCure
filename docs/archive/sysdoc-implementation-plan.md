@@ -1,4 +1,4 @@
-# SysDoc — Implementation Plan and User Journey
+# SysDoc: Implementation Plan and User Journey
 
 As of Oct 22, 2026 · "SysDoc" is a working name (check it is free before launch) · Companions: `linux-system-insights.md` (what can be checked) and `sysdoc-dashboard.html` (clickable UI prototype)
 
@@ -63,7 +63,7 @@ These five rules decide every design question.
 
 The user can switch the level later in Settings.
 
-### 4.3 First scan (about 30–60 seconds)
+### 4.3 First scan (about 30-60 seconds)
 
 1. A progress screen fills in category by category: "Checking hardware… Checking apps… Checking security…"
 2. Results appear as soon as each category finishes, so there is no blank waiting.
@@ -200,7 +200,7 @@ That is 22 pages and 91 sub-pages in total.
 **Example:** Wi-Fi stopped working today.
 
 1. The user opens **Activity › Timeline** (the "what changed" timeline).
-2. They see: "Yesterday 6:40 PM — kernel updated 6.8 → 6.11" and "Yesterday 6:41 PM — Wi-Fi driver module changed".
+2. They see: "Yesterday 6:40 PM: kernel updated 6.8 → 6.11" and "Yesterday 6:41 PM: Wi-Fi driver module changed".
 3. SysDoc suggests: "Start once with the previous kernel from the boot menu. Here is how."
 4. If SysDoc itself made a change, there is an **Undo** button right there.
 
@@ -307,7 +307,7 @@ flowchart TB
 | Storage | **SQLite** (WAL mode) | One file, no server, easy backup |
 | Desktop UI | **Tauri v2 + React + TypeScript** | Much lighter than Electron, and uses web skills. Svelte is fine if preferred. |
 | Charts | Lightweight chart library (e.g. uPlot) | Fast with long time series |
-| AI | **Ollama** with a small local model (about 3–8B) | Private and offline. A cloud model only with explicit opt-in. |
+| AI | **Ollama** with a small local model (about 3-8B) | Private and offline. A cloud model only with explicit opt-in. |
 | Rules and KB | **YAML** files | Easy for contributors to add checks without writing code |
 
 ---
@@ -413,7 +413,7 @@ next_step: "Back up important files now, then run a disk check from recovery mod
 
 - The first release ships with entries for the most common services, errors, and ports on Ubuntu.
 - Contributors can add entries through pull requests.
-- Anything not covered falls back to the AI, which labels its answer "AI explanation — may be wrong".
+- Anything not covered falls back to the AI, which labels its answer "AI explanation: may be wrong".
 
 ### 7.6 Health score
 
@@ -542,15 +542,15 @@ sysdoc/
 
 ## 13. Roadmap
 
-Durations are rough estimates for a team of 2–3 engineers.
+Durations are rough estimates for a team of 2-3 engineers.
 
 | Phase | What ships | Rough time |
 | --- | --- | --- |
-| **0. Foundations** | Agent skeleton, SQLite, 5 collectors, CLI `status`, fixture tests | 3–4 weeks |
-| **1. MVP — see and understand** | All Yes-status insights from the category list, home screen, category pages, KB for common items, health score, jobs calendar | 8–10 weeks |
-| **2. Fix safely** | Helper + polkit, Admin-status insights, fix engine with preview, verify, and undo, first 20 fixes | 6–8 weeks |
-| **3. History and trends** | What-changed timeline, trends, predictions ("disk full in N days"), notifications, weekly report | 5–6 weeks |
-| **4. Ask SysDoc** | Local AI assistant with read-only tools, "Why did my PC restart?" | 4–6 weeks |
+| **0. Foundations** | Agent skeleton, SQLite, 5 collectors, CLI `status`, fixture tests | 3-4 weeks |
+| **1. MVP: see and understand** | All Yes-status insights from the category list, home screen, category pages, KB for common items, health score, jobs calendar | 8-10 weeks |
+| **2. Fix safely** | Helper + polkit, Admin-status insights, fix engine with preview, verify, and undo, first 20 fixes | 6-8 weeks |
+| **3. History and trends** | What-changed timeline, trends, predictions ("disk full in N days"), notifications, weekly report | 5-6 weeks |
+| **4. Ask SysDoc** | Local AI assistant with read-only tools, "Why did my PC restart?" | 4-6 weeks |
 | **5. Reach** | Fedora and Arch adapters, KDE support, server web mode, multi-PC view for small offices | Ongoing |
 
 **Launch the public beta after Phase 2.** Before that, the app can show problems but cannot fix them, and "safe fixes" is the main promise.

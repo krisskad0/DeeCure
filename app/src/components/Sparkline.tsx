@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Sparkline for KPI tiles (docs/03-ui-design/03-components/04-kpi-tile.md):
-// min–max normalized line with a faint area, stretched to the tile's width.
+// min-max normalized line with a faint area, stretched to the tile's width.
 
 export type SeriesSlot = 1 | 2 | 3 | 4 | 5;
 

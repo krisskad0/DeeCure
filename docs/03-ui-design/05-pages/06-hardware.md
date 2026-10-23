@@ -5,9 +5,9 @@
 - Group: System · Icon: `chip` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Summary, Processor, Memory, Storage Devices, Graphics, Sensors, Peripherals, Firmware
 
-## Hardware › Summary — `hardware/summary`
+## Hardware › Summary: `hardware/summary`
 
-1. **Key-value list** — "Machine" · span 6
+1. **Key-value list**: "Machine" · span 6
 - Source chip (Expert): `/sys/class/dmi/id`
 
 | Key | Value |
@@ -19,7 +19,7 @@
 | BIOS | JHCN52WW · 11 Mar 2024 |
 | Secure Boot | {ok:Enabled} |
 
-2. **Status list** — "Components" · span 6
+2. **Status list**: "Components" · span 6
 
 | Icon | Label | Metric | Badge | Opens |
 | --- | --- | --- | --- | --- |
@@ -32,9 +32,9 @@
 | `usb` | Peripherals | 11 devices · 0 missing drivers | {crit:1 unstable} | `hardware/peripherals` |
 | `bolt` | Firmware | 1 update available | {info:Update} | `hardware/firmware` |
 
-## Hardware › Processor — `hardware/processor`
+## Hardware › Processor: `hardware/processor`
 
-1. **Gauge group** — "Live" · span 6
+1. **Gauge group**: "Live" · span 6
 
 | Caption | Value | Max | Center text | Subtitle |
 | --- | --- | --- | --- | --- |
@@ -42,7 +42,7 @@
 | Temperature | 54 | 100 | 54 °C | package |
 | Frequency | 1.3 | 4.4 | 1.3 GHz | of 4.4 GHz |
 
-2. **Key-value list** — "Specifications" · span 6
+2. **Key-value list**: "Specifications" · span 6
 - Source chip (Expert): `lscpu`
 
 | Key | Value |
@@ -55,7 +55,7 @@
 | Microcode | `0x4123` |
 | Features | ‹VT-x›‹AES-NI›‹AVX2›‹SHA› |
 
-3. **Data table** — "Cores" · span 12
+3. **Data table**: "Cores" · span 12
 - Source chip (Expert): `/sys/devices/system/cpu`
 
 | Core | Type | Frequency [n] | Utilization [n] | Temperature [n] |
@@ -71,9 +71,9 @@
 | E6 | Efficient | 1100 MHz | [meter 8%] | 53 °C |
 | E7 | Efficient | 1010 MHz | [meter 5%] | 53 °C |
 
-## Hardware › Memory — `hardware/memory`
+## Hardware › Memory: `hardware/memory`
 
-1. **Key-value list** — "Modules" · span 6
+1. **Key-value list**: "Modules" · span 6
 - Source chip (Expert): `dmidecode -t memory`
 
 | Key | Value |
@@ -84,7 +84,7 @@
 | Slots | 0 free · not upgradeable |
 | ECC | No |
 
-2. **Checklist** — "Health" · span 6
+2. **Checklist**: "Health" · span 6
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -93,9 +93,9 @@
 | `na` | Error correction (ECC) reporting | Not available on this memory type |   |
 | `na` | Full memory test | Needs a reboot into memtest86+ | [How to run](act:toast:Restart → hold Shift → Memory test (memtest86+).) |
 
-## Hardware › Storage Devices — `hardware/storage`
+## Hardware › Storage Devices: `hardware/storage`
 
-1. **Data table** — "Disks" · span 12
+1. **Data table**: "Disks" · span 12
 - Source chip (Expert): `lsblk · smartctl`
 
 | Device | Model | Type | Size [n] | Interface | SMART | Life left [n] | Temperature [n] |
@@ -106,22 +106,22 @@
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Percentage used | 12 | % | — | of rated endurance | — | — |
-| Data written | 18.4 | TB | — |   | — | — |
-| Power-on hours | 6,120 | h | — |   | — | — |
-| Unsafe shutdowns | 41 |  | — | +1 today | — | — |
-| Media errors | 0 |  | — |   | — | — |
-| Spare capacity | 100 | % | — |   | — | — |
+| Percentage used | 12 | % | - | of rated endurance | - | - |
+| Data written | 18.4 | TB | - |   | - | - |
+| Power-on hours | 6,120 | h | - |   | - | - |
+| Unsafe shutdowns | 41 |  | - | +1 today | - | - |
+| Media errors | 0 |  | - |   | - | - |
+| Spare capacity | 100 | % | - |   | - | - |
 
-3. **Line chart** — "Drive temperature" · span 12
+3. **Line chart**: "Drive temperature" · span 12
 - Source chip (Expert): `nvme smart-log`
 - Height 180px · Y axis 20 to 70 · unit "°C"
 - Series: NVMe (slot 1, gen[61, 37, 3, 2, 30, 70, 38])
 - X axis: time (current range)
 
-## Hardware › Graphics — `hardware/graphics`
+## Hardware › Graphics: `hardware/graphics`
 
-1. **Key-value list** — "Adapter" · span 6
+1. **Key-value list**: "Adapter" · span 6
 - Source chip (Expert): `lspci -k · glxinfo -B`
 
 | Key | Value |
@@ -132,7 +132,7 @@
 | Vulkan | 1.3 |
 | Video decode | VA-API (iHD) |
 
-2. **Checklist** — "Driver checks" · span 6
+2. **Checklist**: "Driver checks" · span 6
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -140,9 +140,9 @@
 | `pass` | Hardware acceleration active |   |   |
 | `na` | GPU temperature | Not exposed by i915 |   |
 
-## Hardware › Sensors — `hardware/sensors`
+## Hardware › Sensors: `hardware/sensors`
 
-1. **Gauge group** — "Temperatures" · span 12
+1. **Gauge group**: "Temperatures" · span 12
 - Source chip (Expert): `sensors · /sys/class/hwmon`
 
 | Caption | Value | Max | Center text | Subtitle |
@@ -154,28 +154,28 @@
 | iwlwifi | 42 | 100 | 42 °C | Wi-Fi |
 | acpitz | 50 | 100 | 50 °C | ACPI zone |
 
-2. **Line chart** — "Temperature history" · span 12
+2. **Line chart**: "Temperature history" · span 12
 - Source chip (Expert): `sensors`
 - Height 220px · Y axis 20 to 100 · unit "°C"
 - Series: CPU (slot 1, gen[21, 52, 6, 3, 35, 92, 54]); NVMe (slot 2, gen[61, 37, 3, 2, 30, 70, 38]); Battery (slot 3, gen[71, 31, 2, 1, 25, 45, 31])
 - X axis: time (current range)
 - Threshold line at 95: "Throttle 95 °C"
 
-3. **Alert banner** — "Fan speed not reported" · span 12
+3. **Alert banner**: "Fan speed not reported" · span 12
 - State: `info` · Title: "Fan speed not reported" · Text: "This laptop’s embedded controller does not expose fan RPM to Linux."
 
-## Hardware › Peripherals — `hardware/peripherals`
+## Hardware › Peripherals: `hardware/peripherals`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| USB devices | 3 |  | — |   | — | — |
-| PCI devices | 18 |  | — |   | — | — |
-| Bluetooth | 2 |  | — | 1 connected | — | — |
-| Missing drivers | 0 |  | — |   | — | — |
+| USB devices | 3 |  | - |   | - | - |
+| PCI devices | 18 |  | - |   | - | - |
+| Bluetooth | 2 |  | - | 1 connected | - | - |
+| Missing drivers | 0 |  | - |   | - | - |
 
-2. **Data table** — "Devices" · span 12
+2. **Data table**: "Devices" · span 12
 - Source chip (Expert): `lsusb · lspci -k · bluetoothctl`
 - Search: "Search devices"
 - Filter chips on column 2: All / USB / PCI / Bluetooth / Input
@@ -189,14 +189,14 @@
 | NVMe controller | PCI | Samsung | `nvme` | {ok:Active} |  |
 | Smart Sound audio | PCI | Intel | `snd_hda_intel` | {ok:Active} |  |
 | Thunderbolt 4 controller | PCI | Intel | `thunderbolt` | {ok:Active} |  |
-| Wireless earbuds | Bluetooth | — | `bluez` | {warn:Reconnecting} |  |
-| Phone | Bluetooth | — | `bluez` | {off:Paired} |  |
+| Wireless earbuds | Bluetooth | - | `bluez` | {warn:Reconnecting} |  |
+| Phone | Bluetooth | - | `bluez` | {off:Paired} |  |
 | Touchpad | Input | ELAN | `i2c_hid` | {ok:Active} |  |
 | Keyboard | Input | AT Translated | `atkbd` | {ok:Active} |  |
 
-## Hardware › Firmware — `hardware/firmware`
+## Hardware › Firmware: `hardware/firmware`
 
-1. **Key-value list** — "Platform firmware" · span 5
+1. **Key-value list**: "Platform firmware" · span 5
 - Source chip (Expert): `/sys/class/dmi/id · mokutil`
 
 | Key | Value |
@@ -208,14 +208,14 @@
 | Secure Boot | {ok:Enabled} |
 | TPM | 2.0 · present |
 
-2. **Data table** — "Firmware updates" · span 7
+2. **Data table**: "Firmware updates" · span 7
 - Source chip (Expert): `fwupdmgr get-updates`
 
 | Device | Current | Available | Vendor | (action) |
 | --- | --- | --- | --- | --- |
 | Touchpad | `1.4` | `1.6` | Synaptics | [**Update**](act:toast:Firmware update scheduled for next reboot.) |
-| System firmware | `JHCN52WW` | — | Lenovo | Up to date |
-| NVMe SSD | `3L1QFXV7` | — | Samsung | Not on LVFS |
+| System firmware | `JHCN52WW` | - | Lenovo | Up to date |
+| NVMe SSD | `3L1QFXV7` | - | Samsung | Not on LVFS |
 
 ---
 

@@ -70,12 +70,12 @@ Dark values apply under `@media (prefers-color-scheme: dark) { :root:not([data-t
 | Donut center value | Ubuntu Sans | 20px | 600 | SVG text |
 | Table body | Ubuntu Sans | 13px | 400 | |
 | Table header | Ubuntu Sans | 12px | 600 | `--ink-2` |
-| Labels, subtexts | Ubuntu Sans | 12px | 400–500 | `--muted` |
+| Labels, subtexts | Ubuntu Sans | 12px | 400-500 | `--muted` |
 | Sidebar group label | Ubuntu Sans | 10.5px | 700 | uppercase, letter-spacing 0.08em |
 | Drawer section label | Ubuntu Sans | 11px | 700 | uppercase, letter-spacing 0.07em |
 | Badge | Ubuntu Sans | 11.5px | 600 | line-height 20px |
 | Chart axis text | Ubuntu Sans | 11px | 400 | `--muted` |
-| Code, paths, units, IDs | Ubuntu Sans Mono | 12–12.5px | 400 | |
+| Code, paths, units, IDs | Ubuntu Sans Mono | 12-12.5px | 400 | |
 
 Font stacks: `"Ubuntu Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` and `"Ubuntu Sans Mono", ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace`.
 

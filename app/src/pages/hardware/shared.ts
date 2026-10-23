@@ -20,14 +20,14 @@ export const NEEDS_DRIVER = new Set(["Network", "Display", "Audio and video", "S
 /** "05/29/2026" (how firmware writes dates) → a local date. */
 export function biosDate(text?: string): string {
   const m = text?.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!m) return text ?? "—";
+  if (!m) return text ?? "-";
   return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2])).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
 
 /** "13th Gen Intel(R) Core(TM) i5-1335U" → "Intel Core i5-1335U". */
 export function shortCpu(model?: string): string {
-  if (!model) return "—";
+  if (!model) return "-";
   return model.replace(/\(R\)|\(TM\)|™|®/g, "").replace(/\d+th Gen /, "").replace(/\s+CPU.*$/, "").replace(/\s+/g, " ").trim();
 }
 
-export const GHZ = (hz?: number) => (hz === undefined ? "—" : `${(hz / 1e9).toFixed(1)} GHz`);
+export const GHZ = (hz?: number) => (hz === undefined ? "-" : `${(hz / 1e9).toFixed(1)} GHz`);

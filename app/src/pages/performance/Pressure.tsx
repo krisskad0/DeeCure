@@ -58,9 +58,9 @@ export function PerformancePressure() {
         <KeyValueList
           rows={[
             ["Healthy", "below 5% (avg10)"],
-            ["Noticeable slowdown", "5–20%"],
+            ["Noticeable slowdown", "5-20%"],
             ["Severe", "above 20%"],
-            ["Peak in range", top ? <StatusBadge variant={tone} label={`${top.name} ${top.value.toFixed(1)}% · ${when(top.at)}`} /> : "—"],
+            ["Peak in range", top ? <StatusBadge variant={tone} label={`${top.name} ${top.value.toFixed(1)}% · ${when(top.at)}`} /> : "-"],
           ]}
         />
       </Panel>

@@ -14,7 +14,7 @@ describe("sorting values", () => {
     expect(sortNumber("94%")).toBe(94);
     expect(sortNumber("1,240")).toBe(1240);
     expect(sortNumber("6.8.0-47-generic")).toBeNull();
-    expect(sortNumber("—")).toBeNull();
+    expect(sortNumber("-")).toBeNull();
   });
 
   it("compares numbers as numbers and text as text", () => {
@@ -36,7 +36,7 @@ describe("data table", () => {
   it("pages, searches, and filters", () => {
     render(<DataTable rows={rows} columns={columns} rowKey={(r) => r.name} search={{ placeholder: "Filter units" }} filter={{ column: "state", options: ["active", "failed"] }} pageSize={10} total={181} />);
     expect(names()).toHaveLength(10);
-    expect(screen.getByText("1–10 of 181")).toBeTruthy();
+    expect(screen.getByText("1-10 of 181")).toBeTruthy();
     fireEvent.click(screen.getByText("Next"));
     expect(names()).toHaveLength(5);
 

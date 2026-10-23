@@ -60,7 +60,7 @@ Starts with one exchange already shown: the user question for `restart` and its 
 | --- | --- | --- | --- | --- |
 | `restart` | Why did my laptop restart last night? | It did not restart. **The battery ran out at 02:14**, so the laptop powered off without a clean shutdown. You started it again at 08:58. No low-battery action is configured, so this can happen again. | `02:09:12 upowerd: battery BAT0 is critically low (2%)`<br>`02:13:58 upowerd: battery BAT0 at 1%, critical action not configured`<br>`-- boot ended without clean shutdown --` | [**Configure low-battery action**](act:fix:batt) |
 | `bt` | Why is Bluetooth crashing? | **bluetoothd crashes with SIGSEGV each time the earbuds connect.** It started at 09:12 today, after yesterday’s kernel upgrade 6.8.0-45 → 6.8.0-47. Restart the service first. If it keeps crashing, boot once with 6.8.0-45 to confirm the regression. | `09:12:44 kernel: bluetoothd[1342]: segfault at 0 … error 4`<br>`systemd: bluetooth.service: Main process exited, status=11/SEGV`<br>`Tue 18:40 apt: upgrade linux-image-6.8.0-47-generic` | [**Inspect bluetooth.service**](act:bt) |
-| `ssd` | Is my SSD healthy? | **Yes.** SMART passed, 88% life left, 0 media errors. At your write rate that is many years. | `SMART overall-health self-assessment: PASSED`<br>`Percentage Used: 12%`<br>`Media and Data Integrity Errors: 0` | — |
+| `ssd` | Is my SSD healthy? | **Yes.** SMART passed, 88% life left, 0 media errors. At your write rate that is many years. | `SMART overall-health self-assessment: PASSED`<br>`Percentage Used: 12%`<br>`Media and Data Integrity Errors: 0` | - |
 | `disk` | What is filling my disk? | **~/Videos (52 GB) and ~/Documents (41 GB)** are the largest folders. System leftovers worth 15.2 GB can also be removed safely. | `du -h --max-depth=1 ~`<br>`snap list --all \| grep disabled` | [**Free up space**](act:fix:storage) |
 
 ## Row-inspect drawer
@@ -82,4 +82,4 @@ Tables marked **Inspect** open a drawer when a row is clicked: title = the first
 
 ## Charts
 
-- Charts redraw when the window or main area resizes (debounced 80–120ms) and after every render.
+- Charts redraw when the window or main area resizes (debounced 80-120ms) and after every render.

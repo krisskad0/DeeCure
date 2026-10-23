@@ -6,23 +6,23 @@
 - Sub-pages: Overview, Filesystems, Disk Usage, Cleanup
 - Page header actions (all sub-pages without their own): [**Free up space**](act:fix:storage) (shown while reclaimable space > 0)
 
-## Storage › Overview — `storage/overview`
+## Storage › Overview: `storage/overview`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Used | 224.2 | GB | {crit:Critical} | 94% of 238 GB | Usage bar 94.2% | — |
-| Free | 13.8 | GB | — |   | — | — |
-| Reclaimable | 15.2 | GB | — | Safe to clean | — | — |
-| Full in | ~8 | days | {crit:Critical} | at 0.69% per day | — | — |
-| Inodes used | 21 | % | — |   | — | — |
-| Encryption | Off |  | — | LUKS not used | — | — |
+| Used | 224.2 | GB | {crit:Critical} | 94% of 238 GB | Usage bar 94.2% | - |
+| Free | 13.8 | GB | - |   | - | - |
+| Reclaimable | 15.2 | GB | - | Safe to clean | - | - |
+| Full in | ~8 | days | {crit:Critical} | at 0.69% per day | - | - |
+| Inodes used | 21 | % | - |   | - | - |
+| Encryption | Off |  | - | LUKS not used | - | - |
 
-2. **Alert banner** — "Root filesystem is 94% full" · span 12
+2. **Alert banner**: "Root filesystem is 94% full" · span 12
 - State: `crit` · Title: "Root filesystem is 94% full" · Text: "15.2 GB can be reclaimed safely. Personal files are not touched." · Buttons: [**Free up space**](act:fix:storage)
 
-3. **Allocation bar ([Allocation bar (disk)](../03-components/18-allocation-bar.md))** — "Space allocation" · span 12
+3. **Allocation bar ([Allocation bar (disk)](../03-components/18-allocation-bar.md))**: "Space allocation" · span 12
 - Subtitle: "/dev/nvme0n1p2 · ext4"
 - Source chip (Expert): `du -xh --max-depth=1`
 
@@ -39,7 +39,7 @@ Segments (left to right):
 
 Width of each segment = GB / 238. The legend repeats each name with its bold GB value.
 
-4. **Line chart** — "Usage trend and forecast" · span 8
+4. **Line chart**: "Usage trend and forecast" · span 8
 - Subtitle: "30 days"
 - Info tooltip: "The dashed line shows when the disk fills at the current rate."
 - Height 220px · Y axis 60 to 100 · unit "%"
@@ -48,7 +48,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 - Threshold line at 85: "Warning 85%"
 - Forecast: +8 points to 100, label "Full ~29 Oct" (recomputed from state: daysFull)
 
-5. **Data table** — "Mount points" · span 4
+5. **Data table**: "Mount points" · span 4
 - Source chip (Expert): `findmnt`
 
 | Mount | Size [n] | Used |
@@ -58,20 +58,20 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `/run` | 780 MB | [meter 1%] |
 | `/dev/shm` | 3.8 GB | [meter 2%] |
 
-## Storage › Filesystems — `storage/filesystems`
+## Storage › Filesystems: `storage/filesystems`
 
-1. **Data table** — "Filesystems" · span 12
+1. **Data table**: "Filesystems" · span 12
 - Source chip (Expert): `df -hT · df -i`
 
 | Device | Mount | Type | Size [n] | Used [n] | Available [n] | Use | Inodes [n, ,x] |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `/dev/nvme0n1p2` | `/` | ext4 | 238 GB | 224.2 GB | 13.8 GB | [meter:crit 94%] | 21% |
-| `/dev/nvme0n1p1` | `/boot/efi` | vfat | 1.0 GB | 61 MB | 963 MB | [meter 6%] | — |
+| `/dev/nvme0n1p1` | `/boot/efi` | vfat | 1.0 GB | 61 MB | 963 MB | [meter 6%] | - |
 | `tmpfs` | `/run` | tmpfs | 780 MB | 2.3 MB | 778 MB | [meter 1%] | 1% |
 | `tmpfs` | `/dev/shm` | tmpfs | 3.8 GB | 84 MB | 3.7 GB | [meter 2%] | 1% |
 | `squashfs ×14` | `/snap/*` | squashfs | 3.9 GB | 3.9 GB | 0 | [meter:ok 100%] | 100% |
 
-2. **Checklist** — "Filesystem checks" · span 12
+2. **Checklist**: "Filesystem checks" · span 12
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -81,9 +81,9 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `warn` | Disk encryption off | Files are readable if the laptop is stolen · needs reinstall to enable |   |
 | `na` | Full filesystem check (fsck) | Runs at boot when needed · last check 34 days ago |   |
 
-## Storage › Disk Usage — `storage/usage`
+## Storage › Disk Usage: `storage/usage`
 
-1. **Horizontal bar list** — "Largest folders" · span 6
+1. **Horizontal bar list**: "Largest folders" · span 6
 - Subtitle: "home"
 - Source chip (Expert): `du -h --max-depth=1 ~`
 
@@ -97,7 +97,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `~/snap` | 2.4 | 2.4 GB |
 | `~/Pictures` | 1.6 | 1.6 GB |
 
-2. **Horizontal bar list** — "Largest system folders" · span 6
+2. **Horizontal bar list**: "Largest system folders" · span 6
 - Source chip (Expert): `du -xh --max-depth=1 /`
 
 | Label | Value | Shown as |
@@ -109,7 +109,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `/opt` | 0.9 | 0.9 GB |
 | `/boot` | 0.3 | 0.3 GB |
 
-3. **Data table** — "Largest files" · span 12
+3. **Data table**: "Largest files" · span 12
 - Source chip (Expert): `find ~ -size +500M`
 - Search: "Filter files"
 
@@ -122,7 +122,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `~/Videos/meeting-recording-0918.mkv` | 1.8 GB | Video | 1 month ago |
 | `~/Documents/thesis-backup.tar.gz` | 1.2 GB | Archive | 6 months ago |
 
-## Storage › Cleanup — `storage/cleanup`
+## Storage › Cleanup: `storage/cleanup`
 
 Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Refresh and Export.
 
@@ -130,10 +130,10 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Reclaimable | 15.2 | GB | {warn:Warning} |   | — | — |
-| Cleaned this month | 0.0 | GB | — |   | — | — |
+| Reclaimable | 15.2 | GB | {warn:Warning} |   | - | - |
+| Cleaned this month | 0.0 | GB | - |   | - | - |
 
-2. **Data table** — "Cleanup candidates" · span 12
+2. **Data table**: "Cleanup candidates" · span 12
 - Row selection · bulk button [Clean selected](act:fix:storage)
 - Empty text: "Nothing to clean right now"
 - Table ID: `cleanup`
@@ -141,8 +141,8 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | Item | Details | Size [n] | Undo | Password |
 | --- | --- | --- | --- | --- |
 | Remove disabled snap revisions | 6 old revisions kept after updates | 8.7 GB | {warn:Irreversible} | 🔒 |
-| Prune unused Docker images | 7 images not used by any container | 4.0 GB | {info:Regenerates} | — |
-| Empty Trash | 312 files | 2.1 GB | {warn:Irreversible} | — |
+| Prune unused Docker images | 7 images not used by any container | 4.0 GB | {info:Regenerates} | - |
+| Empty Trash | 312 files | 2.1 GB | {warn:Irreversible} | - |
 | Clean APT package cache | Downloaded .deb files | 0.4 GB | {info:Regenerates} | 🔒 |
 
 ---

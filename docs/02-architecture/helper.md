@@ -24,17 +24,17 @@ The code is `crates/deecure-helper`. It is installed as `/usr/libexec/deecure/de
 
 | Admin operation | Runs | Checks |
 | --- | --- | --- |
-| `clean_apt_cache` | `apt-get clean` | — |
-| `vacuum_journal` | `journalctl --vacuum-size=<N>M` | 50–10000 MB |
+| `clean_apt_cache` | `apt-get clean` | - |
+| `vacuum_journal` | `journalctl --vacuum-size=<N>M` | 50-10000 MB |
 | `remove_snap_revision` | `snap remove <name> --revision=<rev>` | Name and revision pattern; it must be a **disabled** revision |
-| `autoremove` | `apt-get -y autoremove` | — |
+| `autoremove` | `apt-get -y autoremove` | - |
 | `purge_residual` | `apt-get -y purge -- <packages>` | Package names; each must be in the "config files only" state |
 | `upgrade_packages` | `apt-get -y install --only-upgrade -- <packages>` | Package names; each must be installed |
 | `set_firewall` | `ufw --force enable` / `ufw disable` | ufw installed |
 | `restart_service` | `systemctl restart -- <unit>` | Unit pattern; it must exist |
 | `set_service_enabled` | `systemctl enable/disable --now -- <unit>` | As above; essential units (D-Bus, logind, journald, udev, GDM, polkit, NetworkManager) can never be turned off |
 | `remove_kernels` | `apt-get -y purge -- linux-image-…` | Version pattern; never the running or newest kernel; at least two are always kept |
-| `set_battery_action` | Edits `/etc/UPower/UPower.conf`, then `systemctl try-restart upower` | PowerOff, Hibernate, or HybridSleep at 1–20%. If a later step fails, the file is put back. Returns the old values for undo. |
+| `set_battery_action` | Edits `/etc/UPower/UPower.conf`, then `systemctl try-restart upower` | PowerOff, Hibernate, or HybridSleep at 1-20%. If a later step fails, the file is put back. Returns the old values for undo. |
 
 How every call is handled:
 

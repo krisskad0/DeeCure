@@ -1,9 +1,9 @@
-# Phase 1 — MVP: see and understand
+# Phase 1: MVP: see and understand
 
 [Docs](../README.md) › [Roadmap](README.md)
 
 **Goal:** the desktop app shows every insight that needs no password, explained in plain English.
-**Rough time:** 8–10 weeks.
+**Rough time:** 8-10 weeks.
 
 ## Progress
 
@@ -14,7 +14,7 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 | 2. App scaffold | ✅ Done. Tauri v2 + React 19 + TypeScript; one live screen (Overview › Active issues) with real findings from the agent, refreshed every 10 s; agent-not-running and first-check states. `make app`. |
 | 3. Foundations | ✅ Done. Design tokens (light and dark), bundled Ubuntu Sans fonts, spec typography, and the 43 icons plus the 22-page list generated from the spec by `scripts/gen-ui.py`. |
 | 4. Shell | ✅ Done. Top bar, sidebar (22 pages, sub-page trees, rail mode, narrow-window drawer), sticky page header with tabs, 12-column grid, and overlays: Ctrl K command palette (pages and services), notifications list, machines list, toasts. The side drawer comes with the components that open it (row inspect, fixes). |
-| 5. Components | ✅ Done. All of 01–22 are built, with UI tests and the component gallery (Ctrl K → "Component gallery"). Charts are our own SVG ([ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)). 23 (diagnostics runner) and 24 (chat) come with their pages. |
+| 5. Components | ✅ Done. All of 01-22 are built, with UI tests and the component gallery (Ctrl K → "Component gallery"). Charts are our own SVG ([ADR 0006](../02-architecture/decisions/0006-charts-as-own-svg-components.md)). 23 (diagnostics runner) and 24 (chat) come with their pages. |
 | 9. Health score | ✅ Done. Score and per-area deductions in `status`, saved as `health.score` after each check, shown in the CLI and the app. Equal 15-point shares until open decision #15. |
 | 10. Pages | ✅ Done. All 22 pages and their 91 tabs show real data from this computer. What needs admin rights says "Requires Full access" (Phase 2); what needs the fix engine (cleaning, installing, ending processes, changing settings) only shows. Still to come: CVE numbers, firewall rules, per-app traffic, camera and microphone history, full file verification, and the assistant (Phase 4). Diagnostics run real checks: a performance check and a network test. |
 | 7. Collectors | Started. Network, disk I/O (rates, IOPS, busy, wait), pressure (some and full), sensors, per-core CPU, load, clock speed, context switches, memory and swap breakdown, and battery time left, boot timing, and pending updates, plus live `system`, `os`, `kernel`, `update_history`, `processes`, `network`, and `gpu` inventories. New rules: `security.updates_pending`, `system.reboot_required`, `security.firewall_off`, `backups.none`, `backups.overdue`. |
@@ -35,7 +35,7 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
    → [Foundations](../03-ui-design/01-foundations/README.md)
 4. **Shell:** top bar, sidebar, page header, content grid, responsive rules, overlays.
    → [Shell](../03-ui-design/02-shell/README.md)
-5. **Components 01–22**, each with its own tests. (23 Diagnostics runner comes in step 11; 24 Chat comes in Phase 4.)
+5. **Components 01-22**, each with its own tests. (23 Diagnostics runner comes in step 11; 24 Chat comes in Phase 4.)
    → [Components](../03-ui-design/03-components/README.md)
 6. **Behavior:** state, time range, Beginner / Expert mode, page status rules, keyboard, command palette.
    → [Behavior](../03-ui-design/04-behavior/README.md)
@@ -81,4 +81,4 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 
 ---
 
-← Previous: [Phase 0](phase-0-foundations.md) · [Index](README.md) · Next: [Phase 2 — Fix safely](phase-2-fix-safely.md) →
+← Previous: [Phase 0](phase-0-foundations.md) · [Index](README.md) · Next: [Phase 2: Fix safely](phase-2-fix-safely.md) →

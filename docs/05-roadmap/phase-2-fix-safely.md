@@ -1,9 +1,9 @@
-# Phase 2 — Fix safely (public beta)
+# Phase 2: Fix safely (public beta)
 
 [Docs](../README.md) › [Roadmap](README.md)
 
 **Goal:** users can fix problems with a preview, one password prompt, and an undo button. Then DeeCure goes public.
-**Rough time:** 6–8 weeks.
+**Rough time:** 6-8 weeks.
 
 ## Progress
 
@@ -58,4 +58,4 @@
 
 ---
 
-← Previous: [Phase 1](phase-1-mvp.md) · [Index](README.md) · Next: [Phase 3 — History](phase-3-history.md) →
+← Previous: [Phase 1](phase-1-mvp.md) · [Index](README.md) · Next: [Phase 3: History](phase-3-history.md) →

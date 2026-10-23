@@ -120,23 +120,23 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 
 | Name | Subject | Unit | Meaning |
 | --- | --- | --- | --- |
-| `cpu.usage` | — | percent | Time the CPU was busy (not idle, not waiting for disk) |
-| `cpu.user` | — | percent | Time in apps |
-| `cpu.system` | — | percent | Time in the kernel |
-| `cpu.iowait` | — | percent | Time waiting for the disk |
+| `cpu.usage` | - | percent | Time the CPU was busy (not idle, not waiting for disk) |
+| `cpu.user` | - | percent | Time in apps |
+| `cpu.system` | - | percent | Time in the kernel |
+| `cpu.iowait` | - | percent | Time waiting for the disk |
 | `cpu.core` | core number, such as `0` | percent | Time one core was busy |
-| `cpu.load_1m`, `cpu.load_5m`, `cpu.load_15m` | — | count | Load averages |
-| `cpu.frequency` | — | hertz | Average current clock speed of all CPUs |
-| `cpu.context_switches`, `cpu.interrupts` | — | count per second | Task switches and hardware interrupts |
-| `memory.used` | — | bytes | Memory in use (total minus available) |
-| `memory.used_percent` | — | percent | Same, as a share of all memory |
-| `memory.total` | — | bytes | All memory |
-| `memory.cache` | — | bytes | Page cache (given back when apps need it) |
-| `memory.buffers` | — | bytes | Kernel buffers |
-| `memory.free` | — | bytes | Memory not used for anything |
-| `swap.used` | — | bytes | Swap in use |
-| `swap.used_percent` | — | percent | Same, as a share of all swap |
-| `swap.total` | — | bytes | All swap |
+| `cpu.load_1m`, `cpu.load_5m`, `cpu.load_15m` | - | count | Load averages |
+| `cpu.frequency` | - | hertz | Average current clock speed of all CPUs |
+| `cpu.context_switches`, `cpu.interrupts` | - | count per second | Task switches and hardware interrupts |
+| `memory.used` | - | bytes | Memory in use (total minus available) |
+| `memory.used_percent` | - | percent | Same, as a share of all memory |
+| `memory.total` | - | bytes | All memory |
+| `memory.cache` | - | bytes | Page cache (given back when apps need it) |
+| `memory.buffers` | - | bytes | Kernel buffers |
+| `memory.free` | - | bytes | Memory not used for anything |
+| `swap.used` | - | bytes | Swap in use |
+| `swap.used_percent` | - | percent | Same, as a share of all swap |
+| `swap.total` | - | bytes | All swap |
 | `disk.used_percent` | mount point | percent | Space used, computed like `df` |
 | `disk.free` | mount point | bytes | Space a normal user can still write |
 | `disk.used` | mount point | bytes | Space in use |
@@ -150,26 +150,26 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 | `disk.iops` | disk, or none | count per second | Reads and writes completed |
 | `disk.busy` | disk, or none (busiest disk) | percent | Time the disk had work to do |
 | `disk.await` | disk, or none | seconds | Average time one read or write took |
-| `pressure.cpu`, `pressure.memory`, `pressure.io` | — | percent | Share of time some work waited for CPU, memory, or disk ("some", 10-second average) |
-| `pressure.memory_full`, `pressure.io_full` | — | percent | Share of time all work waited at once ("full") |
+| `pressure.cpu`, `pressure.memory`, `pressure.io` | - | percent | Share of time some work waited for CPU, memory, or disk ("some", 10-second average) |
+| `pressure.memory_full`, `pressure.io_full` | - | percent | Share of time all work waited at once ("full") |
 | `temp` | sensor, as `<chip>/<label>` | celsius | Every temperature sensor |
-| `temp.cpu` | — | celsius | The CPU temperature |
+| `temp.cpu` | - | celsius | The CPU temperature |
 | `fan` | fan, as `<chip>/<label>` | count | Fan speed in RPM |
-| `boot.time` | — | seconds | How long a boot took, stored at the time of that boot |
-| `updates.pending`, `updates.security` | — | count | Packages with a newer version, and how many of those are security updates |
-| `system.reboot_required` | — | count | 1 when an update asks for a restart, else 0 |
-| `net.listening_all` | — | count | TCP ports listening on every network |
-| `net.default_route` | — | count | 1 when an IPv4 or IPv6 default route is up (the loopback's reject routes do not count), else 0; missing without `/proc/net/route` |
-| `accounts.people` | — | count | Accounts a person can sign in with: UID 1000 and up, a real shell, not `nobody` (from `/etc/passwd`) |
-| `accounts.uid0_extra` | — | count | Accounts other than `root` with UID 0 |
-| `privacy.popcon` | — | count | 1 when `/etc/popularity-contest.conf` says `PARTICIPATE="yes"`, else 0 (also when it is not installed) |
-| `containers.exposed` | — | count | Running Docker containers with a port on every address (`0.0.0.0`, `::`), every 5 minutes; 0 without Docker; missing when this user may not talk to Docker |
-| `firewall.enabled` | — | count | 1 when ufw is on, 0 when off; missing when ufw is not installed |
-| `backup.configured` | — | count | 1 when Déjà Dup or Timeshift runs on a schedule |
-| `backup.age_days` | — | count | Days since the newest backup or snapshot |
-| `health.score` | — | count | The [health score](health-score.md), saved after every check |
-| `services.running` | — | count | Services that are running |
-| `services.failed` | — | count | Services that failed |
+| `boot.time` | - | seconds | How long a boot took, stored at the time of that boot |
+| `updates.pending`, `updates.security` | - | count | Packages with a newer version, and how many of those are security updates |
+| `system.reboot_required` | - | count | 1 when an update asks for a restart, else 0 |
+| `net.listening_all` | - | count | TCP ports listening on every network |
+| `net.default_route` | - | count | 1 when an IPv4 or IPv6 default route is up (the loopback's reject routes do not count), else 0; missing without `/proc/net/route` |
+| `accounts.people` | - | count | Accounts a person can sign in with: UID 1000 and up, a real shell, not `nobody` (from `/etc/passwd`) |
+| `accounts.uid0_extra` | - | count | Accounts other than `root` with UID 0 |
+| `privacy.popcon` | - | count | 1 when `/etc/popularity-contest.conf` says `PARTICIPATE="yes"`, else 0 (also when it is not installed) |
+| `containers.exposed` | - | count | Running Docker containers with a port on every address (`0.0.0.0`, `::`), every 5 minutes; 0 without Docker; missing when this user may not talk to Docker |
+| `firewall.enabled` | - | count | 1 when ufw is on, 0 when off; missing when ufw is not installed |
+| `backup.configured` | - | count | 1 when Déjà Dup or Timeshift runs on a schedule |
+| `backup.age_days` | - | count | Days since the newest backup or snapshot |
+| `health.score` | - | count | The [health score](health-score.md), saved after every check |
+| `services.running` | - | count | Services that are running |
+| `services.failed` | - | count | Services that failed |
 
 ## Inventories (snapshots)
 

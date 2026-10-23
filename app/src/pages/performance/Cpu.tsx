@@ -45,13 +45,13 @@ export function PerformanceCpu() {
     <>
       <KpiRow
         tiles={[
-          { label: "Utilization", value: usage === undefined ? "—" : String(Math.round(usage)), unit: usage === undefined ? undefined : "%", visual: sparks.usage && { kind: "spark", data: sparks.usage, slot: 1 } },
+          { label: "Utilization", value: usage === undefined ? "-" : String(Math.round(usage)), unit: usage === undefined ? undefined : "%", visual: sparks.usage && { kind: "spark", data: sparks.usage, slot: 1 } },
           {
             label: "Load average",
-            value: load[0] === undefined ? "—" : load[0].toFixed(2),
+            value: load[0] === undefined ? "-" : load[0].toFixed(2),
             subtext: load[1] !== undefined && load[2] !== undefined ? `5 min ${load[1].toFixed(2)} · 15 min ${load[2].toFixed(2)}` : "",
           },
-          { label: "Frequency", value: freq === undefined ? "—" : ghz(freq), unit: freq === undefined ? undefined : "GHz", subtext: system?.cpu_max_hz ? `Max ${ghz(system.cpu_max_hz)} GHz` : "" },
+          { label: "Frequency", value: freq === undefined ? "-" : ghz(freq), unit: freq === undefined ? undefined : "GHz", subtext: system?.cpu_max_hz ? `Max ${ghz(system.cpu_max_hz)} GHz` : "" },
           {
             label: "Temperature",
             value: temp === undefined ? "N/A" : String(Math.round(tempValue(temp))),
@@ -59,8 +59,8 @@ export function PerformanceCpu() {
             subtext: temp === undefined ? "No CPU sensor found" : "",
             visual: sparks.temp && { kind: "spark", data: sparks.temp, slot: 2 },
           },
-          { label: "Processes", value: processes ? String(processes.length) : "—", subtext: threads ? `${threads.toLocaleString()} threads` : "" },
-          { label: "Context switches", value: ctxt === undefined ? "—" : compact(ctxt), unit: ctxt === undefined ? undefined : "/s", subtext: intr === undefined ? "" : `Interrupts ${compact(intr)}/s` },
+          { label: "Processes", value: processes ? String(processes.length) : "-", subtext: threads ? `${threads.toLocaleString()} threads` : "" },
+          { label: "Context switches", value: ctxt === undefined ? "-" : compact(ctxt), unit: ctxt === undefined ? undefined : "/s", subtext: intr === undefined ? "" : `Interrupts ${compact(intr)}/s` },
         ]}
       />
       <Panel title="CPU utilization by type" info="User = your apps. System = the kernel. I/O wait = waiting for the disk." source="/proc/stat" span={12}>

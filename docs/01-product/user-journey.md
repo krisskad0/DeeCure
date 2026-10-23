@@ -24,7 +24,7 @@
 
 The user can switch the level later in Settings.
 
-## First scan (about 30–60 seconds)
+## First scan (about 30-60 seconds)
 
 1. A progress screen fills in category by category: "Checking hardware… Checking apps… Checking security…"
 2. Results appear as soon as each category finishes, so there is no blank waiting.
@@ -96,7 +96,7 @@ The app opens on a dashboard, not a list of cards. See `deecure-dashboard.html` 
 **Example:** Wi-Fi stopped working today.
 
 1. The user opens **Activity › Timeline** (the "what changed" timeline).
-2. They see: "Yesterday 6:40 PM — kernel updated 6.8 → 6.11" and "Yesterday 6:41 PM — Wi-Fi driver module changed".
+2. They see: "Yesterday 6:40 PM: kernel updated 6.8 → 6.11" and "Yesterday 6:41 PM: Wi-Fi driver module changed".
 3. DeeCure suggests: "Start once with the previous kernel from the boot menu. Here is how."
 4. If DeeCure itself made a change, there is an **Undo** button right there.
 

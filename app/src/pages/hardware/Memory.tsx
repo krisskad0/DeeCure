@@ -43,7 +43,7 @@ export function HardwareMemory() {
       <Panel title="Modules" source="/proc/meminfo" span={6} flush>
         <KeyValueList
           rows={[
-            ["Total", hw.memory_total ? `${bytes(hw.memory_total)}${usable ? ` (${bytes(usable)} usable)` : ""}` : "—"],
+            ["Total", hw.memory_total ? `${bytes(hw.memory_total)}${usable ? ` (${bytes(usable)} usable)` : ""}` : "-"],
             ["Type and speed", FULL],
             ["Form factor", FULL],
             ["Slots", FULL],

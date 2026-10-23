@@ -36,8 +36,8 @@ function WeeklySummaries() {
 
 const total = (r: Report) => Object.values(r.changes).reduce((a, b) => a + b, 0);
 const WEEKLY: Column<Report>[] = [
-  { key: "week", label: "Week", text: (r) => String(r.since), render: (r) => `${new Date(r.since).toLocaleDateString(undefined, { day: "numeric", month: "short" })} – ${new Date(r.until).toLocaleDateString(undefined, { day: "numeric", month: "short" })}` },
-  { key: "score", label: "Health", text: (r) => (r.score === undefined ? "—" : String(r.score)) },
+  { key: "week", label: "Week", text: (r) => String(r.since), render: (r) => `${new Date(r.since).toLocaleDateString(undefined, { day: "numeric", month: "short" })} - ${new Date(r.until).toLocaleDateString(undefined, { day: "numeric", month: "short" })}` },
+  { key: "score", label: "Health", text: (r) => (r.score === undefined ? "-" : String(r.score)) },
   { key: "changes", label: "Changes", text: (r) => String(total(r)) },
   { key: "problems", label: "Problems", text: (r) => String(r.findings.filter((f) => f.severity !== "info").length) },
   { key: "tip", label: "Tip", text: (r) => r.tip, wrap: true },
@@ -81,7 +81,7 @@ export function OverviewScore({ report, error }: PageProps) {
       return {
         area: areaLabel(id),
         deduction: report.deductions?.find((d) => d.category === id)?.points ?? 0,
-        findings: open.map((f) => f.title).join(" · ") || "—",
+        findings: open.map((f) => f.title).join(" · ") || "-",
         status: worst(open),
       };
     })
@@ -98,7 +98,7 @@ export function OverviewScore({ report, error }: PageProps) {
       </Panel>
       <Panel title="Current score" span={4}>
         <Gauge value={score} subtitle="out of 100" status={scoreTone(score)} />
-        <p className="muted center">90+ Healthy · 75–89 Fair · below 75 At risk</p>
+        <p className="muted center">90+ Healthy · 75-89 Fair · below 75 At risk</p>
       </Panel>
       <Panel title="Score breakdown" subtitle="Areas DeeCure checks today" span={12} flush>
         <DataTable rows={rows} columns={COLUMNS} rowKey={(r) => r.area} empty="No areas are checked yet" />

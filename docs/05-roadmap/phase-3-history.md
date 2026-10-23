@@ -1,9 +1,9 @@
-# Phase 3 — History and trends
+# Phase 3: History and trends
 
 [Docs](../README.md) › [Roadmap](README.md)
 
 **Goal:** DeeCure remembers what changed and warns about problems before they happen.
-**Rough time:** 5–6 weeks.
+**Rough time:** 5-6 weeks.
 
 ## Progress
 
@@ -50,4 +50,4 @@ Not checked yet (needs people or machines): how the timeline and notifications f
 
 ---
 
-← Previous: [Phase 2](phase-2-fix-safely.md) · [Index](README.md) · Next: [Phase 4 — Assistant](phase-4-assistant.md) →
+← Previous: [Phase 2](phase-2-fix-safely.md) · [Index](README.md) · Next: [Phase 4: Assistant](phase-4-assistant.md) →

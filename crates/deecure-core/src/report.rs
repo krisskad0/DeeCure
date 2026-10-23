@@ -186,7 +186,7 @@ fn severity_word(s: Severity) -> &'static str {
 
 fn period(r: &Report, tz: &local::TimeZone) -> String {
     format!(
-        "{} – {}",
+        "{} to {}",
         local::format_in(r.since, "%a %d %b %Y", tz),
         local::format_in(r.until, "%a %d %b %Y", tz)
     )
@@ -291,7 +291,7 @@ pub fn html(r: &Report, tz: &local::TimeZone) -> String {
         e(&r.os),
         e(&period(r, tz))
     ));
-    let score = r.score.map_or("—".to_owned(), |s| s.to_string());
+    let score = r.score.map_or("-".to_owned(), |s| s.to_string());
     let change = match r.score_change() {
         Some(d) if d != 0 => format!("<span class=\"muted\">{d:+} this period</span>"),
         _ => String::new(),
@@ -501,6 +501,6 @@ mod tests {
         r.changes = ChangeCounts::default();
         assert_eq!(r.summary(), "0 changes");
         assert!(text(&r, &local::TimeZone::UTC).contains("None. Nothing needs your attention."));
-        assert!(html(&r, &local::TimeZone::UTC).contains("—<small>/100</small>"));
+        assert!(html(&r, &local::TimeZone::UTC).contains("-<small>/100</small>"));
     }
 }

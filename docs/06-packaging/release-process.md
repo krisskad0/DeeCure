@@ -14,7 +14,7 @@ How we number versions and ship a release.
 | --- | --- | --- |
 | Release | `0.3.0` | `0.3.0-1~ubuntu24.04`, `0.3.0-1~ubuntu26.04` |
 | Release candidate | `0.3.0-rc.1` | `0.3.0~rc1-1~ubuntu24.04` |
-| Packaging fix only | — | `0.3.0-2~ubuntu24.04` |
+| Packaging fix only | - | `0.3.0-2~ubuntu24.04` |
 
 The `~` makes a release candidate sort **before** the final release, so apt upgrades from it.
 

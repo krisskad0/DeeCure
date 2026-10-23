@@ -21,8 +21,8 @@ const USER: Column<UserService>[] = [
   { key: "unit", label: "Unit", text: (u) => `${u.name} ${u.description}`, render: (u) => (<span className="cell-two"><b>{u.name}</b><span>{u.description}</span></span>) },
   { key: "active", label: "Active", text: (u) => u.active, render: (u) => <StatusBadge variant={ACTIVE[u.active] ?? "off"} label={u.active} /> },
   { key: "sub", label: "Sub", text: (u) => u.sub },
-  { key: "memory", label: "Memory", text: (u) => (u.memory === undefined ? "—" : bytes(u.memory)), numeric: true },
-  { key: "enabled", label: "Enabled", text: (u) => u.enabled ?? "—", expert: true },
+  { key: "memory", label: "Memory", text: (u) => (u.memory === undefined ? "-" : bytes(u.memory)), numeric: true },
+  { key: "enabled", label: "Enabled", text: (u) => u.enabled ?? "-", expert: true },
 ];
 
 export function ServicesUser() {
@@ -42,7 +42,7 @@ export function ServicesUser() {
 const STARTUP: Column<StartupApp>[] = [
   { key: "name", label: "Name", text: (a) => a.name },
   { key: "scope", label: "Scope", text: (a) => a.scope },
-  { key: "command", label: "Command", text: (a) => a.command, render: (a) => (a.command ? <code>{a.command}</code> : "—"), expert: true, wrap: true },
+  { key: "command", label: "Command", text: (a) => a.command, render: (a) => (a.command ? <code>{a.command}</code> : "-"), expert: true, wrap: true },
   { key: "enabled", label: "Enabled", text: (a) => (a.enabled ? "On" : "Off"), render: (a) => <StatusBadge variant={a.enabled ? "ok" : "off"} label={a.enabled ? "On" : "Off"} /> },
 ];
 

@@ -5,15 +5,15 @@
 - Group: Monitoring · Icon: `logs` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Journal, Errors, Crashes, Kernel, Boots
 
-## Logs › Journal — `logs/journal`
+## Logs › Journal: `logs/journal`
 
-1. **Bar chart** — "Log volume" · span 12
+1. **Bar chart**: "Log volume" · span 12
 - Subtitle: "events per hour, last 24 h"
 - Source chip (Expert): `journalctl --since -24h`
 - Height 150px · Y max auto · highlighted (warn + value label): index 8
 - Bars (label: value · tooltip label): 00: 14 · "00:00"; 01: 9 · "01:00"; 02: 41 · "02:00"; 03: 22 · "03:00"; 04: 6 · "04:00"; 05: 4 · "05:00"; 06: 5 · "06:00"; 07: 6 · "07:00"; 08: 88 · "08:00"; 09: 64 · "09:00"; 10: 31 · "10:00"; 11: 18 · "11:00"; 12: 22 · "12:00"; 13: 19 · "13:00"; 14: 16 · "14:00"; 15: 34 · "15:00"; 16: 21 · "16:00"; 17: 14 · "17:00"; 18: 26 · "18:00"; 19: 19 · "19:00"; 20: 31 · "20:00"; 21: 46 · "21:00"; 22: 12 · "22:00"; 23: 8 · "23:00"
 
-2. **Data table** — "Journal entries" · span 12
+2. **Data table**: "Journal entries" · span 12
 - Search: "Filter messages"
 - Filter chips on column 2: All / error / warning / info
 - Page size 12
@@ -42,7 +42,7 @@
 | `Mon 09:44:09` | {off:info} | `kernel` | `usb 3-2: USB disconnect, device number 3` |
 | `Sun 03:10:00` | {off:notice} | `systemd` | `e2scrub_all.timer: skipped, system suspended` |
 
-## Logs › Errors — `logs/errors`
+## Logs › Errors: `logs/errors`
 
 Tab count pill: 37.
 
@@ -50,12 +50,12 @@ Tab count pill: 37.
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Errors | 37 |  | {warn:Warning} | last 7 days | — | — |
-| Unique messages | 6 |  | — |   | — | — |
-| Needs attention | 2 |  | {crit:Critical} |   | — | — |
-| Known harmless | 29 |  | — | ACPI, gnome-shell | — | — |
+| Errors | 37 |  | {warn:Warning} | last 7 days | - | - |
+| Unique messages | 6 |  | - |   | - | - |
+| Needs attention | 2 |  | {crit:Critical} |   | - | - |
+| Known harmless | 29 |  | - | ACPI, gnome-shell | - | - |
 
-2. **Data table** — "Grouped errors" · span 12
+2. **Data table**: "Grouped errors" · span 12
 
 | Message | Unit | Count [n] | Last seen | Classification | Row action |
 | --- | --- | --- | --- | --- | --- |
@@ -66,9 +66,9 @@ Tab count pill: 37.
 | **USB disconnect** · usb 3-2 | `kernel` | 2 | Mon 09:44 | {info:Review} |  |
 | **Failed to start Network Time Synchronization** · Retried successfully | `systemd` | 1 | Sat 08:12 | {off:Harmless} |  |
 
-3. **Heatmap (day × hour)** — "Errors by day and hour" · span 12
+3. **Heatmap (day × hour)**: "Errors by day and hour" · span 12
 - Source chip (Expert): `journalctl -p err`
-- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00–23 · unit "errors"
+- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00-23 · unit "errors"
 - Values (row by row, 24 per row):
 
 ```
@@ -81,17 +81,17 @@ Tue  1 1 0 0 1 0 0 0 1 0 0 1 0 1 0 0 0 0 1 1 0 1 0 0
 Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 ```
 
-## Logs › Crashes — `logs/crashes`
+## Logs › Crashes: `logs/crashes`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Crashes | 16 |  | — | last 7 days | — | — |
-| Applications | 3 |  | — |   | — | — |
-| Core dumps stored | 420 | MB | — |   | — | — |
+| Crashes | 16 |  | - | last 7 days | - | - |
+| Applications | 3 |  | - |   | - | - |
+| Core dumps stored | 420 | MB | - |   | - | - |
 
-2. **Data table** — "Crash reports" · span 12
+2. **Data table**: "Crash reports" · span 12
 - Source chip (Expert): `coredumpctl list · /var/crash`
 
 | Time | Application | Signal | Source | Count [n] | Status | Row action |
@@ -100,9 +100,9 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Mon 16:12 | `chrome (renderer)` | SIGKILL (OOM) | kernel | 1 | {warn:Resolved} |  |
 | Mon 11:47 | `gnome-calculator` | SIGABRT | apport | 1 | {off:Reported} |  |
 
-## Logs › Kernel — `logs/kernel`
+## Logs › Kernel: `logs/kernel`
 
-1. **Data table** — "Kernel messages" · span 12
+1. **Data table**: "Kernel messages" · span 12
 - Source chip (Expert): `journalctl -k`
 - Search: "Filter kernel log"
 
@@ -116,20 +116,20 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Mon 10:02 | {off:info} | usb | `usb 3-2: new SuperSpeed USB device number 4` |
 | Mon 09:44 | {warn:warn} | usb | `usb 3-2: USB disconnect, device number 3` |
 
-## Logs › Boots — `logs/boots`
+## Logs › Boots: `logs/boots`
 
-1. **Bar chart** — "Boot duration" · span 6
+1. **Bar chart**: "Boot duration" · span 6
 - Subtitle: "last 10 boots"
 - Source chip (Expert): `systemd-analyze`
 - Height 200px · Y max auto · unit "s" · highlighted (warn + value label): index 9
 - Bars (label: value): 8 Oct: 29; 10 Oct: 28; 12 Oct: 31; 13 Oct: 27; 14 Oct: 28; 15 Oct: 30; 16 Oct: 29; 17 Oct: 28; 19 Oct: 28; Today: 41.2
 
-2. **Data table** — "Boot history" · span 6
+2. **Data table**: "Boot history" · span 6
 - Source chip (Expert): `journalctl --list-boots`
 
 | Started | Ended | Duration | Shutdown | Kernel |
 | --- | --- | --- | --- | --- |
-| Today 08:58 | — | 12 h 36 m | {info:Running} | `6.8.0-47` |
+| Today 08:58 | - | 12 h 36 m | {info:Running} | `6.8.0-47` |
 | Mon 08:41 | Today 02:14 | 1 d 17 h | {crit:Unclean} | `6.8.0-45` |
 | Sat 10:12 | Mon 08:40 | 1 d 22 h | {ok:Clean} | `6.8.0-45` |
 | Thu 09:01 | Sat 10:11 | 2 d 1 h | {ok:Clean} | `6.8.0-45` |

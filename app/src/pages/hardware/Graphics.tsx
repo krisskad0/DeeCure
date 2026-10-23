@@ -33,9 +33,9 @@ export function HardwareGraphics() {
             <KeyValueList
               rows={[
                 ["GPU", g.model ?? "Unknown"],
-                ["Maker", g.vendor ?? "—"],
+                ["Maker", g.vendor ?? "-"],
                 ["Kernel driver", g.driver ? <code key="d">{g.driver}</code> : "None"],
-                ["PCI ID", g.pci_id ? <code key="p">{g.pci_id}</code> : "—"],
+                ["PCI ID", g.pci_id ? <code key="p">{g.pci_id}</code> : "-"],
                 ["Main card", g.boot_vga ? "Yes" : "No"],
               ]}
             />

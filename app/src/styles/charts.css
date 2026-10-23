@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0
-   Charts: docs/03-ui-design/03-components/12–20. */
+   Charts: docs/03-ui-design/03-components/12-20. */
 
 .chart { position: relative; width: 100%; min-width: 0; }
 .chart svg { display: block; overflow: visible; }

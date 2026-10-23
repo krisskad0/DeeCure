@@ -32,7 +32,7 @@ impl QuietHours {
         }
     }
 
-    /// True when `minute_of_day` (0–1439, local) is inside the quiet hours.
+    /// True when `minute_of_day` (0-1439, local) is inside the quiet hours.
     pub fn contains(self, minute_of_day: u16) -> bool {
         match self.range() {
             None => false,

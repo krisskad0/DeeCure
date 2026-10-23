@@ -284,8 +284,8 @@ const PACKAGES: Column<HistoryEvent>[] = [
   { key: "action", label: "Action", text: (e) => word(actionOf(e)), render: (e) => <StatusBadge variant={ACTION[actionOf(e)] ?? "info"} label={word(actionOf(e))} /> },
   { key: "name", label: "Package", text: (e) => e.subject ?? "" },
   { key: "format", label: "Type", text: (e) => FORMAT[e.data?.format ?? "deb"] ?? "deb" },
-  { key: "from", label: "From", text: (e) => e.data?.from ?? "—", render: (e) => (e.data?.from ? <code>{e.data.from}</code> : "—"), expert: true },
-  { key: "to", label: "To", text: (e) => e.data?.to ?? "—", render: (e) => (e.data?.to ? <code>{e.data.to}</code> : "—") },
+  { key: "from", label: "From", text: (e) => e.data?.from ?? "-", render: (e) => (e.data?.from ? <code>{e.data.from}</code> : "-"), expert: true },
+  { key: "to", label: "To", text: (e) => e.data?.to ?? "-", render: (e) => (e.data?.to ? <code>{e.data.to}</code> : "-") },
   { key: "source", label: "Source", text: (e) => e.source },
 ];
 
@@ -311,7 +311,7 @@ export function ActivityConfig() {
     { key: "time", label: "Time", text: (e) => String(e.at), render: (e) => when(e.at) },
     { key: "file", label: "File", text: (e) => e.subject ?? e.title, render: (e) => <code className="wrap-anywhere">{e.subject ?? e.title}</code>, wrap: true },
     { key: "change", label: "Change", text: (e) => CHANGE[e.data?.change ?? "changed"]?.[1] ?? "Changed", render: (e) => <StatusBadge variant={CHANGE[e.data?.change ?? "changed"]?.[0] ?? "info"} label={`${CHANGE[e.data?.change ?? "changed"]?.[1] ?? "Changed"}${(e.data?.count ?? 1) > 1 ? ` ×${e.data?.count}` : ""}`} /> },
-    { key: "lines", label: "Lines", text: (e) => (e.data?.added !== undefined ? `+${e.data.added} −${e.data.removed ?? 0}` : "—"), expert: true },
+    { key: "lines", label: "Lines", text: (e) => (e.data?.added !== undefined ? `+${e.data.added} −${e.data.removed ?? 0}` : "-"), expert: true },
     { key: "who", label: "Changed by", text: (e) => e.source },
     {
       key: "view",
@@ -337,7 +337,7 @@ const DEVICES: Column<HistoryEvent>[] = [
   { key: "event", label: "Event", text: (e) => (e.kind === "device_added" ? "Connected" : "Disconnected"), render: (e) => <StatusBadge variant={e.kind === "device_added" ? "ok" : "off"} label={`${e.kind === "device_added" ? "Connected" : "Disconnected"}${(e.data?.count ?? 1) > 1 ? ` ×${e.data?.count}` : ""}`} /> },
   { key: "device", label: "Device", text: (e) => e.subject ?? e.title },
   { key: "bus", label: "Bus", text: (e) => e.data?.bus ?? "USB" },
-  { key: "id", label: "ID", text: (e) => e.data?.id ?? "—", render: (e) => (e.data?.id ? <code>{e.data.id}</code> : "—") },
+  { key: "id", label: "ID", text: (e) => e.data?.id ?? "-", render: (e) => (e.data?.id ? <code>{e.data.id}</code> : "-") },
 ];
 
 export function ActivityDevices() {

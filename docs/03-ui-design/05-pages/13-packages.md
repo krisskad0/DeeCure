@@ -5,31 +5,31 @@
 - Group: Software & Data · Icon: `pkg` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Installed, Sources, Cleanup, Permissions
 
-## Packages › Installed — `packages/installed`
+## Packages › Installed: `packages/installed`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| APT | 1,842 |  | — | 212 installed by you | — | — |
-| Snap | 14 |  | — | 3.9 GB | — | — |
-| Flatpak | 6 |  | — | 2.2 GB | — | — |
-| AppImage | 2 |  | — | found in ~/Downloads | — | — |
-| Language packages | 29 |  | — | pip · npm · cargo | — | — |
-| Updates | 12 |  | {warn:Warning} |   | — | `system/updates` |
+| APT | 1,842 |  | - | 212 installed by you | - | - |
+| Snap | 14 |  | - | 3.9 GB | - | - |
+| Flatpak | 6 |  | - | 2.2 GB | - | - |
+| AppImage | 2 |  | - | found in ~/Downloads | - | - |
+| Language packages | 29 |  | - | pip · npm · cargo | - | - |
+| Updates | 12 |  | {warn:Warning} |   | - | `system/updates` |
 
-2. **Donut chart** — "Disk usage by source" · span 4
+2. **Donut chart**: "Disk usage by source" · span 4
 - Center: "12.4" / "GB" · unit "GB"
 
 | Segment | Value | Color | Display value |
 | --- | --- | --- | --- |
-| APT | 5.8 | slot 1 | — |
-| Snap | 3.9 | slot 2 | — |
-| Flatpak | 2.2 | slot 3 | — |
+| APT | 5.8 | slot 1 | - |
+| Snap | 3.9 | slot 2 | - |
+| Flatpak | 2.2 | slot 3 | - |
 | AppImage | 0.1 | slot 4 | 0.1 GB |
-| Other | 0.4 | slot 5 | — |
+| Other | 0.4 | slot 5 | - |
 
-3. **Data table** — "Packages" · span 8
+3. **Data table**: "Packages" · span 8
 - Search: "Search packages"
 - Filter chips on column 3: All / apt / snap / flatpak / AppImage
 - Page size 10
@@ -53,7 +53,7 @@
 | gimp | `2.10.36` | {off:apt} | 98 MB | User | 124 days ago {warn:Unused} |
 | shotwell | `0.32.6` | {off:apt} | 8 MB | System | 201 days ago {warn:Unused} |
 | git | `2.43.0` | {off:apt} | 42 MB | User | Today |
-| python3 | `3.12.3` | {off:apt} | — | System | Today |
+| python3 | `3.12.3` | {off:apt} | - | System | Today |
 | libreoffice-writer | `24.2.6` | {off:apt} | 64 MB | System | 18 days ago |
 | balenaEtcher | `1.19.21` | {warn:AppImage} | 98 MB | User | 42 days ago |
 | dropbox | `2024.04.17` | {off:apt · 3rd-party} | 38 MB | User | Today |
@@ -61,9 +61,9 @@
 | typescript | `5.6.3` | `npm` | 22 MB | User | 2 days ago |
 | ripgrep | `14.1.1` | `cargo` | 6 MB | User | Today |
 
-## Packages › Sources — `packages/sources`
+## Packages › Sources: `packages/sources`
 
-1. **Data table** — "Software sources" · span 12
+1. **Data table**: "Software sources" · span 12
 - Source chip (Expert): `/etc/apt/sources.list.d`
 
 | Repository | Type | Signed | Packages [n] | Status |
@@ -77,9 +77,9 @@
 | `ppa:deadsnakes/ppa` | PPA | ✓ | 0 | {info:Unused} |
 | `ppa:obsproject/obs-studio` | PPA | ✓ | 0 | {info:Unused} |
 
-## Packages › Cleanup — `packages/cleanup`
+## Packages › Cleanup: `packages/cleanup`
 
-1. **Data table** — "Reclaimable" · span 12
+1. **Data table**: "Reclaimable" · span 12
 
 | Item | Count [n] | Size [n] | Undo | (action) |
 | --- | --- | --- | --- | --- |
@@ -90,19 +90,19 @@
 | Apps not used in 90+ days | 2 | 106 MB | {off:Review} | [Review](go:packages/installed) |
 | Old kernel 6.8.0-41 | 1 | 320 MB | {info:Reinstallable} | [Remove](act:toast:Old kernel queued for removal.) |
 
-## Packages › Permissions — `packages/permissions`
+## Packages › Permissions: `packages/permissions`
 
-1. **Data table** — "Sandboxed app permissions" · span 12
+1. **Data table**: "Sandboxed app permissions" · span 12
 - Source chip (Expert): `snap connections · flatpak info --show-permissions`
 
 | App | Source | Camera | Microphone | Home folder | Network | Location |
 | --- | --- | --- | --- | --- | --- | --- |
-| zoom-client | {info:snap} | ✓ | ✓ | ✓ | ✓ | — |
-| code | {info:snap} | — | — | ✓ | ✓ | — |
-| telegram-desktop | {info:snap} | ✓ | ✓ | ✓ | ✓ | — |
+| zoom-client | {info:snap} | ✓ | ✓ | ✓ | ✓ | - |
+| code | {info:snap} | - | - | ✓ | ✓ | - |
+| telegram-desktop | {info:snap} | ✓ | ✓ | ✓ | ✓ | - |
 | firefox | {info:snap} | ✓ | ✓ | ✓ | ✓ | ✓ |
-| com.spotify.Client | {ok:flatpak} | — | — | — | ✓ | — |
-| com.obsproject.Studio | {ok:flatpak} | ✓ | ✓ | ✓ | ✓ | — |
+| com.spotify.Client | {ok:flatpak} | - | - | - | ✓ | - |
+| com.obsproject.Studio | {ok:flatpak} | ✓ | ✓ | ✓ | ✓ | - |
 
 ---
 

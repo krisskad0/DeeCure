@@ -46,7 +46,7 @@ export function PrivacyAccess() {
   );
 }
 
-const yes = (on: boolean) => (on ? <Icon name="check" size={16} /> : <span className="muted">—</span>);
+const yes = (on: boolean) => (on ? <Icon name="check" size={16} /> : <span className="muted">-</span>);
 const PERMS: Column<App>[] = [
   { key: "app", label: "App", text: (a) => a.app },
   { key: "kind", label: "Kind", text: (a) => a.kind },

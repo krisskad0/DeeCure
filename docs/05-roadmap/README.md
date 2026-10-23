@@ -2,15 +2,15 @@
 
 [Docs](../README.md)
 
-Durations are rough estimates for a team of 2–3 engineers.
+Durations are rough estimates for a team of 2-3 engineers.
 
 | Phase | What ships | Rough time |
 | --- | --- | --- |
-| **0. Foundations** | Agent skeleton, SQLite, 5 collectors, CLI `status`, fixture tests | 3–4 weeks |
-| **1. MVP — see and understand** | All Yes-status insights from the category list, home screen, category pages, KB for common items, health score, jobs calendar | 8–10 weeks |
-| **2. Fix safely** | Helper + polkit, Admin-status insights, fix engine with preview, verify, and undo, first 20 fixes | 6–8 weeks |
-| **3. History and trends** | What-changed timeline, trends, predictions ("disk full in N days"), notifications, weekly report | 5–6 weeks |
-| **4. Ask DeeCure** | Local AI assistant with read-only tools, "Why did my PC restart?" | 4–6 weeks |
+| **0. Foundations** | Agent skeleton, SQLite, 5 collectors, CLI `status`, fixture tests | 3-4 weeks |
+| **1. MVP: see and understand** | All Yes-status insights from the category list, home screen, category pages, KB for common items, health score, jobs calendar | 8-10 weeks |
+| **2. Fix safely** | Helper + polkit, Admin-status insights, fix engine with preview, verify, and undo, first 20 fixes | 6-8 weeks |
+| **3. History and trends** | What-changed timeline, trends, predictions ("disk full in N days"), notifications, weekly report | 5-6 weeks |
+| **4. Ask DeeCure** | Local AI assistant with read-only tools, "Why did my PC restart?" | 4-6 weeks |
 | **5. Reach** | Fedora and Arch adapters, KDE support, server web mode, multi-PC view for small offices | Ongoing |
 
 **Launch the public beta after Phase 2.** Before that, the app can show problems but cannot fix them, and "safe fixes" is the main promise.

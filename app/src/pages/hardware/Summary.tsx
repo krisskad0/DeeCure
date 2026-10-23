@@ -37,10 +37,10 @@ export function HardwareSummary() {
   const gpu = gpus?.[0];
   const rows: StatusRow[] = [
     { icon: "chip", label: "Processor", metric: [shortCpu(hw.processor.model), temp !== undefined && tempText(temp)].filter(Boolean).join(" · "), status: temp === undefined ? "off" : temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok", href: href("hardware", "processor") },
-    { icon: "layers", label: "Memory", metric: hw.memory_total ? bytes(hw.memory_total) : "—", status: "ok", href: href("hardware", "memory") },
+    { icon: "layers", label: "Memory", metric: hw.memory_total ? bytes(hw.memory_total) : "-", status: "ok", href: href("hardware", "memory") },
     { icon: "db", label: "Storage", metric: disk ? `${disk.kind} ${bytes(disk.size, 0)}` : "No disks found", status: "off", href: href("hardware", "storage") },
     { icon: "bat", label: "Battery", metric: health === undefined ? "No battery" : `${Math.round(health)}% of design`, status: health === undefined ? "off" : health < 60 ? "warn" : health < 80 ? "info" : "ok", href: href("power", "battery") },
-    { icon: "mon", label: "Graphics", metric: gpu ? [gpu.model?.match(/\[(.+)\]/)?.[1] ?? gpu.model, gpu.driver].filter(Boolean).join(" · ") : "—", status: gpu ? (gpu.driver ? "ok" : "warn") : "off", href: href("hardware", "graphics") },
+    { icon: "mon", label: "Graphics", metric: gpu ? [gpu.model?.match(/\[(.+)\]/)?.[1] ?? gpu.model, gpu.driver].filter(Boolean).join(" · ") : "-", status: gpu ? (gpu.driver ? "ok" : "warn") : "off", href: href("hardware", "graphics") },
     { icon: "fan", label: "Fans", metric: fans.length ? fans.map((f) => `${Math.round(f.value)} RPM`).join(", ") : "Not reported", status: fans.length ? "ok" : "off", href: href("hardware", "sensors") },
     {
       icon: "usb",
@@ -56,11 +56,11 @@ export function HardwareSummary() {
       <Panel title="Machine" source="/sys/class/dmi/id" span={6} flush>
         <KeyValueList
           rows={[
-            ["Vendor", m.vendor ?? "—"],
-            ["Model", m.model ?? "—"],
-            ["Chassis", m.chassis ?? "—"],
+            ["Vendor", m.vendor ?? "-"],
+            ["Model", m.model ?? "-"],
+            ["Chassis", m.chassis ?? "-"],
             ["Serial number", <AdminRead key="s" what="serial" label="Show (asks for your password)">{(t) => <code>{t || "Not set by the maker"}</code>}</AdminRead>],
-            ["BIOS", [m.bios_version, m.bios_date && biosDate(m.bios_date)].filter(Boolean).join(" · ") || "—"],
+            ["BIOS", [m.bios_version, m.bios_date && biosDate(m.bios_date)].filter(Boolean).join(" · ") || "-"],
             ["Secure Boot", m.secure_boot === undefined ? "Not available (legacy BIOS)" : <StatusBadge key="sb" variant={m.secure_boot ? "ok" : "warn"} label={m.secure_boot ? "Enabled" : "Disabled"} />],
           ]}
         />

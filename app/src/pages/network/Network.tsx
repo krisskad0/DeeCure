@@ -47,9 +47,9 @@ const INTERFACES: Column<Row>[] = [
   { key: "name", label: "Interface", text: (r) => r.name, render: (r) => <code>{r.name}</code> },
   { key: "kind", label: "Type", text: (r) => r.kind },
   { key: "state", label: "State", text: (r) => r.state, render: (r) => <StatusBadge variant={r.state === "up" ? "ok" : "off"} label={r.state === "up" ? "connected" : r.state} /> },
-  { key: "ipv4", label: "IPv4", text: (r) => r.ipv4 || "—", render: (r) => (r.ipv4 ? <code>{r.ipv4}</code> : "—") },
-  { key: "mac", label: "MAC", text: (r) => r.mac ?? "—", expert: true },
-  { key: "speed", label: "Speed", text: (r) => (r.speed ? `${r.speed} Mb/s` : "—"), numeric: true },
+  { key: "ipv4", label: "IPv4", text: (r) => r.ipv4 || "-", render: (r) => (r.ipv4 ? <code>{r.ipv4}</code> : "-") },
+  { key: "mac", label: "MAC", text: (r) => r.mac ?? "-", expert: true },
+  { key: "speed", label: "Speed", text: (r) => (r.speed ? `${r.speed} Mb/s` : "-"), numeric: true },
   { key: "rx", label: "RX", text: (r) => bytes(r.rx), numeric: true },
   { key: "tx", label: "TX", text: (r) => bytes(r.tx), numeric: true },
 ];
@@ -76,10 +76,10 @@ export function NetworkInterfaces() {
         {w ? (
           <KeyValueList
             rows={[
-              ["Network", w.ssid ?? "—"],
-              ["Signal", w.strength === undefined ? "—" : <InlineMeter key="s" percent={w.strength} label={w.dbm === undefined ? `${w.strength}%` : `${w.dbm} dBm`} tone={w.strength >= 50 ? "ok" : w.strength >= 30 ? "warn" : "crit"} />],
-              ["Band", w.frequency_mhz ? `${(w.frequency_mhz / 1000).toFixed(1)} GHz (channel frequency ${w.frequency_mhz} MHz)` : "—"],
-              ["Link speed", w.bitrate_mbps ? `${w.bitrate_mbps} Mb/s` : "—"],
+              ["Network", w.ssid ?? "-"],
+              ["Signal", w.strength === undefined ? "-" : <InlineMeter key="s" percent={w.strength} label={w.dbm === undefined ? `${w.strength}%` : `${w.dbm} dBm`} tone={w.strength >= 50 ? "ok" : w.strength >= 30 ? "warn" : "crit"} />],
+              ["Band", w.frequency_mhz ? `${(w.frequency_mhz / 1000).toFixed(1)} GHz (channel frequency ${w.frequency_mhz} MHz)` : "-"],
+              ["Link speed", w.bitrate_mbps ? `${w.bitrate_mbps} Mb/s` : "-"],
               ["Interface", <code key="i">{w.interface}</code>],
             ]}
           />
@@ -92,7 +92,7 @@ export function NetworkInterfaces() {
           rows={[
             ["Internet", conn ? <StatusBadge key="c" variant={conn[0]} label={conn[1]} /> : "Unknown (NetworkManager not running)"],
             ["Gateway", d.gateway ? <code key="g">{d.gateway}</code> : "None"],
-            ["DNS", d.dns_servers.length ? <code key="d">{d.dns_servers.join(", ")}</code> : "—"],
+            ["DNS", d.dns_servers.length ? <code key="d">{d.dns_servers.join(", ")}</code> : "-"],
             ["Firewall", d.firewall.installed ? (d.firewall.enabled ? "On (ufw)" : <StatusBadge key="f" variant="warn" label="Off" />) : "Not installed"],
           ]}
         />
@@ -108,7 +108,7 @@ const SOCKETS: Column<SocketInfo>[] = [
   { key: "local", label: "Local", text: (s) => s.local, render: (s) => <code>{s.local}</code> },
   { key: "remote", label: "Remote", text: (s) => s.remote, render: (s) => <code>{s.remote}</code> },
   { key: "state", label: "State", text: (s) => s.state, render: (s) => <StatusBadge variant={STATE[s.state] ?? "off"} label={s.state} /> },
-  { key: "process", label: "Process", text: (s) => s.process ?? "—", render: (s) => s.process ?? <span className="muted">other user</span> },
+  { key: "process", label: "Process", text: (s) => s.process ?? "-", render: (s) => s.process ?? <span className="muted">other user</span> },
 ];
 
 export function NetworkConnections() {
@@ -147,13 +147,13 @@ export function NetworkPorts() {
       text: (s) => kbPort(kb, s.local_port, s.proto)?.name ?? "",
       render: (s) => {
         const k = kbPort(kb, s.local_port, s.proto);
-        return k ? <span className="cell-two"><b>{k.name}</b><span>{k.plain}</span></span> : <span className="muted">—</span>;
+        return k ? <span className="cell-two"><b>{k.name}</b><span>{k.plain}</span></span> : <span className="muted">-</span>;
       },
       wrap: true,
     },
     { key: "bind", label: "Bind address", text: (s) => s.local.slice(0, s.local.lastIndexOf(":")), render: (s) => <code>{s.local.slice(0, s.local.lastIndexOf(":"))}</code> },
     { key: "exposure", label: "Exposure", text: (s) => EXPOSURE[s.exposure][1], render: (s) => <StatusBadge variant={EXPOSURE[s.exposure][0]} label={EXPOSURE[s.exposure][1]} /> },
-    { key: "process", label: "Process", text: (s) => s.process ?? "—", render: (s) => s.process ?? <span className="muted">system (needs Full access)</span> },
+    { key: "process", label: "Process", text: (s) => s.process ?? "-", render: (s) => s.process ?? <span className="muted">system (needs Full access)</span> },
     {
       key: "firewall",
       label: "Firewall",
@@ -183,7 +183,7 @@ export function NetworkFirewall() {
   const openFix = useFix();
   if (!d) return <Waiting title="Firewall" error={error} />;
   const fw = d.firewall;
-  const policy = (p?: string) => (p === "DROP" || p === "REJECT" ? "Deny" : p === "ACCEPT" ? "Allow" : (p ?? "—"));
+  const policy = (p?: string) => (p === "DROP" || p === "REJECT" ? "Deny" : p === "ACCEPT" ? "Allow" : (p ?? "-"));
   return (
     <>
       <KpiRow
@@ -191,7 +191,7 @@ export function NetworkFirewall() {
           { label: "Status", value: !fw.installed ? "Not installed" : fw.enabled ? "Active" : "Off", status: fw.installed && !fw.enabled ? "warn" : "ok", subtext: "ufw" },
           { label: "Incoming", value: fw.enabled ? policy(fw.incoming) : "Allow", subtext: fw.enabled ? "default" : "firewall off" },
           { label: "Outgoing", value: fw.enabled ? policy(fw.outgoing) : "Allow", subtext: "default" },
-          { label: "Rules", value: fw.rules ? String(fw.rules.length) : "—", subtext: fw.rules ? "" : "need Full access to read" },
+          { label: "Rules", value: fw.rules ? String(fw.rules.length) : "-", subtext: fw.rules ? "" : "need Full access to read" },
         ]}
       />
       <Panel title="Rules" source="/etc/ufw/user.rules" span={12}>
@@ -224,7 +224,7 @@ export function NetworkDns() {
         <KeyValueList
           rows={[
             ["Resolver", d.resolver],
-            ["Servers", d.dns_servers.length ? <code key="s">{d.dns_servers.join(", ")}</code> : "—"],
+            ["Servers", d.dns_servers.length ? <code key="s">{d.dns_servers.join(", ")}</code> : "-"],
           ]}
         />
       </Panel>

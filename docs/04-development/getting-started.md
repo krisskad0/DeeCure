@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [Development](README.md)
 
-> **Status:** Phases 0–3 are built. Every command below works. What is left: [Pending work](../05-roadmap/pending.md).
+> **Status:** Phases 0-3 are built. Every command below works. What is left: [Pending work](../05-roadmap/pending.md).
 
 ## 1. What you need
 

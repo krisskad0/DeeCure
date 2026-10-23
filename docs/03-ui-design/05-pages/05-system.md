@@ -5,9 +5,9 @@
 - Group: System · Icon: `sys` · Status badge: {info:Info} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Overview, Boot, Updates, Kernel, Time & Locale
 
-## System › Overview — `system/overview`
+## System › Overview: `system/overview`
 
-1. **Key-value list** — "Operating system" · span 6
+1. **Key-value list**: "Operating system" · span 6
 - Source chip (Expert): `/etc/os-release · uname -a`
 
 | Key | Value |
@@ -21,7 +21,7 @@
 | Virtualization | None (bare metal) |
 | Machine ID | `4f1c9d…a72e` |
 
-2. **Key-value list** — "Status" · span 6
+2. **Key-value list**: "Status" · span 6
 
 | Key | Value |
 | --- | --- |
@@ -34,25 +34,25 @@
 | Ubuntu Pro | {off:Not attached} |
 | Livepatch | {off:Disabled} |
 
-3. **Lifecycle bar ([Lifecycle bar](../03-components/20-lifecycle-bar.md))** — "Release lifecycle" · span 12
+3. **Lifecycle bar ([Lifecycle bar](../03-components/20-lifecycle-bar.md))**: "Release lifecycle" · span 12
 - Subtitle: "Ubuntu 24.04 LTS"
 - Info tooltip: "How long this Ubuntu version gets security updates."
 
 Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label "Standard support ends · Apr 2029".
 
-## System › Boot — `system/boot`
+## System › Boot: `system/boot`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Last boot | 41.2 | s | {warn:Warning} | Average 28.6 s | — | — |
-| Firmware | 8.1 | s | — |   | — | — |
-| Loader | 2.4 | s | — |   | — | — |
-| Kernel | 3.9 | s | — |   | — | — |
-| Userspace | 26.8 | s | — |   | — | — |
+| Last boot | 41.2 | s | {warn:Warning} | Average 28.6 s | - | - |
+| Firmware | 8.1 | s | - |   | - | - |
+| Loader | 2.4 | s | - |   | - | - |
+| Kernel | 3.9 | s | - |   | - | - |
+| Userspace | 26.8 | s | - |   | - | - |
 
-2. **Horizontal bar list** — "Slowest units" · span 6
+2. **Horizontal bar list**: "Slowest units" · span 6
 - Source chip (Expert): `systemd-analyze blame`
 
 | Label | Value | Shown as |
@@ -65,12 +65,12 @@ Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label
 | `apt-daily.service` | 1.7 | 1.7 s |
 | `systemd-udev-settle.service` | 1.2 | 1.2 s |
 
-3. **Bar chart** — "Boot time history" · span 6
+3. **Bar chart**: "Boot time history" · span 6
 - Subtitle: "last 10 boots"
 - Height 220px · Y max auto · unit "s" · highlighted (warn + value label): index 9
 - Bars (label: value): 8 Oct: 29; 10 Oct: 28; 12 Oct: 31; 13 Oct: 27; 14 Oct: 28; 15 Oct: 30; 16 Oct: 29; 17 Oct: 28; 19 Oct: 28; Today: 41.2
 
-## System › Updates — `system/updates`
+## System › Updates: `system/updates`
 
 Header actions: [**Install security updates**](act:fix:sec) (hidden once done), then Refresh and Export.
 
@@ -80,13 +80,13 @@ Tab count pill: 12.
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending | 12 |  | {warn:Warning} |   | — | — |
-| Security | 4 |  | {warn:Warning} |   | — | — |
-| Last check | 2 | h ago | — |   | — | — |
-| Automatic security updates | On |  | — |   | — | — |
-| Reboot required | Yes |  | {info:Info} |   | — | — |
+| Pending | 12 |  | {warn:Warning} |   | - | - |
+| Security | 4 |  | {warn:Warning} |   | - | - |
+| Last check | 2 | h ago | - |   | - | - |
+| Automatic security updates | On |  | - |   | - | - |
+| Reboot required | Yes |  | {info:Info} |   | - | - |
 
-2. **Data table** — "Pending updates" · span 12
+2. **Data table**: "Pending updates" · span 12
 - Source chip (Expert): `apt list --upgradable`
 - Row selection · bulk button [Install selected](act:fix:sec)
 - Total count shown: 12
@@ -103,7 +103,7 @@ Tab count pill: 12.
 | docker-ce | `5:27.3.1` | `5:27.3.2` | {off:Regular} | 25 MB |
 | code (snap) | `1.94.2` | `1.95.0` | {off:Regular} | 106 MB |
 
-3. **Data table** — "Update history" · span 12
+3. **Data table**: "Update history" · span 12
 
 | Date | Packages [n] | Source | Result |
 | --- | --- | --- | --- |
@@ -111,9 +111,9 @@ Tab count pill: 12.
 | Tue 18:40 | 6 | Software Updater | {ok:Success} |
 | Thu 06:24 | 2 | unattended-upgrades | {ok:Success} |
 
-## System › Kernel — `system/kernel`
+## System › Kernel: `system/kernel`
 
-1. **Key-value list** — "Running kernel" · span 5
+1. **Key-value list**: "Running kernel" · span 5
 - Source chip (Expert): `uname -r · /proc/cmdline`
 
 | Key | Value |
@@ -123,7 +123,7 @@ Tab count pill: 12.
 | Modules loaded | 187 |
 | Command line | `BOOT_IMAGE=/vmlinuz-6.8.0-47-generic root=UUID=… ro quiet splash` |
 
-2. **Data table** — "Installed kernels" · span 7
+2. **Data table**: "Installed kernels" · span 7
 
 | Version | Status | Size [n] | Installed | (action) |
 | --- | --- | --- | --- | --- |
@@ -131,7 +131,7 @@ Tab count pill: 12.
 | `6.8.0-45-generic` | {info:Fallback} | 310 MB | 12 Sep |   |
 | `6.8.0-41-generic` | {off:Old} | 320 MB | 14 Aug | [Remove](act:toast:Old kernel queued for removal.) |
 
-3. **Data table** — "Kernel modules" · span 12
+3. **Data table**: "Kernel modules" · span 12
 - Source chip (Expert): `lsmod`
 - Search: "Search modules"
 - Page size 8
@@ -150,9 +150,9 @@ Tab count pill: 12.
 | `overlay` | 212 KB | 2 |
 | `xt_conntrack` | 12 KB | 2 |
 
-## System › Time & Locale — `system/time`
+## System › Time & Locale: `system/time`
 
-1. **Key-value list** — "Date and time" · span 6
+1. **Key-value list**: "Date and time" · span 6
 - Source chip (Expert): `timedatectl`
 
 | Key | Value |
@@ -163,7 +163,7 @@ Tab count pill: 12.
 | Time server | ntp.ubuntu.com |
 | RTC in local time | No |
 
-2. **Key-value list** — "Locale" · span 6
+2. **Key-value list**: "Locale" · span 6
 - Source chip (Expert): `localectl`
 
 | Key | Value |

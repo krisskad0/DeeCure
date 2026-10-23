@@ -45,9 +45,9 @@ const CONTAINERS: Column<Container>[] = [
   { key: "name", label: "Name", text: (c) => c.name },
   { key: "image", label: "Image", text: (c) => c.image, render: (c) => <code>{c.image}</code> },
   { key: "status", label: "Status", text: (c) => c.status, render: (c) => <StatusBadge variant={c.state === "running" ? (c.status.includes("unhealthy") ? "warn" : "ok") : c.state === "restarting" ? "crit" : "off"} label={c.status} /> },
-  { key: "ports", label: "Ports", text: (c) => c.ports.join(" "), render: (c) => (c.ports.length ? <span className="cell-two">{c.ports.filter((p) => !p.startsWith(":::")).map((p) => <code key={p}>{p.replace("->", "→")}</code>)}{public_(c).length > 0 && <StatusBadge variant="warn" label="Every network" />}</span> : "—") },
-  { key: "cpu", label: "CPU", text: (c) => c.cpu ?? "—", numeric: true },
-  { key: "memory", label: "Memory", text: (c) => c.memory ?? "—", numeric: true },
+  { key: "ports", label: "Ports", text: (c) => c.ports.join(" "), render: (c) => (c.ports.length ? <span className="cell-two">{c.ports.filter((p) => !p.startsWith(":::")).map((p) => <code key={p}>{p.replace("->", "→")}</code>)}{public_(c).length > 0 && <StatusBadge variant="warn" label="Every network" />}</span> : "-") },
+  { key: "cpu", label: "CPU", text: (c) => c.cpu ?? "-", numeric: true },
+  { key: "memory", label: "Memory", text: (c) => c.memory ?? "-", numeric: true },
 ];
 
 export function ContainersList() {
@@ -81,7 +81,7 @@ const IMAGES: Column<Image>[] = [
   { key: "tag", label: "Tag", text: (i) => i.tag },
   { key: "size", label: "Size", text: (i) => i.size, numeric: true },
   { key: "created", label: "Created", text: (i) => i.created },
-  { key: "used", label: "In use", text: (i) => (i.containers ? "Yes" : "No"), render: (i) => (i.containers ? <Icon name="check" size={16} /> : <span className="muted">—</span>) },
+  { key: "used", label: "In use", text: (i) => (i.containers ? "Yes" : "No"), render: (i) => (i.containers ? <Icon name="check" size={16} /> : <span className="muted">-</span>) },
 ];
 
 export function ContainersImages() {

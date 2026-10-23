@@ -18,14 +18,14 @@ const loadDisplay = () => getInventory("display");
 const loadAudio = () => getInventory("audio");
 const loadMachine = () => getMachine();
 
-const yes = (on: boolean) => (on ? <Icon name="check" size={16} /> : <span className="muted">—</span>);
+const yes = (on: boolean) => (on ? <Icon name="check" size={16} /> : <span className="muted">-</span>);
 
 const OUTPUTS: Column<Output>[] = [
   { key: "out", label: "Output", text: (o) => o.connector, render: (o) => <code>{o.connector}</code> },
-  { key: "name", label: "Screen", text: (o) => o.name ?? (o.connected ? "Unknown" : "—") },
-  { key: "res", label: "Resolution", text: (o) => (o.width && o.height ? `${o.width} × ${o.height}` : "—") },
-  { key: "hz", label: "Refresh", text: (o) => (o.refresh_hz ? `${Math.round(o.refresh_hz)} Hz` : "—"), numeric: true },
-  { key: "scale", label: "Scale", text: (o) => (o.scale ? `${Math.round(o.scale * 100)}%` : "—"), numeric: true },
+  { key: "name", label: "Screen", text: (o) => o.name ?? (o.connected ? "Unknown" : "-") },
+  { key: "res", label: "Resolution", text: (o) => (o.width && o.height ? `${o.width} × ${o.height}` : "-") },
+  { key: "hz", label: "Refresh", text: (o) => (o.refresh_hz ? `${Math.round(o.refresh_hz)} Hz` : "-"), numeric: true },
+  { key: "scale", label: "Scale", text: (o) => (o.scale ? `${Math.round(o.scale * 100)}%` : "-"), numeric: true },
   { key: "primary", label: "Primary", text: (o) => (o.primary ? "Yes" : "No"), render: (o) => yes(o.primary) },
   { key: "status", label: "Status", text: (o) => (o.connected ? "Connected" : "Disconnected"), render: (o) => <StatusBadge variant={o.connected ? "ok" : "off"} label={o.connected ? "Connected" : "Disconnected"} /> },
 ];
@@ -46,7 +46,7 @@ export function DisplayDisplays() {
       <Panel title="Session" source="$XDG_SESSION_TYPE · GNOME" span={4} flush>
         <KeyValueList
           rows={[
-            ["Display server", session ? session[0].toUpperCase() + session.slice(1) : "—"],
+            ["Display server", session ? session[0].toUpperCase() + session.slice(1) : "-"],
             ["Compositor", display.compositor ? `${display.compositor}${display.shell_version ? ` (GNOME ${display.shell_version})` : ""}` : "Not GNOME, or not reachable"],
             ["Fractional scaling", display.fractional_scaling ? "On" : "Off"],
           ]}
@@ -61,7 +61,7 @@ export function DisplayDisplays() {
 
 const devices = (label: string): Column<AudioDevice>[] => [
   { key: "name", label: "Device", text: (d) => d.description, wrap: true },
-  { key: "vol", label: label, text: (d) => (d.volume === undefined ? "—" : `${d.volume}%`), render: (d) => (d.muted ? <StatusBadge variant="off" label="Muted" /> : d.volume === undefined ? "—" : <InlineMeter percent={d.volume} tone="ok" />) },
+  { key: "vol", label: label, text: (d) => (d.volume === undefined ? "-" : `${d.volume}%`), render: (d) => (d.muted ? <StatusBadge variant="off" label="Muted" /> : d.volume === undefined ? "-" : <InlineMeter percent={d.volume} tone="ok" />) },
   { key: "default", label: "Default", text: (d) => (d.default ? "Yes" : "No"), render: (d) => yes(d.default) },
 ];
 
@@ -88,7 +88,7 @@ export function DisplayAudio() {
     <>
       <KpiRow
         tiles={[
-          { label: "Output", value: short(out), subtext: out ? (out.muted ? "Muted" : `Volume ${out.volume ?? "—"}%`) : "" },
+          { label: "Output", value: short(out), subtext: out ? (out.muted ? "Muted" : `Volume ${out.volume ?? "-"}%`) : "" },
           { label: "Input", value: short(mic), subtext: mic ? (mic.muted ? "Muted" : "Not muted") : "" },
           { label: "Sound server", value: audio.server.split(" ")[0], subtext: audio.server.split(" ")[1] ?? "" },
           { label: "Active streams", value: String(audio.streams.length), subtext: audio.streams.slice(0, 3).join(", ") },

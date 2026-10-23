@@ -84,7 +84,7 @@ export function DiagnosticsHardware() {
   const temp = latest?.find((m) => m.name === "temp.cpu")?.value;
   const rows: HardwareTest[] = [
     { test: "SMART self-test (disk)", duration: "2 min", result: ["off", "Needs Full access"], action: <LinkButton to={href("settings", "access")}>Access</LinkButton> },
-    { test: "Memory test (memtest86+)", duration: "30–60 min", result: ["off", "Runs from the boot menu"], action: <span className="muted">Restart, hold Shift, choose Memory test</span> },
+    { test: "Memory test (memtest86+)", duration: "30-60 min", result: ["off", "Runs from the boot menu"], action: <span className="muted">Restart, hold Shift, choose Memory test</span> },
     { test: "Battery capacity report", duration: "instant", result: health === undefined ? ["off", "No battery"] : [health < 60 ? "warn" : "ok", `${Math.round(health)}% health`], action: <LinkButton to={href("power", "battery")}>Open</LinkButton> },
     { test: "Sensor check", duration: "instant", result: temp === undefined ? ["off", "No CPU sensor"] : [temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok", `CPU ${tempText(temp)}`], action: <LinkButton to={href("hardware", "sensors")}>Open</LinkButton> },
   ];

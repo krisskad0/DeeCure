@@ -21,7 +21,7 @@ next_step: "Back up important files now, then run a disk check from recovery mod
 ```
 
 ```yaml
-# kb/topics/storage/disk-full.yaml — a how-to article; rules link to it with
+# kb/topics/storage/disk-full.yaml: a how-to article; rules link to it with
 # `learn_more: topics/storage/disk-full`
 title: "Free up disk space"
 summary: "When the main disk is full, apps crash and updates fail."
@@ -49,4 +49,4 @@ notes: "DeeCure never deletes personal files except the Trash."
 
 - The first release ships with entries for the most common services, errors, and ports on Ubuntu.
 - Contributors can add entries through pull requests.
-- Anything not covered falls back to the AI, which labels its answer "AI explanation — may be wrong".
+- Anything not covered falls back to the AI, which labels its answer "AI explanation: may be wrong".

@@ -1,4 +1,4 @@
-# DeeCure — Linux PC health check, system monitor, and safe one-click fixes for Ubuntu
+# DeeCure: Linux PC health check, system monitor, and safe one-click fixes for Ubuntu
 
 [![CI](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml/badge.svg)](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -9,7 +9,7 @@
 
 > **In one sentence:** DeeCure tells you *what is wrong with your Linux PC, why, and how to fix it*, the way a good friend who knows Linux would.
 
-> **Status:** in active development, not released yet. The agent, the desktop app, the command line, history, notifications, and safe fixes are built and tested (Phases 0–3). See the [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
+> **Status:** in active development, not released yet. The agent, the desktop app, the command line, history, notifications, and safe fixes are built and tested (Phases 0-3). See the [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
 
 ---
 
@@ -27,7 +27,7 @@ Linux shows you numbers: 94% disk, 3 failed units, load 4.2. Most people then se
 
 ## Features
 
-- **One health score (0–100)** for the whole computer, with the most serious problems first.
+- **One health score (0-100)** for the whole computer, with the most serious problems first.
 - **21 areas, about 90 views, all with real data:** performance (CPU, memory, disk I/O, network, GPU, pressure), hardware and sensors, battery, displays and audio, storage, services, scheduled jobs, logs and crashes, packages (deb, snap, Flatpak), containers and VMs, network and firewall, accounts and SSH, security, privacy, and backups.
 - **Safe fixes with undo:** 22 fixes, each with a preview of the exact steps and commands. Untick any step. Admin steps ask for your password through the normal Ubuntu dialog. DeeCure checks that the fix worked, and keeps an undo for every step that can be undone.
 - **What changed:** a timeline of package installs and upgrades (apt, dpkg, snap, Flatpak), config file changes with a line-by-line diff, USB devices, boots, crashes, and failed jobs.
@@ -42,11 +42,17 @@ Linux shows you numbers: 94% disk, 3 failed units, load 4.2. Most people then se
 
 ```mermaid
 flowchart LR
-  App[Desktop app<br/>Tauri + React] <-- private socket --> Agent
-  CLI[deecure command] <-- private socket --> Agent
-  Agent[deecure-agent<br/>runs as you] --> DB[(SQLite history)]
-  Agent -- reads only --> Linux[(/proc, /sys, systemd,<br/>journal, apt, snap, D-Bus)]
-  App -- one fix step, with your password --> Helper[deecure-helper<br/>root, fixed list of actions]
+  App["Desktop app (Tauri and React)"]
+  CLI["deecure command"]
+  Agent["deecure-agent (runs as you)"]
+  DB[("SQLite history")]
+  Linux[("Linux: proc, sys, systemd, journal, apt, snap, D-Bus")]
+  Helper["deecure-helper (root, fixed list of actions)"]
+  App <-->|private socket| Agent
+  CLI <-->|private socket| Agent
+  Agent --> DB
+  Agent -->|reads only| Linux
+  App -->|admin fix step, with your password| Helper
   Helper --> Linux
 ```
 
@@ -119,7 +125,7 @@ When it is released, installing will be one command, with updates through Softwa
 
 | Phase | What | State |
 | --- | --- | --- |
-| 0–1 | Agent, history, rules, desktop app with real data on every page | Built |
+| 0-1 | Agent, history, rules, desktop app with real data on every page | Built |
 | 2 | Safe fixes, root helper, undo, signed APT repository | Built; real-machine test matrix and security review pending |
 | 3 | What-changed timeline, predictions, notifications, weekly report, tray icon | Built |
 | 4 | "Ask DeeCure": a private, local AI that answers questions with sources | Planned |

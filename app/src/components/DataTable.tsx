@@ -210,7 +210,7 @@ export function DataTable<R>(props: {
       {pages > 1 && (
         <div className="dt-foot">
           <span>
-            {current * pageSize + 1}–{current * pageSize + visible.length} of {count}
+            {current * pageSize + 1}-{current * pageSize + visible.length} of {count}
           </span>
           <span className="dt-pager">
             <Button small disabled={current === 0} onClick={() => setPage(current - 1)}>

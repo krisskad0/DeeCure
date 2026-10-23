@@ -3,7 +3,7 @@
 
 export interface Lane {
   name: string;
-  /** When each run happens, in hours from now (0–24). */
+  /** When each run happens, in hours from now (0-24). */
   runs: number[];
   /** Very frequent jobs get small dots without a ring. */
   frequent?: boolean;

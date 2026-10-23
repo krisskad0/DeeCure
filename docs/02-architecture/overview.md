@@ -5,28 +5,28 @@
 
 ```mermaid
 flowchart TB
-  subgraph UserSession[Runs as the normal user]
-    UI[Desktop app - Tauri + React<br/>runs fix steps in the session]
-    CLI[deecure CLI]
-    AG[deecure-agent: collectors, history, rules,<br/>fix planner, notifications, reports]
-    DB[(SQLite: metrics, events, findings,<br/>snapshots, fix runs, reports)]
-    KB[Knowledge base: YAML files]
+  subgraph UserSession["Runs as the normal user"]
+    UI["Desktop app (Tauri and React), runs fix steps in the session"]
+    CLI["deecure CLI"]
+    AG["deecure-agent: collectors, history, rules, fix planner, notifications, reports"]
+    DB[("SQLite: metrics, events, findings, snapshots, fix runs, reports")]
+    KB["Knowledge base: YAML files"]
   end
-  subgraph System[Runs as root, only when needed]
-    HP[deecure-helper: 12 fixed actions, 6 read-outs]
+  subgraph System["Runs as root, only when needed"]
+    HP["deecure-helper: 12 fixed actions, 6 read-outs"]
   end
-  OS[(Linux: /proc, /sys, systemd, journal, apt, dpkg, snap, flatpak, NetworkManager, UPower, PipeWire...)]
-  Desk[Desktop: notifications, tray]
+  OS[("Linux: proc, sys, systemd, journal, apt, dpkg, snap, flatpak, NetworkManager, UPower, PipeWire")]
+  Desk["Desktop: notifications, tray"]
 
   UI <-->|JSON-RPC socket| AG
   CLI <-->|JSON-RPC socket| AG
   AG --> DB
   AG --> KB
-  AG -- read only --> OS
-  AG -- notifications --> Desk
-  UI -- D-Bus + polkit --> HP
-  CLI -- D-Bus + polkit --> HP
-  HP -- read/write --> OS
+  AG -->|read only| OS
+  AG -->|notifications| Desk
+  UI -->|D-Bus and polkit| HP
+  CLI -->|D-Bus and polkit| HP
+  HP -->|read and write| OS
 ```
 
 ## Components
@@ -62,7 +62,7 @@ flowchart TB
 | Desktop app → agent | Unix socket `$XDG_RUNTIME_DIR/deecure/agent.sock` | JSON-RPC 2.0, one message per line ([IPC protocol](ipc-protocol.md)) | The Tauri Rust side holds the connection. The React UI calls Tauri commands. |
 | CLI → agent | Same socket | Same | `--json` prints the raw result |
 | App or CLI → helper | D-Bus system bus, name `io.github.krisskad0.DeeCure.Helper`, interface `…Helper1` | D-Bus methods from a fixed list | polkit asks for the password for each call. Fix steps run in the person's session, never in the agent. |
-| Agent → system | `/proc`, `/sys`, `/etc`, logs, `journalctl`, read-only programs (`apt list`, `snap list`, `docker ps`…), D-Bus (systemd, logind, NetworkManager, UPower, BlueZ, fwupd) | — | Read-only. D-Bus services are asked only when they already run, so nothing is started. |
+| Agent → system | `/proc`, `/sys`, `/etc`, logs, `journalctl`, read-only programs (`apt list`, `snap list`, `docker ps`…), D-Bus (systemd, logind, NetworkManager, UPower, BlueZ, fwupd) | - | Read-only. D-Bus services are asked only when they already run, so nothing is started. |
 | Agent → desktop | Session D-Bus, `org.freedesktop.Notifications` | Notify | Only when a notification service already runs ([Notifications](notifications.md)) |
 | App → app | Unix socket `$XDG_RUNTIME_DIR/deecure/desktop.sock` | `show` | A second start shows the running window instead of opening another copy |
 

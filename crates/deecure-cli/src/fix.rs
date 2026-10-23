@@ -44,7 +44,7 @@ pub fn fix(
         println!("Fixes (add a target where shown):");
         for (id, title, target) in ACTIONS {
             let target = target.map(|t| format!(" <{t}>")).unwrap_or_default();
-            println!("  {id}{target}  — {title}");
+            println!("  {id}{target}: {title}");
         }
         return ExitCode::SUCCESS;
     };
@@ -150,7 +150,7 @@ pub fn history(socket: &Path) -> ExitCode {
         } else {
             ""
         };
-        println!("#{:<4} {}{target} — {status}{undo}", r.id, r.title);
+        println!("#{:<4} {}{target}: {status}{undo}", r.id, r.title);
     }
     ExitCode::SUCCESS
 }

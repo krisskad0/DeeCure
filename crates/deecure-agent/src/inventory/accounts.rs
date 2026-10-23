@@ -117,7 +117,7 @@ fn privilege(group: &str) -> Option<&'static str> {
     })
 }
 
-/// Users who can sign in: root and human accounts (UID 1000–59999) with a real shell.
+/// Users who can sign in: root and human accounts (UID 1000-59999) with a real shell.
 pub fn users(passwd: &str, group: &str) -> (Vec<User>, Vec<Group>) {
     let mut groups: Vec<Group> = group
         .lines()

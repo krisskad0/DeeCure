@@ -28,7 +28,7 @@ function tLab(i, n, tooltip){ // axis label (tooltip=false) or tooltip header (t
   if (S.range === '7d') return tooltip ? `${wd} ${hh}` : wd;
   return tooltip ? `${dm} ${hh}` : dm;
 }
-// Heatmaps: heatData(seed, rows, cols, base, spikes) — cell = max(0, round((rng()-0.55)*base)), then spikes [row, col, value] override.
+// Heatmaps: heatData(seed, rows, cols, base, spikes): cell = max(0, round((rng()-0.55)*base)), then spikes [row, col, value] override.
 function heatData(seed, rows, cols, base, spikes = []){ const r = rng(seed);
   return Array.from({length:rows}, (_, ri) => Array.from({length:cols}, (_, ci) => {
     let v = Math.max(0, Math.round((r() - 0.55) * base)); spikes.forEach(s => { if (s[0] === ri && s[1] === ci) v = s[2]; }); return v; })); }

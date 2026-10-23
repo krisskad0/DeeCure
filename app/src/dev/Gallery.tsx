@@ -186,7 +186,7 @@ export function Gallery() {
       />
 
 
-      <AlertBanner tone="info" title="Charts (12–20)" text="Hover the line and bar charts for the crosshair and tooltip. Change the time range in the top bar to redraw the time series." />
+      <AlertBanner tone="info" title="Charts (12-20)" text="Hover the line and bar charts for the crosshair and tooltip. Change the time range in the top bar to redraw the time series." />
 
       <Panel title="12 Line chart" subtitle="CPU and memory utilization" source="/proc/stat · /proc/meminfo" span={8}>
         <LineChart

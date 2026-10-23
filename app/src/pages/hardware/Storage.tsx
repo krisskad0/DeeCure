@@ -18,12 +18,12 @@ type DiskRow = HardwareInfo["disks"][number] & { temp?: number };
 
 const COLUMNS: Column<DiskRow>[] = [
   { key: "name", label: "Device", text: (d) => d.name, render: (d) => <code>{d.name}</code> },
-  { key: "model", label: "Model", text: (d) => d.model ?? "—" },
+  { key: "model", label: "Model", text: (d) => d.model ?? "-" },
   { key: "kind", label: "Type", text: (d) => d.kind },
   { key: "size", label: "Size", text: (d) => bytes(d.size, 0), numeric: true },
-  { key: "fw", label: "Firmware", text: (d) => d.firmware ?? "—", expert: true },
+  { key: "fw", label: "Firmware", text: (d) => d.firmware ?? "-", expert: true },
   { key: "smart", label: "SMART", text: () => "Full access", render: () => <StatusBadge variant="off" label="Needs Full access" /> },
-  { key: "temp", label: "Temperature", text: (d) => (d.temp === undefined ? "—" : tempText(d.temp)), numeric: true },
+  { key: "temp", label: "Temperature", text: (d) => (d.temp === undefined ? "-" : tempText(d.temp)), numeric: true },
 ];
 
 export function HardwareStorage() {
@@ -77,14 +77,14 @@ export function Smart({ json }: { json: string }) {
     { label: "Overall", value: passed === undefined ? "Unknown" : passed ? "Passed" : "FAILING", status: passed === false ? ("crit" as const) : ("ok" as const) },
     ...(nvme
       ? [
-          { label: "Life used", value: String(nvme.percentage_used ?? "—"), unit: "%", status: (nvme.percentage_used ?? 0) >= 90 ? ("warn" as const) : ("ok" as const), subtext: "of rated endurance" },
-          { label: "Data written", value: nvme.data_units_written ? ((nvme.data_units_written * 512_000) / 1e12).toFixed(1) : "—", unit: "TB" },
-          { label: "Unsafe shutdowns", value: String(nvme.unsafe_shutdowns ?? "—") },
-          { label: "Media errors", value: String(nvme.media_errors ?? "—"), status: (nvme.media_errors ?? 0) > 0 ? ("crit" as const) : ("ok" as const) },
-          { label: "Spare capacity", value: String(nvme.available_spare ?? "—"), unit: "%" },
+          { label: "Life used", value: String(nvme.percentage_used ?? "-"), unit: "%", status: (nvme.percentage_used ?? 0) >= 90 ? ("warn" as const) : ("ok" as const), subtext: "of rated endurance" },
+          { label: "Data written", value: nvme.data_units_written ? ((nvme.data_units_written * 512_000) / 1e12).toFixed(1) : "-", unit: "TB" },
+          { label: "Unsafe shutdowns", value: String(nvme.unsafe_shutdowns ?? "-") },
+          { label: "Media errors", value: String(nvme.media_errors ?? "-"), status: (nvme.media_errors ?? 0) > 0 ? ("crit" as const) : ("ok" as const) },
+          { label: "Spare capacity", value: String(nvme.available_spare ?? "-"), unit: "%" },
         ]
       : []),
-    { label: "Power-on hours", value: hours === undefined ? "—" : hours.toLocaleString(), unit: "h" },
+    { label: "Power-on hours", value: hours === undefined ? "-" : hours.toLocaleString(), unit: "h" },
   ];
   return <KpiRow tiles={tiles} />;
 }

@@ -5,19 +5,19 @@
 - Group: Workloads · Icon: `layers` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: All Processes, Top Consumers
 
-## Processes › All Processes — `processes/all`
+## Processes › All Processes: `processes/all`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Total | 312 |  | — |   | — | — |
-| Running | 3 |  | — |   | — | — |
-| Sleeping | 309 |  | — |   | — | — |
-| Zombie | 0 |  | — |   | — | — |
-| Threads | 1,204 |  | — |   | — | — |
+| Total | 312 |  | - |   | - | - |
+| Running | 3 |  | - |   | - | - |
+| Sleeping | 309 |  | - |   | - | - |
+| Zombie | 0 |  | - |   | - | - |
+| Threads | 1,204 |  | - |   | - | - |
 
-2. **Data table** — "Processes" · span 12
+2. **Data table**: "Processes" · span 12
 - Source chip (Expert): `ps aux`
 - Search: "Filter by name, PID or user"
 - Filter chips on column 3: All / riya / root
@@ -51,9 +51,9 @@
 | top | 6110 | riya | {ok:Running} | 0.3% | 4 MB | 1 | 21:30 |
 | cron | 1036 | root | Sleeping | 0.0% | 3 MB | 1 | 08:58 |
 
-## Processes › Top Consumers — `processes/top`
+## Processes › Top Consumers: `processes/top`
 
-1. **Horizontal bar list** — "By CPU" · span 6
+1. **Horizontal bar list**: "By CPU" · span 6
 - Subtitle: "now"
 
 | Label | Value | Shown as |
@@ -67,7 +67,7 @@
 | telegram-desktop | 0.4 | 0.4% |
 | dropbox | 0.3 | 0.3% |
 
-2. **Horizontal bar list** — "By memory" · span 6
+2. **Horizontal bar list**: "By memory" · span 6
 - Subtitle: "resident"
 
 | Label | Value | Shown as |

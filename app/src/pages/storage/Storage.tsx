@@ -98,12 +98,12 @@ export function StorageOverview() {
     <>
       <KpiRow
         tiles={[
-          { label: "Used", value: used === undefined ? "—" : bytes(used).split(" ")[0], unit: used === undefined ? undefined : bytes(used).split(" ")[1], status: t, subtext: pct !== undefined && size ? `${Math.round(pct)}% of ${bytes(size, 0)}` : "", visual: pct === undefined ? undefined : { kind: "bar", percent: pct } },
-          { label: "Free", value: free === undefined ? "—" : bytes(free).split(" ")[0], unit: free === undefined ? undefined : bytes(free).split(" ")[1] },
-          { label: "Reclaimable", value: storage ? bytes(reclaim).split(" ")[0] : "—", unit: storage ? bytes(reclaim).split(" ")[1] : undefined, subtext: storage ? `${storage.candidates.length} items` : "Checking…", href: href("storage", "cleanup") },
+          { label: "Used", value: used === undefined ? "-" : bytes(used).split(" ")[0], unit: used === undefined ? undefined : bytes(used).split(" ")[1], status: t, subtext: pct !== undefined && size ? `${Math.round(pct)}% of ${bytes(size, 0)}` : "", visual: pct === undefined ? undefined : { kind: "bar", percent: pct } },
+          { label: "Free", value: free === undefined ? "-" : bytes(free).split(" ")[0], unit: free === undefined ? undefined : bytes(free).split(" ")[1] },
+          { label: "Reclaimable", value: storage ? bytes(reclaim).split(" ")[0] : "-", unit: storage ? bytes(reclaim).split(" ")[1] : undefined, subtext: storage ? `${storage.candidates.length} items` : "Checking…", href: href("storage", "cleanup") },
           { label: "Full in", value: days === null ? "Not filling" : `~${Math.max(0, Math.round(days))}`, unit: days === null ? undefined : "days", status: days !== null && days < 14 ? "crit" : days !== null && days < 60 ? "warn" : "ok", subtext: days === null ? "at the current rate" : `at ${slopePerDay(trend).toFixed(2)}% per day` },
           { label: "Inodes used", value: inodes === undefined ? "N/A" : String(Math.round(inodes)), unit: inodes === undefined ? undefined : "%", subtext: inodes === undefined ? "No fixed limit on this filesystem" : "" },
-          { label: "Encryption", value: storage ? (storage.encrypted ? "On" : "Off") : "—", subtext: storage ? (storage.encrypted ? "LUKS" : "LUKS not used") : "" },
+          { label: "Encryption", value: storage ? (storage.encrypted ? "On" : "Off") : "-", subtext: storage ? (storage.encrypted ? "LUKS" : "LUKS not used") : "" },
         ]}
       />
       {pct !== undefined && pct >= 85 && (
@@ -159,10 +159,10 @@ export function StorageFilesystems() {
     { key: "mount", label: "Mount", text: (f) => f.mount_point, render: (f) => <code>{f.mount_point}</code> },
     { key: "type", label: "Type", text: (f) => f.fs_type },
     { key: "size", label: "Size", text: (f) => bytes(f.size), numeric: true },
-    { key: "used", label: "Used", text: (f) => { const u = pick(latest, "disk.used", f.mount_point); return u === undefined ? "—" : bytes(u); }, numeric: true },
-    { key: "avail", label: "Available", text: (f) => { const a = pick(latest, "disk.free", f.mount_point); return a === undefined ? "—" : bytes(a); }, numeric: true },
+    { key: "used", label: "Used", text: (f) => { const u = pick(latest, "disk.used", f.mount_point); return u === undefined ? "-" : bytes(u); }, numeric: true },
+    { key: "avail", label: "Available", text: (f) => { const a = pick(latest, "disk.free", f.mount_point); return a === undefined ? "-" : bytes(a); }, numeric: true },
     { key: "use", label: "Use", text: (f) => `${Math.round(pick(latest, "disk.used_percent", f.mount_point) ?? 0)}%`, render: (f) => <InlineMeter percent={pick(latest, "disk.used_percent", f.mount_point) ?? 0} /> },
-    { key: "inodes", label: "Inodes", text: (f) => { const i = pick(latest, "disk.inodes_percent", f.mount_point); return i === undefined ? "—" : `${Math.round(i)}%`; }, numeric: true, expert: true },
+    { key: "inodes", label: "Inodes", text: (f) => { const i = pick(latest, "disk.inodes_percent", f.mount_point); return i === undefined ? "-" : `${Math.round(i)}%`; }, numeric: true, expert: true },
   ];
   const checks: Check[] = storage
     ? [
@@ -200,7 +200,7 @@ export function StorageUsage() {
   const files: Column<SizedPath>[] = [
     { key: "path", label: "File", text: (f) => home(f.path), render: (f) => <code>{home(f.path)}</code>, wrap: true },
     { key: "size", label: "Size", text: (f) => bytes(f.size), numeric: true },
-    { key: "modified", label: "Changed", text: (f) => (f.modified ? when(f.modified) : "—") },
+    { key: "modified", label: "Changed", text: (f) => (f.modified ? when(f.modified) : "-") },
   ];
   return (
     <>
@@ -224,7 +224,7 @@ const CANDIDATES: Column<Candidate>[] = [
   { key: "item", label: "Item", text: (c) => `${c.title} ${c.details}`, render: (c) => (<span className="cell-two"><b>{c.title}</b><span>{c.details}</span></span>) },
   { key: "size", label: "Size", text: (c) => bytes(c.size), numeric: true },
   { key: "undo", label: "Undo", text: (c) => c.undo, render: (c) => <StatusBadge variant={c.undo === "irreversible" ? "warn" : "info"} label={c.undo === "irreversible" ? "Irreversible" : "Regenerates"} /> },
-  { key: "pw", label: "Password", text: (c) => (c.needs_password ? "Yes" : "No"), render: (c) => (c.needs_password ? <Icon name="lock" size={15} /> : <span className="muted">—</span>) },
+  { key: "pw", label: "Password", text: (c) => (c.needs_password ? "Yes" : "No"), render: (c) => (c.needs_password ? <Icon name="lock" size={15} /> : <span className="muted">-</span>) },
 ];
 
 export function StorageCleanup() {

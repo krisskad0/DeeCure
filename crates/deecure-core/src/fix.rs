@@ -174,7 +174,7 @@ pub enum Call {
     SetBatteryAction {
         /// `PowerOff`, `Hibernate`, or `HybridSleep`.
         action: String,
-        /// Battery percent at which it happens (1–20).
+        /// Battery percent at which it happens (1-20).
         percent: u32,
     },
 }

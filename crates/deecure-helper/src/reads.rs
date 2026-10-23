@@ -48,7 +48,7 @@ pub fn shadow_status(shadow: &str, users: &[String]) -> Vec<AccountStatus> {
         .collect()
 }
 
-/// Human users (UID 0 and 1000–59999) from `/etc/passwd`.
+/// Human users (UID 0 and 1000-59999) from `/etc/passwd`.
 pub fn human_users(passwd: &str) -> Vec<String> {
     passwd
         .lines()

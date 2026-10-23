@@ -21,7 +21,7 @@ const COLUMNS: Column<Row>[] = [
   { key: "name", label: "Device", text: (r) => r.name, wrap: true },
   { key: "bus", label: "Bus", text: (r) => r.bus },
   { key: "vendor", label: "Vendor", text: (r) => r.vendor },
-  { key: "driver", label: "Driver", text: (r) => r.driver, render: (r) => (r.driver === "—" ? "—" : <code>{r.driver}</code>) },
+  { key: "driver", label: "Driver", text: (r) => r.driver, render: (r) => (r.driver === "-" ? "-" : <code>{r.driver}</code>) },
   { key: "status", label: "Status", text: (r) => r.status[1], render: (r) => <StatusBadge variant={r.status[0]} label={r.status[1]} /> },
 ];
 
@@ -38,14 +38,14 @@ export function HardwarePeripherals() {
   const rows: Row[] = hw.devices.map((d, i) => {
     const needs = d.class ? NEEDS_DRIVER.has(d.class) : d.bus === "USB";
     const status: [StatusVariant, string] = d.drivers.length ? ["ok", "Active"] : d.bus === "Input" ? ["ok", "Active"] : needs ? ["warn", "No driver"] : ["off", "No driver needed"];
-    return { key: `${d.bus}-${i}`, name: d.name, bus: d.bus, vendor: d.vendor ?? "—", driver: d.drivers.join(", ") || (d.bus === "Input" ? "input" : "—"), status };
+    return { key: `${d.bus}-${i}`, name: d.name, bus: d.bus, vendor: d.vendor ?? "-", driver: d.drivers.join(", ") || (d.bus === "Input" ? "input" : "-"), status };
   });
   for (const [i, d] of (bt?.devices ?? []).entries()) {
     rows.push({
       key: `bt-${i}`,
       name: d.battery === undefined ? d.name : `${d.name} · battery ${d.battery}%`,
       bus: "Bluetooth",
-      vendor: "—",
+      vendor: "-",
       driver: "bluez",
       status: d.connected ? ["ok", "Connected"] : ["off", "Paired"],
     });
@@ -60,7 +60,7 @@ export function HardwarePeripherals() {
           { label: "PCI devices", value: String(rows.filter((r) => r.bus === "PCI").length) },
           {
             label: "Bluetooth",
-            value: bt?.available ? String(bt.devices.length) : "—",
+            value: bt?.available ? String(bt.devices.length) : "-",
             subtext: !bt ? "" : !bt.available ? "Bluetooth service not running" : bt.adapters === 0 ? "No adapter found" : !bt.powered ? "Turned off" : `${connected} connected`,
           },
           { label: "Missing drivers", value: String(missing), status: missing ? "warn" : "ok" },

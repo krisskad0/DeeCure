@@ -6,7 +6,7 @@ body:
     id: problem
     attributes:
       label: What problem would this solve?
-      description: Describe the situation. Example — "My laptop gets hot and I don't know why."
+      description: Describe the situation. Example: "My laptop gets hot and I don't know why."
     validations:
       required: true
   - type: textarea

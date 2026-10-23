@@ -23,7 +23,7 @@ const KERNELS: Column<Installed>[] = [
   { key: "version", label: "Version", text: (k) => k.version, render: (k) => <code>{k.version}</code> },
   { key: "status", label: "Status", text: (k) => STATUS[k.status][1], render: (k) => <StatusBadge variant={STATUS[k.status][0]} label={STATUS[k.status][1]} /> },
   { key: "size", label: "Size", text: (k) => bytes(k.size, 0), numeric: true },
-  { key: "installed", label: "Installed", text: (k) => (k.installed_at ? new Date(k.installed_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—") },
+  { key: "installed", label: "Installed", text: (k) => (k.installed_at ? new Date(k.installed_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "-") },
 ];
 
 const MODULES: Column<Module>[] = [

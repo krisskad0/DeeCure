@@ -41,7 +41,7 @@ export function BackupsJobs() {
             rows={[
               ["Automatic backups", d.scheduled ? `On, every ${d.every_days ?? "?"} days` : "Off"],
               ["Last backup", d.last_backup ? when(d.last_backup) : "Never"],
-              ["Stored on", d.backend ?? "—"],
+              ["Stored on", d.backend ?? "-"],
             ]}
           />
         ) : (
@@ -53,7 +53,7 @@ export function BackupsJobs() {
           <KeyValueList
             rows={[
               ["Set up", b.timeshift.configured ? "Yes" : "No"],
-              ["Mode", b.timeshift.mode ?? "—"],
+              ["Mode", b.timeshift.mode ?? "-"],
               ["Schedule", b.timeshift.schedule.join(", ") || "Off"],
               ["Snapshots found", String(b.timeshift.snapshots.length)],
             ]}
@@ -71,7 +71,7 @@ const SNAPS: Column<Snap>[] = [
   { key: "created", label: "Created", text: (s) => String(s.created), render: (s) => when(s.created) },
   { key: "kind", label: "Type", text: (s) => s.kind },
   { key: "tool", label: "Tool", text: () => "Timeshift" },
-  { key: "comment", label: "Comment", text: (s) => s.comment ?? "—" },
+  { key: "comment", label: "Comment", text: (s) => s.comment ?? "-" },
 ];
 
 export function BackupsSnapshots() {

@@ -33,12 +33,12 @@ function Waiting({ title, error }: { title: string; error: Parameters<typeof NoD
 const tags = (list: string[]) => <span className="tags">{list.map((g) => <span key={g} className="tag">{g}</span>)}</span>;
 
 const USERS: Column<User>[] = [
-  { key: "user", label: "User", text: (u) => `${u.name} ${u.full_name}`, render: (u) => (<span className="cell-two"><b>{u.name}</b><span>{u.full_name || "—"}</span></span>) },
+  { key: "user", label: "User", text: (u) => `${u.name} ${u.full_name}`, render: (u) => (<span className="cell-two"><b>{u.name}</b><span>{u.full_name || "-"}</span></span>) },
   { key: "uid", label: "UID", text: (u) => String(u.uid), numeric: true },
   { key: "groups", label: "Groups", text: (u) => u.groups.join(" "), render: (u) => tags(u.groups.slice(0, 6)), wrap: true },
   { key: "role", label: "Role", text: (u) => (u.admin ? "Administrator" : "Standard"), render: (u) => <StatusBadge variant={u.admin ? "info" : "off"} label={u.uid === 0 ? "System admin (root)" : u.admin ? "Administrator" : "Standard"} /> },
   { key: "shell", label: "Shell", text: (u) => u.shell, render: (u) => <code>{u.shell}</code>, expert: true },
-  { key: "last", label: "Last sign-in", text: (u) => (u.last_sign_in ? String(u.last_sign_in) : "—"), render: (u) => (u.last_sign_in ? when(u.last_sign_in) : <span className="muted">not in records</span>) },
+  { key: "last", label: "Last sign-in", text: (u) => (u.last_sign_in ? String(u.last_sign_in) : "-"), render: (u) => (u.last_sign_in ? when(u.last_sign_in) : <span className="muted">not in records</span>) },
 ];
 
 export function AccountsUsers() {
@@ -66,7 +66,7 @@ const GROUPS: Column<Group>[] = [
   { key: "name", label: "Group", text: (g) => g.name },
   { key: "gid", label: "GID", text: (g) => String(g.gid), numeric: true },
   { key: "members", label: "Members", text: (g) => g.members.join(", ") },
-  { key: "privilege", label: "Privilege", text: (g) => g.privilege ?? "—", render: (g) => (g.privilege ? <StatusBadge variant={/Admin|Root/.test(g.privilege) ? "warn" : "info"} label={g.privilege} /> : <span className="muted">—</span>) },
+  { key: "privilege", label: "Privilege", text: (g) => g.privilege ?? "-", render: (g) => (g.privilege ? <StatusBadge variant={/Admin|Root/.test(g.privilege) ? "warn" : "info"} label={g.privilege} /> : <span className="muted">-</span>) },
 ];
 
 export function AccountsGroups() {
@@ -82,9 +82,9 @@ export function AccountsGroups() {
 const SESSIONS: Column<Session>[] = [
   { key: "id", label: "Session", text: (s) => s.id, render: (s) => <code>{s.id}</code> },
   { key: "user", label: "User", text: (s) => s.user },
-  { key: "seat", label: "Seat", text: (s) => s.seat || "—" },
+  { key: "seat", label: "Seat", text: (s) => s.seat || "-" },
   { key: "type", label: "Type", text: (s) => `${s.kind}${s.remote ? " (remote)" : ""}` },
-  { key: "since", label: "Since", text: (s) => (s.since ? when(s.since) : "—") },
+  { key: "since", label: "Since", text: (s) => (s.since ? when(s.since) : "-") },
   { key: "state", label: "State", text: (s) => s.state, render: (s) => <StatusBadge variant={s.state === "active" ? "ok" : "off"} label={s.state} /> },
 ];
 

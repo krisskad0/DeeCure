@@ -14,9 +14,9 @@ type Device = FirmwareInfo["devices"][number];
 
 const COLUMNS: Column<Device>[] = [
   { key: "name", label: "Device", text: (d) => d.name, wrap: true },
-  { key: "current", label: "Current", text: (d) => d.version ?? "—", render: (d) => <code>{d.version ?? "—"}</code> },
-  { key: "available", label: "Available", text: (d) => d.available ?? "—", render: (d) => (d.available ? <code>{d.available}</code> : "—") },
-  { key: "vendor", label: "Vendor", text: (d) => d.vendor ?? "—" },
+  { key: "current", label: "Current", text: (d) => d.version ?? "-", render: (d) => <code>{d.version ?? "-"}</code> },
+  { key: "available", label: "Available", text: (d) => d.available ?? "-", render: (d) => (d.available ? <code>{d.available}</code> : "-") },
+  { key: "vendor", label: "Vendor", text: (d) => d.vendor ?? "-" },
   {
     key: "status",
     label: "Status",
@@ -41,8 +41,8 @@ export function HardwareFirmware() {
       <Panel title="Platform firmware" source="/sys/class/dmi/id · /sys/firmware" span={5} flush>
         <KeyValueList
           rows={[
-            ["BIOS vendor", m.bios_vendor ?? "—"],
-            ["Version", m.bios_version ? <code key="v">{m.bios_version}</code> : "—"],
+            ["BIOS vendor", m.bios_vendor ?? "-"],
+            ["Version", m.bios_version ? <code key="v">{m.bios_version}</code> : "-"],
             ["Release date", biosDate(m.bios_date)],
             ["Boot mode", m.boot_mode],
             ["Secure Boot", m.secure_boot === undefined ? "Not available" : <StatusBadge key="s" variant={m.secure_boot ? "ok" : "warn"} label={m.secure_boot ? "Enabled" : "Disabled"} />],

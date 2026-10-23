@@ -42,11 +42,11 @@ const COLUMNS: Column<Row>[] = [
   {
     key: "enabled",
     label: "Enabled",
-    text: (u) => u.enabled ?? "—",
-    render: (u) => (u.enabled === "enabled" ? <StatusBadge variant="info" label="enabled" /> : (u.enabled ?? "—")),
+    text: (u) => u.enabled ?? "-",
+    render: (u) => (u.enabled === "enabled" ? <StatusBadge variant="info" label="enabled" /> : (u.enabled ?? "-")),
   },
-  { key: "memory", label: "Memory", text: (u) => (u.memory === undefined ? "—" : bytes(u.memory)), numeric: true },
-  { key: "restarts", label: "Restarts", text: (u) => (u.restarts === undefined ? "—" : String(u.restarts)), numeric: true, expert: true },
+  { key: "memory", label: "Memory", text: (u) => (u.memory === undefined ? "-" : bytes(u.memory)), numeric: true },
+  { key: "restarts", label: "Restarts", text: (u) => (u.restarts === undefined ? "-" : String(u.restarts)), numeric: true, expert: true },
 ];
 
 /** Failed first, then by name. */
@@ -139,17 +139,17 @@ export function UnitDrawer({ unit, info, onClose }: { unit: Row; info?: { plain:
       <KeyValueList
         rows={[
           ["State", <StatusBadge key="s" variant={ACTIVE[unit.active] ?? "off"} label={`${unit.active} (${unit.sub})`} />],
-          ["Starts at boot", unit.enabled ?? "—"],
-          ["Memory", unit.memory === undefined ? "—" : bytes(unit.memory)],
-          ["Restarts since boot", unit.restarts === undefined ? "—" : String(unit.restarts)],
+          ["Starts at boot", unit.enabled ?? "-"],
+          ["Memory", unit.memory === undefined ? "-" : bytes(unit.memory)],
+          ["Restarts since boot", unit.restarts === undefined ? "-" : String(unit.restarts)],
         ]}
       />
       {info ? (
         <KeyValueList
           rows={[
             ["What it does", info.plain],
-            ["Safe to turn off?", info.safe_to_disable ?? "—"],
-            ["If it fails", info.if_failed ?? "—"],
+            ["Safe to turn off?", info.safe_to_disable ?? "-"],
+            ["If it fails", info.if_failed ?? "-"],
           ]}
         />
       ) : (

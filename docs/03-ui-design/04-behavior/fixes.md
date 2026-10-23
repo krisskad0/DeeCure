@@ -4,7 +4,7 @@
 
 ## Fix definitions
 
-**`fix:storage` — Free up disk space** (subtitle "Root filesystem ( / )")
+**`fix:storage`: Free up disk space** (subtitle "Root filesystem ( / )")
 
 | Step ID | Title | Description | Size | Admin | Undo | Checked by default | Command |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -13,18 +13,18 @@
 | `trash` | Empty Trash | 312 files | 2.1 GB | No | `none` | Yes | `gio trash --empty` |
 | `apt` | Clean APT package cache | Downloaded .deb files | 0.4 GB | Yes | `regen` | Yes | `sudo apt-get clean` |
 
-**`fix:sec` — Install updates** (subtitle "APT · noble-security")
+**`fix:sec`: Install updates** (subtitle "APT · noble-security")
 
 | Step ID | Title | Description | Size | Admin | Undo | Checked by default | Command |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `secu` | Install 4 security updates | openssl, libssl3t64, sudo, linux-firmware | — | Yes | `none` | Yes | `sudo apt-get install --only-upgrade openssl libssl3t64 sudo linux-firmware` |
-| `other` | Install 8 regular updates | google-chrome-stable, git and 6 more | — | Yes | `none` | No | `sudo apt-get upgrade` |
+| `secu` | Install 4 security updates | openssl, libssl3t64, sudo, linux-firmware | - | Yes | `none` | Yes | `sudo apt-get install --only-upgrade openssl libssl3t64 sudo linux-firmware` |
+| `other` | Install 8 regular updates | google-chrome-stable, git and 6 more | - | Yes | `none` | No | `sudo apt-get upgrade` |
 
-**`fix:batt` — Configure low-battery action** (subtitle "UPower · /etc/UPower/UPower.conf")
+**`fix:batt`: Configure low-battery action** (subtitle "UPower · /etc/UPower/UPower.conf")
 
 | Step ID | Title | Description | Size | Admin | Undo | Checked by default | Command |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `up` | Warn at 10%, power off cleanly at 5% | Prevents unclean shutdowns like today at 02:14 | — | Yes | `full` | Yes | `sudo sed -i 's/^PercentageAction=.*/PercentageAction=5/' /etc/UPower/UPower.conf` |
+| `up` | Warn at 10%, power off cleanly at 5% | Prevents unclean shutdowns like today at 02:14 | - | Yes | `full` | Yes | `sudo sed -i 's/^PercentageAction=.*/PercentageAction=5/' /etc/UPower/UPower.conf` |
 
 Undo badge mapping: `full` → `{ok:Reversible}`, `regen` → `{info:Regenerates}`, `none` → `{warn:Irreversible}`. Admin steps also show `{off:Admin}`.
 

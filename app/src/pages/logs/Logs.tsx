@@ -179,10 +179,10 @@ const SHUTDOWN: Record<BootRecord["shutdown"], [StatusVariant, string]> = { runn
 
 const BOOTS: Column<BootRecord>[] = [
   { key: "started", label: "Started", text: (b) => String(b.started), render: (b) => when(b.started) },
-  { key: "ended", label: "Ended", text: (b) => (b.shutdown === "running" ? "—" : when(b.ended)) },
+  { key: "ended", label: "Ended", text: (b) => (b.shutdown === "running" ? "-" : when(b.ended)) },
   { key: "duration", label: "Duration", text: (b) => duration((b.ended - b.started) / 1000), numeric: true },
   { key: "shutdown", label: "Shutdown", text: (b) => SHUTDOWN[b.shutdown][1], render: (b) => <StatusBadge variant={SHUTDOWN[b.shutdown][0]} label={SHUTDOWN[b.shutdown][1]} /> },
-  { key: "kernel", label: "Kernel", text: (b) => b.kernel ?? "—", render: (b) => (b.kernel ? <code>{b.kernel.replace(/-generic$/, "")}</code> : "—") },
+  { key: "kernel", label: "Kernel", text: (b) => b.kernel ?? "-", render: (b) => (b.kernel ? <code>{b.kernel.replace(/-generic$/, "")}</code> : "-") },
 ];
 
 export function LogsBoots() {

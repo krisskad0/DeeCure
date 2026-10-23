@@ -21,7 +21,7 @@ const monthYear = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateStrin
 function desktop(name?: string | null, session?: string | null): string {
   const de = name?.split(":").pop();
   const type = session ? session[0].toUpperCase() + session.slice(1) : undefined;
-  return [de, type].filter(Boolean).join(" · ") || "—";
+  return [de, type].filter(Boolean).join(" · ") || "-";
 }
 
 export function SystemOverview() {
@@ -41,34 +41,34 @@ export function SystemOverview() {
       <Panel title="Operating system" source="/etc/os-release · /proc · /sys/class/dmi" span={6} flush>
         <KeyValueList
           rows={[
-            ["Distribution", os?.distribution ?? system?.os ?? "—"],
-            ["Kernel", system?.kernel ? <code>{system.kernel}</code> : "—"],
-            ["Architecture", system?.arch ?? "—"],
+            ["Distribution", os?.distribution ?? system?.os ?? "-"],
+            ["Kernel", system?.kernel ? <code>{system.kernel}</code> : "-"],
+            ["Architecture", system?.arch ?? "-"],
             ["Desktop", desktop(machine?.desktop, machine?.session_type)],
             ["Init system", boot?.systemd ? `systemd ${boot.systemd.split(/[\s(]/)[0]}` : "systemd"],
-            ["Hostname", system?.hostname ?? "—"],
-            ["Virtualization", os?.virtualization ?? "—"],
-            ["Machine ID", os?.machine_id ? <code>{os.machine_id}</code> : "—"],
+            ["Hostname", system?.hostname ?? "-"],
+            ["Virtualization", os?.virtualization ?? "-"],
+            ["Machine ID", os?.machine_id ? <code>{os.machine_id}</code> : "-"],
           ]}
         />
       </Panel>
       <Panel title="Status" span={6} flush>
         <KeyValueList
           rows={[
-            ["Uptime", system?.uptime_seconds === undefined ? "—" : duration(system.uptime_seconds)],
+            ["Uptime", system?.uptime_seconds === undefined ? "-" : duration(system.uptime_seconds)],
             [
               "Last boot",
-              boot ? `${when(boot.booted_at, now)}${boot.times ? ` · ${boot.times.total.toFixed(1)} s` : ""}` : system?.uptime_seconds === undefined ? "—" : when(now - system.uptime_seconds * 1000, now),
+              boot ? `${when(boot.booted_at, now)}${boot.times ? ` · ${boot.times.total.toFixed(1)} s` : ""}` : system?.uptime_seconds === undefined ? "-" : when(now - system.uptime_seconds * 1000, now),
             ],
             [
               "Reboot required",
               system?.reboot_required ? <StatusBadge variant="warn" label={["Yes", system.reboot_packages.slice(0, 3).join(", ")].filter(Boolean).join(" · ")} /> : "No",
             ],
-            ["Load average", load.every((v) => v !== undefined) ? <code>{load.map((v) => v?.toFixed(2)).join(" ")}</code> : "—"],
-            ["Users signed in", os ? String(os.users_signed_in) : "—"],
-            ["Running services", running === undefined ? "—" : String(running)],
+            ["Load average", load.every((v) => v !== undefined) ? <code>{load.map((v) => v?.toFixed(2)).join(" ")}</code> : "-"],
+            ["Users signed in", os ? String(os.users_signed_in) : "-"],
+            ["Running services", running === undefined ? "-" : String(running)],
             ["Ubuntu Pro", os?.pro_attached === undefined ? "Not installed" : os.pro_attached ? <StatusBadge variant="ok" label="Attached" /> : <StatusBadge variant="off" label="Not attached" />],
-            ["Livepatch", os?.livepatch ? <StatusBadge variant={os.livepatch === "enabled" ? "ok" : "off"} label={os.livepatch[0].toUpperCase() + os.livepatch.slice(1)} /> : "—"],
+            ["Livepatch", os?.livepatch ? <StatusBadge variant={os.livepatch === "enabled" ? "ok" : "off"} label={os.livepatch[0].toUpperCase() + os.livepatch.slice(1)} /> : "-"],
           ]}
         />
       </Panel>

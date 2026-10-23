@@ -23,8 +23,8 @@ function columns(total: number | undefined): Column<Process>[] {
     {
       key: "share",
       label: "Share of total",
-      text: (p) => (total ? `${((p.memory_bytes / total) * 100).toFixed(1)}%` : "—"),
-      render: (p) => (total ? <InlineMeter percent={(p.memory_bytes / total) * 100 * 4} label={`${((p.memory_bytes / total) * 100).toFixed(1)}%`} tone="ok" /> : "—"),
+      text: (p) => (total ? `${((p.memory_bytes / total) * 100).toFixed(1)}%` : "-"),
+      render: (p) => (total ? <InlineMeter percent={(p.memory_bytes / total) * 100 * 4} label={`${((p.memory_bytes / total) * 100).toFixed(1)}%`} tone="ok" /> : "-"),
     },
     { key: "swap", label: "Swap", text: (p) => (p.swap_bytes ? bytes(p.swap_bytes) : "0"), numeric: true, expert: true },
   ];
@@ -47,7 +47,7 @@ export function PerformanceMemory() {
   const top = [...(processes ?? [])].sort((a, b) => b.memory_bytes - a.memory_bytes).slice(0, 8);
   const sparkUsed = spark(percent, 0);
 
-  const split = (value: number | undefined) => (value === undefined ? { value: "—" } : { value: bytes(value).split(" ")[0], unit: bytes(value).split(" ")[1] });
+  const split = (value: number | undefined) => (value === undefined ? { value: "-" } : { value: bytes(value).split(" ")[0], unit: bytes(value).split(" ")[1] });
   const tiles: Kpi[] = [
     { label: "Used", ...split(used), subtext: used !== undefined && total ? `${Math.round((used / total) * 100)}% of ${bytes(total)}` : "", visual: sparkUsed && { kind: "spark", data: sparkUsed, slot: 2 } },
     { label: "Available", ...split(used !== undefined && total !== undefined ? total - used : undefined) },

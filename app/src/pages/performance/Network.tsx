@@ -32,14 +32,14 @@ const COLUMNS: Column<Row>[] = [
   { key: "name", label: "Interface", text: (i) => i.name, render: (i) => <code>{i.name}</code> },
   { key: "kind", label: "Type", text: (i) => i.kind },
   { key: "state", label: "State", text: (i) => i.state, render: (i) => <StatusBadge variant={i.state === "up" ? "ok" : "off"} label={i.state} /> },
-  { key: "rx", label: "RX/s", text: (i) => (i.rx === undefined ? "—" : rate(i.rx)), numeric: true },
-  { key: "tx", label: "TX/s", text: (i) => (i.tx === undefined ? "—" : rate(i.tx)), numeric: true },
-  { key: "speed", label: "Link speed", text: (i) => (i.speed_mbps ? `${i.speed_mbps} Mb/s` : "—"), numeric: true, expert: true },
-  { key: "mac", label: "MAC", text: (i) => i.mac ?? "—", expert: true },
+  { key: "rx", label: "RX/s", text: (i) => (i.rx === undefined ? "-" : rate(i.rx)), numeric: true },
+  { key: "tx", label: "TX/s", text: (i) => (i.tx === undefined ? "-" : rate(i.tx)), numeric: true },
+  { key: "speed", label: "Link speed", text: (i) => (i.speed_mbps ? `${i.speed_mbps} Mb/s` : "-"), numeric: true, expert: true },
+  { key: "mac", label: "MAC", text: (i) => i.mac ?? "-", expert: true },
 ];
 
 const split = (bps: number | undefined) => {
-  if (bps === undefined) return { value: "—" };
+  if (bps === undefined) return { value: "-" };
   const [value, unit] = rate(bps).split(" ");
   return { value, unit };
 };
@@ -63,8 +63,8 @@ export function PerformanceNetwork() {
         tiles={[
           { label: "Download", ...split(rx), visual: down && { kind: "spark", data: down, slot: 1 } },
           { label: "Upload", ...split(tx), visual: up && { kind: "spark", data: up, slot: 2 } },
-          { label: "Data today", value: today === undefined ? "—" : bytes(today).split(" ")[0], unit: today === undefined ? undefined : bytes(today).split(" ")[1], subtext: "while DeeCure was running" },
-          { label: "Connections", value: c ? String(c.tcp_established) : "—", subtext: c ? `${c.tcp_listening} listening · ${c.udp} UDP` : "" },
+          { label: "Data today", value: today === undefined ? "-" : bytes(today).split(" ")[0], unit: today === undefined ? undefined : bytes(today).split(" ")[1], subtext: "while DeeCure was running" },
+          { label: "Connections", value: c ? String(c.tcp_established) : "-", subtext: c ? `${c.tcp_listening} listening · ${c.udp} UDP` : "" },
         ]}
       />
       <Panel title="Throughput" source="/proc/net/dev" span={12}>

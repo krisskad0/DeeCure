@@ -24,7 +24,7 @@ export interface StatusReport {
   checked_at?: number;
   /** The areas (page IDs) that have rules. Other areas are "Unknown", not "Healthy". */
   checked?: string[];
-  /** 0–100. Missing until the rules have run once. */
+  /** 0-100. Missing until the rules have run once. */
   score?: number;
   /** Points each area takes off the score, largest first. */
   deductions?: { category: string; points: number }[];

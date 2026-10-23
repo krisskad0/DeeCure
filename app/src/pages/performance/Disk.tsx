@@ -19,10 +19,10 @@ interface Device {
 
 const COLUMNS: Column<Device>[] = [
   { key: "name", label: "Device", text: (d) => d.name, render: (d) => <code>{d.name}</code> },
-  { key: "read", label: "Read/s", text: (d) => (d.read === undefined ? "—" : rate(d.read)), numeric: true },
-  { key: "write", label: "Write/s", text: (d) => (d.write === undefined ? "—" : rate(d.write)), numeric: true },
-  { key: "util", label: "Util", text: (d) => (d.busy === undefined ? "—" : `${Math.round(d.busy)}%`), numeric: true },
-  { key: "await", label: "Await", text: (d) => (d.wait === undefined ? "—" : `${(d.wait * 1000).toFixed(1)} ms`), numeric: true },
+  { key: "read", label: "Read/s", text: (d) => (d.read === undefined ? "-" : rate(d.read)), numeric: true },
+  { key: "write", label: "Write/s", text: (d) => (d.write === undefined ? "-" : rate(d.write)), numeric: true },
+  { key: "util", label: "Util", text: (d) => (d.busy === undefined ? "-" : `${Math.round(d.busy)}%`), numeric: true },
+  { key: "await", label: "Await", text: (d) => (d.wait === undefined ? "-" : `${(d.wait * 1000).toFixed(1)} ms`), numeric: true },
 ];
 
 function devices(latest: Metric[] | undefined): Device[] {
@@ -37,7 +37,7 @@ function devices(latest: Metric[] | undefined): Device[] {
 }
 
 const split = (bytesPerSecond: number | undefined) => {
-  if (bytesPerSecond === undefined) return { value: "—" };
+  if (bytesPerSecond === undefined) return { value: "-" };
   const [value, unit] = rate(bytesPerSecond).split(" ");
   return { value, unit };
 };
@@ -58,9 +58,9 @@ export function PerformanceDisk() {
         tiles={[
           { label: "Read", ...split(read), visual: r && { kind: "spark", data: r, slot: 1 } },
           { label: "Write", ...split(write), visual: w && { kind: "spark", data: w, slot: 2 } },
-          { label: "IOPS", value: iops === undefined ? "—" : String(Math.round(iops)), subtext: "reads and writes per second" },
-          { label: "Utilization", value: busy === undefined ? "—" : String(Math.round(busy)), unit: busy === undefined ? undefined : "%", subtext: "busiest disk" },
-          { label: "Avg latency", value: wait === undefined ? "—" : (wait * 1000).toFixed(1), unit: wait === undefined ? undefined : "ms" },
+          { label: "IOPS", value: iops === undefined ? "-" : String(Math.round(iops)), subtext: "reads and writes per second" },
+          { label: "Utilization", value: busy === undefined ? "-" : String(Math.round(busy)), unit: busy === undefined ? undefined : "%", subtext: "busiest disk" },
+          { label: "Avg latency", value: wait === undefined ? "-" : (wait * 1000).toFixed(1), unit: wait === undefined ? undefined : "ms" },
         ]}
       />
       <Panel title="Throughput" source="/proc/diskstats" span={12}>

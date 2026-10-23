@@ -25,7 +25,7 @@ const loadProcesses = () => getInventory("processes");
 /** The kernel's one-letter states, in words. */
 export const STATES: Record<string, string> = { R: "Running", S: "Sleeping", D: "Waiting for disk", Z: "Zombie", T: "Stopped", t: "Stopped (traced)", I: "Idle", X: "Dead" };
 const stateName = (s: string) => STATES[s] ?? s;
-const time = (ms?: number) => (ms ? new Date(ms).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "—");
+const time = (ms?: number) => (ms ? new Date(ms).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "-");
 
 const COLUMNS: Column<Process>[] = [
   { key: "name", label: "Name", text: (p) => p.name },
@@ -123,7 +123,7 @@ function ProcessDetails({ process: p, ended }: { process: Process; ended: boolea
           ["Memory", bytes(p.memory_bytes)],
           ["Swap", p.swap_bytes ? bytes(p.swap_bytes) : "None"],
           ["Threads", String(p.threads)],
-          ["Started", p.started_at ? when(p.started_at) : "—"],
+          ["Started", p.started_at ? when(p.started_at) : "-"],
         ]}
       />
       {p.command && (

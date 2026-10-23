@@ -1,4 +1,4 @@
-# SysDoc Dashboard — Complete UI Map (clone spec)
+# SysDoc Dashboard: Complete UI Map (clone spec)
 
 As of Oct 22, 2026 · Source of truth: `sysdoc-dashboard.html` · Companions: `sysdoc-implementation-plan.md`, `linux-system-insights.md`
 
@@ -8,16 +8,16 @@ This document describes the SysDoc dashboard prototype completely: design tokens
 
 ## 0. How to use this document
 
-1. Build the **shell** (sections 2–4): top bar, sidebar, page header, tabs, 12-column grid.
+1. Build the **shell** (sections 2-4): top bar, sidebar, page header, tabs, 12-column grid.
 2. Build the **components** (section 5) once, as reusable functions that take a config object.
-3. Add the **state model and logic** (sections 7–9).
+3. Add the **state model and logic** (sections 7-9).
 4. Fill in **every page** from the page map (section 12). Each widget lists its type, grid width, title, and full data.
 5. Wire the **interactions** (section 10).
 
 **Build rules**
 
 - One self-contained HTML file. Vanilla JavaScript, no framework. All charts are hand-drawn inline SVG. No chart library.
-- External resource: Google Fonts only (`Ubuntu Sans` 400–700 and `Ubuntu Sans Mono` 400/500), with system fallbacks.
+- External resource: Google Fonts only (`Ubuntu Sans` 400-700 and `Ubuntu Sans Mono` 400/500), with system fallbacks.
 - Render by building HTML strings per page from a `PAGES` definition, then mounting charts after insertion. Re-render the whole main area on state change, keeping the scroll position.
 - Light and dark themes through CSS custom properties (section 1). Dark applies through `prefers-color-scheme: dark` unless `data-theme="light"` is set on `<html>`, and also when `data-theme="dark"` is set.
 - All numbers that line up in columns use `font-variant-numeric: tabular-nums`.
@@ -95,12 +95,12 @@ Dark values apply under `@media (prefers-color-scheme: dark) { :root:not([data-t
 | Donut center value | Ubuntu Sans | 20px | 600 | SVG text |
 | Table body | Ubuntu Sans | 13px | 400 | |
 | Table header | Ubuntu Sans | 12px | 600 | `--ink-2` |
-| Labels, subtexts | Ubuntu Sans | 12px | 400–500 | `--muted` |
+| Labels, subtexts | Ubuntu Sans | 12px | 400-500 | `--muted` |
 | Sidebar group label | Ubuntu Sans | 10.5px | 700 | uppercase, letter-spacing 0.08em |
 | Drawer section label | Ubuntu Sans | 11px | 700 | uppercase, letter-spacing 0.07em |
 | Badge | Ubuntu Sans | 11.5px | 600 | line-height 20px |
 | Chart axis text | Ubuntu Sans | 11px | 400 | `--muted` |
-| Code, paths, units, IDs | Ubuntu Sans Mono | 12–12.5px | 400 | |
+| Code, paths, units, IDs | Ubuntu Sans Mono | 12-12.5px | 400 | |
 
 Font stacks: `"Ubuntu Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` and `"Ubuntu Sans Mono", ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace`.
 
@@ -162,27 +162,27 @@ Font stacks: `"Ubuntu Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-
 | Group | Page | ID | Icon | Initial status | Sidebar mark | Sub-pages (ID: label) |
 | --- | --- | --- | --- | --- | --- | --- |
 | Monitoring | Overview | `overview` | `grid` | {crit:Critical} | Count pill (9) | `summary`: Summary · `issues`: Issues (count 9, red) · `score`: Health Score |
-| Monitoring | Performance | `performance` | `perf` | {ok:Healthy} | — | `cpu`: CPU · `memory`: Memory · `disk`: Disk I/O · `network`: Network · `gpu`: GPU · `pressure`: Pressure (PSI) |
+| Monitoring | Performance | `performance` | `perf` | {ok:Healthy} | - | `cpu`: CPU · `memory`: Memory · `disk`: Disk I/O · `network`: Network · `gpu`: GPU · `pressure`: Pressure (PSI) |
 | Monitoring | Logs | `logs` | `logs` | {warn:Warning} | Yellow dot | `journal`: Journal · `errors`: Errors (count 37) · `crashes`: Crashes · `kernel`: Kernel · `boots`: Boots |
-| Monitoring | Activity | `activity` | `hist` | {ok:Healthy} | — | `timeline`: Timeline · `packages`: Package History · `config`: Config Changes · `devices`: Device Events · `sysdoc`: SysDoc Actions |
-| System | System | `system` | `sys` | {info:Info} | — | `overview`: Overview · `boot`: Boot · `updates`: Updates (count 12) · `kernel`: Kernel · `time`: Time & Locale |
-| System | Hardware | `hardware` | `chip` | {ok:Healthy} | — | `summary`: Summary · `processor`: Processor · `memory`: Memory · `storage`: Storage Devices · `graphics`: Graphics · `sensors`: Sensors · `peripherals`: Peripherals · `firmware`: Firmware |
+| Monitoring | Activity | `activity` | `hist` | {ok:Healthy} | - | `timeline`: Timeline · `packages`: Package History · `config`: Config Changes · `devices`: Device Events · `sysdoc`: SysDoc Actions |
+| System | System | `system` | `sys` | {info:Info} | - | `overview`: Overview · `boot`: Boot · `updates`: Updates (count 12) · `kernel`: Kernel · `time`: Time & Locale |
+| System | Hardware | `hardware` | `chip` | {ok:Healthy} | - | `summary`: Summary · `processor`: Processor · `memory`: Memory · `storage`: Storage Devices · `graphics`: Graphics · `sensors`: Sensors · `peripherals`: Peripherals · `firmware`: Firmware |
 | System | Power | `power` | `bat` | {warn:Warning} | Yellow dot | `battery`: Battery · `profile`: Power Profile · `sleep`: Sleep |
-| System | Display & Audio | `display` | `mon` | {ok:Healthy} | — | `displays`: Displays · `audio`: Audio |
-| Workloads | Processes | `processes` | `layers` | {ok:Healthy} | — | `all`: All Processes · `top`: Top Consumers |
+| System | Display & Audio | `display` | `mon` | {ok:Healthy} | - | `displays`: Displays · `audio`: Audio |
+| Workloads | Processes | `processes` | `layers` | {ok:Healthy} | - | `all`: All Processes · `top`: Top Consumers |
 | Workloads | Services | `services` | `cog` | {crit:Critical} | Red dot | `system`: System Services (count 1, red) · `user`: User Services · `startup`: Startup Applications |
-| Workloads | Scheduled Jobs | `jobs` | `cal` | {ok:Healthy} | — | `calendar`: Calendar · `cron`: Cron · `timers`: Systemd Timers · `anacron`: Anacron · `at`: At Jobs |
+| Workloads | Scheduled Jobs | `jobs` | `cal` | {ok:Healthy} | - | `calendar`: Calendar · `cron`: Cron · `timers`: Systemd Timers · `anacron`: Anacron · `at`: At Jobs |
 | Workloads | Containers | `containers` | `cube` | {warn:Warning} | Yellow dot | `containers`: Containers · `images`: Images · `volumes`: Volumes · `vms`: Virtual Machines |
 | Software & Data | Packages | `packages` | `pkg` | {warn:Warning} | Yellow dot | `installed`: Installed · `sources`: Sources · `cleanup`: Cleanup · `permissions`: Permissions |
 | Software & Data | Storage | `storage` | `db` | {crit:Critical} | Red dot | `overview`: Overview · `filesystems`: Filesystems · `usage`: Disk Usage · `cleanup`: Cleanup |
 | Software & Data | Backups | `backups` | `backup` | {warn:Warning} | Yellow dot | `jobs`: Backup Jobs · `snapshots`: System Snapshots · `restore`: Restore Points |
-| Network & Access | Network | `network` | `wifi` | {ok:Healthy} | — | `interfaces`: Interfaces · `connections`: Connections · `ports`: Open Ports · `firewall`: Firewall · `dns`: DNS & VPN · `traffic`: Traffic |
-| Network & Access | Accounts | `accounts` | `users` | {ok:Healthy} | — | `users`: Users · `groups`: Groups · `sessions`: Sessions · `logins`: Login History · `ssh`: SSH Keys |
+| Network & Access | Network | `network` | `wifi` | {ok:Healthy} | - | `interfaces`: Interfaces · `connections`: Connections · `ports`: Open Ports · `firewall`: Firewall · `dns`: DNS & VPN · `traffic`: Traffic |
+| Network & Access | Accounts | `accounts` | `users` | {ok:Healthy} | - | `users`: Users · `groups`: Groups · `sessions`: Sessions · `logins`: Login History · `ssh`: SSH Keys |
 | Network & Access | Security | `security` | `shield` | {warn:Warning} | Yellow dot | `overview`: Overview · `vulns`: Vulnerabilities (count 3) · `hardening`: Hardening · `integrity`: File Integrity · `malware`: Malware Scan |
-| Network & Access | Privacy | `privacy` | `eye` | {ok:Healthy} | — | `access`: Device Access · `perms`: App Permissions · `settings`: Privacy Settings |
-| Tools | Diagnostics | `diagnostics` | `gauge` | none (no badge) | — | `performance`: Performance Check · `network`: Network Test · `hardware`: Hardware Tests |
-| Tools | Assistant | `assistant` | `chat` | none (no badge) | — | `chat`: Chat |
-| Footer | Settings | `settings` | `sliders` | none (no badge) | — | `general`: General · `access`: Access · `notifications`: Notifications · `assistant`: Assistant · `data`: Data · `about`: About |
+| Network & Access | Privacy | `privacy` | `eye` | {ok:Healthy} | - | `access`: Device Access · `perms`: App Permissions · `settings`: Privacy Settings |
+| Tools | Diagnostics | `diagnostics` | `gauge` | none (no badge) | - | `performance`: Performance Check · `network`: Network Test · `hardware`: Hardware Tests |
+| Tools | Assistant | `assistant` | `chat` | none (no badge) | - | `chat`: Chat |
+| Footer | Settings | `settings` | `sliders` | none (no badge) | - | `general`: General · `access`: Access · `notifications`: Notifications · `assistant`: Assistant · `data`: Data · `about`: About |
 
 
 **Sidebar item spec**
@@ -304,14 +304,14 @@ Inline-flex, gap 4, padding 0 7 0 5, radius 4, 11.5px 600, line-height 20px, wit
   1. Label row (min-height 20): label 12px 500 `--ink-2` (ellipsis) + status badge on the right if the status is not `ok`.
   2. Value 24px 600 + unit (13px 500 muted).
   3. Subtext 12px muted (ellipsis), or a non-breaking space when empty.
-  4. Visual, one of: **sparkline** (SVG 100% × 28px, `preserveAspectRatio="none"`, min–max normalized, line 1.6px in the series color with non-scaling stroke, area at 12% opacity), or **usage bar** (6px, `--track`, radius 3, fill `--s1`, or `--warn`/`--crit` when the tile status is warn/crit; 10px top margin, 8px bottom).
+  4. Visual, one of: **sparkline** (SVG 100% × 28px, `preserveAspectRatio="none"`, min-max normalized, line 1.6px in the series color with non-scaling stroke, area at 12% opacity), or **usage bar** (6px, `--track`, radius 3, fill `--s1`, or `--warn`/`--crit` when the tile status is warn/crit; 10px top margin, 8px bottom).
 - Tiles with a link are `<button>`s that navigate. Hover: `--line-2` border, `--panel-2` background.
 - Sparklines use the same generator as charts (section 9) with the current time range.
 
 ### 5.5 Data table
 
 - **Tools bar** (only if the table has search, filter or selection): padding 8 12, bottom border, wraps.
-  - Search box: 28px, `--panel-2`, 1px border, radius 6, 14px search icon, width 180–260px, placeholder from the spec. Matches any cell's text (case-insensitive substring).
+  - Search box: 28px, `--panel-2`, 1px border, radius 6, 14px search icon, width 180-260px, placeholder from the spec. Matches any cell's text (case-insensitive substring).
   - Filter chips: 26px pills (radius 13, 1px border, 12.5px `--ink-2`). Pressed chip: `--ink` background, `--panel` text. "All" plus options; a row matches when the chosen column's text **starts with** the option (case-insensitive).
   - Selection bar (right): "N selected" or "Select rows", plus a small button (primary when at least one row is selected).
 - **Table:** 100% wide, collapsed borders, 13px.
@@ -321,7 +321,7 @@ Inline-flex, gap 4, padding 0 7 0 5, radius 4, 11.5px 600, line-height 20px, wit
   - Selection: 34px checkbox column, header checkbox selects all on the current page.
   - Clickable rows (pointer cursor): rows with a row action run it; tables marked "Inspect" open the row-inspect drawer (section 10.6).
 - **Sorting:** parse a leading number with units (KB, kB, K = ×0.001, MB = ×1, GB = ×1000, TB = ×1,000,000, plus ms, s, %, h, m, W). Compare numerically when both values parse, otherwise compare text.
-- **Paging:** default 12 rows per page (some tables differ). Footer (top border, padding 6 12, 12px muted): "1–12 of N" and Previous/Next small buttons when there is more than one page. When the spec gives a total count, "of N" shows that total while no search or filter is active.
+- **Paging:** default 12 rows per page (some tables differ). Footer (top border, padding 6 12, 12px muted): "1-12 of N" and Previous/Next small buttons when there is more than one page. When the spec gives a total count, "of N" shows that total while no search or filter is active.
 - **Empty:** one full-width cell, centered muted text, padding 28 14. Text comes from the spec, default "No matching rows".
 - Wide tables scroll horizontally inside the panel.
 
@@ -372,13 +372,13 @@ Full width. Flex, gap 12, padding 10 14, radius 8, 1px border, `--panel`. 28px c
 
 - 150×150 SVG. Outer radius 60, inner 42. 0.02 rad gap between segments. Starts at 12 o'clock and runs clockwise.
 - Center: value (20px 600 `--ink`) at y 78, subtitle (11px muted) at y 95.
-- Colors: series slots 1–5 in order, unless a segment overrides: `kw` = `--warn`, `kc` = `--crit`, `kn` = `--track`.
+- Colors: series slots 1-5 in order, unless a segment overrides: `kw` = `--warn`, `kc` = `--crit`, `kn` = `--track`.
 - Legend to the right (wraps under on narrow widths): rows of 10px rounded swatch | name | value (+ unit, or a custom display value) | percent (muted, tabular, right-aligned).
 - Each segment has an SVG `<title>` tooltip.
 
 ### 5.15 Gauge
 
-- Semicircle SVG, viewBox 200×112. Arc from (20,96) to (180,96), radius 80, stroke 14, round caps. Track `--track`. Value arc in `--s1`, or `--good`/`--warn`/`--crit` when a status is set. The value fraction is clamped to 0.001–1.
+- Semicircle SVG, viewBox 200×112. Arc from (20,96) to (180,96), radius 80, stroke 14, round caps. Track `--track`. Value arc in `--s1`, or `--good`/`--warn`/`--crit` when a status is set. The value fraction is clamped to 0.001-1.
 - Value text 30px 600 at (100, 86). Subtitle 11.5px muted at (100, 106). Max width 220px, centered.
 - **Gauge group:** grid `repeat(auto-fit, minmax(140px, 1fr))`, gap 4 12, with a 12px `--ink-2` caption under each gauge.
 
@@ -387,7 +387,7 @@ Full width. Flex, gap 12, padding 10 14, radius 8, 1px border, `--panel`. 28px c
 - CSS grid: a label column + 24 hour columns (min 5px each), gap 2px.
 - Header row: hour labels "00", "03", "06" … (every 3rd), 11px muted, centered.
 - Cells 18px tall, radius 3. Level: value 0 → `--h1`, otherwise `2 + floor(value / max × 3.99)`, capped at 5 → `--h2`…`--h5`. Tooltip `"<Day> <HH>:00 · <value> <unit>"`.
-- Legend under the grid, right-aligned: "Less" + five 14×10 swatches (h1–h5) + "More".
+- Legend under the grid, right-aligned: "Less" + five 14×10 swatches (h1-h5) + "More".
 
 ### 5.17 Horizontal bar list
 
@@ -448,7 +448,7 @@ Scroll container with a min-width 620 inner. Rows 28px: grid `160px | 1fr`, gap 
 | `` `text` `` | Monospace text |
 | `**Title** · subtitle` | Two-line cell: bold title with a 12px muted line below |
 | `[meter 78% "label"]` | Inline meter (section 5.6); `[meter:warn …]` / `[meter:ok …]` force the color |
-| `✓` / `—` | Yes (green check icon) / No (muted minus icon) |
+| `✓` / `-` | Yes (green check icon) / No (muted minus icon) |
 | `[toggle:on]` / `[toggle:off]` | Switch control |
 | `[Label](act:xyz)` | Small button that runs action `xyz` (section 10) |
 | `[**Label**](act:xyz)` | Primary small button |
@@ -511,13 +511,13 @@ clockTick = () => { clock++; return `${21 + floor(clock/60)}:${pad2(clock % 60)}
 
 | # | Severity | Title | Detail | Category | First seen | Count | Action | Shown when |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | {crit:Critical} | Root filesystem almost full | / at 94% · 15.2 GB reclaimable | Storage | 14 Oct | — | [Resolve](act:fix:storage) | used ≥ 93% (if 85–93%: Warning "Root filesystem above 85%", detail "/ at N% · largest: ~/Videos 52 GB", action View → go:storage/usage) |
+| 1 | {crit:Critical} | Root filesystem almost full | / at 94% · 15.2 GB reclaimable | Storage | 14 Oct | - | [Resolve](act:fix:storage) | used ≥ 93% (if 85-93%: Warning "Root filesystem above 85%", detail "/ at N% · largest: ~/Videos 52 GB", action View → go:storage/usage) |
 | 2 | {crit:Critical} | bluetooth.service crash loop | 14 restarts today · SIGSEGV | Services | Today 09:12 | 14 | [Inspect](act:bt) | always (detail after restart: "Restarted at HH:MM · monitoring") |
 | 3 | {warn:Warning} | Security updates pending | 4 packages · 2 high-severity CVEs | Security | Today 06:21 | 4 | [Install](act:fix:sec) | until updates installed |
-| 4 | {warn:Warning} | Battery health degraded | 71% of design capacity | Power | 02 Sep | — | [View](go:power/battery) | always |
-| 5 | {warn:Warning} | Backup overdue | Last successful backup 21 days ago | Backups | 07 Oct | — | [View](go:backups/jobs) | always |
+| 4 | {warn:Warning} | Battery health degraded | 71% of design capacity | Power | 02 Sep | - | [View](go:power/battery) | always |
+| 5 | {warn:Warning} | Backup overdue | Last successful backup 21 days ago | Backups | 07 Oct | - | [View](go:backups/jobs) | always |
 | 6 | {warn:Warning} | Out-of-memory kill | chrome renderer · Mon 16:12 | Logs | Mon 16:12 | 1 | [View](go:logs/kernel) | always |
-| 7 | {info:Info} | Reboot required | libc6, openssl, sudo updated | System | Today 10:40 | — | [Details](go:system/updates) | always |
+| 7 | {info:Info} | Reboot required | libc6, openssl, sudo updated | System | Today 10:40 | - | [Details](go:system/updates) | always |
 | 8 | {info:Info} | Low-battery action not set | Unclean shutdown at 02:14 today | Power | Today 02:14 | 1 | [Configure](act:fix:batt) | until low-battery action configured |
 | 9 | {info:Info} | Missed timer run | e2scrub_all.timer · Sun 03:10 | Scheduled Jobs | Sun 03:10 | 1 | [View](go:jobs/timers) | always |
 
@@ -531,7 +531,7 @@ The notification badge count = number of issues with severity Critical or Warnin
 
 ### 8.1 Fix definitions
 
-**`fix:storage` — Free up disk space** (subtitle "Root filesystem ( / )")
+**`fix:storage`: Free up disk space** (subtitle "Root filesystem ( / )")
 
 | Step ID | Title | Description | Size | Admin | Undo | Checked by default | Command |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -540,18 +540,18 @@ The notification badge count = number of issues with severity Critical or Warnin
 | `trash` | Empty Trash | 312 files | 2.1 GB | No | `none` | Yes | `gio trash --empty` |
 | `apt` | Clean APT package cache | Downloaded .deb files | 0.4 GB | Yes | `regen` | Yes | `sudo apt-get clean` |
 
-**`fix:sec` — Install updates** (subtitle "APT · noble-security")
+**`fix:sec`: Install updates** (subtitle "APT · noble-security")
 
 | Step ID | Title | Description | Size | Admin | Undo | Checked by default | Command |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `secu` | Install 4 security updates | openssl, libssl3t64, sudo, linux-firmware | — | Yes | `none` | Yes | `sudo apt-get install --only-upgrade openssl libssl3t64 sudo linux-firmware` |
-| `other` | Install 8 regular updates | google-chrome-stable, git and 6 more | — | Yes | `none` | No | `sudo apt-get upgrade` |
+| `secu` | Install 4 security updates | openssl, libssl3t64, sudo, linux-firmware | - | Yes | `none` | Yes | `sudo apt-get install --only-upgrade openssl libssl3t64 sudo linux-firmware` |
+| `other` | Install 8 regular updates | google-chrome-stable, git and 6 more | - | Yes | `none` | No | `sudo apt-get upgrade` |
 
-**`fix:batt` — Configure low-battery action** (subtitle "UPower · /etc/UPower/UPower.conf")
+**`fix:batt`: Configure low-battery action** (subtitle "UPower · /etc/UPower/UPower.conf")
 
 | Step ID | Title | Description | Size | Admin | Undo | Checked by default | Command |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `up` | Warn at 10%, power off cleanly at 5% | Prevents unclean shutdowns like today at 02:14 | — | Yes | `full` | Yes | `sudo sed -i 's/^PercentageAction=.*/PercentageAction=5/' /etc/UPower/UPower.conf` |
+| `up` | Warn at 10%, power off cleanly at 5% | Prevents unclean shutdowns like today at 02:14 | - | Yes | `full` | Yes | `sudo sed -i 's/^PercentageAction=.*/PercentageAction=5/' /etc/UPower/UPower.conf` |
 
 
 
@@ -602,7 +602,7 @@ function tLab(i, n, tooltip){ // axis label (tooltip=false) or tooltip header (t
   if (S.range === '7d') return tooltip ? `${wd} ${hh}` : wd;
   return tooltip ? `${dm} ${hh}` : dm;
 }
-// Heatmaps: heatData(seed, rows, cols, base, spikes) — cell = max(0, round((rng()-0.55)*base)), then spikes [row, col, value] override.
+// Heatmaps: heatData(seed, rows, cols, base, spikes): cell = max(0, round((rng()-0.55)*base)), then spikes [row, col, value] override.
 function heatData(seed, rows, cols, base, spikes = []){ const r = rng(seed);
   return Array.from({length:rows}, (_, ri) => Array.from({length:cols}, (_, ci) => {
     let v = Math.max(0, Math.round((r() - 0.55) * base)); spikes.forEach(s => { if (s[0] === ri && s[1] === ci) v = s[2]; }); return v; })); }
@@ -674,7 +674,7 @@ Starts with one exchange already shown: the user question for `restart` and its 
 | --- | --- | --- | --- | --- |
 | `restart` | Why did my laptop restart last night? | It did not restart. **The battery ran out at 02:14**, so the laptop powered off without a clean shutdown. You started it again at 08:58. No low-battery action is configured, so this can happen again. | `02:09:12 upowerd: battery BAT0 is critically low (2%)`<br>`02:13:58 upowerd: battery BAT0 at 1%, critical action not configured`<br>`-- boot ended without clean shutdown --` | [**Configure low-battery action**](act:fix:batt) |
 | `bt` | Why is Bluetooth crashing? | **bluetoothd crashes with SIGSEGV each time the earbuds connect.** It started at 09:12 today, after yesterday’s kernel upgrade 6.8.0-45 → 6.8.0-47. Restart the service first. If it keeps crashing, boot once with 6.8.0-45 to confirm the regression. | `09:12:44 kernel: bluetoothd[1342]: segfault at 0 … error 4`<br>`systemd: bluetooth.service: Main process exited, status=11/SEGV`<br>`Tue 18:40 apt: upgrade linux-image-6.8.0-47-generic` | [**Inspect bluetooth.service**](act:bt) |
-| `ssd` | Is my SSD healthy? | **Yes.** SMART passed, 88% life left, 0 media errors. At your write rate that is many years. | `SMART overall-health self-assessment: PASSED`<br>`Percentage Used: 12%`<br>`Media and Data Integrity Errors: 0` | — |
+| `ssd` | Is my SSD healthy? | **Yes.** SMART passed, 88% life left, 0 media errors. At your write rate that is many years. | `SMART overall-health self-assessment: PASSED`<br>`Percentage Used: 12%`<br>`Media and Data Integrity Errors: 0` | - |
 | `disk` | What is filling my disk? | **~/Videos (52 GB) and ~/Documents (41 GB)** are the largest folders. System leftovers worth 15.2 GB can also be removed safely. | `du -h --max-depth=1 ~`<br>`snap list --all \| grep disabled` | [**Free up space**](act:fix:storage) |
 
 
@@ -697,7 +697,7 @@ Tables marked **Inspect** open a drawer when a row is clicked: title = the first
 
 ### 10.9 Charts
 
-- Charts redraw when the window or main area resizes (debounced 80–120ms) and after every render.
+- Charts redraw when the window or main area resizes (debounced 80-120ms) and after every render.
 
 ---
 
@@ -764,27 +764,27 @@ Each sub-page lists its header actions (if any) and its widgets in grid order.
 - Group: Monitoring · Icon: `grid` · Status badge: {crit:Critical} (rule in section 3)
 - Sub-pages: Summary, Issues, Health Score
 
-#### 12.1.1 Overview › Summary — `overview/summary`
+#### 12.1.1 Overview › Summary: `overview/summary`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
 | Health score | 82 | /100 | {warn:Warning} | 9 open issues | Usage bar 82% | `overview/score` |
-| CPU | 12 | % | — | Load 0.84 · 12 threads | Sparkline slot 1, gen[3, 14, 8, 6, 2, 60, 12] | `performance/cpu` |
-| Memory | 5.9 | GB | — | 78% of 7.6 GB | Sparkline slot 2, gen[5, 70, 8, 3, 40, 95, 78] | `performance/memory` |
+| CPU | 12 | % | - | Load 0.84 · 12 threads | Sparkline slot 1, gen[3, 14, 8, 6, 2, 60, 12] | `performance/cpu` |
+| Memory | 5.9 | GB | - | 78% of 7.6 GB | Sparkline slot 2, gen[5, 70, 8, 3, 40, 95, 78] | `performance/memory` |
 | Disk ( / ) | 94 | % | {crit:Critical} | 13.8 GB free of 238 GB | Usage bar 94.2% | `storage/overview` |
-| Network | 1.2 | MB/s | — | ↑ 0.3 MB/s · Wi-Fi | Sparkline slot 3, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2] | `performance/network` |
+| Network | 1.2 | MB/s | - | ↑ 0.3 MB/s · Wi-Fi | Sparkline slot 3, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2] | `performance/network` |
 | Battery | 64 | % | {warn:Warning} | Health 71% · 3 h 10 m left | Usage bar 64% | `power/battery` |
 
-2. **Line chart** — "CPU and memory utilization" · span 8
+2. **Line chart**: "CPU and memory utilization" · span 8
 - Info tooltip: "How busy the processor and memory were. Change the time range at the top to zoom out."
 - Source chip (Expert): `/proc/stat · /proc/meminfo`
 - Height 300px · Y axis 0 to 100 · unit "%"
 - Series: CPU (slot 1, gen[3, 14, 8, 6, 2, 60, 12]); Memory (slot 2, gen[5, 70, 8, 3, 40, 95, 78])
 - X axis: time (current range)
 
-3. **Status list** — "Subsystems" · span 4
+3. **Status list**: "Subsystems" · span 4
 - Info tooltip: "Status of every area SysDoc checks. Select a row to open it."
 
 | Icon | Label | Metric | Badge | Opens |
@@ -803,7 +803,7 @@ Each sub-page lists its header actions (if any) and its widgets in grid order.
 | `shield` | Security | 4 updates | {warn:Warning} | `security/overview` |
 | `eye` | Privacy | No active access | {ok:Healthy} | `privacy/access` |
 
-4. **Data table** — "Active issues" · span 8
+4. **Data table**: "Active issues" · span 8
 - Subtitle: "9 open"
 - Header actions: [View all](go:overview/issues) (link style)
 
@@ -816,13 +816,13 @@ Each sub-page lists its header actions (if any) and its widgets in grid order.
 | {warn:Warning} | **Backup overdue** · Last successful backup 21 days ago | Backups | 07 Oct | [View](go:backups/jobs) |
 | {warn:Warning} | **Out-of-memory kill** · chrome renderer · Mon 16:12 | Logs | Mon 16:12 | [View](go:logs/kernel) |
 
-5. **Gauge + horizontal bars** — "Health score" · span 4
+5. **Gauge + horizontal bars**: "Health score" · span 4
 - Info tooltip: "Starts at 100. Each open issue removes points from its area."
 - Header actions: [Details](go:overview/score) (link style)
 
 Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok, ≥75 warn, else crit). Below it, horizontal bars (max 10, warn color): Storage −8, Services −5, Security −3, Power −1, Backups −1 (only categories with a deduction).
 
-6. **Donut chart** — "Disk usage ( / )" · span 4
+6. **Donut chart**: "Disk usage ( / )" · span 4
 - Subtitle: "238 GB"
 - Source chip (Expert): `df -h / · du`
 - Header actions: [Open](go:storage/overview) (link style)
@@ -830,14 +830,14 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 
 | Segment | Value | Color | Display value |
 | --- | --- | --- | --- |
-| Home | 128 | slot 1 | — |
-| Apps | 46 | slot 2 | — |
-| System | 22 | slot 3 | — |
-| Containers | 13 | slot 4 | — |
-| Reclaimable | 15.2 | kc | — |
-| Free | 13.8 | kn | — |
+| Home | 128 | slot 1 | - |
+| Apps | 46 | slot 2 | - |
+| System | 22 | slot 3 | - |
+| Containers | 13 | slot 4 | - |
+| Reclaimable | 15.2 | kc | - |
+| Free | 13.8 | kn | - |
 
-7. **Data table** — "Top processes" · span 4
+7. **Data table**: "Top processes" · span 4
 - Subtitle: "by memory"
 - Source chip (Expert): `ps -eo comm,%cpu,rss`
 - Header actions: [View all](go:processes/all) (link style)
@@ -851,7 +851,7 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | telegram-desktop | 0.4% | 280 MB |
 | dropbox | 0.3% | 210 MB |
 
-8. **Key-value list** — "System" · span 4
+8. **Key-value list**: "System" · span 4
 - Source chip (Expert): `hostnamectl`
 
 | Key | Value |
@@ -863,7 +863,7 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | Last boot | Today 08:58 |
 | Reboot required | {warn:Yes} |
 
-9. **Activity timeline** — "Recent activity" · span 6
+9. **Activity timeline**: "Recent activity" · span 6
 - Header actions: [View all](go:activity/timeline) (link style)
 
 | Time | Title | Detail | Dot |
@@ -875,10 +875,10 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | Tue 18:41 | linux-firmware upgraded | …0ubuntu2.5 | default |
 | Tue 18:40 | Kernel upgraded 6.8.0-45 → 6.8.0-47 | Software Updater | default |
 
-10. **Heatmap (day × hour)** — "Errors and warnings by hour" · span 6
+10. **Heatmap (day × hour)**: "Errors and warnings by hour" · span 6
 - Subtitle: "last 7 days"
 - Source chip (Expert): `journalctl -p warning`
-- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00–23 · unit "events"
+- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00-23 · unit "events"
 - Values (row by row, 24 per row):
 
 ```
@@ -891,7 +891,7 @@ Tue  1 0 0 1 1 0 0 0 1 0 0 1 0 0 0 0 0 1 0 0 2 1 0 0
 Wed  1 1 3 0 0 2 0 1 1 9 0 0 1 0 2 0 0 1 0 0 0 6 0 2
 ```
 
-#### 12.1.2 Overview › Issues — `overview/issues`
+#### 12.1.2 Overview › Issues: `overview/issues`
 
 Tab count pill: 9 (red).
 
@@ -899,42 +899,42 @@ Tab count pill: 9 (red).
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Critical | 2 |  | {crit:Critical} |   | — | — |
-| Warning | 4 |  | {warn:Warning} |   | — | — |
-| Info | 3 |  | — |   | — | — |
-| Resolved | 11 |  | — | last 30 days | — | — |
-| Mean time to resolve | 1.8 | days | — |   | — | — |
+| Critical | 2 |  | {crit:Critical} |   | - | - |
+| Warning | 4 |  | {warn:Warning} |   | - | - |
+| Info | 3 |  | - |   | - | - |
+| Resolved | 11 |  | - | last 30 days | - | - |
+| Mean time to resolve | 1.8 | days | - |   | - | - |
 
-2. **Data table** — "All issues" · span 12
+2. **Data table**: "All issues" · span 12
 - Search: "Search issues"
 - Filter chips on column 1: All / Critical / Warning / Info
 - Table ID: `issues-all`
 
 | Severity | Issue | Category | First seen | Count [n] | Status | (action) |
 | --- | --- | --- | --- | --- | --- | --- |
-| {crit:Critical} | **Root filesystem almost full** · / at 94% · 15.2 GB reclaimable | Storage | 14 Oct | — | {off:Open} | [**Resolve**](act:fix:storage) |
+| {crit:Critical} | **Root filesystem almost full** · / at 94% · 15.2 GB reclaimable | Storage | 14 Oct | - | {off:Open} | [**Resolve**](act:fix:storage) |
 | {crit:Critical} | **bluetooth.service crash loop** · 14 restarts today · SIGSEGV | Services | Today 09:12 | 14 | {off:Open} | [**Inspect**](act:bt) |
 | {warn:Warning} | **Security updates pending** · 4 packages · 2 high-severity CVEs | Security | Today 06:21 | 4 | {off:Open} | [Install](act:fix:sec) |
-| {warn:Warning} | **Battery health degraded** · 71% of design capacity | Power | 02 Sep | — | {off:Open} | [View](go:power/battery) |
-| {warn:Warning} | **Backup overdue** · Last successful backup 21 days ago | Backups | 07 Oct | — | {off:Open} | [View](go:backups/jobs) |
+| {warn:Warning} | **Battery health degraded** · 71% of design capacity | Power | 02 Sep | - | {off:Open} | [View](go:power/battery) |
+| {warn:Warning} | **Backup overdue** · Last successful backup 21 days ago | Backups | 07 Oct | - | {off:Open} | [View](go:backups/jobs) |
 | {warn:Warning} | **Out-of-memory kill** · chrome renderer · Mon 16:12 | Logs | Mon 16:12 | 1 | {off:Open} | [View](go:logs/kernel) |
-| {info:Info} | **Reboot required** · libc6, openssl, sudo updated | System | Today 10:40 | — | {off:Open} | [Details](go:system/updates) |
+| {info:Info} | **Reboot required** · libc6, openssl, sudo updated | System | Today 10:40 | - | {off:Open} | [Details](go:system/updates) |
 | {info:Info} | **Low-battery action not set** · Unclean shutdown at 02:14 today | Power | Today 02:14 | 1 | {off:Open} | [Configure](act:fix:batt) |
 | {info:Info} | **Missed timer run** · e2scrub_all.timer · Sun 03:10 | Scheduled Jobs | Sun 03:10 | 1 | {off:Open} | [View](go:jobs/timers) |
 
-#### 12.1.3 Overview › Health Score — `overview/score`
+#### 12.1.3 Overview › Health Score: `overview/score`
 
-1. **Line chart** — "Health score trend" · span 8
+1. **Line chart**: "Health score trend" · span 8
 - Subtitle: "30 days"
 - Height 240px · Y axis 60 to 100
 - Series: Score (slot 1, data [96,96,95,95,94,94,93,93,92,92,92,91,91,90,90,89,89,88,88,87,87,87,86,82,81,81,80,80,79,82])
 - X labels: 30 labels: 22 Sept, 23 Sept, 24 Sept … 20 Oct, 21 Oct
 
-2. **Gauge + horizontal bars** — "Current score" · span 4
+2. **Gauge + horizontal bars**: "Current score" · span 4
 
-Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok, ≥75 warn, else crit). Caption under the gauge (muted, centered): "90+ Healthy · 75–89 Fair · below 75 At risk".
+Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok, ≥75 warn, else crit). Caption under the gauge (muted, centered): "90+ Healthy · 75-89 Fair · below 75 At risk".
 
-3. **Data table** — "Score breakdown" · span 12
+3. **Data table**: "Score breakdown" · span 12
 
 | Category | Weight [n] | Deduction [n] | Open findings | Status |
 | --- | --- | --- | --- | --- |
@@ -943,44 +943,44 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | Security | 15 | −3 | 4 security updates pending | {warn:Warning} |
 | Power | 10 | −1 | Battery health 71% | {warn:Warning} |
 | Backups | 10 | −1 | Last backup 21 days ago | {warn:Warning} |
-| Hardware | 10 | 0 | — | {ok:Healthy} |
-| Network | 10 | 0 | — | {ok:Healthy} |
-| Accounts | 5 | 0 | — | {ok:Healthy} |
-| Privacy | 5 | 0 | — | {ok:Healthy} |
-| Packages | 5 | 0 | — | {ok:Healthy} |
+| Hardware | 10 | 0 | - | {ok:Healthy} |
+| Network | 10 | 0 | - | {ok:Healthy} |
+| Accounts | 5 | 0 | - | {ok:Healthy} |
+| Privacy | 5 | 0 | - | {ok:Healthy} |
+| Packages | 5 | 0 | - | {ok:Healthy} |
 
 ### 12.2 Performance (`performance`)
 
 - Group: Monitoring · Icon: `perf` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: CPU, Memory, Disk I/O, Network, GPU, Pressure (PSI)
 
-#### 12.2.1 Performance › CPU — `performance/cpu`
+#### 12.2.1 Performance › CPU: `performance/cpu`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Utilization | 12 | % | — |   | Sparkline slot 1, gen[3, 14, 8, 6, 2, 60, 12] | — |
-| Load average | 0.84 |  | — | 5 min 0.92 · 15 min 1.10 | — | — |
-| Frequency | 1.3 | GHz | — | Max 4.4 GHz | — | — |
-| Temperature | 54 | °C | — |   | Sparkline slot 2, gen[21, 52, 6, 3, 35, 90, 54] | — |
-| Processes | 312 |  | — | 1,204 threads | — | — |
-| Context switches | 6.2K | /s | — | Interrupts 3.1K/s | — | — |
+| Utilization | 12 | % | - |   | Sparkline slot 1, gen[3, 14, 8, 6, 2, 60, 12] | - |
+| Load average | 0.84 |  | - | 5 min 0.92 · 15 min 1.10 | - | - |
+| Frequency | 1.3 | GHz | - | Max 4.4 GHz | - | - |
+| Temperature | 54 | °C | - |   | Sparkline slot 2, gen[21, 52, 6, 3, 35, 90, 54] | - |
+| Processes | 312 |  | - | 1,204 threads | - | - |
+| Context switches | 6.2K | /s | - | Interrupts 3.1K/s | - | - |
 
-2. **Line chart** — "CPU utilization by type" · span 12
+2. **Line chart**: "CPU utilization by type" · span 12
 - Info tooltip: "User = your apps. System = the kernel. I/O wait = waiting for the disk."
 - Source chip (Expert): `/proc/stat`
 - Height 240px · Y axis 0 to 50 · unit "%" · **stacked**
 - Series: User (slot 1, gen[3, 8, 5, 4, 0, 60]); System (slot 2, gen[13, 3, 2, 2, 0, 30]); I/O wait (slot 3, gen[17, 0.8, 0.6, 1, 0, 15])
 - X axis: time (current range)
 
-3. **Bar chart** — "Per-core utilization" · span 6
+3. **Bar chart**: "Per-core utilization" · span 6
 - Subtitle: "now"
 - Source chip (Expert): `mpstat -P ALL`
 - Height 200px · Y max 100 · unit "%"
 - Bars (label: value · tooltip label): P0: 18 · "Thread P0"; P1: 9 · "Thread P1"; P2: 14 · "Thread P2"; P3: 6 · "Thread P3"; E0: 22 · "Thread E0"; E1: 11 · "Thread E1"; E2: 4 · "Thread E2"; E3: 7 · "Thread E3"; E4: 16 · "Thread E4"; E5: 3 · "Thread E5"; E6: 8 · "Thread E6"; E7: 5 · "Thread E7"
 
-4. **Data table** — "Top CPU consumers" · span 6
+4. **Data table**: "Top CPU consumers" · span 6
 - Source chip (Expert): `ps --sort=-%cpu`
 
 | Process | PID [n] | User | CPU [n] |
@@ -993,37 +993,37 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | pipewire | 1702 | riya | [meter 3% "0.5%"] |
 | telegram-desktop | 2230 | riya | [meter 2% "0.4%"] |
 
-#### 12.2.2 Performance › Memory — `performance/memory`
+#### 12.2.2 Performance › Memory: `performance/memory`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Used | 5.9 | GB | — | 78% of 7.6 GB | Sparkline slot 2, gen[5, 70, 8, 3, 40, 95, 78] | — |
-| Available | 1.7 | GB | — |   | — | — |
-| Cache and buffers | 1.6 | GB | — |   | — | — |
-| Swap | 1.2 | GB | — | of 2.0 GB | Usage bar 60% | — |
-| Pressure | 0.4 | % | — | some avg10 | — | — |
-| OOM kills | 1 |  | {warn:Warning} | last 7 days | — | — |
+| Used | 5.9 | GB | - | 78% of 7.6 GB | Sparkline slot 2, gen[5, 70, 8, 3, 40, 95, 78] | - |
+| Available | 1.7 | GB | - |   | - | - |
+| Cache and buffers | 1.6 | GB | - |   | - | - |
+| Swap | 1.2 | GB | - | of 2.0 GB | Usage bar 60% | - |
+| Pressure | 0.4 | % | - | some avg10 | - | - |
+| OOM kills | 1 |  | {warn:Warning} | last 7 days | - | - |
 
-2. **Line chart** — "Memory usage" · span 8
+2. **Line chart**: "Memory usage" · span 8
 - Source chip (Expert): `/proc/meminfo`
 - Height 240px · Y axis 0 to 8 · unit "GB" · **stacked**
 - Series: Used (slot 1, gen[5, 4.6, 0.9, 0.5, 2.5, 6.4, 5.9]); Cache (slot 2, gen[7, 1.4, 0.3, 0.2, 0.5, 2.5, 1.6])
 - X axis: time (current range)
 - Threshold line at 7.6: "Total 7.6 GB"
 
-3. **Donut chart** — "Composition" · span 4
+3. **Donut chart**: "Composition" · span 4
 - Subtitle: "now"
 - Center: "7.6" / "GB total" · unit "GB"
 
 | Segment | Value | Color | Display value |
 | --- | --- | --- | --- |
-| Used | 5.9 | slot 1 | — |
-| Cache | 1.6 | slot 2 | — |
+| Used | 5.9 | slot 1 | - |
+| Cache | 1.6 | slot 2 | - |
 | Free | 0.1 | kn | 0.1 GB |
 
-4. **Data table** — "Top memory consumers" · span 12
+4. **Data table**: "Top memory consumers" · span 12
 - Source chip (Expert): `ps --sort=-rss`
 
 | Process | PID [n] | User | Resident [n] | Share of total [n] | Swap [n, ,x] |
@@ -1037,34 +1037,34 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | postgres | 2811 | 999 | 142 MB | [meter 7% "1.9%"] | 0 |
 | dockerd | 1320 | root | 96 MB | [meter 5% "1.3%"] | 0 |
 
-#### 12.2.3 Performance › Disk I/O — `performance/disk`
+#### 12.2.3 Performance › Disk I/O: `performance/disk`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Read | 2.4 | MB/s | — |   | Sparkline slot 1, gen[31, 2, 2, 3, 0, 40, 2.4] | — |
-| Write | 0.8 | MB/s | — |   | Sparkline slot 2, gen[32, 1, 1, 1.5, 0, 30, 0.8] | — |
-| IOPS | 142 |  | — |   | — | — |
-| Utilization | 6 | % | — |   | — | — |
-| Avg latency | 0.4 | ms | — |   | — | — |
-| Queue depth | 0.02 |  | — |   | — | — |
+| Read | 2.4 | MB/s | - |   | Sparkline slot 1, gen[31, 2, 2, 3, 0, 40, 2.4] | - |
+| Write | 0.8 | MB/s | - |   | Sparkline slot 2, gen[32, 1, 1, 1.5, 0, 30, 0.8] | - |
+| IOPS | 142 |  | - |   | - | - |
+| Utilization | 6 | % | - |   | - | - |
+| Avg latency | 0.4 | ms | - |   | - | - |
+| Queue depth | 0.02 |  | - |   | - | - |
 
-2. **Line chart** — "Throughput" · span 12
+2. **Line chart**: "Throughput" · span 12
 - Source chip (Expert): `/proc/diskstats`
 - Height 220px · Y axis 0 to auto · unit "MB/s"
 - Series: Read (slot 1, gen[31, 2, 2, 3, 0, 40, 2.4]); Write (slot 2, gen[32, 1, 1, 1.5, 0, 30, 0.8])
 - X axis: time (current range)
 
-3. **Data table** — "Devices" · span 6
+3. **Data table**: "Devices" · span 6
 - Source chip (Expert): `iostat -x`
 
 | Device | Read/s [n] | Write/s [n] | Util [n] | Await [n] |
 | --- | --- | --- | --- | --- |
 | `nvme0n1` | 2.4 MB | 0.8 MB | 6% | 0.4 ms |
-| `loop0–loop13` | 0 | 0 | 0% | 0 ms |
+| `loop0-loop13` | 0 | 0 | 0% | 0 ms |
 
-4. **Data table** — "Top I/O processes" · span 6
+4. **Data table**: "Top I/O processes" · span 6
 - Source chip (Expert): `iotop -b -n1`
 - Empty text: "Requires Full access · Settings › Access"
 
@@ -1075,32 +1075,32 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | code | 0.2 MB/s | 0.1 MB/s |
 | postgres | 0.1 MB/s | 0.1 MB/s |
 
-#### 12.2.4 Performance › Network — `performance/network`
+#### 12.2.4 Performance › Network: `performance/network`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Download | 1.2 | MB/s | — |   | Sparkline slot 1, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2] | — |
-| Upload | 0.3 | MB/s | — |   | Sparkline slot 2, gen[10, 0.2, 0.2, 0.3, 0, 3, 0.3] | — |
-| Data today | 4.2 | GB | — |   | — | — |
-| Connections | 68 |  | — | 5 listening | — | — |
-| Packet loss | 0 | % | — |   | — | — |
-| Latency | 18 | ms | — | to 1.1.1.1 | — | — |
+| Download | 1.2 | MB/s | - |   | Sparkline slot 1, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2] | - |
+| Upload | 0.3 | MB/s | - |   | Sparkline slot 2, gen[10, 0.2, 0.2, 0.3, 0, 3, 0.3] | - |
+| Data today | 4.2 | GB | - |   | - | - |
+| Connections | 68 |  | - | 5 listening | - | - |
+| Packet loss | 0 | % | - |   | - | - |
+| Latency | 18 | ms | - | to 1.1.1.1 | - | - |
 
-2. **Line chart** — "Throughput" · span 12
+2. **Line chart**: "Throughput" · span 12
 - Source chip (Expert): `/proc/net/dev`
 - Height 220px · Y axis 0 to auto · unit "MB/s"
 - Series: Download (slot 1, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2]); Upload (slot 2, gen[10, 0.2, 0.2, 0.3, 0, 3, 0.3])
 - X axis: time (current range)
 
-3. **Bar chart** — "Daily data usage" · span 6
+3. **Bar chart**: "Daily data usage" · span 6
 - Subtitle: "14 days"
 - Source chip (Expert): `vnstat -d`
 - Height 200px · Y max auto · unit "GB"
 - Bars (label: value · tooltip label): 8: 3.1 · "8 Oct"; 9: 4.4 · "9 Oct"; 10: 2.2 · "10 Oct"; 11: 1.9 · "11 Oct"; 12: 5.8 · "12 Oct"; 13: 3.6 · "13 Oct"; 14: 4.1 · "14 Oct"; 15: 3.3 · "15 Oct"; 16: 6.2 · "16 Oct"; 17: 2.8 · "17 Oct"; 18: 1.5 · "18 Oct"; 19: 4.9 · "19 Oct"; 20: 5.1 · "20 Oct"; 21: 4.2 · "21 Oct"
 
-4. **Data table** — "Interfaces" · span 6
+4. **Data table**: "Interfaces" · span 6
 - Source chip (Expert): `ip -s link`
 
 | Interface | Type | State | RX/s [n] | TX/s [n] |
@@ -1110,52 +1110,52 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | `lo` | Loopback | {ok:up} | 4 KB | 4 KB |
 | `enx00e04c68` | Ethernet (USB) | {off:down} | 0 | 0 |
 
-#### 12.2.5 Performance › GPU — `performance/gpu`
+#### 12.2.5 Performance › GPU: `performance/gpu`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Device | Iris Xe |  | — | Intel · Alder Lake-UP3 GT2 | — | — |
-| Utilization | 8 | % | — |   | Sparkline slot 1, gen[41, 7, 5, 4, 0, 80, 8] | — |
-| Memory | Shared |  | — | Uses system RAM | — | — |
-| Temperature | N/A |  | — | Not reported by i915 | — | — |
-| Driver | i915 |  | — | Mesa 24.0.9 | — | — |
+| Device | Iris Xe |  | - | Intel · Alder Lake-UP3 GT2 | - | - |
+| Utilization | 8 | % | - |   | Sparkline slot 1, gen[41, 7, 5, 4, 0, 80, 8] | - |
+| Memory | Shared |  | - | Uses system RAM | - | - |
+| Temperature | N/A |  | - | Not reported by i915 | - | - |
+| Driver | i915 |  | - | Mesa 24.0.9 | - | - |
 
-2. **Line chart** — "GPU utilization" · span 12
+2. **Line chart**: "GPU utilization" · span 12
 - Source chip (Expert): `intel_gpu_top (admin)`
 - Height 220px · Y axis 0 to 100 · unit "%"
 - Series: Render (slot 1, gen[41, 7, 5, 4, 0, 80, 8])
 - X axis: time (current range)
 
-3. **Alert banner** — "GPU temperature is not exposed" · span 12
+3. **Alert banner**: "GPU temperature is not exposed" · span 12
 - State: `info` · Title: "GPU temperature is not exposed" · Text: "The Intel i915 driver shares the CPU package sensor. See Hardware › Sensors." · Buttons: [Open sensors](go:hardware/sensors)
 
-#### 12.2.6 Performance › Pressure (PSI) — `performance/pressure`
+#### 12.2.6 Performance › Pressure (PSI): `performance/pressure`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| CPU some | 1.2 | % | — |   | — | — |
-| Memory some | 0.4 | % | — |   | — | — |
-| Memory full | 0.1 | % | — |   | — | — |
-| I/O some | 0.8 | % | — |   | — | — |
-| I/O full | 0.2 | % | — |   | — | — |
+| CPU some | 1.2 | % | - |   | - | - |
+| Memory some | 0.4 | % | - |   | - | - |
+| Memory full | 0.1 | % | - |   | - | - |
+| I/O some | 0.8 | % | - |   | - | - |
+| I/O full | 0.2 | % | - |   | - | - |
 
-2. **Line chart** — "Pressure stall information" · span 12
+2. **Line chart**: "Pressure stall information" · span 12
 - Info tooltip: "Share of time tasks waited for CPU, memory or disk. The most reliable sign of a slow system."
 - Source chip (Expert): `/proc/pressure/{cpu,memory,io}`
 - Height 240px · Y axis 0 to auto · unit "%"
 - Series: CPU (slot 1, gen[51, 1.4, 1, 1.5, 0, 40, 1.2]); Memory (slot 2, gen[52, 0.6, 0.5, 1.2, 0, 40, 0.4]); I/O (slot 3, gen[53, 0.9, 0.6, 1, 0, 40, 0.8])
 - X axis: time (current range)
 
-3. **Key-value list** — "Thresholds" · span 12
+3. **Key-value list**: "Thresholds" · span 12
 
 | Key | Value |
 | --- | --- |
 | Healthy | below 5% (avg10) |
-| Noticeable slowdown | 5–20% |
+| Noticeable slowdown | 5-20% |
 | Severe | above 20% |
 | Peak in range | {warn:Memory 23.4% · Mon 16:12} |
 
@@ -1164,15 +1164,15 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 - Group: Monitoring · Icon: `logs` · Status badge: {warn:Warning} (rule in section 3)
 - Sub-pages: Journal, Errors, Crashes, Kernel, Boots
 
-#### 12.3.1 Logs › Journal — `logs/journal`
+#### 12.3.1 Logs › Journal: `logs/journal`
 
-1. **Bar chart** — "Log volume" · span 12
+1. **Bar chart**: "Log volume" · span 12
 - Subtitle: "events per hour, last 24 h"
 - Source chip (Expert): `journalctl --since -24h`
 - Height 150px · Y max auto · highlighted (warn + value label): index 8
 - Bars (label: value · tooltip label): 00: 14 · "00:00"; 01: 9 · "01:00"; 02: 41 · "02:00"; 03: 22 · "03:00"; 04: 6 · "04:00"; 05: 4 · "05:00"; 06: 5 · "06:00"; 07: 6 · "07:00"; 08: 88 · "08:00"; 09: 64 · "09:00"; 10: 31 · "10:00"; 11: 18 · "11:00"; 12: 22 · "12:00"; 13: 19 · "13:00"; 14: 16 · "14:00"; 15: 34 · "15:00"; 16: 21 · "16:00"; 17: 14 · "17:00"; 18: 26 · "18:00"; 19: 19 · "19:00"; 20: 31 · "20:00"; 21: 46 · "21:00"; 22: 12 · "22:00"; 23: 8 · "23:00"
 
-2. **Data table** — "Journal entries" · span 12
+2. **Data table**: "Journal entries" · span 12
 - Search: "Filter messages"
 - Filter chips on column 2: All / error / warning / info
 - Page size 12
@@ -1201,7 +1201,7 @@ Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok
 | `Mon 09:44:09` | {off:info} | `kernel` | `usb 3-2: USB disconnect, device number 3` |
 | `Sun 03:10:00` | {off:notice} | `systemd` | `e2scrub_all.timer: skipped, system suspended` |
 
-#### 12.3.2 Logs › Errors — `logs/errors`
+#### 12.3.2 Logs › Errors: `logs/errors`
 
 Tab count pill: 37.
 
@@ -1209,12 +1209,12 @@ Tab count pill: 37.
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Errors | 37 |  | {warn:Warning} | last 7 days | — | — |
-| Unique messages | 6 |  | — |   | — | — |
-| Needs attention | 2 |  | {crit:Critical} |   | — | — |
-| Known harmless | 29 |  | — | ACPI, gnome-shell | — | — |
+| Errors | 37 |  | {warn:Warning} | last 7 days | - | - |
+| Unique messages | 6 |  | - |   | - | - |
+| Needs attention | 2 |  | {crit:Critical} |   | - | - |
+| Known harmless | 29 |  | - | ACPI, gnome-shell | - | - |
 
-2. **Data table** — "Grouped errors" · span 12
+2. **Data table**: "Grouped errors" · span 12
 
 | Message | Unit | Count [n] | Last seen | Classification | Row action |
 | --- | --- | --- | --- | --- | --- |
@@ -1225,9 +1225,9 @@ Tab count pill: 37.
 | **USB disconnect** · usb 3-2 | `kernel` | 2 | Mon 09:44 | {info:Review} |  |
 | **Failed to start Network Time Synchronization** · Retried successfully | `systemd` | 1 | Sat 08:12 | {off:Harmless} |  |
 
-3. **Heatmap (day × hour)** — "Errors by day and hour" · span 12
+3. **Heatmap (day × hour)**: "Errors by day and hour" · span 12
 - Source chip (Expert): `journalctl -p err`
-- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00–23 · unit "errors"
+- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00-23 · unit "errors"
 - Values (row by row, 24 per row):
 
 ```
@@ -1240,17 +1240,17 @@ Tue  1 1 0 0 1 0 0 0 1 0 0 1 0 1 0 0 0 0 1 1 0 1 0 0
 Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 ```
 
-#### 12.3.3 Logs › Crashes — `logs/crashes`
+#### 12.3.3 Logs › Crashes: `logs/crashes`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Crashes | 16 |  | — | last 7 days | — | — |
-| Applications | 3 |  | — |   | — | — |
-| Core dumps stored | 420 | MB | — |   | — | — |
+| Crashes | 16 |  | - | last 7 days | - | - |
+| Applications | 3 |  | - |   | - | - |
+| Core dumps stored | 420 | MB | - |   | - | - |
 
-2. **Data table** — "Crash reports" · span 12
+2. **Data table**: "Crash reports" · span 12
 - Source chip (Expert): `coredumpctl list · /var/crash`
 
 | Time | Application | Signal | Source | Count [n] | Status | Row action |
@@ -1259,9 +1259,9 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Mon 16:12 | `chrome (renderer)` | SIGKILL (OOM) | kernel | 1 | {warn:Resolved} |  |
 | Mon 11:47 | `gnome-calculator` | SIGABRT | apport | 1 | {off:Reported} |  |
 
-#### 12.3.4 Logs › Kernel — `logs/kernel`
+#### 12.3.4 Logs › Kernel: `logs/kernel`
 
-1. **Data table** — "Kernel messages" · span 12
+1. **Data table**: "Kernel messages" · span 12
 - Source chip (Expert): `journalctl -k`
 - Search: "Filter kernel log"
 
@@ -1275,20 +1275,20 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Mon 10:02 | {off:info} | usb | `usb 3-2: new SuperSpeed USB device number 4` |
 | Mon 09:44 | {warn:warn} | usb | `usb 3-2: USB disconnect, device number 3` |
 
-#### 12.3.5 Logs › Boots — `logs/boots`
+#### 12.3.5 Logs › Boots: `logs/boots`
 
-1. **Bar chart** — "Boot duration" · span 6
+1. **Bar chart**: "Boot duration" · span 6
 - Subtitle: "last 10 boots"
 - Source chip (Expert): `systemd-analyze`
 - Height 200px · Y max auto · unit "s" · highlighted (warn + value label): index 9
 - Bars (label: value): 8 Oct: 29; 10 Oct: 28; 12 Oct: 31; 13 Oct: 27; 14 Oct: 28; 15 Oct: 30; 16 Oct: 29; 17 Oct: 28; 19 Oct: 28; Today: 41.2
 
-2. **Data table** — "Boot history" · span 6
+2. **Data table**: "Boot history" · span 6
 - Source chip (Expert): `journalctl --list-boots`
 
 | Started | Ended | Duration | Shutdown | Kernel |
 | --- | --- | --- | --- | --- |
-| Today 08:58 | — | 12 h 36 m | {info:Running} | `6.8.0-47` |
+| Today 08:58 | - | 12 h 36 m | {info:Running} | `6.8.0-47` |
 | Mon 08:41 | Today 02:14 | 1 d 17 h | {crit:Unclean} | `6.8.0-45` |
 | Sat 10:12 | Mon 08:40 | 1 d 22 h | {ok:Clean} | `6.8.0-45` |
 | Thu 09:01 | Sat 10:11 | 2 d 1 h | {ok:Clean} | `6.8.0-45` |
@@ -1298,19 +1298,19 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 - Group: Monitoring · Icon: `hist` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: Timeline, Package History, Config Changes, Device Events, SysDoc Actions
 
-#### 12.4.1 Activity › Timeline — `activity/timeline`
+#### 12.4.1 Activity › Timeline: `activity/timeline`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Changes | 18 |  | — | last 7 days | — | — |
-| Package changes | 9 |  | — |   | — | — |
-| Configuration changes | 3 |  | — |   | — | — |
-| Sign-ins | 14 |  | — |   | — | — |
-| SysDoc actions | 1 |  | — |   | — | — |
+| Changes | 18 |  | - | last 7 days | - | - |
+| Package changes | 9 |  | - |   | - | - |
+| Configuration changes | 3 |  | - |   | - | - |
+| Sign-ins | 14 |  | - |   | - | - |
+| SysDoc actions | 1 |  | - |   | - | - |
 
-2. **Activity timeline** — "Change timeline" · span 8
+2. **Activity timeline**: "Change timeline" · span 8
 
 | Time | Title | Detail | Dot |
 | --- | --- | --- | --- |
@@ -1326,21 +1326,21 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Mon 16:12 | OOM kill: chrome renderer (pid 30412) | Logs · RSS 1.8 GB | warn |
 | Mon 10:02 | USB storage connected: PHOTOS (64 GB) | Devices · usb 3-2 | default |
 
-3. **Donut chart** — "Changes by type" · span 4
+3. **Donut chart**: "Changes by type" · span 4
 - Subtitle: "7 days"
 - Center: "18" / "changes"
 
 | Segment | Value | Color | Display value |
 | --- | --- | --- | --- |
-| Packages | 9 | slot 1 | — |
-| Configuration | 3 | slot 2 | — |
-| Services | 2 | slot 3 | — |
-| Devices | 3 | slot 4 | — |
-| Jobs | 1 | slot 5 | — |
+| Packages | 9 | slot 1 | - |
+| Configuration | 3 | slot 2 | - |
+| Services | 2 | slot 3 | - |
+| Devices | 3 | slot 4 | - |
+| Jobs | 1 | slot 5 | - |
 
-#### 12.4.2 Activity › Package History — `activity/packages`
+#### 12.4.2 Activity › Package History: `activity/packages`
 
-1. **Data table** — "Package history" · span 12
+1. **Data table**: "Package history" · span 12
 - Source chip (Expert): `/var/log/apt/history.log · snap changes`
 - Search: "Search packages"
 - Filter chips on column 2: All / Install / Upgrade / Remove
@@ -1352,14 +1352,14 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Today 10:40 | {info:Upgrade} | sudo | `1.9.15p5-3ubuntu5` | `1.9.15p5-3ubuntu5.1` | unattended-upgrades |
 | Tue 18:40 | {info:Upgrade} | linux-image-generic | `6.8.0-45` | `6.8.0-47` | Software Updater |
 | Tue 18:41 | {info:Upgrade} | linux-firmware | `…0ubuntu2.4` | `…0ubuntu2.5` | Software Updater |
-| Tue 15:22 | {ok:Install} | code (snap) | — | `1.94.2` | snap |
-| Sat 19:03 | {ok:Install} | com.spotify.Client | — | `1.2.45` | flatpak |
-| Fri 12:20 | {crit:Remove} | thunderbird (snap) | `128.3.1` | — | snap |
-| Thu 09:30 | {ok:Install} | httpie | — | `3.2.2` | pip |
+| Tue 15:22 | {ok:Install} | code (snap) | - | `1.94.2` | snap |
+| Sat 19:03 | {ok:Install} | com.spotify.Client | - | `1.2.45` | flatpak |
+| Fri 12:20 | {crit:Remove} | thunderbird (snap) | `128.3.1` | - | snap |
+| Thu 09:30 | {ok:Install} | httpie | - | `3.2.2` | pip |
 
-#### 12.4.3 Activity › Config Changes — `activity/config`
+#### 12.4.3 Activity › Config Changes: `activity/config`
 
-1. **Data table** — "Configuration changes" · span 12
+1. **Data table**: "Configuration changes" · span 12
 - Source chip (Expert): `inotify watcher · /etc`
 
 | Time | File | Change | Changed by | (action) |
@@ -1368,9 +1368,9 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Tue 15:20 | `/etc/apt/sources.list.d/vscode.list` | Added | apt | [View diff](act:toast:+ deb [arch=amd64] https://packages.microsoft.com/repos/code stable main) |
 | Mon 21:30 | `/var/spool/cron/crontabs/riya` | ✓ | riya | [View diff](act:toast:+ 0 21 * * * ~/bin/backup-photos.sh) |
 
-#### 12.4.4 Activity › Device Events — `activity/devices`
+#### 12.4.4 Activity › Device Events: `activity/devices`
 
-1. **Data table** — "Device events" · span 12
+1. **Data table**: "Device events" · span 12
 - Source chip (Expert): `udev · journal`
 
 | Time | Event | Device | Bus | ID |
@@ -1381,9 +1381,9 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Mon 09:44 | {warn:Disconnected} | USB storage PHOTOS (64 GB) | USB 3.2 | `0781:5583` |
 | Sat 18:30 | {ok:Connected} | USB mouse | USB 2.0 | `046d:c077` |
 
-#### 12.4.5 Activity › SysDoc Actions — `activity/sysdoc`
+#### 12.4.5 Activity › SysDoc Actions: `activity/sysdoc`
 
-1. **Data table** — "Remediation log" · span 12
+1. **Data table**: "Remediation log" · span 12
 - Info tooltip: "Every change SysDoc made, with undo where possible."
 
 | Time | Action | Target | Result | Undo |
@@ -1395,9 +1395,9 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 - Group: System · Icon: `sys` · Status badge: {info:Info} (rule in section 3)
 - Sub-pages: Overview, Boot, Updates, Kernel, Time & Locale
 
-#### 12.5.1 System › Overview — `system/overview`
+#### 12.5.1 System › Overview: `system/overview`
 
-1. **Key-value list** — "Operating system" · span 6
+1. **Key-value list**: "Operating system" · span 6
 - Source chip (Expert): `/etc/os-release · uname -a`
 
 | Key | Value |
@@ -1411,7 +1411,7 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Virtualization | None (bare metal) |
 | Machine ID | `4f1c9d…a72e` |
 
-2. **Key-value list** — "Status" · span 6
+2. **Key-value list**: "Status" · span 6
 
 | Key | Value |
 | --- | --- |
@@ -1424,25 +1424,25 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Ubuntu Pro | {off:Not attached} |
 | Livepatch | {off:Disabled} |
 
-3. **Lifecycle bar (section 5.20)** — "Release lifecycle" · span 12
+3. **Lifecycle bar (section 5.20)**: "Release lifecycle" · span 12
 - Subtitle: "Ubuntu 24.04 LTS"
 - Info tooltip: "How long this Ubuntu version gets security updates."
 
 Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label "Standard support ends · Apr 2029".
 
-#### 12.5.2 System › Boot — `system/boot`
+#### 12.5.2 System › Boot: `system/boot`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Last boot | 41.2 | s | {warn:Warning} | Average 28.6 s | — | — |
-| Firmware | 8.1 | s | — |   | — | — |
-| Loader | 2.4 | s | — |   | — | — |
-| Kernel | 3.9 | s | — |   | — | — |
-| Userspace | 26.8 | s | — |   | — | — |
+| Last boot | 41.2 | s | {warn:Warning} | Average 28.6 s | - | - |
+| Firmware | 8.1 | s | - |   | - | - |
+| Loader | 2.4 | s | - |   | - | - |
+| Kernel | 3.9 | s | - |   | - | - |
+| Userspace | 26.8 | s | - |   | - | - |
 
-2. **Horizontal bar list** — "Slowest units" · span 6
+2. **Horizontal bar list**: "Slowest units" · span 6
 - Source chip (Expert): `systemd-analyze blame`
 
 | Label | Value | Shown as |
@@ -1455,12 +1455,12 @@ Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label
 | `apt-daily.service` | 1.7 | 1.7 s |
 | `systemd-udev-settle.service` | 1.2 | 1.2 s |
 
-3. **Bar chart** — "Boot time history" · span 6
+3. **Bar chart**: "Boot time history" · span 6
 - Subtitle: "last 10 boots"
 - Height 220px · Y max auto · unit "s" · highlighted (warn + value label): index 9
 - Bars (label: value): 8 Oct: 29; 10 Oct: 28; 12 Oct: 31; 13 Oct: 27; 14 Oct: 28; 15 Oct: 30; 16 Oct: 29; 17 Oct: 28; 19 Oct: 28; Today: 41.2
 
-#### 12.5.3 System › Updates — `system/updates`
+#### 12.5.3 System › Updates: `system/updates`
 
 Header actions: [**Install security updates**](act:fix:sec) (hidden once done), then Refresh and Export.
 
@@ -1470,13 +1470,13 @@ Tab count pill: 12.
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending | 12 |  | {warn:Warning} |   | — | — |
-| Security | 4 |  | {warn:Warning} |   | — | — |
-| Last check | 2 | h ago | — |   | — | — |
-| Automatic security updates | On |  | — |   | — | — |
-| Reboot required | Yes |  | {info:Info} |   | — | — |
+| Pending | 12 |  | {warn:Warning} |   | - | - |
+| Security | 4 |  | {warn:Warning} |   | - | - |
+| Last check | 2 | h ago | - |   | - | - |
+| Automatic security updates | On |  | - |   | - | - |
+| Reboot required | Yes |  | {info:Info} |   | - | - |
 
-2. **Data table** — "Pending updates" · span 12
+2. **Data table**: "Pending updates" · span 12
 - Source chip (Expert): `apt list --upgradable`
 - Row selection · bulk button [Install selected](act:fix:sec)
 - Total count shown: 12
@@ -1493,7 +1493,7 @@ Tab count pill: 12.
 | docker-ce | `5:27.3.1` | `5:27.3.2` | {off:Regular} | 25 MB |
 | code (snap) | `1.94.2` | `1.95.0` | {off:Regular} | 106 MB |
 
-3. **Data table** — "Update history" · span 12
+3. **Data table**: "Update history" · span 12
 
 | Date | Packages [n] | Source | Result |
 | --- | --- | --- | --- |
@@ -1501,9 +1501,9 @@ Tab count pill: 12.
 | Tue 18:40 | 6 | Software Updater | {ok:Success} |
 | Thu 06:24 | 2 | unattended-upgrades | {ok:Success} |
 
-#### 12.5.4 System › Kernel — `system/kernel`
+#### 12.5.4 System › Kernel: `system/kernel`
 
-1. **Key-value list** — "Running kernel" · span 5
+1. **Key-value list**: "Running kernel" · span 5
 - Source chip (Expert): `uname -r · /proc/cmdline`
 
 | Key | Value |
@@ -1513,7 +1513,7 @@ Tab count pill: 12.
 | Modules loaded | 187 |
 | Command line | `BOOT_IMAGE=/vmlinuz-6.8.0-47-generic root=UUID=… ro quiet splash` |
 
-2. **Data table** — "Installed kernels" · span 7
+2. **Data table**: "Installed kernels" · span 7
 
 | Version | Status | Size [n] | Installed | (action) |
 | --- | --- | --- | --- | --- |
@@ -1521,7 +1521,7 @@ Tab count pill: 12.
 | `6.8.0-45-generic` | {info:Fallback} | 310 MB | 12 Sep |   |
 | `6.8.0-41-generic` | {off:Old} | 320 MB | 14 Aug | [Remove](act:toast:Old kernel queued for removal.) |
 
-3. **Data table** — "Kernel modules" · span 12
+3. **Data table**: "Kernel modules" · span 12
 - Source chip (Expert): `lsmod`
 - Search: "Search modules"
 - Page size 8
@@ -1540,9 +1540,9 @@ Tab count pill: 12.
 | `overlay` | 212 KB | 2 |
 | `xt_conntrack` | 12 KB | 2 |
 
-#### 12.5.5 System › Time & Locale — `system/time`
+#### 12.5.5 System › Time & Locale: `system/time`
 
-1. **Key-value list** — "Date and time" · span 6
+1. **Key-value list**: "Date and time" · span 6
 - Source chip (Expert): `timedatectl`
 
 | Key | Value |
@@ -1553,7 +1553,7 @@ Tab count pill: 12.
 | Time server | ntp.ubuntu.com |
 | RTC in local time | No |
 
-2. **Key-value list** — "Locale" · span 6
+2. **Key-value list**: "Locale" · span 6
 - Source chip (Expert): `localectl`
 
 | Key | Value |
@@ -1568,9 +1568,9 @@ Tab count pill: 12.
 - Group: System · Icon: `chip` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: Summary, Processor, Memory, Storage Devices, Graphics, Sensors, Peripherals, Firmware
 
-#### 12.6.1 Hardware › Summary — `hardware/summary`
+#### 12.6.1 Hardware › Summary: `hardware/summary`
 
-1. **Key-value list** — "Machine" · span 6
+1. **Key-value list**: "Machine" · span 6
 - Source chip (Expert): `/sys/class/dmi/id`
 
 | Key | Value |
@@ -1582,7 +1582,7 @@ Tab count pill: 12.
 | BIOS | JHCN52WW · 11 Mar 2024 |
 | Secure Boot | {ok:Enabled} |
 
-2. **Status list** — "Components" · span 6
+2. **Status list**: "Components" · span 6
 
 | Icon | Label | Metric | Badge | Opens |
 | --- | --- | --- | --- | --- |
@@ -1595,9 +1595,9 @@ Tab count pill: 12.
 | `usb` | Peripherals | 11 devices · 0 missing drivers | {crit:1 unstable} | `hardware/peripherals` |
 | `bolt` | Firmware | 1 update available | {info:Update} | `hardware/firmware` |
 
-#### 12.6.2 Hardware › Processor — `hardware/processor`
+#### 12.6.2 Hardware › Processor: `hardware/processor`
 
-1. **Gauge group** — "Live" · span 6
+1. **Gauge group**: "Live" · span 6
 
 | Caption | Value | Max | Center text | Subtitle |
 | --- | --- | --- | --- | --- |
@@ -1605,7 +1605,7 @@ Tab count pill: 12.
 | Temperature | 54 | 100 | 54 °C | package |
 | Frequency | 1.3 | 4.4 | 1.3 GHz | of 4.4 GHz |
 
-2. **Key-value list** — "Specifications" · span 6
+2. **Key-value list**: "Specifications" · span 6
 - Source chip (Expert): `lscpu`
 
 | Key | Value |
@@ -1618,7 +1618,7 @@ Tab count pill: 12.
 | Microcode | `0x4123` |
 | Features | ‹VT-x›‹AES-NI›‹AVX2›‹SHA› |
 
-3. **Data table** — "Cores" · span 12
+3. **Data table**: "Cores" · span 12
 - Source chip (Expert): `/sys/devices/system/cpu`
 
 | Core | Type | Frequency [n] | Utilization [n] | Temperature [n] |
@@ -1634,9 +1634,9 @@ Tab count pill: 12.
 | E6 | Efficient | 1100 MHz | [meter 8%] | 53 °C |
 | E7 | Efficient | 1010 MHz | [meter 5%] | 53 °C |
 
-#### 12.6.3 Hardware › Memory — `hardware/memory`
+#### 12.6.3 Hardware › Memory: `hardware/memory`
 
-1. **Key-value list** — "Modules" · span 6
+1. **Key-value list**: "Modules" · span 6
 - Source chip (Expert): `dmidecode -t memory`
 
 | Key | Value |
@@ -1647,7 +1647,7 @@ Tab count pill: 12.
 | Slots | 0 free · not upgradeable |
 | ECC | No |
 
-2. **Checklist** — "Health" · span 6
+2. **Checklist**: "Health" · span 6
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -1656,9 +1656,9 @@ Tab count pill: 12.
 | `na` | Error correction (ECC) reporting | Not available on this memory type |   |
 | `na` | Full memory test | Needs a reboot into memtest86+ | [How to run](act:toast:Restart → hold Shift → Memory test (memtest86+).) |
 
-#### 12.6.4 Hardware › Storage Devices — `hardware/storage`
+#### 12.6.4 Hardware › Storage Devices: `hardware/storage`
 
-1. **Data table** — "Disks" · span 12
+1. **Data table**: "Disks" · span 12
 - Source chip (Expert): `lsblk · smartctl`
 
 | Device | Model | Type | Size [n] | Interface | SMART | Life left [n] | Temperature [n] |
@@ -1669,22 +1669,22 @@ Tab count pill: 12.
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Percentage used | 12 | % | — | of rated endurance | — | — |
-| Data written | 18.4 | TB | — |   | — | — |
-| Power-on hours | 6,120 | h | — |   | — | — |
-| Unsafe shutdowns | 41 |  | — | +1 today | — | — |
-| Media errors | 0 |  | — |   | — | — |
-| Spare capacity | 100 | % | — |   | — | — |
+| Percentage used | 12 | % | - | of rated endurance | - | - |
+| Data written | 18.4 | TB | - |   | - | - |
+| Power-on hours | 6,120 | h | - |   | - | - |
+| Unsafe shutdowns | 41 |  | - | +1 today | - | - |
+| Media errors | 0 |  | - |   | - | - |
+| Spare capacity | 100 | % | - |   | - | - |
 
-3. **Line chart** — "Drive temperature" · span 12
+3. **Line chart**: "Drive temperature" · span 12
 - Source chip (Expert): `nvme smart-log`
 - Height 180px · Y axis 20 to 70 · unit "°C"
 - Series: NVMe (slot 1, gen[61, 37, 3, 2, 30, 70, 38])
 - X axis: time (current range)
 
-#### 12.6.5 Hardware › Graphics — `hardware/graphics`
+#### 12.6.5 Hardware › Graphics: `hardware/graphics`
 
-1. **Key-value list** — "Adapter" · span 6
+1. **Key-value list**: "Adapter" · span 6
 - Source chip (Expert): `lspci -k · glxinfo -B`
 
 | Key | Value |
@@ -1695,7 +1695,7 @@ Tab count pill: 12.
 | Vulkan | 1.3 |
 | Video decode | VA-API (iHD) |
 
-2. **Checklist** — "Driver checks" · span 6
+2. **Checklist**: "Driver checks" · span 6
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -1703,9 +1703,9 @@ Tab count pill: 12.
 | `pass` | Hardware acceleration active |   |   |
 | `na` | GPU temperature | Not exposed by i915 |   |
 
-#### 12.6.6 Hardware › Sensors — `hardware/sensors`
+#### 12.6.6 Hardware › Sensors: `hardware/sensors`
 
-1. **Gauge group** — "Temperatures" · span 12
+1. **Gauge group**: "Temperatures" · span 12
 - Source chip (Expert): `sensors · /sys/class/hwmon`
 
 | Caption | Value | Max | Center text | Subtitle |
@@ -1717,28 +1717,28 @@ Tab count pill: 12.
 | iwlwifi | 42 | 100 | 42 °C | Wi-Fi |
 | acpitz | 50 | 100 | 50 °C | ACPI zone |
 
-2. **Line chart** — "Temperature history" · span 12
+2. **Line chart**: "Temperature history" · span 12
 - Source chip (Expert): `sensors`
 - Height 220px · Y axis 20 to 100 · unit "°C"
 - Series: CPU (slot 1, gen[21, 52, 6, 3, 35, 92, 54]); NVMe (slot 2, gen[61, 37, 3, 2, 30, 70, 38]); Battery (slot 3, gen[71, 31, 2, 1, 25, 45, 31])
 - X axis: time (current range)
 - Threshold line at 95: "Throttle 95 °C"
 
-3. **Alert banner** — "Fan speed not reported" · span 12
+3. **Alert banner**: "Fan speed not reported" · span 12
 - State: `info` · Title: "Fan speed not reported" · Text: "This laptop’s embedded controller does not expose fan RPM to Linux."
 
-#### 12.6.7 Hardware › Peripherals — `hardware/peripherals`
+#### 12.6.7 Hardware › Peripherals: `hardware/peripherals`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| USB devices | 3 |  | — |   | — | — |
-| PCI devices | 18 |  | — |   | — | — |
-| Bluetooth | 2 |  | — | 1 connected | — | — |
-| Missing drivers | 0 |  | — |   | — | — |
+| USB devices | 3 |  | - |   | - | - |
+| PCI devices | 18 |  | - |   | - | - |
+| Bluetooth | 2 |  | - | 1 connected | - | - |
+| Missing drivers | 0 |  | - |   | - | - |
 
-2. **Data table** — "Devices" · span 12
+2. **Data table**: "Devices" · span 12
 - Source chip (Expert): `lsusb · lspci -k · bluetoothctl`
 - Search: "Search devices"
 - Filter chips on column 2: All / USB / PCI / Bluetooth / Input
@@ -1752,14 +1752,14 @@ Tab count pill: 12.
 | NVMe controller | PCI | Samsung | `nvme` | {ok:Active} |  |
 | Smart Sound audio | PCI | Intel | `snd_hda_intel` | {ok:Active} |  |
 | Thunderbolt 4 controller | PCI | Intel | `thunderbolt` | {ok:Active} |  |
-| Wireless earbuds | Bluetooth | — | `bluez` | {warn:Reconnecting} |  |
-| Phone | Bluetooth | — | `bluez` | {off:Paired} |  |
+| Wireless earbuds | Bluetooth | - | `bluez` | {warn:Reconnecting} |  |
+| Phone | Bluetooth | - | `bluez` | {off:Paired} |  |
 | Touchpad | Input | ELAN | `i2c_hid` | {ok:Active} |  |
 | Keyboard | Input | AT Translated | `atkbd` | {ok:Active} |  |
 
-#### 12.6.8 Hardware › Firmware — `hardware/firmware`
+#### 12.6.8 Hardware › Firmware: `hardware/firmware`
 
-1. **Key-value list** — "Platform firmware" · span 5
+1. **Key-value list**: "Platform firmware" · span 5
 - Source chip (Expert): `/sys/class/dmi/id · mokutil`
 
 | Key | Value |
@@ -1771,51 +1771,51 @@ Tab count pill: 12.
 | Secure Boot | {ok:Enabled} |
 | TPM | 2.0 · present |
 
-2. **Data table** — "Firmware updates" · span 7
+2. **Data table**: "Firmware updates" · span 7
 - Source chip (Expert): `fwupdmgr get-updates`
 
 | Device | Current | Available | Vendor | (action) |
 | --- | --- | --- | --- | --- |
 | Touchpad | `1.4` | `1.6` | Synaptics | [**Update**](act:toast:Firmware update scheduled for next reboot.) |
-| System firmware | `JHCN52WW` | — | Lenovo | Up to date |
-| NVMe SSD | `3L1QFXV7` | — | Samsung | Not on LVFS |
+| System firmware | `JHCN52WW` | - | Lenovo | Up to date |
+| NVMe SSD | `3L1QFXV7` | - | Samsung | Not on LVFS |
 
 ### 12.7 Power (`power`)
 
 - Group: System · Icon: `bat` · Status badge: {warn:Warning} (rule in section 3)
 - Sub-pages: Battery, Power Profile, Sleep
 
-#### 12.7.1 Power › Battery — `power/battery`
+#### 12.7.1 Power › Battery: `power/battery`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Charge | 64 | % | — | Discharging | Usage bar 64% | — |
-| Health | 71 | % | {warn:Warning} | of design capacity | — | — |
-| Time remaining | 3 h 10 m |  | — | Estimate | — | — |
-| Power draw | 8.4 | W | — |   | Sparkline slot 2, gen[81, 8, 3, 2, 3, 25, 8.4] | — |
-| Capacity | 40.5 | Wh | — | Design 57 Wh | — | — |
-| Cycle count | N/A |  | — | Not reported | — | — |
+| Charge | 64 | % | - | Discharging | Usage bar 64% | - |
+| Health | 71 | % | {warn:Warning} | of design capacity | - | - |
+| Time remaining | 3 h 10 m |  | - | Estimate | - | - |
+| Power draw | 8.4 | W | - |   | Sparkline slot 2, gen[81, 8, 3, 2, 3, 25, 8.4] | - |
+| Capacity | 40.5 | Wh | - | Design 57 Wh | - | - |
+| Cycle count | N/A |  | - | Not reported | - | - |
 
-2. **Line chart** — "Charge level" · span 8
+2. **Line chart**: "Charge level" · span 8
 - Source chip (Expert): `upower history`
 - Height 220px · Y axis 0 to 100 · unit "%"
 - Series: Charge (slot 1, gen[91, 60, 30, 8, 1, 100, 64])
 - X axis: time (current range)
 - Threshold line at 10: "Low 10%"
 
-3. **Gauge** — "Battery health" · span 4
+3. **Gauge**: "Battery health" · span 4
 - Info tooltip: "How much charge the battery holds compared with when it was new."
 - Value 71 of 100 · arc `warn` · center "71%" · subtitle "40.5 of 57 Wh" · caption below: "Replace below 60%"
 
-4. **Line chart** — "Health trend" · span 6
+4. **Line chart**: "Health trend" · span 6
 - Subtitle: "12 months"
 - Height 180px · Y axis 50 to 100 · unit "%"
 - Series: Health (slot 1, data [83,82,81,80,79,78,77,76,75,74,72,71])
 - X labels: Nov, Dec, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct
 
-5. **Data table** — "Top power consumers" · span 6
+5. **Data table**: "Top power consumers" · span 6
 - Subtitle: "estimate"
 - Source chip (Expert): `powertop`
 - Empty text: "Requires Full access"
@@ -1828,9 +1828,9 @@ Tab count pill: 12.
 | code | 0.8 W | [meter 10%] |
 | Wi-Fi | 0.7 W | [meter 8%] |
 
-#### 12.7.2 Power › Power Profile — `power/profile`
+#### 12.7.2 Power › Power Profile: `power/profile`
 
-1. **Radio cards (section 5.21)** — "Power mode" · span 6
+1. **Radio cards (section 5.21)**: "Power mode" · span 6
 - Source chip (Expert): `powerprofilesctl`
 
 | Option | Description | Checked |
@@ -1841,7 +1841,7 @@ Tab count pill: 12.
 
 Radio group name: `pp`.
 
-2. **Key-value list** — "Battery policies" · span 6
+2. **Key-value list**: "Battery policies" · span 6
 - Source chip (Expert): `/etc/UPower/UPower.conf`
 
 | Key | Value |
@@ -1852,18 +1852,18 @@ Radio group name: `pp`.
 | Screen blank | 5 min |
 | Automatic suspend | 20 min on battery |
 
-#### 12.7.3 Power › Sleep — `power/sleep`
+#### 12.7.3 Power › Sleep: `power/sleep`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Suspends | 9 |  | — | last 7 days | — | — |
-| Failures | 0 |  | — |   | — | — |
-| Avg resume time | 1.8 | s | — |   | — | — |
-| Time asleep | 41 | h | — |   | — | — |
+| Suspends | 9 |  | - | last 7 days | - | - |
+| Failures | 0 |  | - |   | - | - |
+| Avg resume time | 1.8 | s | - |   | - | - |
+| Time asleep | 41 | h | - |   | - | - |
 
-2. **Data table** — "Sleep events" · span 12
+2. **Data table**: "Sleep events" · span 12
 - Source chip (Expert): `journalctl -u systemd-suspend`
 
 | Time | Event | Duration | Wake source | Result |
@@ -1878,9 +1878,9 @@ Radio group name: `pp`.
 - Group: System · Icon: `mon` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: Displays, Audio
 
-#### 12.8.1 Display & Audio › Displays — `display/displays`
+#### 12.8.1 Display & Audio › Displays: `display/displays`
 
-1. **Key-value list** — "Session" · span 4
+1. **Key-value list**: "Session" · span 4
 - Source chip (Expert): `$XDG_SESSION_TYPE`
 
 | Key | Value |
@@ -1889,59 +1889,59 @@ Radio group name: `pp`.
 | Compositor | Mutter (GNOME 46) |
 | Fractional scaling | Off |
 
-2. **Data table** — "Connected displays" · span 8
+2. **Data table**: "Connected displays" · span 8
 
 | Output | Resolution | Refresh | Scale | Primary | Status |
 | --- | --- | --- | --- | --- | --- |
 | `eDP-1` | 1920 × 1080 | 60 Hz | 100% | ✓ | {ok:Connected} |
-| `HDMI-A-1` | — | — | — | — | {off:Disconnected} |
+| `HDMI-A-1` | - | - | - | - | {off:Disconnected} |
 
-#### 12.8.2 Display & Audio › Audio — `display/audio`
+#### 12.8.2 Display & Audio › Audio: `display/audio`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Output | Speakers |  | — | Volume 45% | — | — |
-| Input | Internal mic |  | — | Not muted | — | — |
-| Sound server | PipeWire |  | — | 1.0.5 | — | — |
-| Active streams | 1 |  | — | chrome | — | — |
+| Output | Speakers |  | - | Volume 45% | - | - |
+| Input | Internal mic |  | - | Not muted | - | - |
+| Sound server | PipeWire |  | - | 1.0.5 | - | - |
+| Active streams | 1 |  | - | chrome | - | - |
 
-2. **Data table** — "Output devices" · span 6
+2. **Data table**: "Output devices" · span 6
 - Source chip (Expert): `pactl list sinks`
 
 | Device | Volume | Default |
 | --- | --- | --- |
 | Laptop speakers | [meter:ok 45%] | ✓ |
-| Wireless earbuds (A2DP) | [meter:ok 60%] | — |
-| HDMI output | [meter:ok 100%] | — |
+| Wireless earbuds (A2DP) | [meter:ok 60%] | - |
+| HDMI output | [meter:ok 100%] | - |
 
-3. **Data table** — "Input devices" · span 6
+3. **Data table**: "Input devices" · span 6
 - Source chip (Expert): `pactl list sources`
 
 | Device | Level | Default |
 | --- | --- | --- |
 | Internal microphone | [meter:ok 70%] | ✓ |
-| Earbuds microphone (HFP) | [meter:ok 50%] | — |
+| Earbuds microphone (HFP) | [meter:ok 50%] | - |
 
 ### 12.9 Processes (`processes`)
 
 - Group: Workloads · Icon: `layers` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: All Processes, Top Consumers
 
-#### 12.9.1 Processes › All Processes — `processes/all`
+#### 12.9.1 Processes › All Processes: `processes/all`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Total | 312 |  | — |   | — | — |
-| Running | 3 |  | — |   | — | — |
-| Sleeping | 309 |  | — |   | — | — |
-| Zombie | 0 |  | — |   | — | — |
-| Threads | 1,204 |  | — |   | — | — |
+| Total | 312 |  | - |   | - | - |
+| Running | 3 |  | - |   | - | - |
+| Sleeping | 309 |  | - |   | - | - |
+| Zombie | 0 |  | - |   | - | - |
+| Threads | 1,204 |  | - |   | - | - |
 
-2. **Data table** — "Processes" · span 12
+2. **Data table**: "Processes" · span 12
 - Source chip (Expert): `ps aux`
 - Search: "Filter by name, PID or user"
 - Filter chips on column 3: All / riya / root
@@ -1975,9 +1975,9 @@ Radio group name: `pp`.
 | top | 6110 | riya | {ok:Running} | 0.3% | 4 MB | 1 | 21:30 |
 | cron | 1036 | root | Sleeping | 0.0% | 3 MB | 1 | 08:58 |
 
-#### 12.9.2 Processes › Top Consumers — `processes/top`
+#### 12.9.2 Processes › Top Consumers: `processes/top`
 
-1. **Horizontal bar list** — "By CPU" · span 6
+1. **Horizontal bar list**: "By CPU" · span 6
 - Subtitle: "now"
 
 | Label | Value | Shown as |
@@ -1991,7 +1991,7 @@ Radio group name: `pp`.
 | telegram-desktop | 0.4 | 0.4% |
 | dropbox | 0.3 | 0.3% |
 
-2. **Horizontal bar list** — "By memory" · span 6
+2. **Horizontal bar list**: "By memory" · span 6
 - Subtitle: "resident"
 
 | Label | Value | Shown as |
@@ -2010,7 +2010,7 @@ Radio group name: `pp`.
 - Group: Workloads · Icon: `cog` · Status badge: {crit:Critical} (rule in section 3)
 - Sub-pages: System Services, User Services, Startup Applications
 
-#### 12.10.1 Services › System Services — `services/system`
+#### 12.10.1 Services › System Services: `services/system`
 
 Tab count pill: 1 (red).
 
@@ -2018,16 +2018,16 @@ Tab count pill: 1 (red).
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Running | 142 |  | — |   | — | — |
-| Failed | 1 |  | {crit:Critical} | bluetooth.service | — | — |
-| Inactive | 38 |  | — |   | — | — |
-| Enabled at boot | 61 |  | — |   | — | — |
-| Restarts today | 14 |  | {warn:Warning} |   | — | — |
+| Running | 142 |  | - |   | - | - |
+| Failed | 1 |  | {crit:Critical} | bluetooth.service | - | - |
+| Inactive | 38 |  | - |   | - | - |
+| Enabled at boot | 61 |  | - |   | - | - |
+| Restarts today | 14 |  | {warn:Warning} |   | - | - |
 
-2. **Alert banner** — "bluetooth.service is in a crash loop" · span 12
+2. **Alert banner**: "bluetooth.service is in a crash loop" · span 12
 - State: `crit` · Title: "bluetooth.service is in a crash loop" · Text: "14 restarts since 09:12 · exit status 11 (SIGSEGV)" · Buttons: [**Inspect**](act:bt)
 
-3. **Data table** — "Units" · span 12
+3. **Data table**: "Units" · span 12
 - Source chip (Expert): `systemctl list-units --type=service --all`
 - Search: "Filter units"
 - Filter chips on column 2: All / active / failed / inactive
@@ -2038,7 +2038,7 @@ Tab count pill: 1 (red).
 
 | Unit | Active | Sub | Enabled | Restarts [n] | Memory [n] | Row action |
 | --- | --- | --- | --- | --- | --- | --- |
-| **bluetooth.service** · Bluetooth service | {crit:failed} | auto-restart | {info:enabled} | 14 | — | `bt` |
+| **bluetooth.service** · Bluetooth service | {crit:failed} | auto-restart | {info:enabled} | 14 | - | `bt` |
 | **NetworkManager.service** · Network Manager | {ok:active} | running | {info:enabled} | 0 | 22 MB |  |
 | **docker.service** · Docker Application Container Engine | {ok:active} | running | {info:enabled} | 0 | 96 MB |  |
 | **containerd.service** · containerd container runtime | {ok:active} | running | {info:enabled} | 0 | 52 MB |  |
@@ -2048,9 +2048,9 @@ Tab count pill: 1 (red).
 | **systemd-resolved.service** · Network Name Resolution | {ok:active} | running | {info:enabled} | 0 | 8 MB |  |
 | **systemd-timesyncd.service** · Network Time Synchronization | {ok:active} | running | {info:enabled} | 0 | 4 MB |  |
 | **cups.service** · CUPS Scheduler | {ok:active} | running | {info:enabled} | 0 | 7 MB |  |
-| **cups-browsed.service** · Make remote CUPS printers available locally | {off:inactive} | dead | disabled | 0 | — |  |
-| **ufw.service** · Uncomplicated firewall | {ok:active} | exited | {info:enabled} | 0 | — |  |
-| **apparmor.service** · Load AppArmor profiles | {ok:active} | exited | {info:enabled} | 0 | — |  |
+| **cups-browsed.service** · Make remote CUPS printers available locally | {off:inactive} | dead | disabled | 0 | - |  |
+| **ufw.service** · Uncomplicated firewall | {ok:active} | exited | {info:enabled} | 0 | - |  |
+| **apparmor.service** · Load AppArmor profiles | {ok:active} | exited | {info:enabled} | 0 | - |  |
 | **unattended-upgrades.service** · Unattended Upgrades Shutdown | {ok:active} | running | {info:enabled} | 0 | 12 MB |  |
 | **power-profiles-daemon.service** · Power Profiles daemon | {ok:active} | running | {info:enabled} | 0 | 6 MB |  |
 | **thermald.service** · Thermal Daemon Service | {ok:active} | running | {info:enabled} | 0 | 5 MB |  |
@@ -2061,14 +2061,14 @@ Tab count pill: 1 (red).
 | **polkit.service** · Authorization Manager | {ok:active} | running | static | 0 | 9 MB |  |
 | **rsyslog.service** · System Logging Service | {ok:active} | running | {info:enabled} | 0 | 5 MB |  |
 | **cron.service** · Regular background program processing daemon | {ok:active} | running | {info:enabled} | 0 | 3 MB |  |
-| **anacron.service** · Run anacron jobs | {off:inactive} | dead | {info:enabled} | 0 | — |  |
+| **anacron.service** · Run anacron jobs | {off:inactive} | dead | {info:enabled} | 0 | - |  |
 | **wpa_supplicant.service** · WPA supplicant | {ok:active} | running | {info:enabled} | 0 | 7 MB |  |
-| **fwupd.service** · Firmware update daemon | {off:inactive} | dead | static | 0 | — |  |
+| **fwupd.service** · Firmware update daemon | {off:inactive} | dead | static | 0 | - |  |
 | **kerneloops.service** · Collects kernel crash signatures | {ok:active} | running | {info:enabled} | 0 | 2 MB |  |
 
-#### 12.10.2 Services › User Services — `services/user`
+#### 12.10.2 Services › User Services: `services/user`
 
-1. **Data table** — "User units" · span 12
+1. **Data table**: "User units" · span 12
 - Subtitle: "riya"
 - Source chip (Expert): `systemctl --user`
 
@@ -2082,11 +2082,11 @@ Tab count pill: 1 (red).
 | **gvfs-daemon.service** · Virtual filesystem service | {ok:active} | running | 6 MB |
 | **gnome-keyring-daemon.service** · GNOME Keyring | {ok:active} | running | 8 MB |
 | **org.gnome.Shell@wayland.service** · GNOME Shell on Wayland | {ok:active} | running | 410 MB |
-| **snap.telegram-desktop.service** · Telegram (snap) | {ok:active} | running | — |
+| **snap.telegram-desktop.service** · Telegram (snap) | {ok:active} | running | - |
 
-#### 12.10.3 Services › Startup Applications — `services/startup`
+#### 12.10.3 Services › Startup Applications: `services/startup`
 
-1. **Data table** — "Started at login" · span 12
+1. **Data table**: "Started at login" · span 12
 - Source chip (Expert): `~/.config/autostart · /etc/xdg/autostart`
 
 | Name | Scope | Command [x] | Startup impact [n] | Enabled |
@@ -2102,18 +2102,18 @@ Tab count pill: 1 (red).
 - Group: Workloads · Icon: `cal` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: Calendar, Cron, Systemd Timers, Anacron, At Jobs
 
-#### 12.11.1 Scheduled Jobs › Calendar — `jobs/calendar`
+#### 12.11.1 Scheduled Jobs › Calendar: `jobs/calendar`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Total jobs | 10 |  | — | cron · timer · anacron · at | — | — |
-| Next run | 26 | min | — | sync-notes.sh | — | — |
-| Failed | 0 |  | — | last 7 days | — | — |
-| Missed | 1 |  | {warn:Warning} | e2scrub_all.timer | — | — |
+| Total jobs | 10 |  | - | cron · timer · anacron · at | - | - |
+| Next run | 26 | min | - | sync-notes.sh | - | - |
+| Failed | 0 |  | - | last 7 days | - | - |
+| Missed | 1 |  | {warn:Warning} | e2scrub_all.timer | - | - |
 
-2. **Swim-lane schedule (section 5.19)** — "Next 24 hours" · span 12
+2. **Swim-lane schedule (section 5.19)**: "Next 24 hours" · span 12
 - Source chip (Expert): `crontab -l · systemctl list-timers`
 
 | Lane (mono) | Runs at (hours from now) | Dot |
@@ -2127,9 +2127,9 @@ Tab count pill: 1 (red).
 
 Axis: 0 "Now 21:34", 2.43 "00:00", 8.43 "06:00", 14.43 "12:00", 20.43 "18:00". Each dot has a `title` with the job name.
 
-3. **Heatmap (day × hour)** — "Job runs by hour" · span 12
+3. **Heatmap (day × hour)**: "Job runs by hour" · span 12
 - Subtitle: "last 7 days"
-- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00–23 · unit "runs"
+- Rows: Thu, Fri, Sat, Sun, Mon, Tue, Wed · Columns: hours 00-23 · unit "runs"
 - Values (row by row, 24 per row):
 
 ```
@@ -2142,9 +2142,9 @@ Tue  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 2 2
 Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 ```
 
-#### 12.11.2 Scheduled Jobs › Cron — `jobs/cron`
+#### 12.11.2 Scheduled Jobs › Cron: `jobs/cron`
 
-1. **Data table** — "Cron jobs" · span 12
+1. **Data table**: "Cron jobs" · span 12
 - Source chip (Expert): `crontab -l · /etc/crontab · /etc/cron.d`
 
 | Schedule | Command | User | Source | Next run | Last result |
@@ -2154,12 +2154,12 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | **17 * * * *** · Hourly at :17 | `run-parts --report /etc/cron.hourly` | root | `/etc/crontab` | 22:17 | {ok:Success} |
 | **30 3 * * 0** · Sundays 03:30 | `e2scrub_all_cron` | root | `/etc/cron.d/e2scrub_all` | Sun 25 Oct | {off:Skipped (systemd)} |
 
-2. **Alert banner** — "Cron does not record job results" · span 12
+2. **Alert banner**: "Cron does not record job results" · span 12
 - State: `info` · Title: "Cron does not record job results" · Text: "Track wraps a job so its exit code and output are saved from the next run."
 
-#### 12.11.3 Scheduled Jobs › Systemd Timers — `jobs/timers`
+#### 12.11.3 Scheduled Jobs › Systemd Timers: `jobs/timers`
 
-1. **Data table** — "Timers" · span 12
+1. **Data table**: "Timers" · span 12
 - Source chip (Expert): `systemctl list-timers --all`
 
 | Timer | Activates | Schedule | Last trigger | Next | Result | Persistent |
@@ -2167,15 +2167,15 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | `logrotate.timer` | `logrotate.service` | `daily` | Today 00:00 | 00:00 | {ok:Success} | ✓ |
 | `apt-daily-upgrade.timer` | `apt-daily-upgrade.service` | `*-*-* 6:00` | Today 10:40 | 06:21 | {ok:Success} | ✓ |
 | `apt-daily.timer` | `apt-daily.service` | `*-*-* 6,18:00` | Today 18:52 | 06:40 | {ok:Success} | ✓ |
-| `systemd-tmpfiles-clean.timer` | `systemd-tmpfiles-clean.service` | `OnUnitActiveSec=1d` | Today 09:13 | Tomorrow 09:13 | {ok:Success} | — |
+| `systemd-tmpfiles-clean.timer` | `systemd-tmpfiles-clean.service` | `OnUnitActiveSec=1d` | Today 09:13 | Tomorrow 09:13 | {ok:Success} | - |
 | `fstrim.timer` | `fstrim.service` | `weekly` | Mon 09:00 | Mon 26 Oct | {ok:Success} | ✓ |
-| `e2scrub_all.timer` | `e2scrub_all.service` | `Sun *-*-* 03:10` | Sun 18 Oct | Sun 25 Oct | {warn:Missed} | — |
+| `e2scrub_all.timer` | `e2scrub_all.service` | `Sun *-*-* 03:10` | Sun 18 Oct | Sun 25 Oct | {warn:Missed} | - |
 | `anacron.timer` | `anacron.service` | `hourly` | Today 21:07 | 22:07 | {ok:Success} | ✓ |
-| `snapd.snap-repair.timer` | `snapd.snap-repair.service` | `random 6h` | Today 17:40 | Tomorrow 01:12 | {ok:Success} | — |
+| `snapd.snap-repair.timer` | `snapd.snap-repair.service` | `random 6h` | Today 17:40 | Tomorrow 01:12 | {ok:Success} | - |
 
-#### 12.11.4 Scheduled Jobs › Anacron — `jobs/anacron`
+#### 12.11.4 Scheduled Jobs › Anacron: `jobs/anacron`
 
-1. **Data table** — "Anacron jobs" · span 12
+1. **Data table**: "Anacron jobs" · span 12
 - Source chip (Expert): `/etc/anacrontab · /var/spool/anacron`
 
 | Job | Period | Delay [n] | Command | Last run |
@@ -2184,9 +2184,9 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | `cron.weekly` | 7 days | 10 min | `run-parts /etc/cron.weekly` | Mon 09:10 |
 | `cron.monthly` | 1 month | 15 min | `run-parts /etc/cron.monthly` | 01 Oct |
 
-#### 12.11.5 Scheduled Jobs › At Jobs — `jobs/at`
+#### 12.11.5 Scheduled Jobs › At Jobs: `jobs/at`
 
-1. **Data table** — "One-time jobs" · span 12
+1. **Data table**: "One-time jobs" · span 12
 - Source chip (Expert): `atq`
 
 | Job | Run at | Command | User | (action) |
@@ -2198,19 +2198,19 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 - Group: Workloads · Icon: `cube` · Status badge: {warn:Warning} (rule in section 3)
 - Sub-pages: Containers, Images, Volumes, Virtual Machines
 
-#### 12.12.1 Containers › Containers — `containers/containers`
+#### 12.12.1 Containers › Containers: `containers/containers`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Running | 2 |  | — |   | — | — |
-| Stopped | 1 |  | — |   | — | — |
-| Images | 11 |  | — | 9.0 GB | — | — |
-| Volumes | 3 |  | — | 1.1 GB | — | — |
-| Exposed ports | 1 |  | {warn:Warning} | 5432 on all interfaces | — | — |
+| Running | 2 |  | - |   | - | - |
+| Stopped | 1 |  | - |   | - | - |
+| Images | 11 |  | - | 9.0 GB | - | - |
+| Volumes | 3 |  | - | 1.1 GB | - | - |
+| Exposed ports | 1 |  | {warn:Warning} | 5432 on all interfaces | - | - |
 
-2. **Data table** — "Docker containers" · span 12
+2. **Data table**: "Docker containers" · span 12
 - Source chip (Expert): `docker ps -a`
 - Inspect: row click opens the row-inspect drawer with actions "Restart", "Stop", "Logs"
 
@@ -2218,22 +2218,22 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | --- | --- | --- | --- | --- | --- |
 | pg-dev | `postgres:16` | {ok:Up 12 hours} | `0.0.0.0:5432→5432` {warn:LAN} | 0.2% | 142 MB |
 | redis-dev | `redis:7-alpine` | {ok:Up 12 hours} | `127.0.0.1:6379→6379` | 0.1% | 12 MB |
-| api-test | `node:20-alpine` | {off:Exited (0) 2 days ago} | — | — | — |
+| api-test | `node:20-alpine` | {off:Exited (0) 2 days ago} | - | - | - |
 
-3. **Alert banner** — "Port 5432 bypasses the UFW firewall" · span 12
+3. **Alert banner**: "Port 5432 bypasses the UFW firewall" · span 12
 - State: `warn` · Title: "Port 5432 bypasses the UFW firewall" · Text: "Docker publishes ports with its own iptables rules. Bind to 127.0.0.1 to keep it local." · Buttons: [View firewall](go:network/firewall)
 
-#### 12.12.2 Containers › Images — `containers/images`
+#### 12.12.2 Containers › Images: `containers/images`
 
-1. **Donut chart** — "Image storage" · span 4
+1. **Donut chart**: "Image storage" · span 4
 - Center: "9.0" / "GB" · unit "GB"
 
 | Segment | Value | Color | Display value |
 | --- | --- | --- | --- |
-| In use | 5 | slot 1 | — |
-| Unused | 4 | kw | — |
+| In use | 5 | slot 1 | - |
+| Unused | 4 | kw | - |
 
-2. **Data table** — "Images" · span 8
+2. **Data table**: "Images" · span 8
 - Source chip (Expert): `docker images`
 - Header actions: [Prune unused · 4.0 GB](act:fix:storage)
 
@@ -2242,15 +2242,15 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | postgres | 16 | 432 MB | 3 weeks ago | ✓ |
 | redis | 7-alpine | 41 MB | 1 month ago | ✓ |
 | node | 20-alpine | 135 MB | 2 weeks ago | ✓ |
-| node | 18 | 1.1 GB | 4 months ago | — |
-| python | 3.11 | 1.0 GB | 5 months ago | — |
-| mongo | 7 | 760 MB | 3 months ago | — |
-| nginx | alpine | 48 MB | 2 months ago | — |
-| <none> | <none> | 1.1 GB | dangling | — |
+| node | 18 | 1.1 GB | 4 months ago | - |
+| python | 3.11 | 1.0 GB | 5 months ago | - |
+| mongo | 7 | 760 MB | 3 months ago | - |
+| nginx | alpine | 48 MB | 2 months ago | - |
+| <none> | <none> | 1.1 GB | dangling | - |
 
-#### 12.12.3 Containers › Volumes — `containers/volumes`
+#### 12.12.3 Containers › Volumes: `containers/volumes`
 
-1. **Data table** — "Volumes" · span 12
+1. **Data table**: "Volumes" · span 12
 - Source chip (Expert): `docker volume ls · docker system df -v`
 
 | Name | Driver | Size [n] | Used by |
@@ -2259,9 +2259,9 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | `redisdata` | local | 64 MB | redis-dev |
 | `api-node-modules` | local | 86 MB | api-test |
 
-#### 12.12.4 Containers › Virtual Machines — `containers/vms`
+#### 12.12.4 Containers › Virtual Machines: `containers/vms`
 
-1. **Data table** — "Virtual machines" · span 12
+1. **Data table**: "Virtual machines" · span 12
 - Source chip (Expert): `VBoxManage list vms · virsh list --all`
 
 | Name | Engine | Guest OS | State | vCPU [n] | Memory [n] | Disk [n] |
@@ -2273,31 +2273,31 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 - Group: Software & Data · Icon: `pkg` · Status badge: {warn:Warning} (rule in section 3)
 - Sub-pages: Installed, Sources, Cleanup, Permissions
 
-#### 12.13.1 Packages › Installed — `packages/installed`
+#### 12.13.1 Packages › Installed: `packages/installed`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| APT | 1,842 |  | — | 212 installed by you | — | — |
-| Snap | 14 |  | — | 3.9 GB | — | — |
-| Flatpak | 6 |  | — | 2.2 GB | — | — |
-| AppImage | 2 |  | — | found in ~/Downloads | — | — |
-| Language packages | 29 |  | — | pip · npm · cargo | — | — |
-| Updates | 12 |  | {warn:Warning} |   | — | `system/updates` |
+| APT | 1,842 |  | - | 212 installed by you | - | - |
+| Snap | 14 |  | - | 3.9 GB | - | - |
+| Flatpak | 6 |  | - | 2.2 GB | - | - |
+| AppImage | 2 |  | - | found in ~/Downloads | - | - |
+| Language packages | 29 |  | - | pip · npm · cargo | - | - |
+| Updates | 12 |  | {warn:Warning} |   | - | `system/updates` |
 
-2. **Donut chart** — "Disk usage by source" · span 4
+2. **Donut chart**: "Disk usage by source" · span 4
 - Center: "12.4" / "GB" · unit "GB"
 
 | Segment | Value | Color | Display value |
 | --- | --- | --- | --- |
-| APT | 5.8 | slot 1 | — |
-| Snap | 3.9 | slot 2 | — |
-| Flatpak | 2.2 | slot 3 | — |
+| APT | 5.8 | slot 1 | - |
+| Snap | 3.9 | slot 2 | - |
+| Flatpak | 2.2 | slot 3 | - |
 | AppImage | 0.1 | slot 4 | 0.1 GB |
-| Other | 0.4 | slot 5 | — |
+| Other | 0.4 | slot 5 | - |
 
-3. **Data table** — "Packages" · span 8
+3. **Data table**: "Packages" · span 8
 - Search: "Search packages"
 - Filter chips on column 3: All / apt / snap / flatpak / AppImage
 - Page size 10
@@ -2321,7 +2321,7 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | gimp | `2.10.36` | {off:apt} | 98 MB | User | 124 days ago {warn:Unused} |
 | shotwell | `0.32.6` | {off:apt} | 8 MB | System | 201 days ago {warn:Unused} |
 | git | `2.43.0` | {off:apt} | 42 MB | User | Today |
-| python3 | `3.12.3` | {off:apt} | — | System | Today |
+| python3 | `3.12.3` | {off:apt} | - | System | Today |
 | libreoffice-writer | `24.2.6` | {off:apt} | 64 MB | System | 18 days ago |
 | balenaEtcher | `1.19.21` | {warn:AppImage} | 98 MB | User | 42 days ago |
 | dropbox | `2024.04.17` | {off:apt · 3rd-party} | 38 MB | User | Today |
@@ -2329,9 +2329,9 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | typescript | `5.6.3` | `npm` | 22 MB | User | 2 days ago |
 | ripgrep | `14.1.1` | `cargo` | 6 MB | User | Today |
 
-#### 12.13.2 Packages › Sources — `packages/sources`
+#### 12.13.2 Packages › Sources: `packages/sources`
 
-1. **Data table** — "Software sources" · span 12
+1. **Data table**: "Software sources" · span 12
 - Source chip (Expert): `/etc/apt/sources.list.d`
 
 | Repository | Type | Signed | Packages [n] | Status |
@@ -2345,9 +2345,9 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | `ppa:deadsnakes/ppa` | PPA | ✓ | 0 | {info:Unused} |
 | `ppa:obsproject/obs-studio` | PPA | ✓ | 0 | {info:Unused} |
 
-#### 12.13.3 Packages › Cleanup — `packages/cleanup`
+#### 12.13.3 Packages › Cleanup: `packages/cleanup`
 
-1. **Data table** — "Reclaimable" · span 12
+1. **Data table**: "Reclaimable" · span 12
 
 | Item | Count [n] | Size [n] | Undo | (action) |
 | --- | --- | --- | --- | --- |
@@ -2358,19 +2358,19 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | Apps not used in 90+ days | 2 | 106 MB | {off:Review} | [Review](go:packages/installed) |
 | Old kernel 6.8.0-41 | 1 | 320 MB | {info:Reinstallable} | [Remove](act:toast:Old kernel queued for removal.) |
 
-#### 12.13.4 Packages › Permissions — `packages/permissions`
+#### 12.13.4 Packages › Permissions: `packages/permissions`
 
-1. **Data table** — "Sandboxed app permissions" · span 12
+1. **Data table**: "Sandboxed app permissions" · span 12
 - Source chip (Expert): `snap connections · flatpak info --show-permissions`
 
 | App | Source | Camera | Microphone | Home folder | Network | Location |
 | --- | --- | --- | --- | --- | --- | --- |
-| zoom-client | {info:snap} | ✓ | ✓ | ✓ | ✓ | — |
-| code | {info:snap} | — | — | ✓ | ✓ | — |
-| telegram-desktop | {info:snap} | ✓ | ✓ | ✓ | ✓ | — |
+| zoom-client | {info:snap} | ✓ | ✓ | ✓ | ✓ | - |
+| code | {info:snap} | - | - | ✓ | ✓ | - |
+| telegram-desktop | {info:snap} | ✓ | ✓ | ✓ | ✓ | - |
 | firefox | {info:snap} | ✓ | ✓ | ✓ | ✓ | ✓ |
-| com.spotify.Client | {ok:flatpak} | — | — | — | ✓ | — |
-| com.obsproject.Studio | {ok:flatpak} | ✓ | ✓ | ✓ | ✓ | — |
+| com.spotify.Client | {ok:flatpak} | - | - | - | ✓ | - |
+| com.obsproject.Studio | {ok:flatpak} | ✓ | ✓ | ✓ | ✓ | - |
 
 ### 12.14 Storage (`storage`)
 
@@ -2378,23 +2378,23 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 - Sub-pages: Overview, Filesystems, Disk Usage, Cleanup
 - Page header actions (all sub-pages without their own): [**Free up space**](act:fix:storage) (shown while reclaimable space > 0)
 
-#### 12.14.1 Storage › Overview — `storage/overview`
+#### 12.14.1 Storage › Overview: `storage/overview`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Used | 224.2 | GB | {crit:Critical} | 94% of 238 GB | Usage bar 94.2% | — |
-| Free | 13.8 | GB | — |   | — | — |
-| Reclaimable | 15.2 | GB | — | Safe to clean | — | — |
-| Full in | ~8 | days | {crit:Critical} | at 0.69% per day | — | — |
-| Inodes used | 21 | % | — |   | — | — |
-| Encryption | Off |  | — | LUKS not used | — | — |
+| Used | 224.2 | GB | {crit:Critical} | 94% of 238 GB | Usage bar 94.2% | - |
+| Free | 13.8 | GB | - |   | - | - |
+| Reclaimable | 15.2 | GB | - | Safe to clean | - | - |
+| Full in | ~8 | days | {crit:Critical} | at 0.69% per day | - | - |
+| Inodes used | 21 | % | - |   | - | - |
+| Encryption | Off |  | - | LUKS not used | - | - |
 
-2. **Alert banner** — "Root filesystem is 94% full" · span 12
+2. **Alert banner**: "Root filesystem is 94% full" · span 12
 - State: `crit` · Title: "Root filesystem is 94% full" · Text: "15.2 GB can be reclaimed safely. Personal files are not touched." · Buttons: [**Free up space**](act:fix:storage)
 
-3. **Allocation bar (section 5.18)** — "Space allocation" · span 12
+3. **Allocation bar (section 5.18)**: "Space allocation" · span 12
 - Subtitle: "/dev/nvme0n1p2 · ext4"
 - Source chip (Expert): `du -xh --max-depth=1`
 
@@ -2411,7 +2411,7 @@ Segments (left to right):
 
 Width of each segment = GB / 238. The legend repeats each name with its bold GB value.
 
-4. **Line chart** — "Usage trend and forecast" · span 8
+4. **Line chart**: "Usage trend and forecast" · span 8
 - Subtitle: "30 days"
 - Info tooltip: "The dashed line shows when the disk fills at the current rate."
 - Height 220px · Y axis 60 to 100 · unit "%"
@@ -2420,7 +2420,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 - Threshold line at 85: "Warning 85%"
 - Forecast: +8 points to 100, label "Full ~29 Oct" (recomputed from state: daysFull)
 
-5. **Data table** — "Mount points" · span 4
+5. **Data table**: "Mount points" · span 4
 - Source chip (Expert): `findmnt`
 
 | Mount | Size [n] | Used |
@@ -2430,20 +2430,20 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `/run` | 780 MB | [meter 1%] |
 | `/dev/shm` | 3.8 GB | [meter 2%] |
 
-#### 12.14.2 Storage › Filesystems — `storage/filesystems`
+#### 12.14.2 Storage › Filesystems: `storage/filesystems`
 
-1. **Data table** — "Filesystems" · span 12
+1. **Data table**: "Filesystems" · span 12
 - Source chip (Expert): `df -hT · df -i`
 
 | Device | Mount | Type | Size [n] | Used [n] | Available [n] | Use | Inodes [n, ,x] |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `/dev/nvme0n1p2` | `/` | ext4 | 238 GB | 224.2 GB | 13.8 GB | [meter:crit 94%] | 21% |
-| `/dev/nvme0n1p1` | `/boot/efi` | vfat | 1.0 GB | 61 MB | 963 MB | [meter 6%] | — |
+| `/dev/nvme0n1p1` | `/boot/efi` | vfat | 1.0 GB | 61 MB | 963 MB | [meter 6%] | - |
 | `tmpfs` | `/run` | tmpfs | 780 MB | 2.3 MB | 778 MB | [meter 1%] | 1% |
 | `tmpfs` | `/dev/shm` | tmpfs | 3.8 GB | 84 MB | 3.7 GB | [meter 2%] | 1% |
 | `squashfs ×14` | `/snap/*` | squashfs | 3.9 GB | 3.9 GB | 0 | [meter:ok 100%] | 100% |
 
-2. **Checklist** — "Filesystem checks" · span 12
+2. **Checklist**: "Filesystem checks" · span 12
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -2453,9 +2453,9 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `warn` | Disk encryption off | Files are readable if the laptop is stolen · needs reinstall to enable |   |
 | `na` | Full filesystem check (fsck) | Runs at boot when needed · last check 34 days ago |   |
 
-#### 12.14.3 Storage › Disk Usage — `storage/usage`
+#### 12.14.3 Storage › Disk Usage: `storage/usage`
 
-1. **Horizontal bar list** — "Largest folders" · span 6
+1. **Horizontal bar list**: "Largest folders" · span 6
 - Subtitle: "home"
 - Source chip (Expert): `du -h --max-depth=1 ~`
 
@@ -2469,7 +2469,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `~/snap` | 2.4 | 2.4 GB |
 | `~/Pictures` | 1.6 | 1.6 GB |
 
-2. **Horizontal bar list** — "Largest system folders" · span 6
+2. **Horizontal bar list**: "Largest system folders" · span 6
 - Source chip (Expert): `du -xh --max-depth=1 /`
 
 | Label | Value | Shown as |
@@ -2481,7 +2481,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `/opt` | 0.9 | 0.9 GB |
 | `/boot` | 0.3 | 0.3 GB |
 
-3. **Data table** — "Largest files" · span 12
+3. **Data table**: "Largest files" · span 12
 - Source chip (Expert): `find ~ -size +500M`
 - Search: "Filter files"
 
@@ -2494,7 +2494,7 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `~/Videos/meeting-recording-0918.mkv` | 1.8 GB | Video | 1 month ago |
 | `~/Documents/thesis-backup.tar.gz` | 1.2 GB | Archive | 6 months ago |
 
-#### 12.14.4 Storage › Cleanup — `storage/cleanup`
+#### 12.14.4 Storage › Cleanup: `storage/cleanup`
 
 Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Refresh and Export.
 
@@ -2502,10 +2502,10 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Reclaimable | 15.2 | GB | {warn:Warning} |   | — | — |
-| Cleaned this month | 0.0 | GB | — |   | — | — |
+| Reclaimable | 15.2 | GB | {warn:Warning} |   | - | - |
+| Cleaned this month | 0.0 | GB | - |   | - | - |
 
-2. **Data table** — "Cleanup candidates" · span 12
+2. **Data table**: "Cleanup candidates" · span 12
 - Row selection · bulk button [Clean selected](act:fix:storage)
 - Empty text: "Nothing to clean right now"
 - Table ID: `cleanup`
@@ -2513,8 +2513,8 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | Item | Details | Size [n] | Undo | Password |
 | --- | --- | --- | --- | --- |
 | Remove disabled snap revisions | 6 old revisions kept after updates | 8.7 GB | {warn:Irreversible} | 🔒 |
-| Prune unused Docker images | 7 images not used by any container | 4.0 GB | {info:Regenerates} | — |
-| Empty Trash | 312 files | 2.1 GB | {warn:Irreversible} | — |
+| Prune unused Docker images | 7 images not used by any container | 4.0 GB | {info:Regenerates} | - |
+| Empty Trash | 312 files | 2.1 GB | {warn:Irreversible} | - |
 | Clean APT package cache | Downloaded .deb files | 0.4 GB | {info:Regenerates} | 🔒 |
 
 ### 12.15 Backups (`backups`)
@@ -2522,74 +2522,74 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 - Group: Software & Data · Icon: `backup` · Status badge: {warn:Warning} (rule in section 3)
 - Sub-pages: Backup Jobs, System Snapshots, Restore Points
 
-#### 12.15.1 Backups › Backup Jobs — `backups/jobs`
+#### 12.15.1 Backups › Backup Jobs: `backups/jobs`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Last backup | 21 | days ago | {warn:Warning} | 30 Sep 21:12 | — | — |
-| Tool | Déjà Dup |  | — | Ubuntu Backups | — | — |
-| Destination | BACKUP-1TB |  | — | USB drive · not connected | — | — |
-| Backup size | 96 | GB | — |   | — | — |
-| Schedule | Weekly |  | — | when drive is connected | — | — |
+| Last backup | 21 | days ago | {warn:Warning} | 30 Sep 21:12 | - | - |
+| Tool | Déjà Dup |  | - | Ubuntu Backups | - | - |
+| Destination | BACKUP-1TB |  | - | USB drive · not connected | - | - |
+| Backup size | 96 | GB | - |   | - | - |
+| Schedule | Weekly |  | - | when drive is connected | - | - |
 
-2. **Bar chart** — "Backup history" · span 6
+2. **Bar chart**: "Backup history" · span 6
 - Subtitle: "size per run"
 - Height 200px · Y max auto · unit "GB"
 - Bars (label: value · tooltip label): 26 Aug: 4.2 · "26 Aug · incremental"; 2 Sep: 3.1 · "2 Sep · incremental"; 9 Sep: 5.6 · "9 Sep · incremental"; 16 Sep: 2.8 · "16 Sep · incremental"; 23 Sep: 3.9 · "23 Sep · incremental"; 30 Sep: 4.4 · "30 Sep · incremental"; 7 Oct: 0 [kn] · "7 Oct · skipped (drive missing)"; 14 Oct: 0 [kn] · "14 Oct · skipped (drive missing)"; 21 Oct: 0 [kn] · "21 Oct · skipped (drive missing)"
 
-3. **Data table** — "Runs" · span 6
+3. **Data table**: "Runs" · span 6
 - Source chip (Expert): `deja-dup`
 
 | Date | Type | Size [n] | Duration | Result |
 | --- | --- | --- | --- | --- |
-| 21 Oct | Scheduled | — | — | {warn:Skipped · drive missing} |
+| 21 Oct | Scheduled | - | - | {warn:Skipped · drive missing} |
 | 30 Sep | Incremental | 4.4 GB | 9 m | {ok:Success} |
 | 23 Sep | Incremental | 3.9 GB | 8 m | {ok:Success} |
 | 16 Sep | Incremental | 2.8 GB | 6 m | {ok:Success} |
 | 9 Sep | Full | 91 GB | 1 h 42 m | {ok:Success} |
 
-#### 12.15.2 Backups › System Snapshots — `backups/snapshots`
+#### 12.15.2 Backups › System Snapshots: `backups/snapshots`
 
-1. **Alert banner** — "No system snapshots" · span 12
+1. **Alert banner**: "No system snapshots" · span 12
 - State: `warn` · Title: "No system snapshots" · Text: "Timeshift is not installed. Snapshots let you roll back the system after a bad update." · Buttons: [**Install Timeshift**](act:toast:sudo apt install timeshift)
 
-2. **Data table** — "Snapshots" · span 12
+2. **Data table**: "Snapshots" · span 12
 - Empty text: "No snapshots yet"
 
 | Created | Type | Tool | Size [n] | Comment |
 | --- | --- | --- | --- | --- |
 | *(empty: "No snapshots yet")* |   |   |   |   |
 
-#### 12.15.3 Backups › Restore Points — `backups/restore`
+#### 12.15.3 Backups › Restore Points: `backups/restore`
 
-1. **Data table** — "SysDoc restore points" · span 12
+1. **Data table**: "SysDoc restore points" · span 12
 - Info tooltip: "Saved automatically before every change SysDoc makes."
 
 | Created | Change | Target | Size [n] | (action) |
 | --- | --- | --- | --- | --- |
 | Tue 11:05 | Disabled service | `cups-browsed.service` | 1 KB | [Restore](act:undo:cups) |
-| 14 Oct | Removed old kernel | `linux-image-6.8.0-38` | — | Reinstall from APT |
+| 14 Oct | Removed old kernel | `linux-image-6.8.0-38` | - | Reinstall from APT |
 
 ### 12.16 Network (`network`)
 
 - Group: Network & Access · Icon: `wifi` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: Interfaces, Connections, Open Ports, Firewall, DNS & VPN, Traffic
 
-#### 12.16.1 Network › Interfaces — `network/interfaces`
+#### 12.16.1 Network › Interfaces: `network/interfaces`
 
-1. **Data table** — "Interfaces" · span 12
+1. **Data table**: "Interfaces" · span 12
 - Source chip (Expert): `ip -br addr · nmcli device`
 
 | Interface | Type | State | IPv4 | MAC [x] | Speed | RX [n] | TX [n] |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `wlp0s20f3` | Wi-Fi | {ok:connected} | `192.168.1.24/24` | `3c:a9:f4:..:1b` | 866 Mb/s | 4.0 GB | 0.6 GB |
-| `docker0` | Bridge | {ok:connected} | `172.17.0.1/16` | `02:42:..:9a` | — | 210 MB | 140 MB |
-| `lo` | Loopback | {off:unmanaged} | `127.0.0.1/8` | — | — | 88 MB | 88 MB |
-| `enx00e04c68` | Ethernet | {off:unavailable} | — | `00:e0:4c:..:68` | — | 0 | 0 |
+| `docker0` | Bridge | {ok:connected} | `172.17.0.1/16` | `02:42:..:9a` | - | 210 MB | 140 MB |
+| `lo` | Loopback | {off:unmanaged} | `127.0.0.1/8` | - | - | 88 MB | 88 MB |
+| `enx00e04c68` | Ethernet | {off:unavailable} | - | `00:e0:4c:..:68` | - | 0 | 0 |
 
-2. **Key-value list** — "Wi-Fi" · span 6
+2. **Key-value list**: "Wi-Fi" · span 6
 - Source chip (Expert): `nmcli -f all dev wifi`
 
 | Key | Value |
@@ -2600,7 +2600,7 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | Security | {ok:WPA2-PSK} |
 | Link rate | 866 Mb/s |
 
-3. **Key-value list** — "Connectivity" · span 6
+3. **Key-value list**: "Connectivity" · span 6
 
 | Key | Value |
 | --- | --- |
@@ -2610,9 +2610,9 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | IPv6 | Link-local only |
 | Captive portal | None |
 
-#### 12.16.2 Network › Connections — `network/connections`
+#### 12.16.2 Network › Connections: `network/connections`
 
-1. **Data table** — "Active connections" · span 12
+1. **Data table**: "Active connections" · span 12
 - Source chip (Expert): `ss -tunp`
 - Search: "Filter connections"
 - Filter chips on column 4: All / ESTAB / LISTEN / UNCONN
@@ -2631,46 +2631,46 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | tcp | `127.0.0.1:631` | `*:*` | {info:LISTEN} | cupsd |
 | udp | `127.0.0.53:53` | `*:*` | {off:UNCONN} | systemd-resolved |
 | udp | `0.0.0.0:5353` | `*:*` | {off:UNCONN} | avahi-daemon |
-| tcp | `192.168.1.24:51900` | `185.125.190.20:443` | {off:TIME-WAIT} | — |
+| tcp | `192.168.1.24:51900` | `185.125.190.20:443` | {off:TIME-WAIT} | - |
 
-#### 12.16.3 Network › Open Ports — `network/ports`
+#### 12.16.3 Network › Open Ports: `network/ports`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Listening | 5 |  | — |   | — | — |
-| Local only | 3 |  | — |   | — | — |
-| Network-exposed | 2 |  | {warn:Warning} |   | — | — |
-| Reachable from internet | Unknown |  | — | Needs outside test | — | — |
+| Listening | 5 |  | - |   | - | - |
+| Local only | 3 |  | - |   | - | - |
+| Network-exposed | 2 |  | {warn:Warning} |   | - | - |
+| Reachable from internet | Unknown |  | - | Needs outside test | - | - |
 
-2. **Data table** — "Listening ports" · span 12
+2. **Data table**: "Listening ports" · span 12
 - Source chip (Expert): `ss -tulpn`
 
 | Port | Protocol | Bind address | Exposure | Process | Firewall |
 | --- | --- | --- | --- | --- | --- |
 | `5432` | TCP | `0.0.0.0` | {warn:LAN} | docker-proxy (pg-dev) | {warn:Bypassed} |
 | `5353` | UDP | `0.0.0.0` | {info:LAN} | avahi-daemon | {ok:Allowed (mDNS)} |
-| `6379` | TCP | `127.0.0.1` | {off:Local} | docker-proxy (redis-dev) | — |
-| `631` | TCP | `127.0.0.1` | {off:Local} | cupsd | — |
-| `53` | UDP | `127.0.0.53` | {off:Local} | systemd-resolved | — |
+| `6379` | TCP | `127.0.0.1` | {off:Local} | docker-proxy (redis-dev) | - |
+| `631` | TCP | `127.0.0.1` | {off:Local} | cupsd | - |
+| `53` | UDP | `127.0.0.53` | {off:Local} | systemd-resolved | - |
 
-3. **Alert banner** — "External reachability is not tested" · span 12
+3. **Alert banner**: "External reachability is not tested" · span 12
 - State: `info` · Title: "External reachability is not tested" · Text: "Whether the router forwards a port can only be checked from outside your network." · Buttons: [Run external test](act:toast:Opt-in: this sends your public IP to a test server. Off in the prototype.)
 
-#### 12.16.4 Network › Firewall — `network/firewall`
+#### 12.16.4 Network › Firewall: `network/firewall`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Status | Active |  | — | ufw | — | — |
-| Incoming | Deny |  | — | default | — | — |
-| Outgoing | Allow |  | — | default | — | — |
-| Rules | 2 |  | — |   | — | — |
-| Blocked today | 37 |  | — | packets | — | — |
+| Status | Active |  | - | ufw | - | - |
+| Incoming | Deny |  | - | default | - | - |
+| Outgoing | Allow |  | - | default | - | - |
+| Rules | 2 |  | - |   | - | - |
+| Blocked today | 37 |  | - | packets | - | - |
 
-2. **Data table** — "Rules" · span 12
+2. **Data table**: "Rules" · span 12
 - Source chip (Expert): `sudo ufw status numbered`
 - Empty text: "Requires Full access"
 
@@ -2679,24 +2679,24 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | 1 | `5353/udp` | {ok:ALLOW IN} | Anywhere | mDNS |
 | 2 | `1714:1764/tcp` | {ok:ALLOW IN} | `192.168.1.0/24` | GSConnect |
 
-3. **Alert banner** — "Docker rules are not managed by ufw" · span 12
+3. **Alert banner**: "Docker rules are not managed by ufw" · span 12
 - State: `warn` · Title: "Docker rules are not managed by ufw" · Text: "Port 5432 (pg-dev) is reachable from the LAN even though ufw denies incoming traffic." · Buttons: [View container](go:containers/containers)
 
-#### 12.16.5 Network › DNS & VPN — `network/dns`
+#### 12.16.5 Network › DNS & VPN: `network/dns`
 
-1. **Key-value list** — "DNS" · span 6
+1. **Key-value list**: "DNS" · span 6
 - Source chip (Expert): `resolvectl status`
 
 | Key | Value |
 | --- | --- |
 | Resolver | systemd-resolved |
 | Servers | `192.168.1.1` |
-| Search domain | — |
+| Search domain | - |
 | DNSSEC | No |
 | DNS over TLS | No |
 | /etc/hosts entries | 3 |
 
-2. **Data table** — "VPN connections" · span 6
+2. **Data table**: "VPN connections" · span 6
 - Source chip (Expert): `nmcli connection show`
 
 | Name | Type | State | (action) |
@@ -2704,15 +2704,15 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | Office | WireGuard | {off:Disconnected} | [Connect](act:toast:Connecting to Office (WireGuard)…) |
 | Tailscale | tailscale | {ok:Connected} |   |
 
-#### 12.16.6 Network › Traffic — `network/traffic`
+#### 12.16.6 Network › Traffic: `network/traffic`
 
-1. **Line chart** — "Throughput" · span 12
+1. **Line chart**: "Throughput" · span 12
 - Source chip (Expert): `/proc/net/dev`
 - Height 220px · Y axis 0 to auto · unit "MB/s"
 - Series: Download (slot 1, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2]); Upload (slot 2, gen[10, 0.2, 0.2, 0.3, 0, 3, 0.3])
 - X axis: time (current range)
 
-2. **Data table** — "Traffic by application" · span 12
+2. **Data table**: "Traffic by application" · span 12
 - Subtitle: "today"
 - Source chip (Expert): `nethogs (admin)`
 - Empty text: "Requires Full access"
@@ -2730,19 +2730,19 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 - Group: Network & Access · Icon: `users` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: Users, Groups, Sessions, Login History, SSH Keys
 
-#### 12.17.1 Accounts › Users — `accounts/users`
+#### 12.17.1 Accounts › Users: `accounts/users`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Human users | 2 |  | — |   | — | — |
-| Administrators | 1 |  | — |   | — | — |
-| System accounts | 41 |  | — |   | — | — |
-| Locked | 0 |  | — |   | — | — |
-| Without password | 0 |  | — | Verified | — | — |
+| Human users | 2 |  | - |   | - | - |
+| Administrators | 1 |  | - |   | - | - |
+| System accounts | 41 |  | - |   | - | - |
+| Locked | 0 |  | - |   | - | - |
+| Without password | 0 |  | - | Verified | - | - |
 
-2. **Data table** — "Users" · span 12
+2. **Data table**: "Users" · span 12
 - Source chip (Expert): `getent passwd · chage -l`
 - Inspect: row click opens the row-inspect drawer with actions "Lock account", "Reset password"
 
@@ -2751,12 +2751,12 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | **riya** · Riya | 1000 | ‹sudo›‹adm›‹docker›‹lxd› | {info:Administrator} | `/bin/bash` | Today 08:59 | 14 months |
 | **guest** · Guest | 1001 | ‹guest› | {off:Standard} | `/bin/bash` | 3 weeks ago | 9 months |
 
-3. **Alert banner** — "Password strength cannot be checked" · span 12
+3. **Alert banner**: "Password strength cannot be checked" · span 12
 - State: `info` · Title: "Password strength cannot be checked" · Text: "Linux stores only salted hashes. SysDoc shows password age instead."
 
-#### 12.17.2 Accounts › Groups — `accounts/groups`
+#### 12.17.2 Accounts › Groups: `accounts/groups`
 
-1. **Data table** — "Groups with members" · span 12
+1. **Data table**: "Groups with members" · span 12
 - Source chip (Expert): `getent group`
 - Search: "Filter groups"
 
@@ -2766,13 +2766,13 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | adm | 4 | riya, syslog | {info:Read logs} |
 | docker | 999 | riya | {warn:Root-equivalent} |
 | lxd | 135 | riya | {info:Containers} |
-| plugdev | 46 | riya | — |
+| plugdev | 46 | riya | - |
 | lpadmin | 114 | riya | Printers |
-| sambashare | 117 | riya | — |
+| sambashare | 117 | riya | - |
 
-#### 12.17.3 Accounts › Sessions — `accounts/sessions`
+#### 12.17.3 Accounts › Sessions: `accounts/sessions`
 
-1. **Data table** — "Active sessions" · span 12
+1. **Data table**: "Active sessions" · span 12
 - Source chip (Expert): `loginctl list-sessions`
 
 | Session | User | Seat | Type | Since | State |
@@ -2780,13 +2780,13 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | `2` | riya | seat0 | wayland | Today 08:59 | {ok:active} |
 | `c1` | gdm | seat0 | wayland | Today 08:58 | {off:online} |
 
-#### 12.17.4 Accounts › Login History — `accounts/logins`
+#### 12.17.4 Accounts › Login History: `accounts/logins`
 
-1. **Bar chart** — "Sign-ins per day" · span 5
+1. **Bar chart**: "Sign-ins per day" · span 5
 - Height 180px · Y max auto
 - Bars (label: value): Thu: 2; Fri: 3; Sat: 1; Sun: 1; Mon: 3; Tue: 2; Wed: 2
 
-2. **Data table** — "Events" · span 7
+2. **Data table**: "Events" · span 7
 - Source chip (Expert): `last · journalctl _COMM=sudo`
 
 | Time | User | Event | Source | Result |
@@ -2798,17 +2798,17 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | Sat 10:13 | riya | Sign-in | gdm-password | {warn:Failed ×1} |
 | 30 Sep | guest | Sign-in | gdm-password | {ok:Success} |
 
-#### 12.17.5 Accounts › SSH Keys — `accounts/ssh`
+#### 12.17.5 Accounts › SSH Keys: `accounts/ssh`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| OpenSSH server | Not installed |  | — |   | — | — |
-| Authorized keys | 0 |  | — |   | — | — |
-| Client keys | 1 |  | — | ed25519 | — | — |
+| OpenSSH server | Not installed |  | - |   | - | - |
+| Authorized keys | 0 |  | - |   | - | - |
+| Client keys | 1 |  | - | ed25519 | - | - |
 
-2. **Data table** — "Client keys" · span 12
+2. **Data table**: "Client keys" · span 12
 - Subtitle: "~/.ssh"
 
 | File | Type | Fingerprint | Created |
@@ -2820,20 +2820,20 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 - Group: Network & Access · Icon: `shield` · Status badge: {warn:Warning} (rule in section 3)
 - Sub-pages: Overview, Vulnerabilities, Hardening, File Integrity, Malware Scan
 
-#### 12.18.1 Security › Overview — `security/overview`
+#### 12.18.1 Security › Overview: `security/overview`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Security updates | 4 |  | {warn:Warning} |   | — | `system/updates` |
-| Known vulnerabilities | 3 |  | {warn:Warning} | 2 high · 1 medium | — | — |
-| Firewall | Active |  | — |   | — | — |
-| AppArmor | 112 | profiles | — | enforcing | — | — |
-| Secure Boot | On |  | — |   | — | — |
-| Disk encryption | Off |  | {info:Info} |   | — | — |
+| Security updates | 4 |  | {warn:Warning} |   | - | `system/updates` |
+| Known vulnerabilities | 3 |  | {warn:Warning} | 2 high · 1 medium | - | - |
+| Firewall | Active |  | - |   | - | - |
+| AppArmor | 112 | profiles | - | enforcing | - | - |
+| Secure Boot | On |  | - |   | - | - |
+| Disk encryption | Off |  | {info:Info} |   | - | - |
 
-2. **Checklist** — "Security posture" · span 8
+2. **Checklist**: "Security posture" · span 8
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -2848,21 +2848,21 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | `warn` | Disk encryption off | Requires reinstall to enable |   |
 | `na` | Malware scanner | Not installed | [View](go:security/malware) |
 
-3. **Donut chart** — "Checks" · span 4
+3. **Donut chart**: "Checks" · span 4
 - Center: "6/10" / "passing"
 
 | Segment | Value | Color | Display value |
 | --- | --- | --- | --- |
-| Pass | 6 | k3 | — |
-| Warning | 2 | kw | — |
-| Fail | 1 | kc | — |
-| Not applicable | 1 | kn | — |
+| Pass | 6 | k3 | - |
+| Warning | 2 | kw | - |
+| Fail | 1 | kc | - |
+| Not applicable | 1 | kn | - |
 
-#### 12.18.2 Security › Vulnerabilities — `security/vulns`
+#### 12.18.2 Security › Vulnerabilities: `security/vulns`
 
 Tab count pill: 3.
 
-1. **Data table** — "Known vulnerabilities" · span 12
+1. **Data table**: "Known vulnerabilities" · span 12
 - Subtitle: "sample data"
 - Source chip (Expert): `pro fix · OVAL`
 - Empty text: "No known vulnerabilities in installed packages"
@@ -2873,33 +2873,33 @@ Tab count pill: 3.
 | `CVE-2026-10388` | sudo | {crit:High} | `1.9.15p5-3ubuntu5.1` | `1.9.15p5-3ubuntu5.2` | [**Fix**](act:fix:sec) |
 | `CVE-2026-09917` | linux-firmware | {warn:Medium} | `…0ubuntu2.5` | `…0ubuntu2.6` | [Fix](act:fix:sec) |
 
-#### 12.18.3 Security › Hardening — `security/hardening`
+#### 12.18.3 Security › Hardening: `security/hardening`
 
-1. **Data table** — "Hardening checks" · span 12
+1. **Data table**: "Hardening checks" · span 12
 
 | Check | Result | Value | Recommendation |
 | --- | --- | --- | --- |
-| Kernel ASLR | {ok:Pass} | `kernel.randomize_va_space = 2` | — |
-| Unprivileged user namespaces | {ok:Pass} | `restricted by AppArmor` | — |
-| kptr_restrict | {ok:Pass} | `1` | — |
-| dmesg_restrict | {ok:Pass} | `1` | — |
-| Home directory permissions | {ok:Pass} | `drwxr-x---` | — |
-| Automatic security updates | {ok:Pass} | `Unattended-Upgrade "1"` | — |
+| Kernel ASLR | {ok:Pass} | `kernel.randomize_va_space = 2` | - |
+| Unprivileged user namespaces | {ok:Pass} | `restricted by AppArmor` | - |
+| kptr_restrict | {ok:Pass} | `1` | - |
+| dmesg_restrict | {ok:Pass} | `1` | - |
+| Home directory permissions | {ok:Pass} | `drwxr-x---` | - |
+| Automatic security updates | {ok:Pass} | `Unattended-Upgrade "1"` | - |
 | Docker group membership | {warn:Review} | riya | docker group equals root access |
 | Disk encryption | {warn:Fail} | None | Enable LUKS at next reinstall |
 
-#### 12.18.4 Security › File Integrity — `security/integrity`
+#### 12.18.4 Security › File Integrity: `security/integrity`
 
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Files verified | 284,112 |  | — |   | — | — |
-| Modified | 0 |  | — |   | — | — |
-| Missing | 0 |  | — |   | — | — |
-| Last scan | Today |  | — | 03:00 | — | — |
+| Files verified | 284,112 |  | - |   | - | - |
+| Modified | 0 |  | - |   | - | - |
+| Missing | 0 |  | - |   | - | - |
+| Last scan | Today |  | - | 03:00 | - | - |
 
-2. **Data table** — "Programs with SUID bit" · span 12
+2. **Data table**: "Programs with SUID bit" · span 12
 - Info tooltip: "These programs run with their owner’s rights (usually root). All match their packages."
 - Source chip (Expert): `find / -perm -4000`
 
@@ -2912,12 +2912,12 @@ Tab count pill: 3.
 | `/usr/lib/openssh/ssh-keysign` | root | openssh-client | ✓ |
 | `/usr/bin/fusermount3` | root | fuse3 | ✓ |
 
-#### 12.18.5 Security › Malware Scan — `security/malware`
+#### 12.18.5 Security › Malware Scan: `security/malware`
 
-1. **Alert banner** — "No malware scanner installed" · span 12
+1. **Alert banner**: "No malware scanner installed" · span 12
 - State: `info` · Title: "No malware scanner installed" · Text: "Optional on Ubuntu. Signature scans reduce risk but cannot prove a system is clean." · Buttons: [**Install ClamAV**](act:toast:sudo apt install clamav)
 
-2. **Checklist** — "Heuristic checks" · span 12
+2. **Checklist**: "Heuristic checks" · span 12
 
 | State | Title | Detail | Action |
 | --- | --- | --- | --- |
@@ -2931,9 +2931,9 @@ Tab count pill: 3.
 - Group: Network & Access · Icon: `eye` · Status badge: {ok:Healthy} (rule in section 3)
 - Sub-pages: Device Access, App Permissions, Privacy Settings
 
-#### 12.19.1 Privacy › Device Access — `privacy/access`
+#### 12.19.1 Privacy › Device Access: `privacy/access`
 
-1. **State tiles (section 5.21)** — "Right now" · span 12
+1. **State tiles (section 5.21)**: "Right now" · span 12
 
 | Icon | Title | State |
 | --- | --- | --- |
@@ -2942,7 +2942,7 @@ Tab count pill: 3.
 | `screen` | Screen sharing | Off |
 | `pin` | Location | Off |
 
-2. **Data table** — "Recent access" · span 12
+2. **Data table**: "Recent access" · span 12
 - Subtitle: "7 days"
 - Source chip (Expert): `PipeWire · xdg-desktop-portal`
 
@@ -2953,78 +2953,78 @@ Tab count pill: 3.
 | Mon 11:30 | Microphone | chrome | 12 min |
 | Mon 11:30 | Screen share | chrome | 9 min |
 
-#### 12.19.2 Privacy › App Permissions — `privacy/perms`
+#### 12.19.2 Privacy › App Permissions: `privacy/perms`
 
-1. **Data table** — "Permissions by app" · span 12
+1. **Data table**: "Permissions by app" · span 12
 - Source chip (Expert): `snap connections · flatpak permissions`
 
 | App | Camera | Microphone | Location | Files | Network |
 | --- | --- | --- | --- | --- | --- |
-| zoom-client | ✓ | ✓ | — | ✓ | ✓ |
-| chrome | ✓ | ✓ | — | ✓ | ✓ |
-| telegram-desktop | ✓ | ✓ | — | ✓ | ✓ |
+| zoom-client | ✓ | ✓ | - | ✓ | ✓ |
+| chrome | ✓ | ✓ | - | ✓ | ✓ |
+| telegram-desktop | ✓ | ✓ | - | ✓ | ✓ |
 | firefox | ✓ | ✓ | ✓ | ✓ | ✓ |
-| com.spotify.Client | — | — | — | — | ✓ |
+| com.spotify.Client | - | - | - | - | ✓ |
 
-#### 12.19.3 Privacy › Privacy Settings — `privacy/settings`
+#### 12.19.3 Privacy › Privacy Settings: `privacy/settings`
 
-1. **Settings form (field rows, section 5.21)** — "Settings" · span 8
+1. **Settings form (field rows, section 5.21)**: "Settings" · span 8
 
 | Label | Description | Control | Initial | Control ID |
 | --- | --- | --- | --- | --- |
-| Location services | Apps can request your location | Switch | Off | `—` |
-| Usage reporting to Ubuntu | ubuntu-report · popularity-contest | Switch | Off | `—` |
-| Problem reporting | Send crash reports to Canonical | Switch | On | `—` |
-| Recent files history | Remember files you opened | Switch | On | `—` |
-| Remove old temporary files | After 30 days | Switch | On | `—` |
+| Location services | Apps can request your location | Switch | Off | `-` |
+| Usage reporting to Ubuntu | ubuntu-report · popularity-contest | Switch | Off | `-` |
+| Problem reporting | Send crash reports to Canonical | Switch | On | `-` |
+| Recent files history | Remember files you opened | Switch | On | `-` |
+| Remove old temporary files | After 30 days | Switch | On | `-` |
 
 ### 12.20 Diagnostics (`diagnostics`)
 
 - Group: Tools · Icon: `gauge` · Status badge: none
 - Sub-pages: Performance Check, Network Test, Hardware Tests
 
-#### 12.20.1 Diagnostics › Performance Check — `diagnostics/performance`
+#### 12.20.1 Diagnostics › Performance Check: `diagnostics/performance`
 
-1. **Diagnostics runner (section 5.23)** — "Performance check" · span 12
+1. **Diagnostics runner (section 5.23)**: "Performance check" · span 12
 - Info tooltip: "Run while the computer feels slow. Finds the main cause in about 10 seconds."
 
 Idle steps: CPU load → Memory → Memory pressure → Disk I/O → Temperature → Top processes. Button: [**Run check**](act:diag:run).
 
-> After the run completes, these widgets appear below the runner: **KPI row** — Memory used 7.6 GB `{crit:Critical}` "99% of 7.6 GB"; Memory pressure 23.4 % `{crit}` "some avg10"; Swap activity 18 MB/s `{warn}`; CPU 23 % "normal"; Temperature 61 °C "normal". **Data table "Contributing processes"** span 7 — columns Process, Memory [n], CPU [n], Impact; rows: chrome (42 tabs) 6.1 GB 14% {crit:High}; code 640 MB 4% {off:Low}; gnome-shell 410 MB 3% {off:Low}; telegram-desktop 280 MB 1% {off:Low}. **Checklist "Recommendations"** span 5 — `warn` Close unused browser tabs / Or enable Memory Saver in Chrome; `warn` Increase swap to 4 GB / Reduces freezes when memory fills / [Configure](act:toast:Swap resize opens a guided fix in the real app.); `pass` CPU and temperature are normal. The runner panel result: inline crit alert "Primary cause: memory saturation" / "chrome uses 6.1 GB of 7.6 GB (42 tabs) · swap active · memory pressure 23%". Header action [Run again](act:diag:run).
+> After the run completes, these widgets appear below the runner: **KPI row**: Memory used 7.6 GB `{crit:Critical}` "99% of 7.6 GB"; Memory pressure 23.4 % `{crit}` "some avg10"; Swap activity 18 MB/s `{warn}`; CPU 23 % "normal"; Temperature 61 °C "normal". **Data table "Contributing processes"** span 7: columns Process, Memory [n], CPU [n], Impact; rows: chrome (42 tabs) 6.1 GB 14% {crit:High}; code 640 MB 4% {off:Low}; gnome-shell 410 MB 3% {off:Low}; telegram-desktop 280 MB 1% {off:Low}. **Checklist "Recommendations"** span 5: `warn` Close unused browser tabs / Or enable Memory Saver in Chrome; `warn` Increase swap to 4 GB / Reduces freezes when memory fills / [Configure](act:toast:Swap resize opens a guided fix in the real app.); `pass` CPU and temperature are normal. The runner panel result: inline crit alert "Primary cause: memory saturation" / "chrome uses 6.1 GB of 7.6 GB (42 tabs) · swap active · memory pressure 23%". Header action [Run again](act:diag:run).
 
-#### 12.20.2 Diagnostics › Network Test — `diagnostics/network`
+#### 12.20.2 Diagnostics › Network Test: `diagnostics/network`
 
-1. **Diagnostics runner (section 5.23)** — "Network test" · span 12
+1. **Diagnostics runner (section 5.23)**: "Network test" · span 12
 
 Idle steps: Gateway → DNS resolution → Internet latency → Packet loss → IPv6. Button: [**Run test**](act:net:run).
 
 > After the run completes: runner result is an inline ok alert "Network is healthy" / "All 5 checks passed", header action [Run again](act:net:run), and a **KPI row** appears: Gateway 2 ms; DNS lookup 14 ms; Latency 18 ms "1.1.1.1"; Jitter 3 ms; Packet loss 0 %; IPv6 Link-local.
 
-#### 12.20.3 Diagnostics › Hardware Tests — `diagnostics/hardware`
+#### 12.20.3 Diagnostics › Hardware Tests: `diagnostics/hardware`
 
-1. **Data table** — "Available tests" · span 12
+1. **Data table**: "Available tests" · span 12
 
 | Test | Duration | Last run | Result | (action) |
 | --- | --- | --- | --- | --- |
 | SMART short self-test (NVMe) | 2 min | 7 days ago | {ok:Passed} | [Run](act:toast:SMART short self-test started.) |
-| Memory test (memtest86+) | 30–60 min | Never | {off:—} | [Schedule](act:toast:Runs at next restart from the boot menu.) |
+| Memory test (memtest86+) | 30-60 min | Never | {off:-} | [Schedule](act:toast:Runs at next restart from the boot menu.) |
 | Battery capacity report | 1 min | Today | {warn:71% health} | [Open](go:power/battery) |
 | Sensor check | 10 s | Today | {ok:Passed} | [Open](go:hardware/sensors) |
-| Speaker and microphone test | 30 s | Never | {off:—} | [Run](act:toast:Plays a test tone and records 3 seconds.) |
+| Speaker and microphone test | 30 s | Never | {off:-} | [Run](act:toast:Plays a test tone and records 3 seconds.) |
 
 ### 12.21 Assistant (`assistant`)
 
 - Group: Tools · Icon: `chat` · Status badge: none
 - Sub-pages: Chat
 
-#### 12.21.1 Assistant › Chat — `assistant/chat`
+#### 12.21.1 Assistant › Chat: `assistant/chat`
 
-1. **Chat (section 5.24)** — "Ask SysDoc" · span 8
+1. **Chat (section 5.24)**: "Ask SysDoc" · span 8
 - Subtitle: "Local model · on-device"
 
 Initial messages: user "Why did my laptop restart last night?", then the `restart` answer (section 10.5). Composer: input "Ask about this computer…" + primary Send. When the assistant is off, the panel body is instead a centered muted line "The assistant is turned off." + [**Turn on**](go:settings/assistant), and the subtitle reads "Off".
 
-2. **Question list** — "Suggested questions" · span 4
+2. **Question list**: "Suggested questions" · span 4
 
 Full-width rows (chat icon + text), each runs `ask:<key>`:
 
@@ -3033,7 +3033,7 @@ Full-width rows (chat icon + text), each runs `ask:<key>`:
 - Is my SSD healthy? → `ask:ssd`
 - What is filling my disk? → `ask:disk`
 
-3. **Key-value list** — "Assistant" · span 4
+3. **Key-value list**: "Assistant" · span 4
 
 | Key | Value |
 | --- | --- |
@@ -3048,9 +3048,9 @@ Full-width rows (chat icon + text), each runs `ask:<key>`:
 - Group: Footer · Icon: `sliders` · Status badge: none
 - Sub-pages: General, Access, Notifications, Assistant, Data, About
 
-#### 12.22.1 Settings › General — `settings/general`
+#### 12.22.1 Settings › General: `settings/general`
 
-1. **Settings form (field rows, section 5.21)** — "General" · span 8
+1. **Settings form (field rows, section 5.21)**: "General" · span 8
 
 | Label | Description | Control | Initial | Control ID |
 | --- | --- | --- | --- | --- |
@@ -3060,9 +3060,9 @@ Full-width rows (chat icon + text), each runs `ask:<key>`:
 | Temperature unit |  | Select: Celsius / Fahrenheit | Celsius | `set-temp` |
 | Start at login | Collector runs in the background | Switch | On | `set-start` |
 
-#### 12.22.2 Settings › Access — `settings/access`
+#### 12.22.2 Settings › Access: `settings/access`
 
-1. **Radio cards (section 5.21)** — "Access level" · span 8
+1. **Radio cards (section 5.21)**: "Access level" · span 8
 
 | Option | Description | Checked |
 | --- | --- | --- |
@@ -3071,7 +3071,7 @@ Full-width rows (chat icon + text), each runs `ask:<key>`:
 
 Radio group name: `access`.
 
-2. **Key-value list** — "Admin helper" · span 4
+2. **Key-value list**: "Admin helper" · span 4
 
 | Key | Value |
 | --- | --- |
@@ -3081,20 +3081,20 @@ Radio group name: `access`.
 | Allowed actions | 24 (fixed list) |
 | Audit log | `/var/log/sysdoc/helper.log` |
 
-#### 12.22.3 Settings › Notifications — `settings/notifications`
+#### 12.22.3 Settings › Notifications: `settings/notifications`
 
-1. **Settings form (field rows, section 5.21)** — "Notifications" · span 8
+1. **Settings form (field rows, section 5.21)**: "Notifications" · span 8
 
 | Label | Description | Control | Initial | Control ID |
 | --- | --- | --- | --- | --- |
 | Critical issues | Disk almost full, SSD failing, overheating | Switch | On | `n1` |
 | Warnings | Included in the weekly summary when off | Switch | Off | `n2` |
 | Weekly summary | Sunday 18:00 | Switch | On | `n3` |
-| Quiet hours |  | Select: Off / 22:00–07:00 / 23:00–08:00 | 22:00–07:00 | `n4` |
+| Quiet hours |  | Select: Off / 22:00-07:00 / 23:00-08:00 | 22:00-07:00 | `n4` |
 
-#### 12.22.4 Settings › Assistant — `settings/assistant`
+#### 12.22.4 Settings › Assistant: `settings/assistant`
 
-1. **Settings form (field rows, section 5.21)** — "Assistant" · span 8
+1. **Settings form (field rows, section 5.21)**: "Assistant" · span 8
 
 | Label | Description | Control | Initial | Control ID |
 | --- | --- | --- | --- | --- |
@@ -3102,20 +3102,20 @@ Radio group name: `access`.
 | Model |  | Select: Local · 3B (fast) / Local · 8B (better answers) | Local · 3B (fast) | `set-model` |
 | Cloud fallback | Removes names, hostnames, IPs and serials before sending | Switch | Off | `set-cloud` |
 
-#### 12.22.5 Settings › Data — `settings/data`
+#### 12.22.5 Settings › Data: `settings/data`
 
-1. **Settings form (field rows, section 5.21)** — "Data retention" · span 8
+1. **Settings form (field rows, section 5.21)**: "Data retention" · span 8
 
 | Label | Description | Control | Initial | Control ID |
 | --- | --- | --- | --- | --- |
 | Keep history for | Metrics and change history | Select: 90 days / 1 year / 2 years | 2 years | `ret` |
-| Database size | `~/.local/share/sysdoc/sysdoc.db` | Read-only value | 74 MB | `—` |
-| Export report | HTML or JSON snapshot of all pages | [Export](act:toast:Report export is disabled in the prototype.) | — | `—` |
-| Delete history | Restore points are kept | [Delete…](act:toast:Prototype: nothing was deleted.) | — | `—` |
+| Database size | `~/.local/share/sysdoc/sysdoc.db` | Read-only value | 74 MB | `-` |
+| Export report | HTML or JSON snapshot of all pages | [Export](act:toast:Report export is disabled in the prototype.) | - | `-` |
+| Delete history | Restore points are kept | [Delete…](act:toast:Prototype: nothing was deleted.) | - | `-` |
 
-#### 12.22.6 Settings › About — `settings/about`
+#### 12.22.6 Settings › About: `settings/about`
 
-1. **Key-value list** — "About" · span 6
+1. **Key-value list**: "About" · span 6
 
 | Key | Value |
 | --- | --- |

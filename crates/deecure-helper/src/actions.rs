@@ -230,7 +230,7 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
                 || !(1..=20).contains(percent)
             {
                 return Err(
-                    "the action must be PowerOff, Hibernate, or HybridSleep, at 1–20%".into(),
+                    "the action must be PowerOff, Hibernate, or HybridSleep, at 1-20%".into(),
                 );
             }
             // The file itself is edited by the helper, not by a program; then UPower reloads it.

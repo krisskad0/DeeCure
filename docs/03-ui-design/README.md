@@ -57,7 +57,7 @@ Screens 1 and 2 still need a design. The user journey describes them: [First lau
 The prototype was built with these rules:
 
 - One self-contained HTML file. Vanilla JavaScript, no framework. All charts are hand-drawn inline SVG. No chart library.
-- External resource: Google Fonts only (`Ubuntu Sans` 400–700 and `Ubuntu Sans Mono` 400/500), with system fallbacks.
+- External resource: Google Fonts only (`Ubuntu Sans` 400-700 and `Ubuntu Sans Mono` 400/500), with system fallbacks.
 - Render by building HTML strings per page from a `PAGES` definition, then mounting charts after insertion. Re-render the whole main area on state change, keeping the scroll position.
 - Light and dark themes through CSS custom properties ([Design tokens](01-foundations/design-tokens.md)). Dark applies through `prefers-color-scheme: dark` unless `data-theme="light"` is set on `<html>`, and also when `data-theme="dark"` is set.
 - All numbers that line up in columns use `font-variant-numeric: tabular-nums`.

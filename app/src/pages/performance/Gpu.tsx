@@ -25,10 +25,10 @@ function shortName(gpu: Gpu): string {
 const COLUMNS: Column<Gpu>[] = [
   { key: "card", label: "Card", text: (g) => g.card, render: (g) => <code>{g.card}</code> },
   { key: "model", label: "Model", text: (g) => g.model ?? "Unknown", wrap: true },
-  { key: "vendor", label: "Maker", text: (g) => g.vendor ?? "—" },
+  { key: "vendor", label: "Maker", text: (g) => g.vendor ?? "-" },
   { key: "driver", label: "Driver", text: (g) => g.driver ?? "none" },
   { key: "boot", label: "Main", text: (g) => (g.boot_vga ? "Yes" : "No") },
-  { key: "pci", label: "PCI ID", text: (g) => g.pci_id ?? "—", expert: true },
+  { key: "pci", label: "PCI ID", text: (g) => g.pci_id ?? "-", expert: true },
 ];
 
 export function PerformanceGpu() {

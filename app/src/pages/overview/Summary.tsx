@@ -111,7 +111,7 @@ function kpis(score: number | undefined, open: number, latest: Metric[] | undefi
   const tiles: Kpi[] = [
     {
       label: "Health score",
-      value: score === undefined ? "—" : String(score),
+      value: score === undefined ? "-" : String(score),
       unit: score === undefined ? undefined : "/100",
       status: score === undefined ? "off" : scoreTone(score),
       subtext: score === undefined ? "Waiting for the first check" : plural(open, "open issue"),
@@ -124,7 +124,7 @@ function kpis(score: number | undefined, open: number, latest: Metric[] | undefi
   const load = pick(latest, "cpu.load_1m");
   tiles.push({
     label: "CPU",
-    value: cpu === undefined ? "—" : String(Math.round(cpu)),
+    value: cpu === undefined ? "-" : String(Math.round(cpu)),
     unit: cpu === undefined ? undefined : "%",
     subtext: [load !== undefined && `Load ${load.toFixed(2)}`, system && `${system.cpu_threads} threads`].filter(Boolean).join(" · "),
     visual: history?.cpu.length ? { kind: "spark", data: history.cpu.map((p) => p.value), slot: 1 } : undefined,
@@ -134,7 +134,7 @@ function kpis(score: number | undefined, open: number, latest: Metric[] | undefi
   const used = pick(latest, "memory.used");
   const total = pick(latest, "memory.total");
   const memPct = pick(latest, "memory.used_percent");
-  const mem = used === undefined ? { value: "—", unit: "" } : split(bytes(used));
+  const mem = used === undefined ? { value: "-", unit: "" } : split(bytes(used));
   tiles.push({
     label: "Memory",
     value: mem.value,
@@ -149,7 +149,7 @@ function kpis(score: number | undefined, open: number, latest: Metric[] | undefi
   const rootFindings = findings.filter((f) => f.rule.startsWith("storage.") && f.subject === "/");
   tiles.push({
     label: "Disk ( / )",
-    value: diskPct === undefined ? "—" : String(Math.round(diskPct)),
+    value: diskPct === undefined ? "-" : String(Math.round(diskPct)),
     unit: diskPct === undefined ? undefined : "%",
     status: worst(rootFindings),
     subtext: free !== undefined ? `${bytes(free)} free` : "",
@@ -163,7 +163,7 @@ function kpis(score: number | undefined, open: number, latest: Metric[] | undefi
   const both = history ? align([history.rx, history.tx]) : null;
   tiles.push({
     label: "Network",
-    value: net?.value ?? "—",
+    value: net?.value ?? "-",
     unit: net?.unit,
     subtext: rx !== undefined && tx !== undefined ? `↓ ${rate(rx)} · ↑ ${rate(tx)}` : "Measuring…",
     visual: both && both.times.length ? { kind: "spark", data: both.times.map((_, i) => both.data[0][i] + both.data[1][i]), slot: 3 } : undefined,
@@ -332,11 +332,11 @@ function SystemPanel({ system, now }: { system: SystemInfo | undefined; now: num
       {system ? (
         <KeyValueList
           rows={[
-            ["Hostname", system.hostname ?? "—"],
-            ["OS", system.os ?? "—"],
-            ["Kernel", system.kernel ? <code>{system.kernel}</code> : "—"],
-            ["Uptime", system.uptime_seconds === undefined ? "—" : duration(system.uptime_seconds)],
-            ["Last boot", system.uptime_seconds === undefined ? "—" : when(now - system.uptime_seconds * 1000, now)],
+            ["Hostname", system.hostname ?? "-"],
+            ["OS", system.os ?? "-"],
+            ["Kernel", system.kernel ? <code>{system.kernel}</code> : "-"],
+            ["Uptime", system.uptime_seconds === undefined ? "-" : duration(system.uptime_seconds)],
+            ["Last boot", system.uptime_seconds === undefined ? "-" : when(now - system.uptime_seconds * 1000, now)],
             ["Reboot required", system.reboot_required ? <StatusBadge variant="warn" label="Yes" /> : "No"],
           ]}
         />

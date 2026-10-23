@@ -20,7 +20,7 @@ Then a first check runs. Each area turns green, yellow, or red as it finishes. Y
 
 **Overview › Summary** shows:
 
-- **Health score** (0–100): 90 or more is healthy, 75–89 is fair, below 75 needs attention. Each problem takes points off its area.
+- **Health score** (0-100): 90 or more is healthy, 75-89 is fair, below 75 needs attention. Each problem takes points off its area.
 - **Subsystems:** all 13 areas (hardware, power, storage, network, security, and more), each with a number and a status. Click a row to open its page.
 - **Active issues:** the problems, most serious first. Each has a button to fix or look.
 
@@ -58,7 +58,7 @@ DeeCure tells you about serious problems, even when the window is closed:
 
 - **Critical problems** appear right away, for example "Disk will be full in about 3 days".
 - **Warnings** wait for the weekly summary, unless you turn them on.
-- **Quiet hours** (22:00–07:00 by default): nothing appears then; it waits until the quiet hours end.
+- **Quiet hours** (22:00-07:00 by default): nothing appears then; it waits until the quiet hours end.
 - The same alert never appears twice within 24 hours.
 - **Weekly summary**, Sunday 18:00: your health score and how it moved, what changed, and one tip. Past summaries are on **Overview › Health Score**.
 

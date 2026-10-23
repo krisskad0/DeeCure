@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Shared chart maths, from docs/03-ui-design/03-components/12–16.
+// Shared chart maths, from docs/03-ui-design/03-components/12-16.
 
 import type { Range } from "../../ui";
 
@@ -53,7 +53,7 @@ export function barLabelEvery(n: number, width: number): number {
   return Math.ceil(n / Math.max(4, Math.floor(width / 46)));
 }
 
-/** Heatmap colour level 1–5 (--h1 … --h5) for a cell. */
+/** Heatmap colour level 1-5 (--h1 … --h5) for a cell. */
 export function heatLevel(value: number, max: number): number {
   if (value <= 0 || max <= 0) return 1;
   return Math.min(5, 2 + Math.floor((value / max) * 3.99));

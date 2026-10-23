@@ -148,7 +148,7 @@ export function LineChart(props: {
             <div key={s.name} className="tip-row">
               <i style={{ background: color(s, k) }} />
               {series.length > 1 ? `${s.name}: ` : ""}
-              {s.data[hover] === undefined ? "—" : formatValue(s.data[hover], unit)}
+              {s.data[hover] === undefined ? "-" : formatValue(s.data[hover], unit)}
             </div>
           ))}
         </div>

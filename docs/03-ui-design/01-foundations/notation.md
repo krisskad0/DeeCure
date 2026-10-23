@@ -13,7 +13,7 @@
 | `` `text` `` | Monospace text |
 | `**Title** · subtitle` | Two-line cell: bold title with a 12px muted line below |
 | `[meter 78% "label"]` | Inline meter ([Inline meter](../03-components/06-inline-meter.md)); `[meter:warn …]` / `[meter:ok …]` force the color |
-| `✓` / `—` | Yes (green check icon) / No (muted minus icon) |
+| `✓` / `-` | Yes (green check icon) / No (muted minus icon) |
 | `[toggle:on]` / `[toggle:off]` | Switch control |
 | `[Label](act:xyz)` | Small button that runs action `xyz` ([Interactions](../04-behavior/interactions.md)) |
 | `[**Label**](act:xyz)` | Primary small button |

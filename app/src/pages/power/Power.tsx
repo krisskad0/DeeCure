@@ -55,11 +55,11 @@ export function PowerBattery() {
     <>
       <KpiRow
         tiles={[
-          { label: "Charge", value: battery.charge === undefined ? "—" : String(Math.round(battery.charge)), unit: "%", subtext: battery.status, visual: battery.charge === undefined ? undefined : { kind: "bar", percent: battery.charge } },
-          { label: "Health", value: healthNow === undefined ? "—" : String(Math.round(healthNow)), unit: "%", status: tone === "ok" ? "ok" : tone, subtext: "of design capacity" },
-          { label: "Time remaining", value: plugged ? "Plugged in" : left === undefined ? "—" : duration(left), subtext: plugged ? "" : "Estimate" },
-          { label: "Power draw", value: watts === undefined ? "—" : watts.toFixed(1), unit: "W", visual: spark(charge, 1) && { kind: "spark", data: spark(charge, 1) ?? [], slot: 2 } },
-          { label: "Capacity", value: battery.full_wh === undefined ? "—" : battery.full_wh.toFixed(1), unit: "Wh", subtext: battery.design_wh ? `Design ${battery.design_wh.toFixed(0)} Wh` : "" },
+          { label: "Charge", value: battery.charge === undefined ? "-" : String(Math.round(battery.charge)), unit: "%", subtext: battery.status, visual: battery.charge === undefined ? undefined : { kind: "bar", percent: battery.charge } },
+          { label: "Health", value: healthNow === undefined ? "-" : String(Math.round(healthNow)), unit: "%", status: tone === "ok" ? "ok" : tone, subtext: "of design capacity" },
+          { label: "Time remaining", value: plugged ? "Plugged in" : left === undefined ? "-" : duration(left), subtext: plugged ? "" : "Estimate" },
+          { label: "Power draw", value: watts === undefined ? "-" : watts.toFixed(1), unit: "W", visual: spark(charge, 1) && { kind: "spark", data: spark(charge, 1) ?? [], slot: 2 } },
+          { label: "Capacity", value: battery.full_wh === undefined ? "-" : battery.full_wh.toFixed(1), unit: "Wh", subtext: battery.design_wh ? `Design ${battery.design_wh.toFixed(0)} Wh` : "" },
           { label: "Cycle count", value: battery.cycles === undefined ? "N/A" : String(battery.cycles), subtext: battery.cycles === undefined ? "Not reported" : "" },
         ]}
       />
@@ -96,7 +96,7 @@ const PROFILES = [
   { value: "performance", title: "Performance", description: "Plugged in only" },
 ] as const;
 
-const minutes = (s?: number) => (s === undefined ? "—" : s === 0 ? "Never" : duration(s));
+const minutes = (s?: number) => (s === undefined ? "-" : s === 0 ? "Never" : duration(s));
 const SLEEP_MODE: Record<string, string> = { s2idle: "Modern standby (s2idle)", deep: "Deep sleep (S3)", shallow: "Light sleep (S1)" };
 
 export function PowerProfile() {
@@ -123,7 +123,7 @@ export function PowerProfile() {
       <Panel title="Battery policies" source="/etc/UPower/UPower.conf · logind · GNOME settings" span={6} flush>
         <KeyValueList
           rows={[
-            ["Low battery warning", power.policy ? `${power.policy.low_percent}%` : "—"],
+            ["Low battery warning", power.policy ? `${power.policy.low_percent}%` : "-"],
             [
               "Critical action",
               power.policy ? (
@@ -132,14 +132,14 @@ export function PowerProfile() {
                   {battery && power.policy.critical_action !== "PowerOff" && <Button small onClick={() => openFix("power.set_battery_action")}>Power off cleanly…</Button>}
                 </span>
               ) : (
-                "—"
+                "-"
               ),
             ],
             ["Charge limit", !battery ? "No battery" : battery.charge_limit === undefined ? "Not supported" : battery.charge_limit >= 100 ? "Supported · Off" : `Stops at ${battery.charge_limit}%`],
             ["Screen blank", minutes(power.screen_blank_seconds)],
             ["Automatic suspend", battery ? `${minutes(power.suspend_on_battery_seconds)} on battery · ${minutes(power.suspend_on_ac_seconds)} plugged in` : minutes(power.suspend_on_ac_seconds)],
             ["Closing the lid", power.lid_action],
-            ["Sleep mode", power.sleep_mode ? SLEEP_MODE[power.sleep_mode] ?? power.sleep_mode : "—"],
+            ["Sleep mode", power.sleep_mode ? SLEEP_MODE[power.sleep_mode] ?? power.sleep_mode : "-"],
           ]}
         />
       </Panel>
@@ -150,7 +150,7 @@ export function PowerProfile() {
 const EVENTS: Column<SleepEvent>[] = [
   { key: "time", label: "Time", text: (e) => String(e.at), render: (e) => when(e.at) },
   { key: "event", label: "Event", text: (e) => e.kind[0].toUpperCase() + e.kind.slice(1) },
-  { key: "duration", label: "Duration", text: (e) => (e.duration_ms === undefined ? "—" : duration(e.duration_ms / 1000)), numeric: true },
+  { key: "duration", label: "Duration", text: (e) => (e.duration_ms === undefined ? "-" : duration(e.duration_ms / 1000)), numeric: true },
   { key: "result", label: "Result", text: (e) => (e.failed ? "Failed" : e.duration_ms === undefined ? "No resume logged" : "Success"), render: (e) => (e.failed ? <StatusBadge variant="crit" label="Failed" /> : e.duration_ms === undefined ? <StatusBadge variant="off" label="No resume logged" /> : <StatusBadge variant="ok" label="Success" />) },
 ];
 

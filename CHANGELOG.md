@@ -13,7 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- **Phase 3 — history and trends.**
+- **Phase 3: history and trends.**
 - History: the agent saves what changed as events, every 5 minutes: apt and dpkg package changes (also from the newest rotated log), snap and Flatpak apps, USB devices, crashes, memory kills, and failed services from the journal (grouped per hour; failures around a shutdown or logout are left out), boots with kernel changes and unclean shutdowns, config files in `/etc`, autostart, systemd user units, and the crontab (with diffs, without inotify), and DeeCure's own fixes.
 - Activity pages read the saved history: the timeline groups apt runs and config files, shows a "new kernel" tip with how to start the previous one, and has Undo for fixes and View for config diffs. Package History adds snap and Flatpak.
 - New agent calls: `events`, `event`, `notify_settings`, `set_notify_settings`, `notify_test`, `notifications`, `report`, and `weekly_reports`.
@@ -49,7 +49,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - UI components: panel (info tooltip, Expert-only source chip), buttons, KPI tiles with sparklines and usage bars, inline meter, key-value list, status list, checklist, activity timeline, alert banner, and code and log blocks. A development-only component gallery shows each one with the prototype's sample data. UI tests run with Vitest in `make web` and CI. Charts will be our own SVG components (ADR 0006).
 - Charts, drawn as our own SVG components: line/area (stacked areas, threshold, forecast, hover crosshair and tooltip, legend), bar, donut, gauge and gauge group, day × hour heatmap, horizontal bar list, disk allocation bar, 24-hour swim lanes, and lifecycle bar. All appear in the component gallery with the spec's data, with tests for scales, labels, and colours.
 - More collectors: network traffic, disk reads and writes, pressure (PSI), temperatures and fans, per-core CPU, memory breakdown, and battery time left.
-- Health score: `status` now returns a 0–100 score and the points each area lost (critical −15, warning −5, at most 15 per area). The agent saves it after every check, and `deecure status` shows it.
+- Health score: `status` now returns a 0-100 score and the points each area lost (critical −15, warning −5, at most 15 per area). The agent saves it after every check, and `deecure status` shows it.
 - New agent calls: `latest` (newest value of every metric), `inventory` (live `system` facts and `processes`), and `max_points` on `metrics`, which averages long ranges so they always fit in one message.
 - Overview pages with real data: Summary (KPI row, CPU and memory chart over the chosen time range, subsystems, active issues, health gauge, disk donut, top processes, system facts), Issues (counts by severity), and Health Score (30-day trend and breakdown).
 - Performance pages with real data: CPU (load, clock speed, context switches, stacked usage by type, per-core bars, top consumers), Memory (usage over time, composition that adds up to the total, top consumers with swap), Disk I/O (throughput, IOPS, busy time, wait time, devices), Network (throughput, data today, connections, interfaces), GPU (model from the PCI list, driver, honest "not reported" values), and Pressure (some and full, peak in range). New collectors values and the live `network` and `gpu` inventories feed them.

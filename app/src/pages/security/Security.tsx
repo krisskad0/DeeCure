@@ -66,8 +66,8 @@ export function SecurityOverview() {
     <>
       <KpiRow
         tiles={[
-          { label: "Security updates", value: security === undefined ? "—" : String(security), status: security ? "warn" : "ok", href: href("system", "updates") },
-          { label: "Firewall", value: !net ? "—" : !net.firewall.installed ? "Not installed" : net.firewall.enabled ? "Active" : "Off", status: net?.firewall.installed && !net.firewall.enabled ? "warn" : "ok" },
+          { label: "Security updates", value: security === undefined ? "-" : String(security), status: security ? "warn" : "ok", href: href("system", "updates") },
+          { label: "Firewall", value: !net ? "-" : !net.firewall.installed ? "Not installed" : net.firewall.enabled ? "Active" : "Off", status: net?.firewall.installed && !net.firewall.enabled ? "warn" : "ok" },
           { label: "Checks passing", value: `${count("pass")}/${checks.length}` },
         ]}
       />
@@ -117,7 +117,7 @@ const HARD: Column<Hard>[] = [
   { key: "name", label: "Check", text: (h) => h.name },
   { key: "result", label: "Result", text: (h) => h.result, render: (h) => <StatusBadge variant={h.result === "pass" ? "ok" : h.result === "fail" ? "warn" : "off"} label={h.result === "pass" ? "Pass" : h.result === "fail" ? "Could be safer" : "Not available"} /> },
   { key: "value", label: "Value", text: (h) => h.value, render: (h) => <code>{h.value}</code> },
-  { key: "rec", label: "Recommendation", text: (h) => h.recommendation || "—", wrap: true },
+  { key: "rec", label: "Recommendation", text: (h) => h.recommendation || "-", wrap: true },
 ];
 
 export function SecurityHardening() {

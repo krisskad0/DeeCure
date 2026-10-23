@@ -67,7 +67,7 @@ export function JobsCalendar() {
       <KpiRow
         tiles={[
           { label: "Total jobs", value: String(jobs.cron.length + jobs.timers.length + jobs.anacron.length + jobs.at.length), subtext: "cron · timer · anacron · at" },
-          { label: "Next run", value: soonest ? (minutes < 120 ? String(minutes) : when(soonest.at)) : "—", unit: soonest && minutes < 120 ? "min" : undefined, subtext: soonest?.name ?? "" },
+          { label: "Next run", value: soonest ? (minutes < 120 ? String(minutes) : when(soonest.at)) : "-", unit: soonest && minutes < 120 ? "min" : undefined, subtext: soonest?.name ?? "" },
           { label: "Failed", value: String(failed.length), status: failed.length ? "warn" : "ok", subtext: failed.length ? [...new Set(failed.map((f) => f.job))].slice(0, 2).join(", ") : "last 7 days" },
           { label: "Runs", value: jobs.runs.length.toLocaleString(), subtext: "last 7 days" },
         ]}
@@ -93,7 +93,7 @@ const CRON: Column<CronJob>[] = [
     text: (j) => {
       const c = parseCron(j.schedule);
       const n = c && nextRun(c, Date.now());
-      return n ? when(n) : j.schedule === "@reboot" ? "At next start" : "—";
+      return n ? when(n) : j.schedule === "@reboot" ? "At next start" : "-";
     },
   },
   { key: "result", label: "Last result", text: () => "Not recorded", render: () => <StatusBadge variant="off" label="Not recorded" /> },
@@ -117,16 +117,16 @@ const RESULT: Record<string, ["ok" | "crit" | "warn", string]> = { success: ["ok
 const TIMERS: Column<Timer>[] = [
   { key: "name", label: "Timer", text: (t) => t.name, render: (t) => <code>{t.name}</code> },
   { key: "activates", label: "Activates", text: (t) => t.activates, render: (t) => <code>{t.activates}</code>, expert: true },
-  { key: "schedule", label: "Schedule", text: (t) => t.schedule.join(", "), render: (t) => <code className="wrap-anywhere">{t.schedule.join(", ") || "—"}</code>, wrap: true },
+  { key: "schedule", label: "Schedule", text: (t) => t.schedule.join(", "), render: (t) => <code className="wrap-anywhere">{t.schedule.join(", ") || "-"}</code>, wrap: true },
   { key: "last", label: "Last trigger", text: (t) => (t.last ? when(t.last) : "Never") },
-  { key: "next", label: "Next", text: (t) => (t.next ? when(t.next) : "—") },
+  { key: "next", label: "Next", text: (t) => (t.next ? when(t.next) : "-") },
   {
     key: "result",
     label: "Result",
-    text: (t) => t.result ?? "—",
-    render: (t) => (t.result ? <StatusBadge variant={RESULT[t.result]?.[0] ?? "warn"} label={RESULT[t.result]?.[1] ?? t.result} /> : <span className="muted">{t.last ? "—" : "Not run yet"}</span>),
+    text: (t) => t.result ?? "-",
+    render: (t) => (t.result ? <StatusBadge variant={RESULT[t.result]?.[0] ?? "warn"} label={RESULT[t.result]?.[1] ?? t.result} /> : <span className="muted">{t.last ? "-" : "Not run yet"}</span>),
   },
-  { key: "persistent", label: "Persistent", text: (t) => (t.persistent ? "Yes" : "No"), render: (t) => (t.persistent ? <Icon name="check" size={16} /> : <span className="muted">—</span>) },
+  { key: "persistent", label: "Persistent", text: (t) => (t.persistent ? "Yes" : "No"), render: (t) => (t.persistent ? <Icon name="check" size={16} /> : <span className="muted">-</span>) },
   { key: "scope", label: "Scope", text: (t) => t.scope, expert: true },
 ];
 
@@ -148,7 +148,7 @@ const ANACRON: Column<Anacron>[] = [
   { key: "period", label: "Period", text: (a) => period(a.period) },
   { key: "delay", label: "Delay", text: (a) => `${a.delay} min`, numeric: true },
   { key: "command", label: "Command", text: (a) => a.command, render: (a) => <code>{a.command}</code> },
-  { key: "last", label: "Last run", text: (a) => (a.last_run ? when(a.last_run) : "—") },
+  { key: "last", label: "Last run", text: (a) => (a.last_run ? when(a.last_run) : "-") },
 ];
 
 export function JobsAnacron() {

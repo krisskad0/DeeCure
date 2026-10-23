@@ -41,13 +41,13 @@ The code is in `crates/deecure-agent/src/store/`.
 | 1-minute points | 7 days | Rolled up into 15-minute averages |
 | 15-minute points | 90 days | Rolled up into daily averages |
 | Daily points | 2 years | Deleted |
-| A series with no points left | — | Deleted (it comes back with the next reading) |
+| A series with no points left | - | Deleted (it comes back with the next reading) |
 | Events | 2 years, and never more than 200,000 | Deleted, oldest first |
 | Weekly reports | 2 years | Deleted |
 | Snapshots | 1 day as is, then the newest of each hour; after 7 days the newest of each day | Deleted after 90 days, except the newest of each kind |
 | Sent notifications | 90 days | Deleted |
 | Findings that are no longer open | 90 days | Deleted |
-| Open findings, settings, fix runs, watched files | Always | — |
+| Open findings, settings, fix runs, watched files | Always | - |
 
 Change these times in `store/retention.rs`, and update this table.
 

@@ -30,7 +30,7 @@ User-facing steps: [Install guide](../07-user-guide/install.md).
 | Ubuntu 24.04 LTS | `noble` | amd64, then arm64 | First |
 | Ubuntu 26.04 LTS | `resolute` | amd64, then arm64 | First |
 | Debian 13 | `trixie` | amd64 | After the Ubuntu builds are stable |
-| Ubuntu interim releases | — | amd64 | Best effort |
+| Ubuntu interim releases | - | amd64 | Best effort |
 
 We build one package per release, because library package names differ between releases.
 

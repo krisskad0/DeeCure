@@ -48,7 +48,7 @@ export function SystemTime() {
         <KeyValueList
           rows={[
             ["Local time", now.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })],
-            ["Time zone", os.timezone ? `${os.timezone} (${zoneName(os.timezone, now)})` : "—"],
+            ["Time zone", os.timezone ? `${os.timezone} (${zoneName(os.timezone, now)})` : "-"],
             ["NTP synchronized", <StatusBadge key="n" variant={os.ntp_synchronized ? "ok" : "warn"} label={os.ntp_synchronized ? "Yes" : "No"} />],
             ["Time server", os.time_server],
             ["RTC in local time", os.rtc_local ? <StatusBadge key="r" variant="warn" label="Yes" /> : "No"],
@@ -58,8 +58,8 @@ export function SystemTime() {
       <Panel title="Locale" source="/etc/default/locale · /etc/default/keyboard" span={6} flush>
         <KeyValueList
           rows={[
-            ["System locale", os.locale ? <code key="l">{os.locale}</code> : "—"],
-            ["Keyboard layout", os.keyboard ?? "—"],
+            ["System locale", os.locale ? <code key="l">{os.locale}</code> : "-"],
+            ["Keyboard layout", os.keyboard ?? "-"],
             ["Units", units(os.locale)],
           ]}
         />

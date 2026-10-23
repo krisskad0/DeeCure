@@ -156,7 +156,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   let title: string;
   if (step === 0) {
     title = "Welcome to DeeCure";
-    body = <p>DeeCure looks at your whole computer — hardware, system, apps, storage, network, and security — and explains what it finds in plain words. Problems come first, with what to do about them.</p>;
+    body = <p>DeeCure looks at your whole computer - hardware, system, apps, storage, network, and security - and explains what it finds in plain words. Problems come first, with what to do about them.</p>;
   } else if (step === 1) {
     title = "Everything stays here";
     body = (

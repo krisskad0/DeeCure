@@ -1,9 +1,9 @@
-# Phase 0 — Foundations
+# Phase 0: Foundations
 
 [Docs](../README.md) › [Roadmap](README.md)
 
 **Goal:** a working skeleton. It installs as a `.deb` and `deecure status` shows real data.
-**Rough time:** 3–4 weeks.
+**Rough time:** 3-4 weeks.
 
 ## Progress
 
@@ -57,4 +57,4 @@
 
 ---
 
-[Index](README.md) · Next: [Phase 1 — MVP](phase-1-mvp.md) →
+[Index](README.md) · Next: [Phase 1: MVP](phase-1-mvp.md) →

@@ -37,7 +37,7 @@ const LABEL: Record<PackageInfo["source"], string> = { apt: "APT", snap: "Snap",
 
 const COLUMNS: Column<PackageInfo>[] = [
   { key: "name", label: "Name", text: (p) => `${p.name} ${p.summary ?? ""}`, render: (p) => (p.summary ? <span className="cell-two"><b>{p.name}</b><span>{p.summary}</span></span> : <b>{p.name}</b>) },
-  { key: "version", label: "Version", text: (p) => p.version, render: (p) => (p.version ? <code>{p.version}</code> : "—") },
+  { key: "version", label: "Version", text: (p) => p.version, render: (p) => (p.version ? <code>{p.version}</code> : "-") },
   { key: "source", label: "Source", text: (p) => p.source, render: (p) => <StatusBadge variant="info" label={p.source} /> },
   { key: "size", label: "Size", text: (p) => bytes(p.size), numeric: true },
   { key: "by", label: "Installed by", text: (p) => (p.manual ? "You" : "System"), render: (p) => (p.manual ? "You" : <span className="muted">System</span>) },
@@ -82,11 +82,11 @@ export function PackagesInstalled() {
         <Drawer title={inspect.name} subtitle={`${LABEL[inspect.source]} package`} note="Removing packages comes with the fix engine" onClose={() => setInspect(null)}>
           <KeyValueList
             rows={[
-              ["Version", inspect.version ? <code key="v">{inspect.version}</code> : "—"],
+              ["Version", inspect.version ? <code key="v">{inspect.version}</code> : "-"],
               ["Size", bytes(inspect.size)],
               ["Installed by", inspect.manual ? "You" : "The system (as a dependency)"],
-              ["Section", inspect.section || "—"],
-              ["About", kbPackage(kb, inspect.name)?.plain ?? (inspect.summary || "—")],
+              ["Section", inspect.section || "-"],
+              ["About", kbPackage(kb, inspect.name)?.plain ?? (inspect.summary || "-")],
             ]}
           />
         </Drawer>
@@ -123,7 +123,7 @@ type Removable = PackagesInfo["removable"][number];
 const REMOVABLE: Column<Removable>[] = [
   { key: "title", label: "Item", text: (r) => r.title, render: (r) => (<span className="cell-two"><b>{r.title}</b><span>{r.names.slice(0, 4).join(", ")}{r.names.length > 4 ? ` +${r.names.length - 4} more` : ""}</span></span>) },
   { key: "count", label: "Count", text: (r) => String(r.count), numeric: true },
-  { key: "size", label: "Size", text: (r) => (r.size ? bytes(r.size) : "—"), numeric: true },
+  { key: "size", label: "Size", text: (r) => (r.size ? bytes(r.size) : "-"), numeric: true },
   { key: "undo", label: "Undo", text: (r) => r.undo, render: (r) => <StatusBadge variant={r.undo === "reinstallable" ? "info" : "warn"} label={r.undo === "reinstallable" ? "Reinstallable" : "Irreversible"} /> },
 ];
 

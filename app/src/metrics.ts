@@ -60,7 +60,7 @@ export function when(ms: number, now = Date.now()): string {
   return `${d.toLocaleDateString(undefined, { day: "2-digit", month: "short" })} ${time}`;
 }
 
-/** Score colour: 90+ healthy, 75–89 fair, below 75 at risk. */
+/** Score colour: 90+ healthy, 75-89 fair, below 75 at risk. */
 export function scoreTone(score: number): "ok" | "warn" | "crit" {
   return score >= 90 ? "ok" : score >= 75 ? "warn" : "crit";
 }

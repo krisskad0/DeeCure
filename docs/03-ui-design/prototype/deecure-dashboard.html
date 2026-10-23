@@ -585,14 +585,14 @@ const UNDO = {full:['ok','Reversible'], regen:['info','Regenerates'], none:['war
 
 function issues(){
   const L = [], p = dPct();
-  if(pct() >= 93) L.push({sev:'crit', t:'Root filesystem almost full', d:`/ at ${p}% · ${f1(cleanable())} GB reclaimable`, cat:'Storage', first:'14 Oct', cnt:'—', act:['Resolve','fix:storage']});
-  else if(pct() >= 85) L.push({sev:'warn', t:'Root filesystem above 85%', d:`/ at ${p}% · largest: ~/Videos 52 GB`, cat:'Storage', first:'14 Oct', cnt:'—', act:['View','go:storage/usage']});
+  if(pct() >= 93) L.push({sev:'crit', t:'Root filesystem almost full', d:`/ at ${p}% · ${f1(cleanable())} GB reclaimable`, cat:'Storage', first:'14 Oct', cnt:'-', act:['Resolve','fix:storage']});
+  else if(pct() >= 85) L.push({sev:'warn', t:'Root filesystem above 85%', d:`/ at ${p}% · largest: ~/Videos 52 GB`, cat:'Storage', first:'14 Oct', cnt:'-', act:['View','go:storage/usage']});
   L.push({sev:'crit', t:'bluetooth.service crash loop', d:S.btRestarted ? `Restarted at ${S.btTime} · monitoring` : '14 restarts today · SIGSEGV', cat:'Services', first:'Today 09:12', cnt:'14', act:['Inspect','bt']});
   if(!S.secFixed) L.push({sev:'warn', t:'Security updates pending', d:'4 packages · 2 high-severity CVEs', cat:'Security', first:'Today 06:21', cnt:'4', act:['Install','fix:sec']});
-  L.push({sev:'warn', t:'Battery health degraded', d:'71% of design capacity', cat:'Power', first:'02 Sep', cnt:'—', act:['View','go:power/battery']});
-  L.push({sev:'warn', t:'Backup overdue', d:'Last successful backup 21 days ago', cat:'Backups', first:'07 Oct', cnt:'—', act:['View','go:backups/jobs']});
+  L.push({sev:'warn', t:'Battery health degraded', d:'71% of design capacity', cat:'Power', first:'02 Sep', cnt:'-', act:['View','go:power/battery']});
+  L.push({sev:'warn', t:'Backup overdue', d:'Last successful backup 21 days ago', cat:'Backups', first:'07 Oct', cnt:'-', act:['View','go:backups/jobs']});
   L.push({sev:'warn', t:'Out-of-memory kill', d:'chrome renderer · Mon 16:12', cat:'Logs', first:'Mon 16:12', cnt:'1', act:['View','go:logs/kernel']});
-  L.push({sev:'info', t:'Reboot required', d:'libc6, openssl, sudo updated', cat:'System', first:'Today 10:40', cnt:'—', act:['Details','go:system/updates']});
+  L.push({sev:'info', t:'Reboot required', d:'libc6, openssl, sudo updated', cat:'System', first:'Today 10:40', cnt:'-', act:['Details','go:system/updates']});
   if(!S.battFixed) L.push({sev:'info', t:'Low-battery action not set', d:'Unclean shutdown at 02:14 today', cat:'Power', first:'Today 02:14', cnt:'1', act:['Configure','fix:batt']});
   L.push({sev:'info', t:'Missed timer run', d:'e2scrub_all.timer · Sun 03:10', cat:'Scheduled Jobs', first:'Sun 03:10', cnt:'1', act:['View','go:jobs/timers']});
   return L;
@@ -689,7 +689,7 @@ function tableHTML(w){
   const tools = (w.search || w.filter || w.sel) ? `<div class="tbl-tools">${w.search ? `<label class="sbox">${ic('search')}<input type="search" data-tsearch="${id}" value="${esc(st.q)}" placeholder="${w.search}" aria-label="${w.search}"></label>` : ''}${w.filter ? `<div class="chips" role="group" aria-label="Filter">${w.filter.opts.map(o => `<button class="chip" data-tfilter="${id}|${o}" aria-pressed="${st.f === o}">${o}</button>`).join('')}</div>` : ''}${w.sel ? `<div class="selbar">${selN ? `${selN} selected` : 'Select rows'}${BTN(w.sel[0], w.sel[1], selN ? 'pri' : '')}</div>` : ''}</div>` : '';
   const head = `<tr>${w.sel ? `<th class="cb"><input type="checkbox" data-tselall="${id}" aria-label="Select all" ${view.length && view.every(x => st.sel[x.i]) ? 'checked' : ''}></th>` : ''}${cols.map((c, ci) => `<th class="${cc(ci)} ${c[0] ? 'sortable' : ''}" ${c[0] ? `data-tsort="${id}|${ci}"` : ''}>${c[0]}${st.sort === ci ? `<span class="ar">${st.dir > 0 ? '↑' : '↓'}</span>` : ''}</th>`).join('')}</tr>`;
   const body = view.length ? view.map(x => `<tr class="${x.o.a || w.inspect ? 'click' : ''}" ${x.o.a ? `data-act="${x.o.a}"` : w.inspect ? `data-tinsp="${id}|${x.i}"` : ''}>${w.sel ? `<td class="cb"><input type="checkbox" data-tsel="${id}|${x.i}" aria-label="Select row" ${st.sel[x.i] ? 'checked' : ''}></td>` : ''}${x.r.map((c, ci) => `<td class="${cc(ci)}">${c}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length + (w.sel ? 1 : 0)}" class="empty">${w.empty || 'No matching rows'}</td></tr>`;
-  const foot = (total > ps || w.count) ? `<div class="tbl-foot"><span>${total ? `${st.pg * ps + 1}–${Math.min(total, st.pg * ps + ps)} of ${w.count && !st.q && st.f === 'All' ? w.count : total}` : '0 rows'}</span>${pages > 1 ? `<span class="pager"><button class="btn sm" data-tpage="${id}|-1" ${st.pg ? '' : 'disabled'}>Previous</button><button class="btn sm" data-tpage="${id}|1" ${st.pg < pages - 1 ? '' : 'disabled'}>Next</button></span>` : ''}</div>` : '';
+  const foot = (total > ps || w.count) ? `<div class="tbl-foot"><span>${total ? `${st.pg * ps + 1}-${Math.min(total, st.pg * ps + ps)} of ${w.count && !st.q && st.f === 'All' ? w.count : total}` : '0 rows'}</span>${pages > 1 ? `<span class="pager"><button class="btn sm" data-tpage="${id}|-1" ${st.pg ? '' : 'disabled'}>Previous</button><button class="btn sm" data-tpage="${id}|1" ${st.pg < pages - 1 ? '' : 'disabled'}>Next</button></span>` : ''}</div>` : '';
   return `${tools}<div class="tbl-wrap"><table class="t"><thead>${head}</thead><tbody>${body}</tbody></table></div>${foot}`;
 }
 function widget(w, idx){
@@ -794,27 +794,27 @@ const procRows = [
 ];
 const svc = (u, d, a, sub, en, rs, mem) => [C2(u, d), a === 'active' ? B('ok', a) : a === 'failed' ? B('crit', a) : OFF(a), `<span class="muted">${sub}</span>`, en === 'enabled' ? B('info', en) : `<span class="muted">${en}</span>`, rs, mem];
 const SVC = () => [
-  {c:svc('bluetooth.service', 'Bluetooth service', S.btRestarted ? 'active' : 'failed', S.btRestarted ? 'running' : 'auto-restart', 'enabled', '14', S.btRestarted ? '6 MB' : '—'), a:'bt'},
+  {c:svc('bluetooth.service', 'Bluetooth service', S.btRestarted ? 'active' : 'failed', S.btRestarted ? 'running' : 'auto-restart', 'enabled', '14', S.btRestarted ? '6 MB' : '-'), a:'bt'},
   svc('NetworkManager.service','Network Manager','active','running','enabled','0','22 MB'), svc('docker.service','Docker Application Container Engine','active','running','enabled','0','96 MB'),
   svc('containerd.service','containerd container runtime','active','running','enabled','0','52 MB'), svc('snapd.service','Snap Daemon','active','running','enabled','0','44 MB'),
   svc('gdm.service','GNOME Display Manager','active','running','enabled','0','9 MB'), svc('systemd-journald.service','Journal Service','active','running','static','0','38 MB'),
   svc('systemd-resolved.service','Network Name Resolution','active','running','enabled','0','8 MB'), svc('systemd-timesyncd.service','Network Time Synchronization','active','running','enabled','0','4 MB'),
-  svc('cups.service','CUPS Scheduler','active','running','enabled','0','7 MB'), svc('cups-browsed.service','Make remote CUPS printers available locally', S.cupsUndone ? 'active' : 'inactive', S.cupsUndone ? 'running' : 'dead', S.cupsUndone ? 'enabled' : 'disabled', '0', S.cupsUndone ? '5 MB' : '—'),
-  svc('ufw.service','Uncomplicated firewall','active','exited','enabled','0','—'), svc('apparmor.service','Load AppArmor profiles','active','exited','enabled','0','—'),
+  svc('cups.service','CUPS Scheduler','active','running','enabled','0','7 MB'), svc('cups-browsed.service','Make remote CUPS printers available locally', S.cupsUndone ? 'active' : 'inactive', S.cupsUndone ? 'running' : 'dead', S.cupsUndone ? 'enabled' : 'disabled', '0', S.cupsUndone ? '5 MB' : '-'),
+  svc('ufw.service','Uncomplicated firewall','active','exited','enabled','0','-'), svc('apparmor.service','Load AppArmor profiles','active','exited','enabled','0','-'),
   svc('unattended-upgrades.service','Unattended Upgrades Shutdown','active','running','enabled','0','12 MB'), svc('power-profiles-daemon.service','Power Profiles daemon','active','running','enabled','0','6 MB'),
   svc('thermald.service','Thermal Daemon Service','active','running','enabled','0','5 MB'), svc('avahi-daemon.service','Avahi mDNS/DNS-SD Stack','active','running','enabled','0','3 MB'),
   svc('ModemManager.service','Modem Manager','active','running','enabled','0','8 MB'), svc('packagekit.service','PackageKit Daemon','active','running','static','0','28 MB'),
   svc('accounts-daemon.service','Accounts Service','active','running','enabled','0','6 MB'), svc('polkit.service','Authorization Manager','active','running','static','0','9 MB'),
   svc('rsyslog.service','System Logging Service','active','running','enabled','0','5 MB'), svc('cron.service','Regular background program processing daemon','active','running','enabled','0','3 MB'),
-  svc('anacron.service','Run anacron jobs','inactive','dead','enabled','0','—'), svc('wpa_supplicant.service','WPA supplicant','active','running','enabled','0','7 MB'),
-  svc('fwupd.service','Firmware update daemon','inactive','dead','static','0','—'), svc('kerneloops.service','Collects kernel crash signatures','active','running','enabled','0','2 MB')
+  svc('anacron.service','Run anacron jobs','inactive','dead','enabled','0','-'), svc('wpa_supplicant.service','WPA supplicant','active','running','enabled','0','7 MB'),
+  svc('fwupd.service','Firmware update daemon','inactive','dead','static','0','-'), svc('kerneloops.service','Collects kernel crash signatures','active','running','enabled','0','2 MB')
 ];
 const PKGS = [
   ['firefox','131.0.3','snap','286 MB','System','Today'],['code','1.94.2','snap','340 MB','User','Today'],['google-chrome-stable','130.0.6723.58','apt · third-party','352 MB','User','Today'],
   ['telegram-desktop','5.6.1','snap','182 MB','User','Today'],['docker-ce','27.3.1','apt · third-party','108 MB','User','Today'],['zoom-client','6.2.3','snap','452 MB','User','6 days ago'],
   ['com.spotify.Client','1.2.45','flatpak','310 MB','User','Yesterday'],['com.obsproject.Studio','30.2.3','flatpak','480 MB','User','9 days ago'],['virtualbox','7.0.16','apt','190 MB','User','12 days ago'],
   ['vlc','3.0.20','apt','12 MB','User','3 days ago'],['vlc','3.0.21','snap','320 MB','User','Never'],['gimp','2.10.36','apt','98 MB','User','124 days ago'],
-  ['shotwell','0.32.6','apt','8 MB','System','201 days ago'],['git','2.43.0','apt','42 MB','User','Today'],['python3','3.12.3','apt','—','System','Today'],
+  ['shotwell','0.32.6','apt','8 MB','System','201 days ago'],['git','2.43.0','apt','42 MB','User','Today'],['python3','3.12.3','apt','-','System','Today'],
   ['libreoffice-writer','24.2.6','apt','64 MB','System','18 days ago'],['balenaEtcher','1.19.21','AppImage','98 MB','User','42 days ago'],['dropbox','2024.04.17','apt · third-party','38 MB','User','Today'],
   ['httpie','3.2.2','pip','2 MB','User','30 days ago'],['typescript','5.6.3','npm','22 MB','User','2 days ago'],['ripgrep','14.1.1','cargo','6 MB','User','Today']
 ];
@@ -884,12 +884,12 @@ def('overview', 'Overview', 'grid', [
   ]; }},
   {id:'score', l:'Health Score', f:() => [
     {t:'line', s:8, h:'Health score trend', sub:'30 days', series:[{n:'Score', d:Array.from({length:30}, (_, i) => i === 29 ? score() : Math.round(96 - i * .45 - (i > 22 ? 4 : 0))), k:1}], labels:D30L, y:[60, 100, ''], height:240},
-    {t:'html', s:4, h:'Current score', html:() => gauge(score(), 100, scoreSt(), score(), 'out of 100') + `<p class="muted" style="text-align:center;margin:6px 0 0">90+ Healthy · 75–89 Fair · below 75 At risk</p>`},
+    {t:'html', s:4, h:'Current score', html:() => gauge(score(), 100, scoreSt(), score(), 'out of 100') + `<p class="muted" style="text-align:center;margin:6px 0 0">90+ Healthy · 75-89 Fair · below 75 At risk</p>`},
     {t:'table', h:'Score breakdown', cols:['Category',['Weight', 'n'],['Deduction', 'n'],'Open findings','Status'], rows:[
-      ['Storage', '15', deductions()[0][1] ? '−' + deductions()[0][1] : '0', pct() >= 93 ? 'Root filesystem almost full' : pct() >= 85 ? 'Root filesystem above 85%' : '—', B(diskSt(), SW[diskSt()])],
-      ['Services', '15', '−5', 'bluetooth.service crash loop', B('crit', 'Critical')], ['Security', '15', S.secFixed ? '0' : '−3', S.secFixed ? '—' : '4 security updates pending', B(S.secFixed ? 'ok' : 'warn', S.secFixed ? 'Healthy' : 'Warning')],
+      ['Storage', '15', deductions()[0][1] ? '−' + deductions()[0][1] : '0', pct() >= 93 ? 'Root filesystem almost full' : pct() >= 85 ? 'Root filesystem above 85%' : '-', B(diskSt(), SW[diskSt()])],
+      ['Services', '15', '−5', 'bluetooth.service crash loop', B('crit', 'Critical')], ['Security', '15', S.secFixed ? '0' : '−3', S.secFixed ? '-' : '4 security updates pending', B(S.secFixed ? 'ok' : 'warn', S.secFixed ? 'Healthy' : 'Warning')],
       ['Power', '10', '−1', 'Battery health 71%', B('warn', 'Warning')], ['Backups', '10', '−1', 'Last backup 21 days ago', B('warn', 'Warning')],
-      ['Hardware', '10', '0', '—', B('ok', 'Healthy')], ['Network', '10', '0', '—', B('ok', 'Healthy')], ['Accounts', '5', '0', '—', B('ok', 'Healthy')], ['Privacy', '5', '0', '—', B('ok', 'Healthy')], ['Packages', '5', '0', '—', B('ok', 'Healthy')]]}
+      ['Hardware', '10', '0', '-', B('ok', 'Healthy')], ['Network', '10', '0', '-', B('ok', 'Healthy')], ['Accounts', '5', '0', '-', B('ok', 'Healthy')], ['Privacy', '5', '0', '-', B('ok', 'Healthy')], ['Packages', '5', '0', '-', B('ok', 'Healthy')]]}
   ]}
 ], {group:'Monitoring'});
 
@@ -909,7 +909,7 @@ def('performance', 'Performance', 'perf', [
   {id:'disk', l:'Disk I/O', f:() => [
     {t:'kpis', items:[K('Read', '2.4', 'MB/s', {sp:[31, 2, 2, 3, 0, 40, 2.4]}), K('Write', '0.8', 'MB/s', {sp:[32, 1, 1, 1.5, 0, 30, .8], k:2}), K('IOPS', '142', ''), K('Utilization', '6', '%'), K('Avg latency', '0.4', 'ms'), K('Queue depth', '0.02', '')]},
     {t:'line', h:'Throughput', src:'/proc/diskstats', series:[{n:'Read', g:[31, 2, 2, 3, 0, 40, 2.4], k:1}, {n:'Write', g:[32, 1, 1, 1.5, 0, 30, .8], k:2}], y:[0, 'auto', ' MB/s'], height:220},
-    {t:'table', s:6, h:'Devices', src:'iostat -x', cols:['Device',['Read/s', 'n'],['Write/s', 'n'],['Util', 'n'],['Await', 'n']], rows:[[M('nvme0n1'), '2.4 MB', '0.8 MB', '6%', '0.4 ms'], [M('loop0–loop13'), '0', '0', '0%', '0 ms']]},
+    {t:'table', s:6, h:'Devices', src:'iostat -x', cols:['Device',['Read/s', 'n'],['Write/s', 'n'],['Util', 'n'],['Await', 'n']], rows:[[M('nvme0n1'), '2.4 MB', '0.8 MB', '6%', '0.4 ms'], [M('loop0-loop13'), '0', '0', '0%', '0 ms']]},
     {t:'table', s:6, h:'Top I/O processes', src:'iotop -b -n1', cols:['Process',['Read', 'n'],['Write', 'n']], rows:S.access === 'full' ? [['chrome', '1.1 MB/s', '0.4 MB/s'], ['tracker-miner-fs-3', '0.8 MB/s', '0.1 MB/s'], ['code', '0.2 MB/s', '0.1 MB/s'], ['postgres', '0.1 MB/s', '0.1 MB/s']] : [], empty:'Requires Full access · Settings › Access'}
   ]},
   {id:'network', l:'Network', f:() => [
@@ -926,7 +926,7 @@ def('performance', 'Performance', 'perf', [
   {id:'pressure', l:'Pressure (PSI)', f:() => [
     {t:'kpis', items:[K('CPU some', '1.2', '%'), K('Memory some', '0.4', '%'), K('Memory full', '0.1', '%'), K('I/O some', '0.8', '%'), K('I/O full', '0.2', '%')]},
     {t:'line', h:'Pressure stall information', info:'Share of time tasks waited for CPU, memory or disk. The most reliable sign of a slow system.', src:'/proc/pressure/{cpu,memory,io}', series:[{n:'CPU', g:[51, 1.4, 1, 1.5, 0, 40, 1.2], k:1}, {n:'Memory', g:[52, .6, .5, 1.2, 0, 40, .4], k:2}, {n:'I/O', g:[53, .9, .6, 1, 0, 40, .8], k:3}], y:[0, 'auto', '%'], height:240},
-    {t:'kv', h:'Thresholds', items:[['Healthy', 'below 5% (avg10)'], ['Noticeable slowdown', '5–20%'], ['Severe', 'above 20%'], ['Peak in range', B('warn', 'Memory 23.4% · Mon 16:12')]]}
+    {t:'kv', h:'Thresholds', items:[['Healthy', 'below 5% (avg10)'], ['Noticeable slowdown', '5-20%'], ['Severe', 'above 20%'], ['Peak in range', B('warn', 'Memory 23.4% · Mon 16:12')]]}
   ]}
 ], {group:'Monitoring'});
 
@@ -965,7 +965,7 @@ def('logs', 'Logs', 'logs', [
   {id:'boots', l:'Boots', f:() => [
     {t:'bars', s:6, h:'Boot duration', sub:'last 10 boots', src:'systemd-analyze', data:BOOTS.map(b => [b[0], b[1]]), unit:' s', hi:[9], height:200},
     {t:'table', s:6, h:'Boot history', src:'journalctl --list-boots', cols:['Started','Ended','Duration','Shutdown','Kernel'], rows:[
-      ['Today 08:58', '—', '12 h 36 m', B('info', 'Running'), M('6.8.0-47')], ['Mon 08:41', 'Today 02:14', '1 d 17 h', B('crit', 'Unclean'), M('6.8.0-45')],
+      ['Today 08:58', '-', '12 h 36 m', B('info', 'Running'), M('6.8.0-47')], ['Mon 08:41', 'Today 02:14', '1 d 17 h', B('crit', 'Unclean'), M('6.8.0-45')],
       ['Sat 10:12', 'Mon 08:40', '1 d 22 h', B('ok', 'Clean'), M('6.8.0-45')], ['Thu 09:01', 'Sat 10:11', '2 d 1 h', B('ok', 'Clean'), M('6.8.0-45')]]}
   ]}
 ], {group:'Monitoring'});
@@ -978,11 +978,11 @@ def('activity', 'Activity', 'hist', [
   ]},
   {id:'packages', l:'Package History', f:() => [
     {t:'table', h:'Package history', search:'Search packages', filter:{col:1, opts:['All','Install','Upgrade','Remove']}, src:'/var/log/apt/history.log · snap changes', cols:['Date','Action','Package','From','To','Source'], rows:[
-      ...(S.secFixed ? [['Today', B('info', 'Upgrade'), 'openssl, libssl3t64, sudo, linux-firmware', '—', '—', 'DeeCure']] : []),
+      ...(S.secFixed ? [['Today', B('info', 'Upgrade'), 'openssl, libssl3t64, sudo, linux-firmware', '-', '-', 'DeeCure']] : []),
       ['Today 10:40', B('info', 'Upgrade'), 'libc6', M('2.39-0ubuntu8.2'), M('2.39-0ubuntu8.3'), 'unattended-upgrades'], ['Today 10:40', B('info', 'Upgrade'), 'openssl', M('3.0.13-0ubuntu3.3'), M('3.0.13-0ubuntu3.4'), 'unattended-upgrades'],
       ['Today 10:40', B('info', 'Upgrade'), 'sudo', M('1.9.15p5-3ubuntu5'), M('1.9.15p5-3ubuntu5.1'), 'unattended-upgrades'], ['Tue 18:40', B('info', 'Upgrade'), 'linux-image-generic', M('6.8.0-45'), M('6.8.0-47'), 'Software Updater'],
-      ['Tue 18:41', B('info', 'Upgrade'), 'linux-firmware', M('…0ubuntu2.4'), M('…0ubuntu2.5'), 'Software Updater'], ['Tue 15:22', B('ok', 'Install'), 'code (snap)', '—', M('1.94.2'), 'snap'],
-      ['Sat 19:03', B('ok', 'Install'), 'com.spotify.Client', '—', M('1.2.45'), 'flatpak'], ['Fri 12:20', B('crit', 'Remove'), 'thunderbird (snap)', M('128.3.1'), '—', 'snap'], ['Thu 09:30', B('ok', 'Install'), 'httpie', '—', M('3.2.2'), 'pip']]}
+      ['Tue 18:41', B('info', 'Upgrade'), 'linux-firmware', M('…0ubuntu2.4'), M('…0ubuntu2.5'), 'Software Updater'], ['Tue 15:22', B('ok', 'Install'), 'code (snap)', '-', M('1.94.2'), 'snap'],
+      ['Sat 19:03', B('ok', 'Install'), 'com.spotify.Client', '-', M('1.2.45'), 'flatpak'], ['Fri 12:20', B('crit', 'Remove'), 'thunderbird (snap)', M('128.3.1'), '-', 'snap'], ['Thu 09:30', B('ok', 'Install'), 'httpie', '-', M('3.2.2'), 'pip']]}
   ]},
   {id:'config', l:'Config Changes', f:() => [
     {t:'table', h:'Configuration changes', src:'inotify watcher · /etc', cols:['Time','File','Change','Changed by',['', '']], rows:[
@@ -1065,12 +1065,12 @@ def('hardware', 'Hardware', 'chip', [
     {t:'table', h:'Devices', search:'Search devices', filter:{col:1, opts:['All','USB','PCI','Bluetooth','Input']}, src:'lsusb · lspci -k · bluetoothctl', cols:['Device','Bus','Vendor','Driver','Status'], rows:[
       ['USB mouse', 'USB', 'Logitech', M('usbhid'), B('ok', 'Connected')], ['Integrated camera', 'USB', 'Chicony', M('uvcvideo'), B('ok', 'Idle')], {c:['Bluetooth adapter', 'USB', 'Intel', M('btusb'), B('crit', 'Unstable')], a:'bt'},
       ['Wi-Fi 6 AX201', 'PCI', 'Intel', M('iwlwifi'), B('ok', 'Active')], ['NVMe controller', 'PCI', 'Samsung', M('nvme'), B('ok', 'Active')], ['Smart Sound audio', 'PCI', 'Intel', M('snd_hda_intel'), B('ok', 'Active')],
-      ['Thunderbolt 4 controller', 'PCI', 'Intel', M('thunderbolt'), B('ok', 'Active')], ['Wireless earbuds', 'Bluetooth', '—', M('bluez'), B('warn', 'Reconnecting')], ['Phone', 'Bluetooth', '—', M('bluez'), OFF('Paired')],
+      ['Thunderbolt 4 controller', 'PCI', 'Intel', M('thunderbolt'), B('ok', 'Active')], ['Wireless earbuds', 'Bluetooth', '-', M('bluez'), B('warn', 'Reconnecting')], ['Phone', 'Bluetooth', '-', M('bluez'), OFF('Paired')],
       ['Touchpad', 'Input', 'ELAN', M('i2c_hid'), B('ok', 'Active')], ['Keyboard', 'Input', 'AT Translated', M('atkbd'), B('ok', 'Active')]]}
   ]},
   {id:'firmware', l:'Firmware', f:() => [
     {t:'kv', s:5, h:'Platform firmware', src:'/sys/class/dmi/id · mokutil', items:[['BIOS vendor', 'LENOVO'], ['Version', M('JHCN52WW')], ['Release date', '11 Mar 2024'], ['Boot mode', 'UEFI'], ['Secure Boot', B('ok', 'Enabled')], ['TPM', '2.0 · present']]},
-    {t:'table', s:7, h:'Firmware updates', src:'fwupdmgr get-updates', cols:['Device','Current','Available','Vendor',['', '']], rows:[['Touchpad', M('1.4'), M('1.6'), 'Synaptics', BTN('Update', 'toast:Firmware update scheduled for next reboot.', 'pri')], ['System firmware', M('JHCN52WW'), '—', 'Lenovo', '<span class="muted">Up to date</span>'], ['NVMe SSD', M('3L1QFXV7'), '—', 'Samsung', '<span class="muted">Not on LVFS</span>']]}
+    {t:'table', s:7, h:'Firmware updates', src:'fwupdmgr get-updates', cols:['Device','Current','Available','Vendor',['', '']], rows:[['Touchpad', M('1.4'), M('1.6'), 'Synaptics', BTN('Update', 'toast:Firmware update scheduled for next reboot.', 'pri')], ['System firmware', M('JHCN52WW'), '-', 'Lenovo', '<span class="muted">Up to date</span>'], ['NVMe SSD', M('3L1QFXV7'), '-', 'Samsung', '<span class="muted">Not on LVFS</span>']]}
   ]}
 ], {group:'System'});
 
@@ -1095,7 +1095,7 @@ def('power', 'Power', 'bat', [
 def('display', 'Display & Audio', 'mon', [
   {id:'displays', l:'Displays', f:() => [
     {t:'kv', s:4, h:'Session', src:'$XDG_SESSION_TYPE', items:[['Display server', 'Wayland'], ['Compositor', 'Mutter (GNOME 46)'], ['Fractional scaling', 'Off']]},
-    {t:'table', s:8, h:'Connected displays', cols:['Output','Resolution','Refresh','Scale','Primary','Status'], rows:[[M('eDP-1'), '1920 × 1080', '60 Hz', '100%', YES, B('ok', 'Connected')], [M('HDMI-A-1'), '—', '—', '—', NO, OFF('Disconnected')]]}
+    {t:'table', s:8, h:'Connected displays', cols:['Output','Resolution','Refresh','Scale','Primary','Status'], rows:[[M('eDP-1'), '1920 × 1080', '60 Hz', '100%', YES, B('ok', 'Connected')], [M('HDMI-A-1'), '-', '-', '-', NO, OFF('Disconnected')]]}
   ]},
   {id:'audio', l:'Audio', f:() => [
     {t:'kpis', items:[K('Output', 'Speakers', '', {sub:'Volume 45%'}), K('Input', 'Internal mic', '', {sub:'Not muted'}), K('Sound server', 'PipeWire', '', {sub:'1.0.5'}), K('Active streams', '1', '', {sub:'chrome'})]},
@@ -1122,7 +1122,7 @@ def('services', 'Services', 'cog', [
     {t:'table', id:'svcs', h:'Units', search:'Filter units', filter:{col:1, opts:['All','active','failed','inactive']}, inspect:true, ra:[['Restart', 'svc'], ['Stop', 'svc'], ['Disable', 'svc']], page:14, src:'systemctl list-units --type=service --all', cols:['Unit','Active','Sub','Enabled',['Restarts', 'n'],['Memory', 'n']], rows:SVC(), count:'181'}
   ]},
   {id:'user', l:'User Services', f:() => [
-    {t:'table', h:'User units', sub:'riya', src:'systemctl --user', cols:['Unit','Active','Sub',['Memory', 'n']], rows:[['pipewire.service','PipeWire Multimedia Service'],['pipewire-pulse.service','PipeWire PulseAudio'],['wireplumber.service','Multimedia Service Session Manager'],['xdg-desktop-portal.service','Portal service'],['tracker-miner-fs-3.service','Tracker file system data miner'],['gvfs-daemon.service','Virtual filesystem service'],['gnome-keyring-daemon.service','GNOME Keyring'],['org.gnome.Shell@wayland.service','GNOME Shell on Wayland'],['snap.telegram-desktop.service','Telegram (snap)']].map((u, i) => [C2(u[0], u[1]), B('ok', 'active'), '<span class="muted">running</span>', ['18 MB','9 MB','12 MB','7 MB','96 MB','6 MB','8 MB','410 MB','—'][i]])}
+    {t:'table', h:'User units', sub:'riya', src:'systemctl --user', cols:['Unit','Active','Sub',['Memory', 'n']], rows:[['pipewire.service','PipeWire Multimedia Service'],['pipewire-pulse.service','PipeWire PulseAudio'],['wireplumber.service','Multimedia Service Session Manager'],['xdg-desktop-portal.service','Portal service'],['tracker-miner-fs-3.service','Tracker file system data miner'],['gvfs-daemon.service','Virtual filesystem service'],['gnome-keyring-daemon.service','GNOME Keyring'],['org.gnome.Shell@wayland.service','GNOME Shell on Wayland'],['snap.telegram-desktop.service','Telegram (snap)']].map((u, i) => [C2(u[0], u[1]), B('ok', 'active'), '<span class="muted">running</span>', ['18 MB','9 MB','12 MB','7 MB','96 MB','6 MB','8 MB','410 MB','-'][i]])}
   ]},
   {id:'startup', l:'Startup Applications', f:() => [
     {t:'table', h:'Started at login', src:'~/.config/autostart · /etc/xdg/autostart', cols:['Name','Scope',['Command', 'x'],['Startup impact', 'n'],'Enabled'], rows:[['Telegram Desktop','User',M('telegram-desktop -startintray'),BAR(57, 'ok', '1.2 s'),SWT('Telegram Desktop')],['Dropbox','User',M('dropbox start -i'),BAR(43, 'ok', '0.9 s'),SWT('Dropbox')],['Google Chrome','User',M('google-chrome --no-startup-window'),BAR(100, 'warn', '2.1 s'),SWT('Google Chrome')],['GNOME Software','System',M('gnome-software --gapplication-service'),BAR(29, 'ok', '0.6 s'),SWT('GNOME Software')],['Snap user daemon','System',M('snap userd --autostart'),BAR(10, 'ok', '0.2 s'),SWT('Snap user daemon')]]}
@@ -1158,7 +1158,7 @@ def('jobs', 'Scheduled Jobs', 'cal', [
 def('containers', 'Containers', 'cube', [
   {id:'containers', l:'Containers', f:() => [
     {t:'kpis', items:[K('Running', '2', ''), K('Stopped', '1', ''), K('Images', '11', '', {sub:'9.0 GB'}), K('Volumes', '3', '', {sub:'1.1 GB'}), K('Exposed ports', '1', '', {st:'warn', sub:'5432 on all interfaces'})]},
-    {t:'table', h:'Docker containers', src:'docker ps -a', inspect:true, ra:[['Restart', 'toast:Container restart requested.'], ['Stop', 'toast:Container stop requested.'], ['Logs', 'go:logs/journal']], cols:['Name','Image','Status','Ports',['CPU', 'n'],['Memory', 'n']], rows:[['pg-dev', M('postgres:16'), B('ok', 'Up 12 hours'), `${M('0.0.0.0:5432→5432')} ${B('warn', 'LAN')}`, '0.2%', '142 MB'], ['redis-dev', M('redis:7-alpine'), B('ok', 'Up 12 hours'), M('127.0.0.1:6379→6379'), '0.1%', '12 MB'], ['api-test', M('node:20-alpine'), OFF('Exited (0) 2 days ago'), '—', '—', '—']]},
+    {t:'table', h:'Docker containers', src:'docker ps -a', inspect:true, ra:[['Restart', 'toast:Container restart requested.'], ['Stop', 'toast:Container stop requested.'], ['Logs', 'go:logs/journal']], cols:['Name','Image','Status','Ports',['CPU', 'n'],['Memory', 'n']], rows:[['pg-dev', M('postgres:16'), B('ok', 'Up 12 hours'), `${M('0.0.0.0:5432→5432')} ${B('warn', 'LAN')}`, '0.2%', '142 MB'], ['redis-dev', M('redis:7-alpine'), B('ok', 'Up 12 hours'), M('127.0.0.1:6379→6379'), '0.1%', '12 MB'], ['api-test', M('node:20-alpine'), OFF('Exited (0) 2 days ago'), '-', '-', '-']]},
     {t:'alert', st:'warn', h:'Port 5432 bypasses the UFW firewall', text:'Docker publishes ports with its own iptables rules. Bind to 127.0.0.1 to keep it local.', acts:[['View firewall', 'go:network/firewall']]}
   ]},
   {id:'images', l:'Images', f:() => [
@@ -1199,17 +1199,17 @@ def('storage', 'Storage', 'db', [
     {t:'table', s:4, h:'Mount points', src:'findmnt', cols:['Mount',['Size', 'n'],'Used'], rows:[[M('/'), '238 GB', BAR(pct())], [M('/boot/efi'), '1 GB', BAR(6)], [M('/run'), '780 MB', BAR(1)], [M('/dev/shm'), '3.8 GB', BAR(2)]]}
   ]; }},
   {id:'filesystems', l:'Filesystems', f:() => [
-    {t:'table', h:'Filesystems', src:'df -hT · df -i', cols:['Device','Mount','Type',['Size', 'n'],['Used', 'n'],['Available', 'n'],'Use',['Inodes', 'n x']], rows:[[M('/dev/nvme0n1p2'), M('/'), 'ext4', '238 GB', f1(S.used) + ' GB', f1(S.total - S.used) + ' GB', BAR(pct()), '21%'], [M('/dev/nvme0n1p1'), M('/boot/efi'), 'vfat', '1.0 GB', '61 MB', '963 MB', BAR(6), '—'], [M('tmpfs'), M('/run'), 'tmpfs', '780 MB', '2.3 MB', '778 MB', BAR(1), '1%'], [M('tmpfs'), M('/dev/shm'), 'tmpfs', '3.8 GB', '84 MB', '3.7 GB', BAR(2), '1%'], [M('squashfs ×14'), M('/snap/*'), 'squashfs', '3.9 GB', '3.9 GB', '0', BAR(100, 'ok'), '100%']]},
+    {t:'table', h:'Filesystems', src:'df -hT · df -i', cols:['Device','Mount','Type',['Size', 'n'],['Used', 'n'],['Available', 'n'],'Use',['Inodes', 'n x']], rows:[[M('/dev/nvme0n1p2'), M('/'), 'ext4', '238 GB', f1(S.used) + ' GB', f1(S.total - S.used) + ' GB', BAR(pct()), '21%'], [M('/dev/nvme0n1p1'), M('/boot/efi'), 'vfat', '1.0 GB', '61 MB', '963 MB', BAR(6), '-'], [M('tmpfs'), M('/run'), 'tmpfs', '780 MB', '2.3 MB', '778 MB', BAR(1), '1%'], [M('tmpfs'), M('/dev/shm'), 'tmpfs', '3.8 GB', '84 MB', '3.7 GB', BAR(2), '1%'], [M('squashfs ×14'), M('/snap/*'), 'squashfs', '3.9 GB', '3.9 GB', '0', BAR(100, 'ok'), '100%']]},
     {t:'checks', h:'Filesystem checks', items:[['pass', 'fstab entries valid', 'findmnt --verify: 0 errors'], ['pass', 'No ext4 errors in kernel log'], ['pass', 'Reserved blocks 5% (11.9 GB) for root'], ['warn', 'Disk encryption off', 'Files are readable if the laptop is stolen · needs reinstall to enable'], ['na', 'Full filesystem check (fsck)', 'Runs at boot when needed · last check 34 days ago']]}
   ]},
   {id:'usage', l:'Disk Usage', f:() => [
     {t:'hbars', s:6, h:'Largest folders', sub:'home', src:'du -h --max-depth=1 ~', data:[[M('~/Videos'), 52, '52 GB'], [M('~/Documents'), 41, '41 GB'], [M('~/Downloads'), 22, '22 GB'], [M('~/.local/share'), 5.2, '5.2 GB'], [M('~/.cache'), 3.8, '3.8 GB'], [M('~/snap'), 2.4, '2.4 GB'], [M('~/Pictures'), 1.6, '1.6 GB']]},
-    {t:'hbars', s:6, h:'Largest system folders', src:'du -xh --max-depth=1 /', data:S.access === 'full' ? [[M('/usr'), 14, '14 GB'], [M('/var/lib/docker'), S.cleaned.docker ? 9 : 13, (S.cleaned.docker ? 9 : 13) + ' GB'], [M('/var/lib/snapd'), S.cleaned.snap ? 3.9 : 12.6, (S.cleaned.snap ? 3.9 : 12.6) + ' GB'], [M('/var/log'), 1.4, '1.4 GB'], [M('/opt'), .9, '0.9 GB'], [M('/boot'), .3, '0.3 GB']] : [['Requires Full access', 0, '—']]},
+    {t:'hbars', s:6, h:'Largest system folders', src:'du -xh --max-depth=1 /', data:S.access === 'full' ? [[M('/usr'), 14, '14 GB'], [M('/var/lib/docker'), S.cleaned.docker ? 9 : 13, (S.cleaned.docker ? 9 : 13) + ' GB'], [M('/var/lib/snapd'), S.cleaned.snap ? 3.9 : 12.6, (S.cleaned.snap ? 3.9 : 12.6) + ' GB'], [M('/var/log'), 1.4, '1.4 GB'], [M('/opt'), .9, '0.9 GB'], [M('/boot'), .3, '0.3 GB']] : [['Requires Full access', 0, '-']]},
     {t:'table', h:'Largest files', search:'Filter files', src:'find ~ -size +500M', cols:['File',['Size', 'n'],'Type','Modified'], rows:[[M('~/Downloads/ubuntu-24.04.1-desktop-amd64.iso'), '5.8 GB', 'Disk image', '4 months ago'], [M('~/Videos/screen-2026-09-12.mp4'), '4.1 GB', 'Video', '1 month ago'], [M('~/VirtualBox VMs/win11-test/win11-test.vdi'), '2.9 GB', 'Virtual disk', '3 weeks ago'], [M('~/Downloads/dataset-q3.zip'), '2.2 GB', 'Archive', '2 months ago'], [M('~/Videos/meeting-recording-0918.mkv'), '1.8 GB', 'Video', '1 month ago'], [M('~/Documents/thesis-backup.tar.gz'), '1.2 GB', 'Archive', '6 months ago']]}
   ]},
   {id:'cleanup', l:'Cleanup', f:() => [
     {t:'kpis', items:[K('Reclaimable', f1(cleanable()), 'GB', {st:cleanable() > 5 ? 'warn' : 'ok'}), K('Cleaned this month', f1(15.2 - cleanable()), 'GB')]},
-    {t:'table', id:'cleanup', h:'Cleanup candidates', sel:['Clean selected', 'fix:storage'], cols:['Item','Details',['Size', 'n'],'Undo','Password'], rows:FIXES.storage.steps.filter(s => !S.cleaned[s.id]).map(s => [s.l, `<span class="muted">${s.d}</span>`, f1(s.size) + ' GB', B(...UNDO[s.undo]), s.admin ? `<span title="Admin password required">${ic('lock')}</span>` : '<span class="muted">—</span>']), empty:'Nothing to clean right now'}
+    {t:'table', id:'cleanup', h:'Cleanup candidates', sel:['Clean selected', 'fix:storage'], cols:['Item','Details',['Size', 'n'],'Undo','Password'], rows:FIXES.storage.steps.filter(s => !S.cleaned[s.id]).map(s => [s.l, `<span class="muted">${s.d}</span>`, f1(s.size) + ' GB', B(...UNDO[s.undo]), s.admin ? `<span title="Admin password required">${ic('lock')}</span>` : '<span class="muted">-</span>']), empty:'Nothing to clean right now'}
   ], acts:() => cleanable() > .05 ? [[`Free ${f1(cleanable())} GB`, 'fix:storage', 'pri']] : []}
 ], {group:'Software & Data', acts:() => cleanable() > .05 ? [['Free up space', 'fix:storage', 'pri']] : []});
 
@@ -1217,29 +1217,29 @@ def('backups', 'Backups', 'backup', [
   {id:'jobs', l:'Backup Jobs', f:() => [
     {t:'kpis', items:[K('Last backup', '21', 'days ago', {st:'warn', sub:'30 Sep 21:12'}), K('Tool', 'Déjà Dup', '', {sub:'Ubuntu Backups'}), K('Destination', 'BACKUP-1TB', '', {sub:'USB drive · not connected'}), K('Backup size', '96', 'GB'), K('Schedule', 'Weekly', '', {sub:'when drive is connected'})]},
     {t:'bars', s:6, h:'Backup history', sub:'size per run', data:[['26 Aug', 4.2], ['2 Sep', 3.1], ['9 Sep', 5.6], ['16 Sep', 2.8], ['23 Sep', 3.9], ['30 Sep', 4.4], ['7 Oct', 0], ['14 Oct', 0], ['21 Oct', 0]].map(d => [d[0], d[1], d[1] ? null : 'kn', d[1] ? `${d[0]} · incremental` : `${d[0]} · skipped (drive missing)`]), unit:' GB', height:200},
-    {t:'table', s:6, h:'Runs', src:'deja-dup', cols:['Date','Type',['Size', 'n'],'Duration','Result'], rows:[['21 Oct', 'Scheduled', '—', '—', B('warn', 'Skipped · drive missing')], ['30 Sep', 'Incremental', '4.4 GB', '9 m', B('ok', 'Success')], ['23 Sep', 'Incremental', '3.9 GB', '8 m', B('ok', 'Success')], ['16 Sep', 'Incremental', '2.8 GB', '6 m', B('ok', 'Success')], ['9 Sep', 'Full', '91 GB', '1 h 42 m', B('ok', 'Success')]]}
+    {t:'table', s:6, h:'Runs', src:'deja-dup', cols:['Date','Type',['Size', 'n'],'Duration','Result'], rows:[['21 Oct', 'Scheduled', '-', '-', B('warn', 'Skipped · drive missing')], ['30 Sep', 'Incremental', '4.4 GB', '9 m', B('ok', 'Success')], ['23 Sep', 'Incremental', '3.9 GB', '8 m', B('ok', 'Success')], ['16 Sep', 'Incremental', '2.8 GB', '6 m', B('ok', 'Success')], ['9 Sep', 'Full', '91 GB', '1 h 42 m', B('ok', 'Success')]]}
   ]},
   {id:'snapshots', l:'System Snapshots', f:() => [
     {t:'alert', st:'warn', h:'No system snapshots', text:'Timeshift is not installed. Snapshots let you roll back the system after a bad update.', acts:[['Install Timeshift', 'toast:sudo apt install timeshift', 'pri']]},
     {t:'table', h:'Snapshots', cols:['Created','Type','Tool',['Size', 'n'],'Comment'], rows:[], empty:'No snapshots yet'}
   ]},
   {id:'restore', l:'Restore Points', f:() => [
-    {t:'table', h:'DeeCure restore points', info:'Saved automatically before every change DeeCure makes.', cols:['Created','Change','Target',['Size', 'n'],['', '']], rows:[...DEECURE_LOG.filter(r => r.undo).map(r => [r.when, r.text, M(r.target), '1 KB', r.undone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:' + r.undo)]), ['Tue 11:05', 'Disabled service', M('cups-browsed.service'), '1 KB', S.cupsUndone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:cups')], ['14 Oct', 'Removed old kernel', M('linux-image-6.8.0-38'), '—', '<span class="muted">Reinstall from APT</span>']]}
+    {t:'table', h:'DeeCure restore points', info:'Saved automatically before every change DeeCure makes.', cols:['Created','Change','Target',['Size', 'n'],['', '']], rows:[...DEECURE_LOG.filter(r => r.undo).map(r => [r.when, r.text, M(r.target), '1 KB', r.undone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:' + r.undo)]), ['Tue 11:05', 'Disabled service', M('cups-browsed.service'), '1 KB', S.cupsUndone ? '<span class="muted">Restored</span>' : BTN('Restore', 'undo:cups')], ['14 Oct', 'Removed old kernel', M('linux-image-6.8.0-38'), '-', '<span class="muted">Reinstall from APT</span>']]}
   ]}
 ], {group:'Software & Data'});
 
 def('network', 'Network', 'wifi', [
   {id:'interfaces', l:'Interfaces', f:() => [
-    {t:'table', h:'Interfaces', src:'ip -br addr · nmcli device', cols:['Interface','Type','State','IPv4',['MAC', 'x'],'Speed',['RX', 'n'],['TX', 'n']], rows:[[M('wlp0s20f3'), 'Wi-Fi', B('ok', 'connected'), M('192.168.1.24/24'), M('3c:a9:f4:..:1b'), '866 Mb/s', '4.0 GB', '0.6 GB'], [M('docker0'), 'Bridge', B('ok', 'connected'), M('172.17.0.1/16'), M('02:42:..:9a'), '—', '210 MB', '140 MB'], [M('lo'), 'Loopback', OFF('unmanaged'), M('127.0.0.1/8'), '—', '—', '88 MB', '88 MB'], [M('enx00e04c68'), 'Ethernet', OFF('unavailable'), '—', M('00:e0:4c:..:68'), '—', '0', '0']]},
+    {t:'table', h:'Interfaces', src:'ip -br addr · nmcli device', cols:['Interface','Type','State','IPv4',['MAC', 'x'],'Speed',['RX', 'n'],['TX', 'n']], rows:[[M('wlp0s20f3'), 'Wi-Fi', B('ok', 'connected'), M('192.168.1.24/24'), M('3c:a9:f4:..:1b'), '866 Mb/s', '4.0 GB', '0.6 GB'], [M('docker0'), 'Bridge', B('ok', 'connected'), M('172.17.0.1/16'), M('02:42:..:9a'), '-', '210 MB', '140 MB'], [M('lo'), 'Loopback', OFF('unmanaged'), M('127.0.0.1/8'), '-', '-', '88 MB', '88 MB'], [M('enx00e04c68'), 'Ethernet', OFF('unavailable'), '-', M('00:e0:4c:..:68'), '-', '0', '0']]},
     {t:'kv', s:6, h:'Wi-Fi', src:'nmcli -f all dev wifi', items:[['Network', 'HomeNet-5G'], ['Signal', BAR(78, 'ok', '−52 dBm')], ['Band / channel', '5 GHz · 44'], ['Security', B('ok', 'WPA2-PSK')], ['Link rate', '866 Mb/s']]},
     {t:'kv', s:6, h:'Connectivity', items:[['Internet', B('ok', 'Online')], ['Gateway', M('192.168.1.1') + ' · 2 ms'], ['Public IP', `<span class="muted">Hidden</span> ${BTN('Reveal', 'toast:Looking up the public IP contacts an outside service. Off in the prototype.', 'link')}`], ['IPv6', 'Link-local only'], ['Captive portal', 'None']]}
   ]},
   {id:'connections', l:'Connections', f:() => [
-    {t:'table', h:'Active connections', search:'Filter connections', filter:{col:3, opts:['All','ESTAB','LISTEN','UNCONN']}, src:'ss -tunp', page:12, cols:['Proto','Local','Remote','State','Process'], rows:[['tcp','192.168.1.24:51432','142.250.183.14:443','ESTAB','chrome'],['tcp','192.168.1.24:51438','142.250.77.110:443','ESTAB','chrome'],['tcp','192.168.1.24:42210','149.154.167.51:443','ESTAB','telegram-desktop'],['tcp','192.168.1.24:39812','162.125.21.3:443','ESTAB','dropbox'],['tcp','192.168.1.24:50114','13.107.6.158:443','ESTAB','code'],['tcp','0.0.0.0:5432','*:*','LISTEN','docker-proxy'],['tcp','127.0.0.1:6379','*:*','LISTEN','docker-proxy'],['tcp','127.0.0.1:631','*:*','LISTEN','cupsd'],['udp','127.0.0.53:53','*:*','UNCONN','systemd-resolved'],['udp','0.0.0.0:5353','*:*','UNCONN','avahi-daemon'],['tcp','192.168.1.24:51900','185.125.190.20:443','TIME-WAIT','—']].map(r => [r[0], M(r[1]), M(r[2]), r[3] === 'ESTAB' ? B('ok', r[3]) : r[3] === 'LISTEN' ? B('info', r[3]) : OFF(r[3]), r[4]]), count:'68'}
+    {t:'table', h:'Active connections', search:'Filter connections', filter:{col:3, opts:['All','ESTAB','LISTEN','UNCONN']}, src:'ss -tunp', page:12, cols:['Proto','Local','Remote','State','Process'], rows:[['tcp','192.168.1.24:51432','142.250.183.14:443','ESTAB','chrome'],['tcp','192.168.1.24:51438','142.250.77.110:443','ESTAB','chrome'],['tcp','192.168.1.24:42210','149.154.167.51:443','ESTAB','telegram-desktop'],['tcp','192.168.1.24:39812','162.125.21.3:443','ESTAB','dropbox'],['tcp','192.168.1.24:50114','13.107.6.158:443','ESTAB','code'],['tcp','0.0.0.0:5432','*:*','LISTEN','docker-proxy'],['tcp','127.0.0.1:6379','*:*','LISTEN','docker-proxy'],['tcp','127.0.0.1:631','*:*','LISTEN','cupsd'],['udp','127.0.0.53:53','*:*','UNCONN','systemd-resolved'],['udp','0.0.0.0:5353','*:*','UNCONN','avahi-daemon'],['tcp','192.168.1.24:51900','185.125.190.20:443','TIME-WAIT','-']].map(r => [r[0], M(r[1]), M(r[2]), r[3] === 'ESTAB' ? B('ok', r[3]) : r[3] === 'LISTEN' ? B('info', r[3]) : OFF(r[3]), r[4]]), count:'68'}
   ]},
   {id:'ports', l:'Open Ports', f:() => [
     {t:'kpis', items:[K('Listening', '5', ''), K('Local only', '3', ''), K('Network-exposed', '2', '', {st:'warn'}), K('Reachable from internet', 'Unknown', '', {sub:'Needs outside test'})]},
-    {t:'table', h:'Listening ports', src:'ss -tulpn', cols:['Port','Protocol','Bind address','Exposure','Process','Firewall'], rows:[[M('5432'), 'TCP', M('0.0.0.0'), B('warn', 'LAN'), 'docker-proxy (pg-dev)', B('warn', 'Bypassed')], [M('5353'), 'UDP', M('0.0.0.0'), B('info', 'LAN'), 'avahi-daemon', B('ok', 'Allowed (mDNS)')], [M('6379'), 'TCP', M('127.0.0.1'), OFF('Local'), 'docker-proxy (redis-dev)', '—'], [M('631'), 'TCP', M('127.0.0.1'), OFF('Local'), 'cupsd', '—'], [M('53'), 'UDP', M('127.0.0.53'), OFF('Local'), 'systemd-resolved', '—']]},
+    {t:'table', h:'Listening ports', src:'ss -tulpn', cols:['Port','Protocol','Bind address','Exposure','Process','Firewall'], rows:[[M('5432'), 'TCP', M('0.0.0.0'), B('warn', 'LAN'), 'docker-proxy (pg-dev)', B('warn', 'Bypassed')], [M('5353'), 'UDP', M('0.0.0.0'), B('info', 'LAN'), 'avahi-daemon', B('ok', 'Allowed (mDNS)')], [M('6379'), 'TCP', M('127.0.0.1'), OFF('Local'), 'docker-proxy (redis-dev)', '-'], [M('631'), 'TCP', M('127.0.0.1'), OFF('Local'), 'cupsd', '-'], [M('53'), 'UDP', M('127.0.0.53'), OFF('Local'), 'systemd-resolved', '-']]},
     {t:'alert', st:'info', h:'External reachability is not tested', text:'Whether the router forwards a port can only be checked from outside your network.', acts:[['Run external test', 'toast:Opt-in: this sends your public IP to a test server. Off in the prototype.']]}
   ]},
   {id:'firewall', l:'Firewall', f:() => [
@@ -1248,7 +1248,7 @@ def('network', 'Network', 'wifi', [
     {t:'alert', st:'warn', h:'Docker rules are not managed by ufw', text:'Port 5432 (pg-dev) is reachable from the LAN even though ufw denies incoming traffic.', acts:[['View container', 'go:containers/containers']]}
   ]},
   {id:'dns', l:'DNS & VPN', f:() => [
-    {t:'kv', s:6, h:'DNS', src:'resolvectl status', items:[['Resolver', 'systemd-resolved'], ['Servers', M('192.168.1.1')], ['Search domain', '—'], ['DNSSEC', 'No'], ['DNS over TLS', 'No'], ['/etc/hosts entries', '3']]},
+    {t:'kv', s:6, h:'DNS', src:'resolvectl status', items:[['Resolver', 'systemd-resolved'], ['Servers', M('192.168.1.1')], ['Search domain', '-'], ['DNSSEC', 'No'], ['DNS over TLS', 'No'], ['/etc/hosts entries', '3']]},
     {t:'table', s:6, h:'VPN connections', src:'nmcli connection show', cols:['Name','Type','State',['', '']], rows:[['Office', 'WireGuard', OFF('Disconnected'), BTN('Connect', 'toast:Connecting to Office (WireGuard)…')], ['Tailscale', 'tailscale', B('ok', 'Connected'), '']]}
   ]},
   {id:'traffic', l:'Traffic', f:() => [
@@ -1264,7 +1264,7 @@ def('accounts', 'Accounts', 'users', [
     {t:'alert', st:'info', h:'Password strength cannot be checked', text:'Linux stores only salted hashes. DeeCure shows password age instead.'}
   ]},
   {id:'groups', l:'Groups', f:() => [
-    {t:'table', h:'Groups with members', src:'getent group', search:'Filter groups', cols:['Group',['GID', 'n'],'Members','Privilege'], rows:[['sudo','27','riya',B('warn', 'Admin')],['adm','4','riya, syslog',B('info', 'Read logs')],['docker','999','riya',B('warn', 'Root-equivalent')],['lxd','135','riya',B('info', 'Containers')],['plugdev','46','riya','—'],['lpadmin','114','riya','Printers'],['sambashare','117','riya','—']]}
+    {t:'table', h:'Groups with members', src:'getent group', search:'Filter groups', cols:['Group',['GID', 'n'],'Members','Privilege'], rows:[['sudo','27','riya',B('warn', 'Admin')],['adm','4','riya, syslog',B('info', 'Read logs')],['docker','999','riya',B('warn', 'Root-equivalent')],['lxd','135','riya',B('info', 'Containers')],['plugdev','46','riya','-'],['lpadmin','114','riya','Printers'],['sambashare','117','riya','-']]}
   ]},
   {id:'sessions', l:'Sessions', f:() => [
     {t:'table', h:'Active sessions', src:'loginctl list-sessions', cols:['Session','User','Seat','Type','Since','State'], rows:[[M('2'), 'riya', 'seat0', 'wayland', 'Today 08:59', B('ok', 'active')], [M('c1'), 'gdm', 'seat0', 'wayland', 'Today 08:58', OFF('online')]]}
@@ -1289,7 +1289,7 @@ def('security', 'Security', 'shield', [
     {t:'table', h:'Known vulnerabilities', sub:'sample data', src:'pro fix · OVAL', cols:['CVE','Package','Severity','Installed','Fixed in','Action'], rows:S.secFixed ? [] : [[M('CVE-2026-10421'), 'openssl', B('crit', 'High'), M('3.0.13-0ubuntu3.4'), M('3.0.13-0ubuntu3.5'), BTN('Fix', 'fix:sec', 'pri')], [M('CVE-2026-10388'), 'sudo', B('crit', 'High'), M('1.9.15p5-3ubuntu5.1'), M('1.9.15p5-3ubuntu5.2'), BTN('Fix', 'fix:sec', 'pri')], [M('CVE-2026-09917'), 'linux-firmware', B('warn', 'Medium'), M('…0ubuntu2.5'), M('…0ubuntu2.6'), BTN('Fix', 'fix:sec')]], empty:'No known vulnerabilities in installed packages'}
   ]},
   {id:'hardening', l:'Hardening', f:() => [
-    {t:'table', h:'Hardening checks', cols:['Check','Result','Value','Recommendation'], rows:[['Kernel ASLR', B('ok', 'Pass'), M('kernel.randomize_va_space = 2'), '—'], ['Unprivileged user namespaces', B('ok', 'Pass'), M('restricted by AppArmor'), '—'], ['kptr_restrict', B('ok', 'Pass'), M('1'), '—'], ['dmesg_restrict', B('ok', 'Pass'), M('1'), '—'], ['Home directory permissions', B('ok', 'Pass'), M('drwxr-x---'), '—'], ['Automatic security updates', B('ok', 'Pass'), M('Unattended-Upgrade "1"'), '—'], ['Docker group membership', B('warn', 'Review'), 'riya', 'docker group equals root access'], ['Disk encryption', B('warn', 'Fail'), 'None', 'Enable LUKS at next reinstall']]}
+    {t:'table', h:'Hardening checks', cols:['Check','Result','Value','Recommendation'], rows:[['Kernel ASLR', B('ok', 'Pass'), M('kernel.randomize_va_space = 2'), '-'], ['Unprivileged user namespaces', B('ok', 'Pass'), M('restricted by AppArmor'), '-'], ['kptr_restrict', B('ok', 'Pass'), M('1'), '-'], ['dmesg_restrict', B('ok', 'Pass'), M('1'), '-'], ['Home directory permissions', B('ok', 'Pass'), M('drwxr-x---'), '-'], ['Automatic security updates', B('ok', 'Pass'), M('Unattended-Upgrade "1"'), '-'], ['Docker group membership', B('warn', 'Review'), 'riya', 'docker group equals root access'], ['Disk encryption', B('warn', 'Fail'), 'None', 'Enable LUKS at next reinstall']]}
   ]},
   {id:'integrity', l:'File Integrity', f:() => [
     {t:'kpis', items:[K('Files verified', '284,112', ''), K('Modified', '0', ''), K('Missing', '0', ''), K('Last scan', 'Today', '', {sub:'03:00'})]},
@@ -1330,7 +1330,7 @@ def('diagnostics', 'Diagnostics', 'gauge', [
     ...(d.phase === 'done' ? [{t:'kpis', items:[K('Gateway', '2', 'ms'), K('DNS lookup', '14', 'ms'), K('Latency', '18', 'ms', {sub:'1.1.1.1'}), K('Jitter', '3', 'ms'), K('Packet loss', '0', '%'), K('IPv6', 'Link-local', '')]}] : [])
   ]; }},
   {id:'hardware', l:'Hardware Tests', f:() => [
-    {t:'table', h:'Available tests', cols:['Test','Duration','Last run','Result',['', '']], rows:[['SMART short self-test (NVMe)', '2 min', '7 days ago', B('ok', 'Passed'), BTN('Run', 'toast:SMART short self-test started.')], ['Memory test (memtest86+)', '30–60 min', 'Never', OFF('—'), BTN('Schedule', 'toast:Runs at next restart from the boot menu.')], ['Battery capacity report', '1 min', 'Today', B('warn', '71% health'), BTN('Open', 'go:power/battery')], ['Sensor check', '10 s', 'Today', B('ok', 'Passed'), BTN('Open', 'go:hardware/sensors')], ['Speaker and microphone test', '30 s', 'Never', OFF('—'), BTN('Run', 'toast:Plays a test tone and records 3 seconds.')]]}
+    {t:'table', h:'Available tests', cols:['Test','Duration','Last run','Result',['', '']], rows:[['SMART short self-test (NVMe)', '2 min', '7 days ago', B('ok', 'Passed'), BTN('Run', 'toast:SMART short self-test started.')], ['Memory test (memtest86+)', '30-60 min', 'Never', OFF('-'), BTN('Schedule', 'toast:Runs at next restart from the boot menu.')], ['Battery capacity report', '1 min', 'Today', B('warn', '71% health'), BTN('Open', 'go:power/battery')], ['Sensor check', '10 s', 'Today', B('ok', 'Passed'), BTN('Open', 'go:hardware/sensors')], ['Speaker and microphone test', '30 s', 'Never', OFF('-'), BTN('Run', 'toast:Plays a test tone and records 3 seconds.')]]}
   ]}
 ], {group:'Tools'});
 
@@ -1360,7 +1360,7 @@ def('settings', 'Settings', 'sliders', [
     {t:'kv', s:4, h:'Admin helper', items:[['Service', M('deecure-helper')], ['Status', S.access === 'full' ? B('ok', 'Authorized') : OFF('Not authorized')], ['Activation', 'D-Bus, on demand'], ['Allowed actions', '24 (fixed list)'], ['Audit log', M('/var/log/deecure/helper.log')]]}
   ]},
   {id:'notifications', l:'Notifications', f:() => [
-    {t:'html', s:8, h:'Notifications', flush:true, html:() => sw('n1', true, 'Critical issues', 'Disk almost full, SSD failing, overheating') + sw('n2', false, 'Warnings', 'Included in the weekly summary when off') + sw('n3', true, 'Weekly summary', 'Sunday 18:00') + selr('n4', 'Quiet hours', '', ['Off','22:00–07:00','23:00–08:00'], '22:00–07:00')}
+    {t:'html', s:8, h:'Notifications', flush:true, html:() => sw('n1', true, 'Critical issues', 'Disk almost full, SSD failing, overheating') + sw('n2', false, 'Warnings', 'Included in the weekly summary when off') + sw('n3', true, 'Weekly summary', 'Sunday 18:00') + selr('n4', 'Quiet hours', '', ['Off','22:00-07:00','23:00-08:00'], '22:00-07:00')}
   ]},
   {id:'assistant', l:'Assistant', f:() => [
     {t:'html', s:8, h:'Assistant', flush:true, html:() => sw('set-ai', S.ai, 'Enable assistant', 'Runs a local model on this computer') + selr('set-model', 'Model', '', ['Local · 3B (fast)','Local · 8B (better answers)'], 'Local · 3B (fast)') + sw('set-cloud', S.aiCloud, 'Cloud fallback', 'Removes names, hostnames, IPs and serials before sending')}

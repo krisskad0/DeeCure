@@ -136,8 +136,8 @@ const loadNotify = () => getNotifySettings();
 const loadSent = () => getNotifications();
 const QUIET = [
   { value: "off", label: "Off" },
-  { value: "22-07", label: "22:00–07:00" },
-  { value: "23-08", label: "23:00–08:00" },
+  { value: "22-07", label: "22:00-07:00" },
+  { value: "23-08", label: "23:00-08:00" },
 ] as const;
 
 export function SettingsNotifications() {
@@ -177,7 +177,7 @@ export function SettingsNotifications() {
   return (
     <>
       <Panel title="Notifications" info="The background agent shows these, even when this window is closed." span={8}>
-        <FieldRow label="Critical issues" description="Disk almost full or filling fast, failing drive, overheating — right away">
+        <FieldRow label="Critical issues" description="Disk almost full or filling fast, failing drive, overheating - right away">
           <Switch checked={current.critical} onChange={(on) => void change({ ...current, critical: on })} label="Critical issues" />
         </FieldRow>
         <FieldRow label="Warnings" description="Included in the weekly summary when off">
@@ -300,7 +300,7 @@ export function SettingsData() {
         {current ? <Select value={current} options={KEEP} onChange={(v) => void change(v)} label="Keep history for" /> : <span className="muted">…</span>}
       </FieldRow>
       <FieldRow label="Database size" description={agent?.database ?? "~/.local/share/deecure/deecure.db"}>
-        <span>{agent ? bytes(agent.database_bytes) : error ? "—" : "…"}</span>
+        <span>{agent ? bytes(agent.database_bytes) : error ? "-" : "…"}</span>
       </FieldRow>
       <FieldRow label="Export report" description="The last 7 days as one HTML file in your Downloads folder, to keep or share">
         <ExportButton />
