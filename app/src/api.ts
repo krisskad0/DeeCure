@@ -269,6 +269,40 @@ export interface PciDevice {
   power_state?: string;
 }
 
+/** Graphics cards and per-app use (Expert); counters are totals since start. */
+export interface GpuDetail {
+  at: number;
+  cards: {
+    card: string;
+    driver?: string;
+    pci_address?: string;
+    boot_vga: boolean;
+    mhz_now?: number;
+    mhz_min?: number;
+    mhz_max?: number;
+    mhz_hardware_max?: number;
+    mhz_boost?: number;
+    power_saving_ms?: number;
+    slowed_by: string[];
+    watts?: number;
+    runtime_status?: string;
+    connectors: [string, string][];
+  }[];
+  clients: { pid: number; name: string; pci_address?: string; engines: Record<string, number>; memory?: number }[];
+}
+
+/** The graphics software (Expert). */
+export interface GraphicsStack {
+  session_type?: string;
+  mesa_version?: string;
+  nvidia_version?: string;
+  renderer?: string;
+  software_rendering: boolean;
+  video_drivers: string[];
+  video_decode?: string[];
+  firmware: string[];
+}
+
 export interface Gpu {
   card: string;
   vendor?: string;
@@ -831,6 +865,8 @@ export function getInventory(kind: "cgroups"): Promise<Groups>;
 export function getInventory(kind: "storage_detail"): Promise<StorageDetail>;
 export function getInventory(kind: "process_io"): Promise<ProcessesIo>;
 export function getInventory(kind: "pci_detail"): Promise<PciDevice[]>;
+export function getInventory(kind: "gpu_detail"): Promise<GpuDetail>;
+export function getInventory(kind: "graphics_stack"): Promise<GraphicsStack>;
 export function getInventory(kind: "os"): Promise<OsDetails>;
 export function getInventory(kind: "kernel"): Promise<KernelInfo>;
 export function getInventory(kind: "update_history"): Promise<AptRun[]>;

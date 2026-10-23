@@ -2,6 +2,8 @@
 // Performance › GPU (docs/03-ui-design/05-pages/02-performance.md), with real data.
 // Load history is not stored yet: drivers that report load without admin rights are rare.
 
+import { atLeast, useUi } from "../../ui";
+import { GpuExpertSections } from "./GpuExpert";
 import { tempUnit, tempValue } from "../../units";
 import { type Gpu, getInventory } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
@@ -32,6 +34,7 @@ const COLUMNS: Column<Gpu>[] = [
 ];
 
 export function PerformanceGpu() {
+  const { mode } = useUi();
   const { data: gpus, error } = useLive(loadGpus, 10_000);
   if (!gpus || gpus.length === 0) {
     return (
@@ -70,6 +73,7 @@ export function PerformanceGpu() {
       <Panel title="Graphics cards" subtitle={`${gpus.length} found`} source="/sys/class/drm · pci.ids" span={12} flush>
         <DataTable rows={gpus} columns={COLUMNS} rowKey={(g) => g.card} />
       </Panel>
+      {atLeast(mode, "expert") && <GpuExpertSections />}
     </>
   );
 }

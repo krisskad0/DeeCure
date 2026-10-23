@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Graphics (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
+import { atLeast, useUi } from "../../ui";
+import { GraphicsStackSection } from "../performance/GpuExpert";
 import { temp as tempText } from "../../units";
 import { type Check, Checklist } from "../../components/Checklist";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -12,6 +14,7 @@ import { useGpus } from "./shared";
 const ACCELERATED = new Set(["i915", "xe", "amdgpu", "radeon", "nouveau", "nvidia"]);
 
 export function HardwareGraphics() {
+  const { mode } = useUi();
   const gpus = useGpus();
   if (!gpus?.length) {
     return (
@@ -45,6 +48,7 @@ export function HardwareGraphics() {
           </Panel>,
         ];
       })}
+      {atLeast(mode, "expert") && <GraphicsStackSection drivers={gpus.map((g) => g.driver).filter((d): d is string => !!d)} />}
     </>
   );
 }

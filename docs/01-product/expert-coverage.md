@@ -81,14 +81,14 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Graphics use per app | Which app uses the graphics card | `/proc/<pid>/fdinfo` (`drm-engine-*`), Intel and AMD drivers | You (own) | New |
-| Graphics clock now and maximum, power in watts, time in power saving | Real speed and power | Intel `/sys/class/drm/card*/gt*`; AMD hwmon `power1_average` and `pp_dpm_sclk`; NVIDIA `nvidia-smi` when installed | You | Partly: load and memory on some drivers |
-| Second graphics card asleep or awake, and which app keeps it awake | A card that never sleeps costs hours of battery | `/sys/bus/pci/devices/*/power/runtime_status`, `fdinfo` | You | New |
-| Video decoding in hardware: formats the card supports, and whether the driver for it is installed | Without it, video runs on the CPU and drains the battery | `vainfo` for the formats (not installed on this test laptop; without it DeeCure shows only whether the driver is installed), VA-API driver packages | You | New |
-| Graphics stack: Mesa or NVIDIA version, OpenGL and Vulkan renderer | Shows software rendering used by mistake | `glxinfo -B`, `vulkaninfo --summary` (when installed) | You | New |
-| Desktop session type: Wayland or X11 | Some apps behave differently on each | logind session `Type` | You | New |
-| Graphics firmware loaded (Intel GuC and HuC, AMD firmware versions) | Missing firmware turns off video encoding and power saving | journal, `/sys/kernel/debug/dri` through the helper | Admin | New |
-| Display outputs and which graphics card drives each | On laptops with two cards, shows which card the external screen uses | `/sys/class/drm/card*-*` | You | Partly: outputs |
+| Graphics use per app | Which app uses the graphics card | `/proc/<pid>/fdinfo` (`drm-engine-*`), Intel and AMD drivers | You (own) | ✅ Built |
+| Graphics clock now and maximum, power in watts, time in power saving | Real speed and power | Intel `/sys/class/drm/card*/gt*`; AMD hwmon `power1_average` and `pp_dpm_sclk`; NVIDIA `nvidia-smi` when installed | You | ✅ Built (Intel, AMD; NVIDIA through nvidia-smi: later) |
+| Second graphics card asleep or awake, and which app keeps it awake | A card that never sleeps costs hours of battery | `/sys/bus/pci/devices/*/power/runtime_status`, `fdinfo` | You | ✅ Built |
+| Video decoding in hardware: formats the card supports, and whether the driver for it is installed | Without it, video runs on the CPU and drains the battery | `vainfo` for the formats (not installed on this test laptop; without it DeeCure shows only whether the driver is installed), VA-API driver packages | You | ✅ Built |
+| Graphics stack: Mesa or NVIDIA version, OpenGL and Vulkan renderer | Shows software rendering used by mistake | `glxinfo -B`, `vulkaninfo --summary` (when installed) | You | ✅ Built (OpenGL; Vulkan: later) |
+| Desktop session type: Wayland or X11 | Some apps behave differently on each | logind session `Type` | You | ✅ Built |
+| Graphics firmware loaded (Intel GuC and HuC, AMD firmware versions) | Missing firmware turns off video encoding and power saving | journal, `/sys/kernel/debug/dri` through the helper | Admin | ✅ Built (from the kernel log, no admin needed) |
+| Display outputs and which graphics card drives each | On laptops with two cards, shows which card the external screen uses | `/sys/class/drm/card*-*` | You | ✅ Built |
 
 ## 6. Network
 

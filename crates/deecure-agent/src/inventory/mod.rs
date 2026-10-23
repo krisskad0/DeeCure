@@ -15,6 +15,7 @@ mod diagnostics;
 mod display;
 mod firmware;
 mod gpu;
+mod gpu_detail;
 mod hardware;
 mod history;
 mod jobs;
@@ -60,6 +61,8 @@ pub const KINDS: &[&str] = &[
     "storage_detail",
     "process_io",
     "pci_detail",
+    "gpu_detail",
+    "graphics_stack",
     "os",
     "kernel",
     "update_history",
@@ -117,6 +120,8 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "storage_detail" => serde_json::to_value(storage_detail::read(&agent.root)),
         "process_io" => serde_json::to_value(process_io::read(&agent.root)),
         "pci_detail" => serde_json::to_value(pci_detail::read(&agent.root)),
+        "gpu_detail" => serde_json::to_value(gpu_detail::read(&agent.root)),
+        "graphics_stack" => serde_json::to_value(gpu_detail::read_stack(&agent.root).await),
         "os" => serde_json::to_value(os::read(&agent.root)),
         "kernel" => serde_json::to_value(kernel::read(&agent.root)),
         "update_history" => serde_json::to_value(history::read(&agent.root)),
