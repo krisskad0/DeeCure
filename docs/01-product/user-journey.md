@@ -103,7 +103,7 @@ The app opens on a dashboard, not a list of cards. See `deecure-dashboard.html` 
 
 ## Growing into an expert
 
-- **Beginner mode** (default) keeps the app light: 8 pages and 19 sub-pages (Overview, Performance, Activity, System, Power, Storage, Security, Settings), plain labels, info tooltips, and one-click fixes.
+- **Beginner mode** (default) keeps the app light: 8 pages and 22 sub-pages (Overview, Performance, Activity, System, Power, Storage, Security, Settings), plain labels, info tooltips, and one-click fixes.
 - **Expert mode** adds every other page and sub-page (logs, services, jobs, containers, network, accounts, and more), the data source on every panel (for example `ss -tulpn`), extra table columns (MAC address, swap per process, threads), and the exact command of every fix step.
 - Links inside a page still open Expert pages in Beginner mode, with a note and a **Switch to Expert mode** button, so nothing is ever out of reach.
 

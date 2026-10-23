@@ -37,6 +37,8 @@ vi.mock("../../api", () => ({
           ? { interfaces: [{ name: "wlp0s20f3", kind: "Wi-Fi", state: "up" }, { name: "lo", kind: "Loopback", state: "unknown" }], connections: { tcp_established: 68, tcp_listening: 5, udp: 9 } }
           : kind === "gpu"
             ? gpus
+            : kind === "hardware"
+              ? { disks: [{ name: "nvme0n1", kind: "SSD (NVMe)", model: "Samsung 980", size: 512 * 1024 ** 3, removable: false }] }
             : [{ pid: 4121, name: "chrome", user: "riya", state: "S", cpu_percent: 4.2, memory_bytes: 842e6, swap_bytes: 0, threads: 30, command: "chrome" }],
     ),
   toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
@@ -66,6 +68,8 @@ describe("Performance tabs", () => {
   it("disk lists devices and is honest about per-process I/O", async () => {
     render(<PerformanceDisk />);
     await waitFor(() => expect(screen.getByText("nvme0n1")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("SSD (NVMe)")).toBeTruthy());
+    expect(screen.getByText("512 GB")).toBeTruthy();
     expect(screen.getByText("Requires Full access · Settings › Access")).toBeTruthy();
     expect(screen.getByText("0.4")).toBeTruthy();
   });

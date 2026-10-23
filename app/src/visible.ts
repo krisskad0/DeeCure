@@ -23,7 +23,8 @@ export const VISIBLE_PAGES: PageSpec[] = PAGES.filter((p) => !LATER_PAGES.has(p.
 /** Beginner mode: what a newcomer needs, by page ID; "all" keeps every sub-page. */
 const BEGINNER: Record<string, "all" | readonly string[]> = {
   overview: "all",
-  performance: ["cpu", "memory"],
+  // Pressure (PSI) is a kernel stall measure: Expert only.
+  performance: ["cpu", "memory", "disk", "network", "gpu"],
   activity: ["timeline"],
   system: ["overview", "updates"],
   power: "all",

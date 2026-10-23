@@ -24,7 +24,7 @@ describe("visible pages", () => {
     expect(menuPages("expert")).toBe(VISIBLE_PAGES);
     const beginner = menuPages("beginner");
     expect(beginner.map((p) => p.id)).toEqual(["overview", "performance", "activity", "system", "power", "storage", "security", "settings"]);
-    expect(beginner.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory"]);
+    expect(beginner.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "disk", "network", "gpu"]);
     expect(beginner.find((p) => p.id === "settings")?.tabs.map((t) => t.id)).not.toContain("assistant");
     expect(beginner.reduce((n, p) => n + p.tabs.length, 0)).toBeLessThan(25);
   });
@@ -32,15 +32,15 @@ describe("visible pages", () => {
   it("the page the user is on stays in the Beginner menus", () => {
     const onKernel = menuPages("beginner", { pageId: "logs", tabId: "kernel" });
     expect(onKernel.find((p) => p.id === "logs")?.tabs.map((t) => t.id)).toEqual(["kernel"]);
-    const onGpu = menuPages("beginner", { pageId: "performance", tabId: "gpu" });
-    expect(onGpu.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "gpu"]);
+    const onPsi = menuPages("beginner", { pageId: "performance", tabId: "pressure" });
+    expect(onPsi.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "disk", "network", "gpu", "pressure"]);
   });
 
   it("every Beginner sub-page is a real one (a typo would hide it)", () => {
     const shown = menuPages("beginner").flatMap((p) => p.tabs.map((t) => `${p.id}/${t.id}`));
     expect(shown).toEqual([
       "overview/summary", "overview/issues", "overview/score",
-      "performance/cpu", "performance/memory",
+      "performance/cpu", "performance/memory", "performance/disk", "performance/network", "performance/gpu",
       "activity/timeline",
       "system/overview", "system/updates",
       "power/battery", "power/profile", "power/sleep",

@@ -45,7 +45,7 @@ Beginner mode (the default) keeps the app light. The sidebar, the page tabs, and
 | Page | Sub-pages in Beginner mode |
 | --- | --- |
 | Overview | all: Summary, Issues, Health Score |
-| Performance | CPU, Memory |
+| Performance | CPU, Memory, Disk I/O, Network, GPU (not Pressure (PSI), a kernel stall measure) |
 | Activity | Timeline |
 | System | Overview, Updates |
 | Power | all: Battery, Power Profile, Sleep |

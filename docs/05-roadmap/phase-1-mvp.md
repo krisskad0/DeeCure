@@ -22,7 +22,7 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
 | 13. Desktop integration | ✅ Done. A second package, `deecure-desktop`: the app with a menu entry, icons, AppStream data, and a man page. Tested by installing in a clean container. |
 | 8. Knowledge base | ✅ Done. 125 entries: 59 services, 26 ports, 20 errors, 12 packages, and 8 how-to topics (one per rule). Used in issues, services, ports, errors, and packages. |
 | 1. Insights catalog | ✅ Done. [Insights catalog](../01-product/insights-catalog.md). |
-| 6. Behavior | ✅ Done. Shared view settings (mode, time range, rail) that stay in step across the app, Beginner/Expert columns, a light Beginner mode (8 pages and 19 sub-pages in the menus; Expert shows all, [Beginner mode](../03-ui-design/02-shell/sidebar.md#beginner-mode)), page status rules, Ctrl K palette, Esc closes overlays. |
+| 6. Behavior | ✅ Done. Shared view settings (mode, time range, rail) that stay in step across the app, Beginner/Expert columns, a light Beginner mode (8 pages and 22 sub-pages in the menus; Expert shows all, [Beginner mode](../03-ui-design/02-shell/sidebar.md#beginner-mode)), page status rules, Ctrl K palette, Esc closes overlays. |
 | 12. Onboarding | ✅ Done. Four short screens (one asks "Are you new to Linux?" to set the mode) and a live first check ([design](../03-ui-design/05-pages/00-onboarding.md)); can be shown again from Settings. |
 
 ## Tasks (in order)

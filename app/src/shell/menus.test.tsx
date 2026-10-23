@@ -55,10 +55,10 @@ describe("Beginner and Expert menus", () => {
 
   it("page tabs follow the mode, and keep the open tab", () => {
     header("beginner", "#/performance/cpu");
-    expect(tabs()).toEqual(["CPU", "Memory"]);
+    expect(tabs()).toEqual(["CPU", "Memory", "Disk I/O", "Network", "GPU"]);
     cleanup();
-    header("beginner", "#/performance/gpu");
-    expect(tabs()).toEqual(["CPU", "Memory", "GPU"]);
+    header("beginner", "#/performance/pressure");
+    expect(tabs()).toEqual(["CPU", "Memory", "Disk I/O", "Network", "GPU", "Pressure (PSI)"]);
     cleanup();
     header("expert", "#/performance/cpu");
     expect(tabs()).toContain("Pressure (PSI)");

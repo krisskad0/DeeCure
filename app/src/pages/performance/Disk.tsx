@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 // Performance › Disk I/O (docs/03-ui-design/05-pages/02-performance.md), with real data.
 // Queue depth is not collected yet. Per-process disk use needs admin rights (Phase 2).
+// Each device shows its type (SSD, hard disk, USB drive) from the hardware inventory.
 
-import type { Metric } from "../../api";
+import type { HardwareInfo, Metric } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
-import { pick, pickAll, rate } from "../../metrics";
+import { bytes, pick, pickAll, rate } from "../../metrics";
+import { useHardware } from "../hardware/shared";
 import { MB, TimeChart, spark, useHistory, useLatest } from "./shared";
 
 interface Device {
   name: string;
+  kind?: string;
+  model?: string;
+  size?: number;
   read?: number;
   write?: number;
   busy?: number;
@@ -19,16 +24,20 @@ interface Device {
 
 const COLUMNS: Column<Device>[] = [
   { key: "name", label: "Device", text: (d) => d.name, render: (d) => <code>{d.name}</code> },
+  { key: "kind", label: "Type", text: (d) => d.kind ?? "-" },
+  { key: "model", label: "Model", text: (d) => d.model ?? "-", expert: true },
+  { key: "size", label: "Size", text: (d) => (d.size ? bytes(d.size, 0) : "-"), numeric: true },
   { key: "read", label: "Read/s", text: (d) => (d.read === undefined ? "-" : rate(d.read)), numeric: true },
   { key: "write", label: "Write/s", text: (d) => (d.write === undefined ? "-" : rate(d.write)), numeric: true },
   { key: "util", label: "Util", text: (d) => (d.busy === undefined ? "-" : `${Math.round(d.busy)}%`), numeric: true },
-  { key: "await", label: "Await", text: (d) => (d.wait === undefined ? "-" : `${(d.wait * 1000).toFixed(1)} ms`), numeric: true },
+  { key: "await", label: "Await", text: (d) => (d.wait === undefined ? "-" : `${(d.wait * 1000).toFixed(1)} ms`), numeric: true, expert: true },
 ];
 
-function devices(latest: Metric[] | undefined): Device[] {
+function devices(latest: Metric[] | undefined, disks: HardwareInfo["disks"]): Device[] {
   const names = [...new Set(pickAll(latest, "disk.read").map((m) => m.subject ?? ""))].sort();
   return names.map((name) => ({
     name,
+    ...disks.find((d) => d.name === name),
     read: pick(latest, "disk.read", name),
     write: pick(latest, "disk.write", name),
     busy: pick(latest, "disk.busy", name),
@@ -44,6 +53,9 @@ const split = (bytesPerSecond: number | undefined) => {
 
 export function PerformanceDisk() {
   const latest = useLatest();
+  // Drives plugged in since the last inventory show "-" until the next one.
+  const hw = useHardware().data;
+  const disks = Array.isArray(hw?.disks) ? hw.disks : [];
   const history = useHistory(["disk.read", "disk.write"]);
   const read = pick(latest, "disk.read");
   const write = pick(latest, "disk.write");
@@ -67,7 +79,7 @@ export function PerformanceDisk() {
         <TimeChart history={history} names={["Read", "Write"]} unit="MB/s" scale={(v) => v / MB} />
       </Panel>
       <Panel title="Devices" subtitle="last minute" source="/proc/diskstats" span={6} flush>
-        <DataTable rows={devices(latest)} columns={COLUMNS} rowKey={(d) => d.name} empty="Measuring… (needs two readings, one minute apart)" />
+        <DataTable rows={devices(latest, disks)} columns={COLUMNS} rowKey={(d) => d.name} empty="Measuring… (needs two readings, one minute apart)" />
       </Panel>
       <Panel title="Top I/O processes" source="/proc/[pid]/io" span={6} flush>
         <div className="empty muted">Requires Full access · Settings › Access</div>
