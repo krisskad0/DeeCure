@@ -1,6 +1,6 @@
 # DeeCure: the control center for your Linux computer
 
-**Understand every part of your Ubuntu PC, keep it healthy, get warned before something breaks, and fix problems safely.** A free, open-source system monitor, hardware health checker, battery and power manager, and one-click fixer, in one app. Everything stays on your computer.
+**One app to monitor, protect, and fix your Linux computer. Free and private.** A free, open-source system monitor, hardware health checker, battery and power manager, and one-click fixer for Ubuntu. Everything stays on your computer.
 
 [![CI](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml/badge.svg)](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
