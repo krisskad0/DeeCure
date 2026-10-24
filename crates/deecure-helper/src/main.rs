@@ -439,9 +439,13 @@ fn main() -> ExitCode {
         if arg == "--apply-saved" && std::env::args().len() == 2 {
             return apply_saved();
         }
+        if arg == "--power-source-changed" && std::env::args().len() == 2 {
+            return power_source_changed();
+        }
         eprintln!(
             "deecure-helper: D-Bus starts this program; it takes no arguments except --version \
-             (and --apply-saved, which deecure-power.service runs at boot)"
+             (and --apply-saved, which deecure-power.service runs at boot, and \
+             --power-source-changed, which a udev rule runs when a charger is plugged in or out)"
         );
         return ExitCode::from(2);
     }
@@ -500,6 +504,35 @@ fn apply_saved() -> ExitCode {
         eprintln!("deecure-helper: {e}");
     }
     // Settings that could not be applied are in the results; the boot itself is fine.
+    ExitCode::SUCCESS
+}
+
+/// Sets the kept highest CPU speed for the new power source (90-deecure-power.rules).
+/// Quiet and quick when nothing is kept, because udev runs it on every charger change.
+fn power_source_changed() -> ExitCode {
+    let root = Path::new("/");
+    let path = root.join(saved::SAVED);
+    if !path.exists() || !rustix::process::geteuid().is_root() {
+        return ExitCode::SUCCESS;
+    }
+    if let Err(e) = saved::trusted(&path) {
+        audit(0, "PowerSourceChanged", &Value::Null, false, &e);
+        return ExitCode::FAILURE;
+    }
+    if let Some(o) = saved::apply_setting(root, "battery_cpu_limit") {
+        let on = if power::on_mains(root) {
+            "mains"
+        } else {
+            "battery"
+        };
+        audit(
+            0,
+            "PowerSourceChanged",
+            &json!({"on": on}),
+            o.ok,
+            &o.message,
+        );
+    }
     ExitCode::SUCCESS
 }
 
@@ -596,6 +629,15 @@ mod tests {
             Call::SetDevicePowerSaving {
                 device: "x".into(),
                 on: true,
+            },
+            Call::SetBatteryCpuLimit { percent: Some(60) },
+            Call::SetAspmPolicy {
+                policy: "powersave".into(),
+                keep: false,
+            },
+            Call::SetSuspendMode {
+                mode: "deep".into(),
+                keep: false,
             },
         ];
         for call in calls {

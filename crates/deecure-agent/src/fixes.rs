@@ -569,6 +569,98 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 Call::SetKeyboardBacklight { level },
             )]
         }
+        "power.set_battery_cpu_limit" => {
+            let raw = need(subject, "percent|off")?;
+            let percent = if raw == "off" {
+                None
+            } else {
+                let p: u32 = raw.parse().map_err(|_| "the limit is not a number")?;
+                if !(30..=99).contains(&p) {
+                    return Err("the limit must be between 30 and 99%".into());
+                }
+                Some(p)
+            };
+            subtitle = "Set again at each plug in, unplug, and start".into();
+            vec![step(
+                "cpu-limit",
+                &match percent {
+                    Some(p) => format!("On battery, run the CPU at most at {p}% of its top speed"),
+                    None => "Remove the CPU speed limit on battery".into(),
+                },
+                "On mains power the CPU keeps its full speed. A lower top speed means less heat \
+                 and longer battery, and heavy work takes longer."
+                    .into(),
+                None,
+                Undo::Full,
+                true,
+                match percent {
+                    Some(p) => format!(
+                        "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo $(( $(cat $p/cpuinfo_max_freq) * {p} / 100 )) | sudo tee $p/scaling_max_freq; done   # on battery only"
+                    ),
+                    None => "for p in /sys/devices/system/cpu/cpufreq/policy*; do cat $p/cpuinfo_max_freq | sudo tee $p/scaling_max_freq; done".into(),
+                },
+                Call::SetBatteryCpuLimit { percent },
+            )]
+        }
+        "power.set_aspm_policy" | "power.set_suspend_mode" => {
+            let raw = need(subject, "value|try|keep")?;
+            let (value, how) = raw.split_once('|').ok_or("the subject is value|try|keep")?;
+            let keep = match how {
+                "try" => false,
+                "keep" => true,
+                _ => return Err(format!("'{how}' is not try or keep")),
+            };
+            let aspm = action == "power.set_aspm_policy";
+            let allowed: &[&str] = if aspm {
+                &["default", "performance", "powersave", "powersupersave"]
+            } else {
+                &["s2idle", "shallow", "deep"]
+            };
+            if !allowed.contains(&value) {
+                return Err(format!("unknown value '{value}'"));
+            }
+            subtitle = if keep {
+                "Kept after restart".into()
+            } else {
+                "For this session only: try it, then keep it if all works".into()
+            };
+            let (file, title, about) = if aspm {
+                (
+                    "/sys/module/pcie_aspm/parameters/policy",
+                    format!("Use the {value} PCIe power saving policy"),
+                    "Lets PCIe links (Wi-Fi, drives, graphics) sleep when idle. Some devices \
+                     misbehave with more saving; a restart puts it back while it is not kept.",
+                )
+            } else {
+                (
+                    "/sys/power/mem_sleep",
+                    format!("Use {value} suspend"),
+                    "deep turns off more and uses less battery while suspended, but some laptops \
+                     do not wake from it. Suspend and wake once to test; if it does not wake, \
+                     hold the power button, and after the restart it is back.",
+                )
+            };
+            vec![step(
+                if aspm { "aspm" } else { "suspend" },
+                &title,
+                about.into(),
+                None,
+                Undo::Full,
+                true,
+                format!("echo {value} | sudo tee {file}"),
+                if aspm {
+                    Call::SetAspmPolicy {
+                        policy: value.to_owned(),
+                        keep,
+                    }
+                } else {
+                    Call::SetSuspendMode {
+                        mode: value.to_owned(),
+                        keep,
+                    }
+                },
+            )]
+        }
         "power.set_radio" => {
             let raw = need(subject, "kind|on|off")?;
             let (kind, state) = raw.split_once('|').ok_or("the subject is kind|on|off")?;
@@ -722,7 +814,50 @@ mod tests {
             call(plan(&a, "power.set_turbo", Some("off")).await.unwrap()),
             Call::SetTurbo { on: false }
         );
+        assert_eq!(
+            call(
+                plan(&a, "power.set_battery_cpu_limit", Some("60"))
+                    .await
+                    .unwrap()
+            ),
+            Call::SetBatteryCpuLimit { percent: Some(60) }
+        );
+        assert_eq!(
+            call(
+                plan(&a, "power.set_battery_cpu_limit", Some("off"))
+                    .await
+                    .unwrap()
+            ),
+            Call::SetBatteryCpuLimit { percent: None }
+        );
+        assert_eq!(
+            call(
+                plan(&a, "power.set_suspend_mode", Some("deep|try"))
+                    .await
+                    .unwrap()
+            ),
+            Call::SetSuspendMode {
+                mode: "deep".into(),
+                keep: false
+            }
+        );
+        assert_eq!(
+            call(
+                plan(&a, "power.set_aspm_policy", Some("powersave|keep"))
+                    .await
+                    .unwrap()
+            ),
+            Call::SetAspmPolicy {
+                policy: "powersave".into(),
+                keep: true
+            }
+        );
         for (action, subject) in [
+            ("power.set_battery_cpu_limit", "20"),
+            ("power.set_battery_cpu_limit", "100"),
+            ("power.set_suspend_mode", "deep"),
+            ("power.set_suspend_mode", "deep|forever"),
+            ("power.set_aspm_policy", "max|try"),
             ("power.set_charge_limits", "BAT0:80"),
             ("power.set_charge_limits", "BAT0:x:80"),
             ("power.set_turbo", "maybe"),

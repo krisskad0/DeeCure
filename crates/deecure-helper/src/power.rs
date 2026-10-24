@@ -7,6 +7,8 @@
 //! - `/sys/class/power_supply/<battery>/charge_control_{start,end}_threshold` and `charge_types`
 //! - `/sys/devices/system/cpu/intel_pstate/no_turbo` or `/sys/devices/system/cpu/cpufreq/boost`
 //! - `/sys/devices/<device>/power/wakeup` and `/sys/devices/<device>/power/control`
+//! - `/sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq` (the highest speed on battery)
+//! - `/sys/module/pcie_aspm/parameters/policy` and `/sys/power/mem_sleep`
 //!
 //! A device path must resolve inside `/sys/devices`. The lid, power and sleep buttons, and
 //! keyboards are never stopped from waking the computer; keyboards, mice, and sound devices never
@@ -180,15 +182,8 @@ pub fn plan(call: &Call, root: &Path) -> Option<Result<(Vec<Write>, Call), Strin
         Call::SetChargeMode { battery, mode } => (|| {
             let file = battery_dir(root, battery)?.join("charge_types");
             let text = read(&file).ok_or(format!("{battery} has no charge modes"))?;
-            let offered: Vec<&str> = text
-                .split_whitespace()
-                .map(|m| m.trim_matches(['[', ']']))
-                .collect();
-            let current = text
-                .split_whitespace()
-                .find(|m| m.starts_with('['))
-                .map(|m| m.trim_matches(['[', ']']).to_owned());
-            if !offered.contains(&mode.as_str()) {
+            let (offered, current) = choices(&text);
+            if !offered.contains(mode) {
                 return Err(format!("{battery} does not offer the {mode} mode"));
             }
             let old = current.ok_or("the current charge mode is not reported")?;
@@ -266,8 +261,127 @@ pub fn plan(call: &Call, root: &Path) -> Option<Result<(Vec<Write>, Call), Strin
                 },
             ))
         })(),
+        Call::SetBatteryCpuLimit { percent } => (|| {
+            if percent.is_some_and(|p| !(30..=99).contains(&p)) {
+                return Err("the limit must be between 30 and 99% of the top speed".into());
+            }
+            let limit = percent.filter(|_| !on_mains(root));
+            let mut writes = Vec::new();
+            for dir in cpufreq_policies(root) {
+                let khz = |f: &str| read(&dir.join(f)).and_then(|v| v.parse::<u64>().ok());
+                let (Some(max), Some(min)) = (khz("cpuinfo_max_freq"), khz("cpuinfo_min_freq"))
+                else {
+                    continue;
+                };
+                let target = limit.map_or(max, |p| (max * u64::from(p) / 100).max(min));
+                writes.push(Write {
+                    path: dir.join("scaling_max_freq"),
+                    value: target.to_string(),
+                });
+            }
+            if writes.is_empty() {
+                return Err("this computer has no CPU speed settings".into());
+            }
+            Ok((
+                writes,
+                Call::SetBatteryCpuLimit {
+                    percent: crate::saved::battery_cpu_limit(root),
+                },
+            ))
+        })(),
+        Call::SetAspmPolicy { policy, .. } => (|| {
+            let file = root.join("sys/module/pcie_aspm/parameters/policy");
+            let text = read(&file).ok_or("this kernel has no PCIe power saving setting")?;
+            let (offered, current) = choices(&text);
+            if !offered.contains(policy) {
+                return Err(format!("the kernel does not offer the {policy} policy"));
+            }
+            let old = current.ok_or("the current policy is not reported")?;
+            Ok((
+                vec![Write {
+                    path: file,
+                    value: policy.clone(),
+                }],
+                Call::SetAspmPolicy {
+                    policy: old,
+                    keep: crate::saved::is_kept(root, "aspm_policy"),
+                },
+            ))
+        })(),
+        Call::SetSuspendMode { mode, .. } => (|| {
+            let file = root.join("sys/power/mem_sleep");
+            let text = read(&file).ok_or("this computer has no suspend types")?;
+            let (offered, current) = choices(&text);
+            if !offered.contains(mode) {
+                return Err(format!(
+                    "this computer does not offer the {mode} suspend type"
+                ));
+            }
+            let old = current.ok_or("the current suspend type is not reported")?;
+            Ok((
+                vec![Write {
+                    path: file,
+                    value: mode.clone(),
+                }],
+                Call::SetSuspendMode {
+                    mode: old,
+                    keep: crate::saved::is_kept(root, "suspend_mode"),
+                },
+            ))
+        })(),
         _ => return None,
     })
+}
+
+/// `Trickle Fast [Custom]`: every choice, and the one in brackets, which is in use.
+fn choices(text: &str) -> (Vec<String>, Option<String>) {
+    let offered = text
+        .split_whitespace()
+        .map(|m| m.trim_matches(['[', ']']).to_owned())
+        .collect();
+    let current = text
+        .split_whitespace()
+        .find(|m| m.starts_with('['))
+        .map(|m| m.trim_matches(['[', ']']).to_owned());
+    (offered, current)
+}
+
+/// The CPU speed policy folders (`cpufreq/policy0`, …), in order.
+fn cpufreq_policies(root: &Path) -> Vec<PathBuf> {
+    let mut dirs: Vec<PathBuf> = std::fs::read_dir(root.join("sys/devices/system/cpu/cpufreq"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|e| e.file_name().to_string_lossy().starts_with("policy"))
+        .map(|e| e.path())
+        .collect();
+    dirs.sort();
+    dirs
+}
+
+/// On mains power: a charger (mains or USB) is online. A computer without a battery, or without
+/// any charger listed, counts as on mains, so it is never slowed down by mistake.
+pub fn on_mains(root: &Path) -> bool {
+    let (mut battery, mut charger, mut online) = (false, false, false);
+    for e in std::fs::read_dir(root.join("sys/class/power_supply"))
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        let dir = e.path();
+        if read(&dir.join("scope")).as_deref() == Some("Device") {
+            continue;
+        }
+        match read(&dir.join("type")).as_deref() {
+            Some("Battery") => battery = true,
+            Some("Mains" | "USB") => {
+                charger = true;
+                online |= read(&dir.join("online")).as_deref() == Some("1");
+            }
+            _ => {}
+        }
+    }
+    !battery || !charger || online
 }
 
 /// Writes each value. Stops at the first failure and says which file failed.
@@ -620,6 +734,93 @@ mod tests {
             }])
             .unwrap_err()
             .contains("could not set")
+        );
+    }
+
+    #[test]
+    fn the_battery_cpu_limit_applies_only_on_battery() {
+        let cpu = "/sys/devices/system/cpu/cpufreq";
+        let files = [
+            (format!("{cpu}/policy0/cpuinfo_max_freq"), "4700000\n"),
+            (format!("{cpu}/policy0/cpuinfo_min_freq"), "400000\n"),
+            (format!("{cpu}/policy0/scaling_max_freq"), "4700000\n"),
+            (format!("{cpu}/policy1/cpuinfo_max_freq"), "3600000\n"),
+            (format!("{cpu}/policy1/cpuinfo_min_freq"), "400000\n"),
+            (format!("{cpu}/policy1/scaling_max_freq"), "3600000\n"),
+            ("/sys/class/power_supply/BAT0/type".into(), "Battery\n"),
+            ("/sys/class/power_supply/AC/type".into(), "Mains\n"),
+            ("/sys/class/power_supply/AC/online".into(), "0\n"),
+            ("/sys/class/power_supply/hid-mouse/type".into(), "USB\n"),
+            ("/sys/class/power_supply/hid-mouse/scope".into(), "Device\n"),
+            ("/sys/class/power_supply/hid-mouse/online".into(), "1\n"),
+        ];
+        let list: Vec<(&str, &str)> = files.iter().map(|(a, b)| (a.as_str(), *b)).collect();
+        let r = root("cpu-limit", &list);
+        let limit = |p| Call::SetBatteryCpuLimit { percent: p };
+        // A mouse's own battery does not count as a charger: this laptop is on battery.
+        assert!(!on_mains(&r));
+        let (w, undo) = plan(&limit(Some(60)), &r).unwrap().unwrap();
+        assert_eq!(
+            values(&w),
+            [
+                ("scaling_max_freq".into(), "2820000".into()),
+                ("scaling_max_freq".into(), "2160000".into())
+            ]
+        );
+        assert_eq!(undo, limit(None), "nothing was kept before");
+        // Never below the slowest speed.
+        let (w, _) = plan(&limit(Some(30)), &r).unwrap().unwrap();
+        assert_eq!(w[0].value, "1410000");
+        assert!(plan(&limit(Some(10)), &r).unwrap().is_err());
+        assert!(plan(&limit(Some(100)), &r).unwrap().is_err());
+        // On mains, or with no limit: the full speed.
+        std::fs::write(r.join("sys/class/power_supply/AC/online"), "1").unwrap();
+        assert!(on_mains(&r));
+        let (w, _) = plan(&limit(Some(60)), &r).unwrap().unwrap();
+        assert_eq!(w[0].value, "4700000");
+        let (w, _) = plan(&limit(None), &r).unwrap().unwrap();
+        assert_eq!(w[1].value, "3600000");
+        // A desktop without a battery is never slowed down.
+        assert!(on_mains(&root("desktop", &[])));
+        assert!(
+            plan(&limit(Some(60)), &root("no-cpufreq", &[]))
+                .unwrap()
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn pcie_and_suspend_types_must_be_offered() {
+        let r = root(
+            "aspm",
+            &[
+                (
+                    "/sys/module/pcie_aspm/parameters/policy",
+                    "[default] performance powersave powersupersave\n",
+                ),
+                ("/sys/power/mem_sleep", "[s2idle] deep\n"),
+            ],
+        );
+        let aspm = |p: &str, keep| Call::SetAspmPolicy {
+            policy: p.into(),
+            keep,
+        };
+        let (w, undo) = plan(&aspm("powersave", false), &r).unwrap().unwrap();
+        assert_eq!(values(&w), [("policy".into(), "powersave".into())]);
+        assert_eq!(undo, aspm("default", false));
+        assert!(plan(&aspm("turbo", true), &r).unwrap().is_err());
+        let sleep = |m: &str, keep| Call::SetSuspendMode {
+            mode: m.into(),
+            keep,
+        };
+        let (w, undo) = plan(&sleep("deep", true), &r).unwrap().unwrap();
+        assert_eq!(values(&w), [("mem_sleep".into(), "deep".into())]);
+        assert_eq!(undo, sleep("s2idle", false));
+        assert!(plan(&sleep("shallow", false), &r).unwrap().is_err());
+        assert!(
+            plan(&sleep("deep", false), &root("no-sleep", &[]))
+                .unwrap()
+                .is_err()
         );
     }
 }

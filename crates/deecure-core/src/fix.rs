@@ -100,6 +100,21 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         Some("device|on|off"),
     ),
     (
+        "power.set_battery_cpu_limit",
+        "Limit the CPU speed on battery",
+        Some("percent|off"),
+    ),
+    (
+        "power.set_aspm_policy",
+        "Change the PCIe power saving policy",
+        Some("policy|try|keep"),
+    ),
+    (
+        "power.set_suspend_mode",
+        "Change the suspend type",
+        Some("mode|try|keep"),
+    ),
+    (
         "power.set_keyboard_backlight",
         "Change the keyboard backlight",
         Some("level"),
@@ -263,6 +278,26 @@ pub enum Call {
         device: String,
         /// Power saving on (`auto`).
         on: bool,
+    },
+    /// Set the highest CPU speed on battery (`cpufreq/policy*/scaling_max_freq`). It is set
+    /// again each time the computer is plugged in or unplugged, and at each start.
+    SetBatteryCpuLimit {
+        /// Percent of the CPU's top speed (30-99), or `None` for no limit.
+        percent: Option<u32>,
+    },
+    /// Set the PCIe power saving policy (`/sys/module/pcie_aspm/parameters/policy`).
+    SetAspmPolicy {
+        /// One the kernel offers: `default`, `performance`, `powersave`, `powersupersave`.
+        policy: String,
+        /// Kept after restart; `false` is for this session only (and stops keeping it).
+        keep: bool,
+    },
+    /// Set the suspend type (`/sys/power/mem_sleep`).
+    SetSuspendMode {
+        /// One the computer offers: `s2idle`, `shallow`, or `deep`.
+        mode: String,
+        /// Kept after restart; `false` is for this session only (and stops keeping it).
+        keep: bool,
     },
     /// Set UPower's critical battery action.
     SetBatteryAction {

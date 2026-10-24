@@ -44,6 +44,12 @@ export function radioKinds(radios: PowerDetail["radios"]) {
 
 const RADIO_NAMES: Record<string, string> = { wlan: "Wi-Fi", bluetooth: "Bluetooth", wwan: "Mobile broadband" };
 
+const ASPM_NAMES: Record<string, string> = { default: "Firmware default", performance: "Off (performance)", powersave: "Save power", powersupersave: "Save most power" };
+const SUSPEND_NAMES: Record<string, string> = { s2idle: "s2idle (modern standby)", shallow: "shallow (standby)", deep: "deep (suspend to RAM)" };
+
+/** Battery CPU limits offered, in percent of the top speed. */
+export const CPU_LIMITS = [80, 60, 40] as const;
+
 /** A kept setting in words, with the device's product name when the agent knows it. */
 export function describeKept(k: KeptSetting, p: Pick<PowerDetail, "usb" | "wake_sources">): string {
   const c = k.call;
@@ -63,9 +69,51 @@ export function describeKept(k: KeptSetting, p: Pick<PowerDetail, "usb" | "wake_
       return `${name}: ${c.enabled ? "may wake the computer" : "does not wake the computer"}`;
     case "set_device_power_saving":
       return `${name}: power saving ${c.on ? "on" : "off"}`;
+    case "set_battery_cpu_limit":
+      return `Highest CPU speed on battery: ${c.percent}%`;
+    case "set_aspm_policy":
+      return `PCIe power saving: ${ASPM_NAMES[c.policy ?? ""] ?? c.policy}`;
+    case "set_suspend_mode":
+      return `Suspend type: ${SUSPEND_NAMES[c.mode ?? ""] ?? c.mode}`;
     default:
       return k.setting;
   }
+}
+
+/**
+ * A setting that is tried for this session first and kept only on request: one button per other
+ * choice, then "Keep" for the one in use when it is not kept yet.
+ */
+function TryThenKeep(props: { label: string; about: string; action: string; choice: { current?: string; offered: string[] }; kept?: string; names: Record<string, string>; base: string }) {
+  const openFix = useFix();
+  const { current, offered } = props.choice;
+  const name = (v: string) => props.names[v] ?? v;
+  const kept = props.kept === current;
+  return (
+    <FieldRow label={props.label} description={`Now: ${current ? name(current) : "not reported"}${current && current !== props.base ? (kept ? ", kept after restart" : ", for this session only") : ""}. ${props.about}`}>
+      <span className="btn-row">
+        {offered
+          .filter((v) => v !== current)
+          .map((v) => (
+            <Button key={v} small onClick={() => openFix(props.action, `${v}|try`)}>
+              Try {name(v)}
+            </Button>
+          ))}
+        {current && current !== props.base && !kept && (
+          <Button small variant="primary" onClick={() => openFix(props.action, `${current}|keep`)}>
+            Keep {name(current)}
+          </Button>
+        )}
+        {kept && <StatusBadge variant="ok" label="Kept" />}
+      </span>
+    </FieldRow>
+  );
+}
+
+/** The kept value of a try-then-keep setting. */
+function keptValue(p: PowerDetail, setting: string): string | undefined {
+  const c = p.kept?.find((k) => k.setting === setting)?.call;
+  return c?.policy ?? c?.mode;
 }
 
 function KeptList({ p }: { p: PowerDetail }) {
@@ -160,6 +208,8 @@ export function PowerControls() {
     );
   }
   const wifi = net?.wifi.find((w) => w.uuid);
+  const topKhz = Math.max(0, ...(cpu?.cores ?? []).map((c) => c.hardware_max_khz ?? c.max_khz ?? 0));
+  const cpuLimit = p.kept?.find((k) => k.setting === "battery_cpu_limit")?.call.percent ?? undefined;
   return (
     <Panel
       title="Power controls"
@@ -177,6 +227,42 @@ export function PowerControls() {
             Turn turbo {cpu.turbo ? "off" : "on"}
           </Button>
         </FieldRow>
+      )}
+      {p.batteries.length > 0 && topKhz > 0 && (
+        <FieldRow label="Highest CPU speed on battery" description={`Now: ${cpuLimit ? `${cpuLimit}% on battery` : "no limit"}. On mains the CPU keeps its full speed. Lower: less heat and longer battery; heavy work takes longer.`}>
+          <span className="btn-row">
+            <Button small disabled={!cpuLimit} onClick={() => openFix("power.set_battery_cpu_limit", "off")}>
+              No limit
+            </Button>
+            {CPU_LIMITS.map((pct) => (
+              <Button key={pct} small disabled={cpuLimit === pct} onClick={() => openFix("power.set_battery_cpu_limit", String(pct))}>
+                {pct}% ({((topKhz * pct) / 100 / 1e6).toFixed(1)} GHz)
+              </Button>
+            ))}
+          </span>
+        </FieldRow>
+      )}
+      {p.aspm_policy && p.aspm_policy.offered.length > 1 && (
+        <TryThenKeep
+          label="PCIe power saving"
+          about="Lets Wi-Fi, drives, and graphics links sleep when idle. If a device acts up, restart: a setting that is not kept goes back. Some firmware does not let Linux change it."
+          action="power.set_aspm_policy"
+          choice={p.aspm_policy}
+          kept={keptValue(p, "aspm_policy")}
+          names={ASPM_NAMES}
+          base="default"
+        />
+      )}
+      {p.suspend && p.suspend.offered.length > 1 && (
+        <TryThenKeep
+          label="Suspend type"
+          about="deep uses less battery while suspended, but some laptops do not wake from it. Try it, suspend and wake once, then keep it. If it does not wake, hold the power button: after the restart it is back."
+          action="power.set_suspend_mode"
+          choice={p.suspend}
+          kept={keptValue(p, "suspend_mode")}
+          names={SUSPEND_NAMES}
+          base="s2idle"
+        />
       )}
       {p.keyboard_backlight && p.keyboard_backlight.max > 0 && (
         <FieldRow label="Keyboard backlight" description={`Level ${p.keyboard_backlight.level} of ${p.keyboard_backlight.max}`}>

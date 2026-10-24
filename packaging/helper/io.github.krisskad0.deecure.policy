@@ -160,4 +160,31 @@
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
+  <action id="io.github.krisskad0.deecure.set-battery-cpu-limit">
+    <description>Limit the CPU speed on battery</description>
+    <message>Authentication is required to change the CPU speed on battery</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-aspm-policy">
+    <description>Change the PCIe power saving policy</description>
+    <message>Authentication is required to change the PCIe power saving policy</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-suspend-mode">
+    <description>Change the suspend type</description>
+    <message>Authentication is required to change the suspend type</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
 </policyconfig>

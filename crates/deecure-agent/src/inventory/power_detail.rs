@@ -239,6 +239,9 @@ pub struct PowerDetail {
     /// Suspend types: the one in use and the ones offered (`s2idle`, `deep`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suspend: Option<Choice>,
+    /// The PCIe power saving policy (ASPM): the one in use and the ones offered.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub aspm_policy: Option<Choice>,
     pub wake_sources: Vec<WakeSource>,
     /// The interrupt that last woke the computer from suspend, and its device from
     /// `/proc/interrupts`.
@@ -532,6 +535,7 @@ pub fn read(root: &SystemRoot) -> PowerDetail {
             })
             .collect(),
         suspend: text(root, "/sys/power/mem_sleep").map(|t| choice(&t)),
+        aspm_policy: text(root, "/sys/module/pcie_aspm/parameters/policy").map(|t| choice(&t)),
         wake_sources: wake_sources(root),
         usb: usb(root),
     }
@@ -621,6 +625,10 @@ mod tests {
                     "5000mV\n",
                 ),
                 ("/sys/power/mem_sleep", "[s2idle]\n"),
+                (
+                    "/sys/module/pcie_aspm/parameters/policy",
+                    "[default] performance powersave powersupersave\n",
+                ),
                 ("/sys/power/pm_wakeup_irq", "9\n"),
                 (
                     "/proc/interrupts",
@@ -677,6 +685,7 @@ mod tests {
         assert_eq!(p.power_delivery[0].offered[0].millivolts, Some(20_000));
         assert_eq!(p.power_delivery[0].offered[0].milliamps, Some(3250));
         assert_eq!(p.suspend.unwrap().offered, ["s2idle"]);
+        assert_eq!(p.aspm_policy.unwrap().current.as_deref(), Some("default"));
         assert_eq!(p.last_wake_irq.as_deref(), Some("9"));
         assert!(p.last_wake_device.unwrap().ends_with("acpi"));
         assert_eq!(

@@ -61,6 +61,9 @@ pub fn setting(call: &Call) -> Option<String> {
         Call::SetTurbo { .. } => "turbo".to_owned(),
         Call::SetDeviceWakeup { device, .. } => format!("wakeup:{device}"),
         Call::SetDevicePowerSaving { device, .. } => format!("power_saving:{device}"),
+        Call::SetBatteryCpuLimit { .. } => "battery_cpu_limit".to_owned(),
+        Call::SetAspmPolicy { .. } => "aspm_policy".to_owned(),
+        Call::SetSuspendMode { .. } => "suspend_mode".to_owned(),
         _ => return None,
     })
 }
@@ -100,11 +103,39 @@ fn present(call: &Call, root: &Path) -> bool {
         Call::SetChargeLimits { battery, .. } | Call::SetChargeMode { battery, .. } => {
             root.join("sys/class/power_supply").join(battery).exists()
         }
+        Call::SetBatteryCpuLimit { .. } => root.join("sys/devices/system/cpu/cpufreq").exists(),
+        Call::SetAspmPolicy { .. } => root.join("sys/module/pcie_aspm/parameters/policy").exists(),
+        Call::SetSuspendMode { .. } => root.join("sys/power/mem_sleep").exists(),
         _ => {
             root.join("sys/devices/system/cpu/intel_pstate/no_turbo")
                 .exists()
                 || root.join("sys/devices/system/cpu/cpufreq/boost").exists()
         }
+    }
+}
+
+/// `Some(false)` for a change tried for this session only, `Some(true)` for one to keep.
+fn keep_flag(call: &Call) -> Option<bool> {
+    match call {
+        Call::SetAspmPolicy { keep, .. } | Call::SetSuspendMode { keep, .. } => Some(*keep),
+        _ => None,
+    }
+}
+
+/// Is this setting kept now?
+pub fn is_kept(root: &Path, key: &str) -> bool {
+    load(&root.join(SAVED)).settings.contains_key(key)
+}
+
+/// The kept highest CPU speed on battery, in percent.
+pub fn battery_cpu_limit(root: &Path) -> Option<u32> {
+    match load(&root.join(SAVED))
+        .settings
+        .get("battery_cpu_limit")?
+        .call
+    {
+        Call::SetBatteryCpuLimit { percent } => percent,
+        _ => None,
     }
 }
 
@@ -136,7 +167,8 @@ pub fn remember(root: &Path, call: &Call, undo: &Call) -> Result<(), String> {
         .settings
         .get(&key)
         .map_or_else(|| undo.clone(), |k| k.original.clone());
-    if *call == original {
+    // A change tried for this session only is never kept, and stops keeping an earlier one.
+    if *call == original || keep_flag(call) == Some(false) {
         saved.settings.remove(&key);
     } else {
         saved.settings.insert(
@@ -213,6 +245,20 @@ pub fn apply_saved(root: &Path, wait: Duration) -> Vec<Outcome> {
         std::thread::sleep(wait);
     }
     done
+}
+
+/// Applies one kept setting now, if it is kept (the CPU limit, when a charger is plugged in or
+/// out). `None` when it is not kept.
+pub fn apply_setting(root: &Path, key: &str) -> Option<Outcome> {
+    let saved = load(&root.join(SAVED));
+    let kept = saved.settings.get(key)?;
+    let result = apply_one(root, key, kept);
+    Some(Outcome {
+        setting: key.to_owned(),
+        call: kept.call.clone(),
+        ok: result.is_ok(),
+        message: result.unwrap_or_else(|e| e),
+    })
 }
 
 /// Saves the boot results for the app.
@@ -426,5 +472,30 @@ mod tests {
             assert!(trusted(&root.join(SAVED)).is_err());
         }
         assert!(trusted(&root.join("etc/deecure/none.json")).is_err());
+    }
+
+    #[test]
+    fn a_try_is_never_kept_and_keep_saves_it() {
+        let root = test_root("try", &[("/sys/power/mem_sleep", "[s2idle] deep\n")]);
+        let sleep = |m: &str, keep| Call::SetSuspendMode {
+            mode: m.into(),
+            keep,
+        };
+        remember(&root, &sleep("deep", false), &sleep("s2idle", false)).unwrap();
+        assert!(!root.join(SAVED).exists(), "a try is for this session only");
+        remember(&root, &sleep("deep", true), &sleep("deep", false)).unwrap();
+        assert!(is_kept(&root, "suspend_mode"));
+        // Trying another type stops keeping the first; its undo keeps it again.
+        remember(&root, &sleep("s2idle", false), &sleep("deep", true)).unwrap();
+        assert!(!is_kept(&root, "suspend_mode"));
+        remember(&root, &sleep("deep", true), &sleep("s2idle", false)).unwrap();
+        assert!(is_kept(&root, "suspend_mode"));
+
+        let limit = |p| Call::SetBatteryCpuLimit { percent: p };
+        remember(&root, &limit(Some(60)), &limit(None)).unwrap();
+        assert_eq!(battery_cpu_limit(&root), Some(60));
+        remember(&root, &limit(None), &limit(Some(60))).unwrap();
+        assert_eq!(battery_cpu_limit(&root), None);
+        assert!(apply_setting(&root, "battery_cpu_limit").is_none());
     }
 }

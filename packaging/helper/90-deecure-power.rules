@@ -1,0 +1,3 @@
+# DeeCure: when a charger is plugged in or out, set the kept highest CPU speed on battery again.
+# The helper returns at once when no limit is kept (docs/02-architecture/helper.md).
+SUBSYSTEM=="power_supply", ACTION=="change", ATTR{type}=="Mains|USB", RUN+="/usr/libexec/deecure/deecure-helper --power-source-changed"

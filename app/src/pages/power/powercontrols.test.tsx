@@ -12,7 +12,8 @@ const power: PowerDetail = {
   batteries: [{ name: "BAT0", charge_start: 50, charge_stop: 80, charge_mode: { current: "Custom", offered: ["Standard", "Adaptive", "Custom"] } }],
   chargers: [],
   power_delivery: [],
-  suspend: { current: "s2idle", offered: ["s2idle"] },
+  suspend: { current: "deep", offered: ["s2idle", "deep"] },
+  aspm_policy: { current: "powersave", offered: ["default", "performance", "powersave", "powersupersave"] },
   wake_sources: [
     { name: "PNP0C0D:00", device: "LNXSYSTM:00/LNXSYBUS:00/PNP0C0D:00", events: 4, wakeups: 0, active: 0, may_wake: true },
     { name: "device:14", device: "pci0000:00/0000:00:14.0", pci_address: "0000:00:14.0", events: 2, wakeups: 0, active: 0, may_wake: true },
@@ -28,6 +29,7 @@ const power: PowerDetail = {
     { setting: "charge_limits:BAT0", call: { op: "set_charge_limits", battery: "BAT0", start: 50, stop: 80 }, boot_ok: true, boot_message: "charge_control_start_threshold = 50" },
     { setting: "power_saving:pci0000:00/0000:00:14.0/usb3/3-1", call: { op: "set_device_power_saving", device: "pci0000:00/0000:00:14.0/usb3/3-1", on: false }, boot_ok: false, boot_message: "a different device is there now, so nothing was changed" },
     { setting: "turbo", call: { op: "set_turbo", on: false } },
+    { setting: "suspend_mode", call: { op: "set_suspend_mode", mode: "deep", keep: true }, boot_ok: true, boot_message: "mem_sleep = deep" },
   ],
 };
 
@@ -36,7 +38,7 @@ vi.mock("../../api", () => ({
     Promise.resolve(
       ({
         power_detail: power,
-        cpu_detail: { turbo: true, cores: [], caches: [], power_limits: [], flaws: [], interrupts: [], at: 1 },
+        cpu_detail: { turbo: true, cores: [{ cpu: 0, hardware_max_khz: 4_700_000, idle: [] }], caches: [], power_limits: [], flaws: [], interrupts: [], at: 1 },
         net_deep: { wifi: [{ interface: "wlp45s0", ssid: "Home", uuid: "798005ca-d9fd-4047-86c5-8ed2ff14b23d", power_save: true }], interfaces: [], counters: {}, routes: [], extra_rules: 0, at: 1 },
         pci_detail: [{ address: "0000:00:14.0", class: "USB controller", model: "USB 3.2 controller", driver: "xhci_hcd", sys_path: "pci0000:00/0000:00:14.0", power_control: "on" }],
       } as Record<string, unknown>)[kind],
@@ -85,7 +87,7 @@ describe("Power controls", () => {
     await waitFor(() => expect(screen.getByText("Kept after restart")).toBeTruthy());
     expect(screen.getByText(/Charge limits · BAT0: start below 50%, stop at 80%/)).toBeTruthy();
     expect(screen.getByText(/Receiver: power saving off/)).toBeTruthy();
-    expect(screen.getByText("Set at this start")).toBeTruthy();
+    expect(screen.getAllByText("Set at this start")).toHaveLength(2);
     expect(screen.getByText("Not set at this start")).toBeTruthy();
     expect(screen.getByText("a different device is there now, so nothing was changed")).toBeTruthy();
     expect(screen.getByText("From the next start")).toBeTruthy();
@@ -93,6 +95,27 @@ describe("Power controls", () => {
     expect(describeKept({ setting: "wakeup:x", call: { op: "set_device_wakeup", device: "pci0000:00/0000:00:1f.3", enabled: false } }, { usb: [], wake_sources: [] })).toBe(
       "0000:00:1f.3: does not wake the computer",
     );
+  });
+
+  it("the CPU limit, PCIe power saving, and suspend type are tried first, then kept", async () => {
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("60% (2.8 GHz)")).toBeTruthy());
+    expect((screen.getByText("No limit") as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByText("60% (2.8 GHz)"));
+    // PCIe saving was tried but not kept: it offers Keep. Suspend is kept: it shows Kept.
+    expect(screen.getByText(/Now: Save power, for this session only/)).toBeTruthy();
+    fireEvent.click(screen.getByText("Keep Save power"));
+    fireEvent.click(screen.getByText("Try Firmware default"));
+    expect(screen.getByText(/Now: deep \(suspend to RAM\), kept after restart/)).toBeTruthy();
+    expect(screen.queryByText("Keep deep (suspend to RAM)")).toBeNull();
+    fireEvent.click(screen.getByText("Try s2idle (modern standby)"));
+    expect(screen.getByText(/Suspend type: deep \(suspend to RAM\)/)).toBeTruthy();
+    expect(opened).toEqual([
+      ["power.set_battery_cpu_limit", "60"],
+      ["power.set_aspm_policy", "powersave|keep"],
+      ["power.set_aspm_policy", "default|try"],
+      ["power.set_suspend_mode", "s2idle|try"],
+    ]);
   });
 
   it("an invalid custom limit cannot be sent", async () => {

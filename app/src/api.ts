@@ -334,6 +334,8 @@ export interface PowerDetail {
   chargers: { name: string; kind: string; online: boolean; usb_type?: Choice; max_watts?: number }[];
   power_delivery: { name: string; offered: PdOffer[]; accepted: PdOffer[] }[];
   suspend?: Choice;
+  /** The PCIe power saving policy (ASPM). */
+  aspm_policy?: Choice;
   wake_sources: { name: string; device?: string; pci_address?: string; product?: string; events: number; wakeups: number; active: number; may_wake?: boolean }[];
   last_wake_irq?: string;
   last_wake_device?: string;
@@ -348,7 +350,7 @@ export interface PowerDetail {
 export interface KeptSetting {
   /** Such as `charge_limits:BAT0`, `turbo`, or `wakeup:<device>`. */
   setting: string;
-  call: { op: string; battery?: string; start?: number | null; stop?: number; mode?: string; on?: boolean; device?: string; enabled?: boolean };
+  call: { op: string; battery?: string; start?: number | null; stop?: number; mode?: string; on?: boolean; device?: string; enabled?: boolean; percent?: number | null; policy?: string; keep?: boolean };
   /** Missing when it was kept after this start. */
   boot_ok?: boolean;
   boot_message?: string;

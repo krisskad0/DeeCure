@@ -29,7 +29,7 @@ done
 
 echo "== admin helper (installed, never started by the package)"
 for f in /usr/libexec/deecure/deecure-helper /usr/lib/systemd/system/deecure-helper.service \
-  /usr/lib/systemd/system/deecure-power.service \
+  /usr/lib/systemd/system/deecure-power.service /usr/lib/udev/rules.d/90-deecure-power.rules \
   /usr/share/dbus-1/system-services/io.github.krisskad0.DeeCure.Helper.service \
   /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf \
   /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy; do
@@ -98,6 +98,6 @@ fi
 echo "== purge"
 [ -z "$app" ] || apt-get purge -y -qq deecure-desktop >/dev/null
 apt-get purge -y -qq deecure >/dev/null
-left="$(ls -d /usr/bin/deecure /usr/bin/deecure-desktop /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf /usr/libexec/deecure /usr/share/deecure /usr/share/applications/io.github.krisskad0.DeeCure.desktop /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* /usr/lib/systemd/system/deecure-power.service /etc/systemd/system/*/deecure-power.service /etc/deecure /var/log/deecure 2>/dev/null || true)"
+left="$(ls -d /usr/bin/deecure /usr/bin/deecure-desktop /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf /usr/libexec/deecure /usr/share/deecure /usr/share/applications/io.github.krisskad0.DeeCure.desktop /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* /usr/lib/systemd/system/deecure-power.service /usr/lib/udev/rules.d/90-deecure-power.rules /etc/systemd/system/*/deecure-power.service /etc/deecure /var/log/deecure 2>/dev/null || true)"
 [ -z "$left" ] || fail "left behind: $left"
 echo "ok: nothing left behind"
