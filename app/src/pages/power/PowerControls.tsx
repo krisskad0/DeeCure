@@ -75,6 +75,12 @@ export function describeKept(k: KeptSetting, p: Pick<PowerDetail, "usb" | "wake_
       return `PCIe power saving: ${ASPM_NAMES[c.policy ?? ""] ?? c.policy}`;
     case "set_suspend_mode":
       return `Suspend type: ${SUSPEND_NAMES[c.mode ?? ""] ?? c.mode}`;
+    case "set_battery_turbo":
+      return `CPU turbo on battery: ${c.on ? "on" : "off"}`;
+    case "set_zswap":
+      return `Compressed swap (zswap): ${c.on ? "on" : "off"}`;
+    case "set_disk_scheduler":
+      return `Disk ${c.disk}: ${c.scheduler} scheduler`;
     default:
       return k.setting;
   }

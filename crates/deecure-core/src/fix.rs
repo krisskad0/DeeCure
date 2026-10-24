@@ -120,6 +120,61 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         Some("battery|power"),
     ),
     (
+        "power.set_battery_turbo",
+        "Turn turbo off on battery",
+        Some("on|off"),
+    ),
+    (
+        "storage.cap_journal",
+        "Cap the system log size",
+        Some("megabytes|off"),
+    ),
+    (
+        "storage.keep_fewer_snaps",
+        "Keep fewer old snap versions",
+        Some("count"),
+    ),
+    (
+        "packages.remove_unused_flatpaks",
+        "Remove unused Flatpak runtimes",
+        Some("user|system"),
+    ),
+    (
+        "system.raise_file_watches",
+        "Raise the file-watch limit",
+        Some("value"),
+    ),
+    (
+        "system.enable_zswap",
+        "Turn on compressed swap",
+        Some("on|off"),
+    ),
+    (
+        "storage.set_disk_scheduler",
+        "Use a better scheduler for a hard disk",
+        Some("disk|scheduler"),
+    ),
+    (
+        "packages.finish_setup",
+        "Finish a broken package install",
+        None,
+    ),
+    (
+        "packages.install_driver",
+        "Install a driver package",
+        Some("package"),
+    ),
+    (
+        "system.rebuild_dkms",
+        "Rebuild extra drivers for a kernel",
+        Some("kernel"),
+    ),
+    (
+        "system.update_firmware",
+        "Install a firmware update",
+        Some("device id"),
+    ),
+    (
         "power.set_keyboard_backlight",
         "Change the keyboard backlight",
         Some("level"),
@@ -313,6 +368,67 @@ pub enum Call {
         /// Plugged in, with the same choices.
         on_power: String,
     },
+    /// Turn CPU turbo off while on battery (`on: false`), set again at each plug in and unplug.
+    /// On mains, turbo follows the kept turbo setting, or is on.
+    SetBatteryTurbo {
+        /// Turbo on battery.
+        on: bool,
+    },
+    /// Cap the system log (`SystemMaxUse=` in a journald drop-in), and shrink it to the cap now.
+    /// `None` removes the drop-in.
+    SetJournalCap {
+        /// Megabytes, 100-10000.
+        mb: Option<u32>,
+    },
+    /// How many versions of each snap snapd keeps (`snap set system refresh.retain=`).
+    SetSnapRetain {
+        /// 2-20.
+        keep: u32,
+    },
+    /// `flatpak uninstall --unused`: runtimes no installed app uses.
+    RemoveUnusedFlatpaks {
+        /// The system installation (admin), or the user's own (no password).
+        system: bool,
+    },
+    /// Set the file-watch limit (`fs.inotify.max_user_watches`) now, and keep it in
+    /// `/etc/sysctl.d/60-deecure-inotify.conf` (`keep: false` removes that file).
+    SetFileWatchLimit {
+        /// 8192-4194304.
+        value: u64,
+        /// Kept in the settings file; `false` removes the file.
+        keep: bool,
+    },
+    /// Turn compressed swap (zswap) on or off (`/sys/module/zswap/parameters/enabled`), kept
+    /// after restart.
+    SetZswap {
+        /// On or off.
+        on: bool,
+    },
+    /// Set a disk's I/O scheduler (`/sys/block/<disk>/queue/scheduler`), kept after restart.
+    SetDiskScheduler {
+        /// Such as `sda`.
+        disk: String,
+        /// One the disk offers, such as `mq-deadline`.
+        scheduler: String,
+    },
+    /// `dpkg --configure -a`: finish package installs that stopped half way.
+    FinishPackageSetup,
+    /// `apt-get install` for a hardware video driver or a driver `ubuntu-drivers` offers.
+    InstallPackages {
+        /// Package names.
+        packages: Vec<String>,
+    },
+    /// `dkms autoinstall -k <kernel>`: build the extra drivers for an installed kernel.
+    RebuildDkms {
+        /// Such as `6.8.0-47-generic`.
+        kernel: String,
+    },
+    /// `fwupdmgr update <device>`: install the firmware update fwupd offers (fwupd asks for
+    /// the password itself).
+    UpdateFirmware {
+        /// fwupd's device ID: 40 hex characters.
+        device: String,
+    },
     /// Set UPower's critical battery action.
     SetBatteryAction {
         /// `PowerOff`, `Hibernate`, or `HybridSleep`.
@@ -337,6 +453,8 @@ impl Call {
                 | Call::SetKeyboardBacklight { .. }
                 | Call::SetRadio { .. }
                 | Call::SetWifiPowerSave { .. }
+                | Call::RemoveUnusedFlatpaks { system: false }
+                | Call::UpdateFirmware { .. }
         )
     }
 }

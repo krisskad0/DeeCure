@@ -30,6 +30,29 @@ impl Collector for Battery {
             Err(e) => return Err(e),
         };
         entries.sort_by_key(|entry| entry.file_name());
+        // On mains: a charger (mains or USB, not a device's own) is online. Stored only on
+        // computers with a system battery, for "on mains most of the last 14 days" (Optimize).
+        let (mut has_battery, mut on_mains) = (false, false);
+        for entry in &entries {
+            let text = |file: &str| read_trimmed(&entry.path().join(file));
+            if text("scope").as_deref() == Some("Device") {
+                continue;
+            }
+            match text("type").as_deref() {
+                Some("Battery") if text("present").as_deref() != Some("0") => has_battery = true,
+                Some("Mains" | "USB") => on_mains |= text("online").as_deref() == Some("1"),
+                _ => {}
+            }
+        }
+        if has_battery {
+            sample.metrics.push(metric(
+                "power.on_mains",
+                None,
+                if on_mains { 1.0 } else { 0.0 },
+                Unit::Count,
+                now,
+            ));
+        }
 
         for entry in entries {
             let supply = entry.path();
@@ -155,7 +178,9 @@ mod tests {
             value(&sample, "battery.charge", Some("hidpp_battery_0")),
             None
         );
-        assert_eq!(sample.metrics.len(), 3);
+        // The laptop has a battery, so on-mains is stored too: AC reports no "online", so 0.
+        assert_eq!(value(&sample, "power.on_mains", None), Some(0.0));
+        assert_eq!(sample.metrics.len(), 4);
     }
 
     #[test]

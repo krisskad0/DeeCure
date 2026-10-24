@@ -16,6 +16,7 @@ mod lid;
 mod power;
 mod reads;
 mod saved;
+mod tuning;
 
 use std::collections::HashMap;
 use std::io::Write;
@@ -133,6 +134,16 @@ impl Probe for Live {
     }
     fn has(&self, program: &str) -> bool {
         Path::new(program).exists()
+    }
+    fn offered_drivers(&self) -> Vec<String> {
+        // Lines such as "nvidia-driver-550, (kernel modules provided by …)".
+        output("/usr/bin/ubuntu-drivers", &["list"])
+            .unwrap_or_default()
+            .lines()
+            .filter_map(|l| l.split([',', ' ']).next())
+            .filter(|p| actions::is_package(p))
+            .map(str::to_owned)
+            .collect()
     }
 }
 
@@ -273,6 +284,22 @@ impl Helper {
         let task = parsed.clone();
         let result =
             tokio::task::spawn_blocking(move || -> Result<(String, Option<Call>), String> {
+                // A settings file, then its commands; the file is put back if they fail.
+                if let Some(plan) = tuning::plan(&task, Path::new("/")) {
+                    let p = plan?;
+                    let before = std::fs::read_to_string(&p.path).ok();
+                    tuning::write(&p.path, p.text.as_deref())?;
+                    return match run_all(&p.commands) {
+                        Ok(m) => Ok((format!("{m}{}", p.note).trim().to_owned(), Some(p.undo))),
+                        Err(e) => {
+                            let back = tuning::write(&p.path, before.as_deref());
+                            Err(match back {
+                                Ok(()) => format!("{e}; {} was put back", p.path.display()),
+                                Err(again) => format!("{e}; putting the file back failed: {again}"),
+                            })
+                        }
+                    };
+                }
                 // The lid action is one logind drop-in; logind is never restarted.
                 if let Some(plan) = lid::plan(&task, Path::new("/")) {
                     let (text, undo) = plan?;
@@ -291,6 +318,14 @@ impl Helper {
                 }
                 let commands = actions::prepare(&task, &Live)?;
                 let mut undo = None;
+                if let Call::SetSnapRetain { .. } = &task {
+                    // Only root can read the setting; without one, snapd keeps what it keeps now.
+                    let set = output("/usr/bin/snap", &["get", "system", "refresh.retain"]);
+                    let list = output("/usr/bin/snap", &["list", "--all"]).unwrap_or_default();
+                    undo = Some(Call::SetSnapRetain {
+                        keep: tuning::snap_retain_before(set.as_deref(), &list),
+                    });
+                }
                 // The file as it was, put back if anything after the edit fails.
                 let mut restore: Option<Option<String>> = None;
                 if let Call::SetBatteryAction { action, percent } = &task {
@@ -525,19 +560,16 @@ fn power_source_changed() -> ExitCode {
         audit(0, "PowerSourceChanged", &Value::Null, false, &e);
         return ExitCode::FAILURE;
     }
-    if let Some(o) = saved::apply_setting(root, "battery_cpu_limit") {
-        let on = if power::on_mains(root) {
-            "mains"
-        } else {
-            "battery"
-        };
-        audit(
-            0,
-            "PowerSourceChanged",
-            &json!({"on": on}),
-            o.ok,
-            &o.message,
-        );
+    let on = if power::on_mains(root) {
+        "mains"
+    } else {
+        "battery"
+    };
+    for key in ["battery_cpu_limit", "battery_turbo"] {
+        if let Some(o) = saved::apply_setting(root, key) {
+            let input = json!({"on": on, "setting": key});
+            audit(0, "PowerSourceChanged", &input, o.ok, &o.message);
+        }
     }
     ExitCode::SUCCESS
 }
@@ -637,6 +669,26 @@ mod tests {
                 on: true,
             },
             Call::SetBatteryCpuLimit { percent: Some(60) },
+            Call::SetBatteryTurbo { on: false },
+            Call::SetJournalCap { mb: Some(500) },
+            Call::SetSnapRetain { keep: 2 },
+            Call::RemoveUnusedFlatpaks { system: true },
+            Call::SetFileWatchLimit {
+                value: 524_288,
+                keep: true,
+            },
+            Call::SetZswap { on: true },
+            Call::SetDiskScheduler {
+                disk: "sda".into(),
+                scheduler: "mq-deadline".into(),
+            },
+            Call::FinishPackageSetup,
+            Call::InstallPackages {
+                packages: vec!["mesa-va-drivers".into()],
+            },
+            Call::RebuildDkms {
+                kernel: "6.8.0-47-generic".into(),
+            },
             Call::SetLidAction {
                 on_battery: "suspend".into(),
                 on_power: "lock".into(),

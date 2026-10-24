@@ -134,8 +134,33 @@ pub async fn run_call(call: &Call) -> Result<(String, Option<Call>), String> {
         Call::SetKeyboardBacklight { level } => set_keyboard_backlight(*level).await,
         Call::SetRadio { kind, on } => set_radio(kind, *on).await,
         Call::SetWifiPowerSave { uuid, value } => set_wifi_power_save(uuid, *value).await,
+        Call::RemoveUnusedFlatpaks { system: false } => program(
+            "flatpak",
+            &["uninstall", "--unused", "--user", "-y", "--noninteractive"],
+        )
+        .await
+        .map(|m| (m, None)),
+        Call::UpdateFirmware { device } => {
+            if !is_fwupd_id(device) {
+                return Err("not a fwupd device ID".into());
+            }
+            // fwupd asks for the password itself, and says when a restart finishes the update.
+            program(
+                "fwupdmgr",
+                &["update", "--assume-yes", "--no-reboot-check", device],
+            )
+            .await
+            .map(|m| (m, None))
+        }
         _ => Err("not a user-level call".into()),
     }
+}
+
+/// fwupd's device IDs are SHA-1 hashes: 40 lowercase hex characters, so never an option.
+fn is_fwupd_id(s: &str) -> bool {
+    s.len() == 40
+        && s.chars()
+            .all(|c| c.is_ascii_digit() || ('a'..='f').contains(&c))
 }
 
 /// Removes everything inside `dir` (not `dir` itself). Returns (removed, failed).
@@ -559,6 +584,19 @@ fn helper_error(e: &zbus::Error) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_real_fwupd_ids_reach_fwupdmgr() {
+        assert!(is_fwupd_id("362301da643102b9f38477387e2193e57abaa590"));
+        for bad in [
+            "--force",
+            "362301DA643102B9F38477387E2193E57ABAA590",
+            "abc",
+            "",
+        ] {
+            assert!(!is_fwupd_id(bad), "{bad}");
+        }
+    }
 
     #[test]
     fn toggles_the_autostart_flag_and_keeps_the_rest() {

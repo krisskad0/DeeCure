@@ -98,7 +98,7 @@ fn run(dir: &Path, rules: &[Rule]) -> Vec<Expected> {
     let root = SystemRoot::at(dir);
     let collectors: Vec<Box<dyn Collector>> = vec![
         Box::new(Cpu::default()),
-        Box::new(Memory),
+        Box::new(Memory::default()),
         Box::new(Battery),
         Box::new(Filesystems::with_stat(stat)),
     ];

@@ -380,7 +380,7 @@ export interface OptimizeCheck {
 export interface KeptSetting {
   /** Such as `charge_limits:BAT0`, `turbo`, or `wakeup:<device>`. */
   setting: string;
-  call: { op: string; battery?: string; start?: number | null; stop?: number; mode?: string; on?: boolean; device?: string; enabled?: boolean; percent?: number | null; policy?: string; keep?: boolean };
+  call: { op: string; battery?: string; start?: number | null; stop?: number; mode?: string; on?: boolean; device?: string; enabled?: boolean; percent?: number | null; policy?: string; keep?: boolean; disk?: string; scheduler?: string };
   /** Missing when it was kept after this start. */
   boot_ok?: boolean;
   boot_message?: string;

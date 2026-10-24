@@ -60,9 +60,21 @@ pub fn parse_meminfo(text: &str) -> io::Result<MemInfo> {
     })
 }
 
-/// Memory use. Swap metrics appear only when the system has swap.
+/// Memory use. Swap metrics appear only when the system has swap. Swap-ins and hard page
+/// faults per second come from `/proc/vmstat`, from the second reading on.
 #[derive(Debug, Default)]
-pub struct Memory;
+pub struct Memory {
+    previous: Option<(Timestamp, u64, u64)>,
+}
+
+/// `pswpin` (pages swapped in) and `pgmajfault` (hard page faults) from `/proc/vmstat`.
+pub fn vmstat_counts(text: &str) -> Option<(u64, u64)> {
+    let get = |key: &str| {
+        text.lines()
+            .find_map(|l| l.strip_prefix(key)?.strip_prefix(' ')?.trim().parse().ok())
+    };
+    Some((get("pswpin")?, get("pgmajfault")?))
+}
 
 impl Collector for Memory {
     fn name(&self) -> &'static str {
@@ -86,6 +98,28 @@ impl Collector for Memory {
                 used as f64 * 100.0 / info.total as f64,
                 Unit::Percent,
             );
+        }
+        if let Some((swap_in, faults)) = root
+            .read("/proc/vmstat")
+            .ok()
+            .and_then(|t| vmstat_counts(&t))
+        {
+            if let Some((at, before_in, before_faults)) = self.previous
+                && now.0 > at.0
+            {
+                let secs = (now.0 - at.0) as f64 / 1000.0;
+                push(
+                    "memory.swap_ins_per_s",
+                    swap_in.saturating_sub(before_in) as f64 / secs,
+                    Unit::Count,
+                );
+                push(
+                    "memory.hard_faults_per_s",
+                    faults.saturating_sub(before_faults) as f64 / secs,
+                    Unit::Count,
+                );
+            }
+            self.previous = Some((now, swap_in, faults));
         }
         if info.swap_total > 0 {
             let swap_used = info.swap_total.saturating_sub(info.swap_free);
@@ -136,7 +170,7 @@ HugePages_Total:       0
     #[test]
     fn reports_memory_and_swap() {
         let root = fixture_root("memory", &[("/proc/meminfo", MEMINFO)]);
-        let sample = Memory.collect(&root, Timestamp(0)).unwrap();
+        let sample = Memory::default().collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&sample, "memory.used_percent", None), Some(75.0));
         assert_eq!(
             value(&sample, "memory.used", None),
@@ -154,7 +188,7 @@ HugePages_Total:       0
                 "MemTotal: 1000 kB\nMemAvailable: 500 kB\nSwapTotal: 0 kB\n",
             )],
         );
-        let sample = Memory.collect(&root, Timestamp(0)).unwrap();
+        let sample = Memory::default().collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&sample, "swap.used", None), None);
         assert_eq!(value(&sample, "memory.total", None), Some(1000.0 * 1024.0));
     }

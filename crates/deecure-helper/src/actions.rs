@@ -38,10 +38,25 @@ pub trait Probe {
     fn installed_kernels(&self) -> Vec<String>;
     /// True when the program exists (such as `/usr/sbin/ufw`).
     fn has(&self, program: &str) -> bool;
+    /// Driver packages `ubuntu-drivers list` offers for this computer.
+    fn offered_drivers(&self) -> Vec<String> {
+        Vec::new()
+    }
 }
 
 const APT: &str = "/usr/bin/apt-get";
 const SYSTEMCTL: &str = "/usr/bin/systemctl";
+const SNAP: &str = "/usr/bin/snap";
+const FLATPAK: &str = "/usr/bin/flatpak";
+const DPKG: &str = "/usr/bin/dpkg";
+const DKMS: &str = "/usr/sbin/dkms";
+/// Hardware video-decoding drivers Optimize may install (docs/01-product/optimize-catalog.md).
+pub const VIDEO_DRIVERS: [&str; 4] = [
+    "intel-media-va-driver",
+    "intel-media-va-driver-non-free",
+    "i965-va-driver",
+    "mesa-va-drivers",
+];
 
 fn is_unit(s: &str) -> bool {
     s.len() <= 200
@@ -243,6 +258,67 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
             // The file itself is edited by the helper, not by a program; then UPower reloads it.
             Ok(vec![cmd(SYSTEMCTL, &["try-restart", "upower.service"])])
         }
+        Call::SetSnapRetain { keep } => {
+            if !(2..=20).contains(keep) {
+                return Err("snap keeps 2 to 20 versions".into());
+            }
+            if !sys.has(SNAP) {
+                return Err("snapd is not installed".into());
+            }
+            Ok(vec![Command {
+                program: SNAP,
+                args: vec![
+                    "set".into(),
+                    "system".into(),
+                    format!("refresh.retain={keep}"),
+                ],
+            }])
+        }
+        Call::RemoveUnusedFlatpaks { system: true } => {
+            if !sys.has(FLATPAK) {
+                return Err("Flatpak is not installed".into());
+            }
+            Ok(vec![cmd(
+                FLATPAK,
+                &[
+                    "uninstall",
+                    "--unused",
+                    "--system",
+                    "-y",
+                    "--noninteractive",
+                ],
+            )])
+        }
+        // Keeps the old settings file when a package asks, as apt does by default.
+        Call::FinishPackageSetup => Ok(vec![cmd(
+            DPKG,
+            &["--force-confdef", "--force-confold", "--configure", "-a"],
+        )]),
+        Call::InstallPackages { packages } => {
+            if packages.is_empty() || packages.len() > 5 {
+                return Err("one to five packages".into());
+            }
+            let offered = sys.offered_drivers();
+            for p in packages {
+                if !is_package(p) || !(VIDEO_DRIVERS.contains(&p.as_str()) || offered.contains(p)) {
+                    return Err(format!(
+                        "{p} is not a video driver or a driver ubuntu-drivers offers here"
+                    ));
+                }
+            }
+            let mut args = vec!["-y".to_owned(), "install".to_owned(), "--".to_owned()];
+            args.extend(packages.iter().cloned());
+            Ok(vec![Command { program: APT, args }])
+        }
+        Call::RebuildDkms { kernel } => {
+            if !is_kernel(kernel) || !sys.installed_kernels().contains(kernel) {
+                return Err(format!("{kernel} is not an installed kernel"));
+            }
+            if !sys.has(DKMS) {
+                return Err("DKMS is not installed".into());
+            }
+            Ok(vec![cmd(DKMS, &["autoinstall", "-k", kernel])])
+        }
         other => Err(format!("{other:?} is not an admin action")),
     }
 }
@@ -362,6 +438,9 @@ mod tests {
         }
         fn has(&self, _: &str) -> bool {
             true
+        }
+        fn offered_drivers(&self) -> Vec<String> {
+            vec!["nvidia-driver-550".into()]
         }
     }
 
@@ -499,6 +578,67 @@ mod tests {
                 unit: "-now.timer".into(),
                 enabled: true,
             },
+        ] {
+            assert!(prepare(&bad, &Fake).is_err(), "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn optimize_actions_run_fixed_commands_after_their_checks() {
+        let args = |c: Call| prepare(&c, &Fake).unwrap()[0].args.clone();
+        assert_eq!(
+            args(Call::SetSnapRetain { keep: 2 }),
+            ["set", "system", "refresh.retain=2"]
+        );
+        assert_eq!(
+            args(Call::RemoveUnusedFlatpaks { system: true }),
+            [
+                "uninstall",
+                "--unused",
+                "--system",
+                "-y",
+                "--noninteractive"
+            ]
+        );
+        assert_eq!(
+            args(Call::FinishPackageSetup),
+            ["--force-confdef", "--force-confold", "--configure", "-a"]
+        );
+        assert_eq!(
+            args(Call::InstallPackages {
+                packages: vec!["intel-media-va-driver".into(), "nvidia-driver-550".into()]
+            }),
+            [
+                "-y",
+                "install",
+                "--",
+                "intel-media-va-driver",
+                "nvidia-driver-550"
+            ]
+        );
+        assert_eq!(
+            args(Call::RebuildDkms {
+                kernel: "6.8.0-45-generic".into()
+            }),
+            ["autoinstall", "-k", "6.8.0-45-generic"]
+        );
+        for bad in [
+            Call::SetSnapRetain { keep: 1 },
+            Call::SetSnapRetain { keep: 21 },
+            Call::InstallPackages { packages: vec![] },
+            Call::InstallPackages {
+                packages: vec!["openssh-server".into()],
+            },
+            Call::InstallPackages {
+                packages: vec!["-oDebug=1".into()],
+            },
+            Call::RebuildDkms {
+                kernel: "6.9.9-1-generic".into(),
+            },
+            Call::RebuildDkms {
+                kernel: "../../x".into(),
+            },
+            Call::RemoveUnusedFlatpaks { system: false },
         ] {
             assert!(prepare(&bad, &Fake).is_err(), "{bad:?}");
         }

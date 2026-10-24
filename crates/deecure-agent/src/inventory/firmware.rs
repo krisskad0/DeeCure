@@ -18,6 +18,9 @@ const UPDATABLE: u64 = 1 << 1;
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FirmwareDevice {
     pub name: String,
+    /// fwupd's device ID, for an update.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vendor: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -81,7 +84,8 @@ pub async fn read(agent: &Agent) -> FirmwareInfo {
             continue;
         };
         // "No upgrades" comes back as an error; that just means up to date.
-        let available = match (updatable, get::<String>(&d, "DeviceId")) {
+        let id = get::<String>(&d, "DeviceId");
+        let available = match (updatable, id.clone()) {
             (true, Some(id)) => call("GetUpgrades", Some(id))
                 .await
                 .ok()
@@ -90,6 +94,7 @@ pub async fn read(agent: &Agent) -> FirmwareInfo {
         };
         out.push(FirmwareDevice {
             name: get(&d, "Name").unwrap_or_else(|| "Unnamed device".into()),
+            id,
             vendor: get(&d, "Vendor"),
             version: Some(version),
             available,

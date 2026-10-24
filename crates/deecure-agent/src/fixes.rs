@@ -165,7 +165,13 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
             }
             steps
         }
-        a if a.starts_with("storage.") => {
+        // Cleanup parts; the other storage fixes (log cap, snap versions, scheduler) are below.
+        a if a.starts_with("storage.")
+            && !matches!(
+                a,
+                "storage.cap_journal" | "storage.keep_fewer_snaps" | "storage.set_disk_scheduler"
+            ) =>
+        {
             let info = storage::read(&agent.root).await;
             match info.candidates.iter().find(|c| c.action == a) {
                 Some(c) => storage_steps(agent, c).await,
@@ -210,10 +216,12 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
             let info: UpdatesInfo = snapshot
                 .and_then(|s| serde_json::from_value(s.data).ok())
                 .unwrap_or_default();
+            // A package name as subject installs only that update (such as linux-firmware).
             let names: Vec<String> = info
                 .pending
                 .iter()
                 .filter(|p| p.security || !security_only)
+                .filter(|p| subject.is_none_or(|s| s == p.name))
                 .map(|p| p.name.clone())
                 .collect();
             subtitle = if security_only {
@@ -661,6 +669,220 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 },
             )]
         }
+        "power.set_battery_turbo" => {
+            let on = on_off(need(subject, "on|off")?)?;
+            subtitle = "Set again at each plug in, unplug, and start".into();
+            vec![step(
+                "battery-turbo",
+                if on {
+                    "Allow turbo on battery again"
+                } else {
+                    "Turn turbo off while on battery"
+                },
+                "On mains, turbo follows your turbo setting (on unless you turned it off). Off on battery: lower top speed, less heat, longer battery.".into(),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "on battery: echo {} | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo",
+                    if on { 0 } else { 1 }
+                ),
+                Call::SetBatteryTurbo { on },
+            )]
+        }
+        "storage.cap_journal" => {
+            let raw = need(subject, "megabytes|off")?;
+            let mb = if raw == "off" {
+                None
+            } else {
+                let m: u32 = raw.parse().map_err(|_| "the cap is not a number")?;
+                if !(100..=10_000).contains(&m) {
+                    return Err("the cap must be 100-10000 MB".into());
+                }
+                Some(m)
+            };
+            subtitle = "Applies to new logs after the next restart".into();
+            let file = "/etc/systemd/journald.conf.d/50-deecure-size.conf";
+            vec![step(
+                "journal-cap",
+                &match mb {
+                    Some(m) => format!("Keep the system log under {m} MB"),
+                    None => "Remove DeeCure's log size cap".into(),
+                },
+                "journald reads the cap when it starts; the log is shrunk to the cap now.".into(),
+                None,
+                Undo::Full,
+                true,
+                match mb {
+                    Some(m) => format!(
+                        "printf '[Journal]\\nSystemMaxUse={m}M\\n' | sudo tee {file} && sudo journalctl --vacuum-size={m}M"
+                    ),
+                    None => format!("sudo rm {file}"),
+                },
+                Call::SetJournalCap { mb },
+            )]
+        }
+        "storage.keep_fewer_snaps" => {
+            let keep: u32 = need(subject, "count")?
+                .parse()
+                .map_err(|_| "the count is not a number")?;
+            if !(2..=20).contains(&keep) {
+                return Err("snap keeps 2 to 20 versions".into());
+            }
+            subtitle = "snapd".into();
+            vec![step(
+                "snap-retain",
+                &format!("Keep {keep} versions of each snap"),
+                "The running version and one to go back to. Old versions are removed at the next refresh.".into(),
+                None,
+                Undo::Full,
+                true,
+                format!("sudo snap set system refresh.retain={keep}"),
+                Call::SetSnapRetain { keep },
+            )]
+        }
+        "packages.remove_unused_flatpaks" => {
+            let system = match need(subject, "user|system")? {
+                "system" => true,
+                "user" => false,
+                other => return Err(format!("'{other}' is not user or system")),
+            };
+            let flag = if system { "--system" } else { "--user" };
+            subtitle = format!("Flatpak ({})", if system { "system" } else { "your own" });
+            vec![step(
+                "flatpak-unused",
+                "Remove runtimes no installed app uses",
+                "An app that needs one later installs it again.".into(),
+                None,
+                Undo::Regenerates,
+                true,
+                format!(
+                    "{}flatpak uninstall --unused {flag} -y --noninteractive",
+                    if system { "sudo " } else { "" }
+                ),
+                Call::RemoveUnusedFlatpaks { system },
+            )]
+        }
+        "system.raise_file_watches" => {
+            let value: u64 = need(subject, "value")?
+                .parse()
+                .map_err(|_| "the limit is not a number")?;
+            if !(8192..=4_194_304).contains(&value) {
+                return Err("the limit must be 8192-4194304".into());
+            }
+            subtitle = "Now and at every start".into();
+            vec![step(
+                "file-watches",
+                &format!("Raise the file-watch limit to {value}"),
+                "Each watch uses about 1 KB of kernel memory only when an app uses it.".into(),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "echo 'fs.inotify.max_user_watches = {value}' | sudo tee /etc/sysctl.d/60-deecure-inotify.conf && sudo sysctl -w fs.inotify.max_user_watches={value}"
+                ),
+                Call::SetFileWatchLimit { value, keep: true },
+            )]
+        }
+        "system.enable_zswap" => {
+            let on = on_off(need(subject, "on|off")?)?;
+            subtitle = "Kept after restart".into();
+            vec![step(
+                "zswap",
+                if on {
+                    "Turn on compressed swap (zswap)"
+                } else {
+                    "Turn off compressed swap (zswap)"
+                },
+                "Memory that would go to the swap file is first kept compressed in RAM.".into(),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "echo {} | sudo tee /sys/module/zswap/parameters/enabled",
+                    if on { "Y" } else { "N" }
+                ),
+                Call::SetZswap { on },
+            )]
+        }
+        "storage.set_disk_scheduler" => {
+            let raw = need(subject, "disk|scheduler")?;
+            let (disk, scheduler) = raw.split_once('|').ok_or("the subject is disk|scheduler")?;
+            if !["mq-deadline", "bfq", "none"].contains(&scheduler) {
+                return Err(format!("unknown scheduler '{scheduler}'"));
+            }
+            subtitle = format!("/dev/{disk} · kept after restart");
+            vec![step(
+                "scheduler",
+                &format!("Use the {scheduler} scheduler for {disk}"),
+                "A hard disk is faster when requests go in disk order.".into(),
+                None,
+                Undo::Full,
+                true,
+                format!("echo {scheduler} | sudo tee /sys/block/{disk}/queue/scheduler"),
+                Call::SetDiskScheduler {
+                    disk: disk.to_owned(),
+                    scheduler: scheduler.to_owned(),
+                },
+            )]
+        }
+        "packages.finish_setup" => {
+            subtitle = "dpkg".into();
+            vec![step(
+                "dpkg-configure",
+                "Finish package installs that stopped half way",
+                "Keeps your own settings files when a package asks.".into(),
+                None,
+                Undo::None,
+                true,
+                "sudo dpkg --force-confdef --force-confold --configure -a".into(),
+                Call::FinishPackageSetup,
+            )]
+        }
+        "packages.install_driver" => {
+            let package = need(subject, "package")?.to_owned();
+            subtitle = "From Ubuntu's archive".into();
+            vec![step(
+                "install",
+                &format!("Install {package}"),
+                format!("To take it back, remove {package} in Packages."),
+                None,
+                Undo::None,
+                true,
+                format!("sudo apt-get install {package}"),
+                Call::InstallPackages {
+                    packages: vec![package.clone()],
+                },
+            )]
+        }
+        "system.rebuild_dkms" => {
+            let kernel = need(subject, "kernel")?.to_owned();
+            subtitle = format!("Kernel {kernel}");
+            vec![step(
+                "dkms",
+                &format!("Build the extra drivers for kernel {kernel}"),
+                "Only adds the missing builds.".into(),
+                None,
+                Undo::Regenerates,
+                true,
+                format!("sudo dkms autoinstall -k {kernel}"),
+                Call::RebuildDkms { kernel },
+            )]
+        }
+        "system.update_firmware" => {
+            let device = need(subject, "device id")?.to_owned();
+            subtitle = "fwupd (asks for your password itself)".into();
+            vec![step(
+                "firmware",
+                "Install the firmware update",
+                "Some firmware cannot go back to an older version, and some updates finish during a restart.".into(),
+                None,
+                Undo::None,
+                true,
+                format!("fwupdmgr update {device}"),
+                Call::UpdateFirmware { device },
+            )]
+        }
         "power.set_lid_action" => {
             let raw = need(subject, "battery|power")?;
             let (battery, power) = raw.split_once('|').ok_or("the subject is battery|power")?;
@@ -919,7 +1141,81 @@ mod tests {
                 .command
                 .starts_with("sudo rm ")
         );
+        for (action, subject, want) in [
+            (
+                "power.set_battery_turbo",
+                Some("off"),
+                Call::SetBatteryTurbo { on: false },
+            ),
+            (
+                "storage.cap_journal",
+                Some("500"),
+                Call::SetJournalCap { mb: Some(500) },
+            ),
+            (
+                "storage.cap_journal",
+                Some("off"),
+                Call::SetJournalCap { mb: None },
+            ),
+            (
+                "storage.keep_fewer_snaps",
+                Some("2"),
+                Call::SetSnapRetain { keep: 2 },
+            ),
+            (
+                "packages.remove_unused_flatpaks",
+                Some("user"),
+                Call::RemoveUnusedFlatpaks { system: false },
+            ),
+            (
+                "system.raise_file_watches",
+                Some("524288"),
+                Call::SetFileWatchLimit {
+                    value: 524_288,
+                    keep: true,
+                },
+            ),
+            (
+                "system.enable_zswap",
+                Some("on"),
+                Call::SetZswap { on: true },
+            ),
+            (
+                "storage.set_disk_scheduler",
+                Some("sda|mq-deadline"),
+                Call::SetDiskScheduler {
+                    disk: "sda".into(),
+                    scheduler: "mq-deadline".into(),
+                },
+            ),
+            ("packages.finish_setup", None, Call::FinishPackageSetup),
+            (
+                "packages.install_driver",
+                Some("mesa-va-drivers"),
+                Call::InstallPackages {
+                    packages: vec!["mesa-va-drivers".into()],
+                },
+            ),
+            (
+                "system.rebuild_dkms",
+                Some("6.8.0-47-generic"),
+                Call::RebuildDkms {
+                    kernel: "6.8.0-47-generic".into(),
+                },
+            ),
+        ] {
+            assert_eq!(
+                call(plan(&a, action, subject).await.unwrap()),
+                want,
+                "{action}"
+            );
+        }
         for (action, subject) in [
+            ("storage.cap_journal", "10"),
+            ("storage.keep_fewer_snaps", "1"),
+            ("packages.remove_unused_flatpaks", "everyone"),
+            ("system.raise_file_watches", "10"),
+            ("storage.set_disk_scheduler", "sda|kyber"),
             ("power.set_lid_action", "hibernate|lock"),
             ("power.set_lid_action", "suspend"),
             ("power.set_battery_cpu_limit", "20"),

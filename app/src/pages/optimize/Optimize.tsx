@@ -53,8 +53,8 @@ function Item({ c }: { c: OptimizeCheck }) {
 }
 
 export function OptimizeAll() {
-  // The checks read boot times and several system lists, so once a minute is enough.
-  const { data, error } = useLive<OptimizeCheck[]>(load, 60_000);
+  // The checks run several system tools (about 10 s in all), so every 2 minutes is enough.
+  const { data, error } = useLive<OptimizeCheck[]>(load, 120_000);
   if (!data) {
     return (
       <Panel title="Improvements" span={12}>

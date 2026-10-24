@@ -93,6 +93,8 @@ describe("Power controls", () => {
     expect(screen.getByText("a different device is there now, so nothing was changed")).toBeTruthy();
     expect(screen.getByText("From the next start")).toBeTruthy();
     // Without a known product, the device's last path part names it.
+    expect(describeKept({ setting: "zswap", call: { op: "set_zswap", on: true } }, { usb: [], wake_sources: [] })).toBe("Compressed swap (zswap): on");
+    expect(describeKept({ setting: "scheduler:sda", call: { op: "set_disk_scheduler", disk: "sda", scheduler: "mq-deadline" } }, { usb: [], wake_sources: [] })).toBe("Disk sda: mq-deadline scheduler");
     expect(describeKept({ setting: "wakeup:x", call: { op: "set_device_wakeup", device: "pci0000:00/0000:00:1f.3", enabled: false } }, { usb: [], wake_sources: [] })).toBe(
       "0000:00:1f.3: does not wake the computer",
     );

@@ -105,7 +105,7 @@ pub async fn run(
 ) {
     let mut collectors: Vec<Box<dyn Collector>> = vec![
         Box::new(Cpu::default()),
-        Box::new(Memory),
+        Box::new(Memory::default()),
         Box::new(Battery),
         Box::new(Filesystems::real()),
         Box::new(Network::default()),

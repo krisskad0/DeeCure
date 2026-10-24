@@ -1,6 +1,6 @@
 #!/bin/sh
 # On purge, removes what the admin helper wrote: kept power settings, this boot's results,
-# the lid setting, and the audit log. A plain removal keeps them, so reinstalling keeps the settings.
+# the lid, log size, and file-watch settings, and the audit log. A plain removal keeps them, so reinstalling keeps the settings.
 set -e
 
 case "$1" in
@@ -9,6 +9,9 @@ case "$1" in
     rmdir /etc/deecure 2>/dev/null || true
     rm -f /etc/systemd/logind.conf.d/50-deecure-lid.conf /etc/systemd/logind.conf.d/50-deecure-lid.deecure-tmp
     rmdir /etc/systemd/logind.conf.d 2>/dev/null || true
+    rm -f /etc/systemd/journald.conf.d/50-deecure-size.conf /etc/systemd/journald.conf.d/50-deecure-size.deecure-tmp
+    rmdir /etc/systemd/journald.conf.d 2>/dev/null || true
+    rm -f /etc/sysctl.d/60-deecure-inotify.conf /etc/sysctl.d/60-deecure-inotify.deecure-tmp
     rm -rf /run/deecure /var/log/deecure
     ;;
 esac

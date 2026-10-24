@@ -13,6 +13,10 @@ use deecure_core::Timestamp;
 use serde::Serialize;
 
 use super::storage_detail;
+mod cleanup;
+mod drivers;
+mod history;
+
 use super::{
     command, cpu_detail, kernel, memory_detail, pci_detail, power_detail, services_detail,
 };
@@ -45,7 +49,12 @@ pub struct Check {
     pub advice: Option<String>,
 }
 
-fn fix(
+/// "1 update", "2 updates".
+pub(super) fn count(n: usize, word: &str) -> String {
+    format!("{n} {word}{}", if n == 1 { "" } else { "s" })
+}
+
+pub(super) fn fix(
     id: &str,
     title: &str,
     measured: String,
@@ -67,7 +76,7 @@ fn fix(
     }
 }
 
-fn advice(id: &str, title: &str, measured: String, offered: bool, what: &str) -> Check {
+pub(super) fn advice(id: &str, title: &str, measured: String, offered: bool, what: &str) -> Check {
     Check {
         id: id.to_owned(),
         kind: "advice",
@@ -397,7 +406,9 @@ fn heat(agent: &Agent, cpu: &cpu_detail::CpuDetail) -> Check {
             "The CPU did not slow down from heat in the last 24 hours.".into()
         } else {
             format!(
-                "The CPU slowed down from heat {n} times in the last 24 hours ({since_start} times since the last start)."
+                "The CPU slowed down from heat {} in the last 24 hours ({} since the last start).",
+                count(n as usize, "time"),
+                count(since_start as usize, "time")
             )
         },
         n > 0,
@@ -611,6 +622,9 @@ pub async fn read(agent: &Agent) -> Vec<Check> {
     checks.extend(battery_health(root));
     checks.push(restart_needed(root, &cpu));
     checks.push(memory_errors(root).await);
+    checks.extend(cleanup::checks(agent).await);
+    checks.extend(history::checks(agent).await);
+    checks.extend(drivers::checks(agent).await);
     checks.sort_by_key(|c| !c.offered);
     checks
 }

@@ -196,4 +196,94 @@
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
+  <action id="io.github.krisskad0.deecure.set-battery-turbo">
+    <description>Turn CPU turbo off on battery</description>
+    <message>Authentication is required to change CPU turbo on battery</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-journal-cap">
+    <description>Cap the system log size</description>
+    <message>Authentication is required to cap the system log size</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-snap-retain">
+    <description>Keep fewer old snap versions</description>
+    <message>Authentication is required to change how many snap versions are kept</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.remove-unused-flatpaks">
+    <description>Remove unused Flatpak runtimes</description>
+    <message>Authentication is required to remove unused Flatpak runtimes</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-file-watch-limit">
+    <description>Change the file-watch limit</description>
+    <message>Authentication is required to change the file-watch limit</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-zswap">
+    <description>Turn compressed swap on or off</description>
+    <message>Authentication is required to change compressed swap</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-disk-scheduler">
+    <description>Change a hard disk's scheduler</description>
+    <message>Authentication is required to change a disk's scheduler</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.finish-package-setup">
+    <description>Finish a broken package install</description>
+    <message>Authentication is required to finish package installs</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.install-packages">
+    <description>Install a driver package</description>
+    <message>Authentication is required to install a driver package</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.rebuild-dkms">
+    <description>Rebuild extra drivers for a kernel</description>
+    <message>Authentication is required to rebuild drivers</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
 </policyconfig>

@@ -9,6 +9,7 @@
 //! - `/sys/devices/<device>/power/wakeup` and `/sys/devices/<device>/power/control`
 //! - `/sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq` (the highest speed on battery)
 //! - `/sys/module/pcie_aspm/parameters/policy` and `/sys/power/mem_sleep`
+//! - `/sys/module/zswap/parameters/enabled` and `/sys/block/<hard disk>/queue/scheduler`
 //!
 //! A device path must resolve inside `/sys/devices`. The lid, power and sleep buttons, and
 //! keyboards are never stopped from waking the computer; keyboards, mice, and sound devices never
@@ -326,6 +327,65 @@ pub fn plan(call: &Call, root: &Path) -> Option<Result<(Vec<Write>, Call), Strin
                 Call::SetSuspendMode {
                     mode: old,
                     keep: crate::saved::is_kept(root, "suspend_mode"),
+                },
+            ))
+        })(),
+        Call::SetBatteryTurbo { on } => (|| {
+            // On battery the rule applies; on mains turbo follows the kept turbo setting, or is on.
+            let target = if on_mains(root) {
+                crate::saved::kept_turbo(root).unwrap_or(true)
+            } else {
+                *on
+            };
+            let (writes, _) = plan(&Call::SetTurbo { on: target }, root).ok_or("no turbo")??;
+            Ok((
+                writes,
+                Call::SetBatteryTurbo {
+                    on: crate::saved::battery_turbo(root).unwrap_or(true),
+                },
+            ))
+        })(),
+        Call::SetZswap { on } => (|| {
+            let file = root.join("sys/module/zswap/parameters/enabled");
+            let old = read(&file).ok_or("this kernel has no compressed swap (zswap)")?;
+            Ok((
+                vec![Write {
+                    path: file,
+                    value: if *on { "Y" } else { "N" }.into(),
+                }],
+                Call::SetZswap {
+                    on: old == "Y" || old == "1",
+                },
+            ))
+        })(),
+        Call::SetDiskScheduler { disk, scheduler } => (|| {
+            let letters = disk.get(2..).unwrap_or("");
+            if !["sd", "hd", "vd"].iter().any(|p| disk.starts_with(p))
+                || letters.is_empty()
+                || letters.len() > 3
+                || !letters.chars().all(|c| c.is_ascii_lowercase())
+            {
+                return Err("not a disk name".into());
+            }
+            let dir = root.join("sys/block").join(disk);
+            if read(&dir.join("queue/rotational")).as_deref() != Some("1") {
+                return Err(format!("{disk} is not a spinning hard disk"));
+            }
+            let file = dir.join("queue/scheduler");
+            let text = read(&file).ok_or(format!("{disk} has no scheduler setting"))?;
+            let (offered, current) = choices(&text);
+            if !offered.contains(scheduler) {
+                return Err(format!("{disk} does not offer the {scheduler} scheduler"));
+            }
+            let old = current.ok_or("the current scheduler is not reported")?;
+            Ok((
+                vec![Write {
+                    path: file,
+                    value: scheduler.clone(),
+                }],
+                Call::SetDiskScheduler {
+                    disk: disk.clone(),
+                    scheduler: old,
                 },
             ))
         })(),
@@ -822,5 +882,52 @@ mod tests {
                 .unwrap()
                 .is_err()
         );
+    }
+
+    #[test]
+    fn zswap_disk_scheduler_and_battery_turbo_are_checked() {
+        let r = root(
+            "optimize-sys",
+            &[
+                ("/sys/module/zswap/parameters/enabled", "N\n"),
+                ("/sys/block/sda/queue/rotational", "1\n"),
+                ("/sys/block/sda/queue/scheduler", "[none] mq-deadline bfq\n"),
+                ("/sys/block/nvme0n1/queue/rotational", "0\n"),
+                ("/sys/block/nvme0n1/queue/scheduler", "[none] mq-deadline\n"),
+                ("/sys/devices/system/cpu/intel_pstate/no_turbo", "0\n"),
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/AC/type", "Mains\n"),
+                ("/sys/class/power_supply/AC/online", "0\n"),
+            ],
+        );
+        let (w, undo) = plan(&Call::SetZswap { on: true }, &r).unwrap().unwrap();
+        assert_eq!(values(&w), [("enabled".into(), "Y".into())]);
+        assert_eq!(undo, Call::SetZswap { on: false });
+        let sched = |d: &str, s: &str| Call::SetDiskScheduler {
+            disk: d.into(),
+            scheduler: s.into(),
+        };
+        let (w, undo) = plan(&sched("sda", "mq-deadline"), &r).unwrap().unwrap();
+        assert_eq!(values(&w), [("scheduler".into(), "mq-deadline".into())]);
+        assert_eq!(undo, sched("sda", "none"));
+        for bad in [
+            sched("nvme0n1", "mq-deadline"),
+            sched("sda", "kyber"),
+            sched("../sda", "bfq"),
+            sched("sdb", "bfq"),
+        ] {
+            assert!(plan(&bad, &r).unwrap().is_err(), "{bad:?}");
+        }
+        // On battery the rule turns turbo off; plugged in, turbo is on (nothing else kept).
+        let (w, undo) = plan(&Call::SetBatteryTurbo { on: false }, &r)
+            .unwrap()
+            .unwrap();
+        assert_eq!(values(&w), [("no_turbo".into(), "1".into())]);
+        assert_eq!(undo, Call::SetBatteryTurbo { on: true });
+        std::fs::write(r.join("sys/class/power_supply/AC/online"), "1").unwrap();
+        let (w, _) = plan(&Call::SetBatteryTurbo { on: false }, &r)
+            .unwrap()
+            .unwrap();
+        assert_eq!(values(&w), [("no_turbo".into(), "0".into())]);
     }
 }

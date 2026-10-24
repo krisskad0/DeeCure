@@ -64,6 +64,9 @@ pub fn setting(call: &Call) -> Option<String> {
         Call::SetBatteryCpuLimit { .. } => "battery_cpu_limit".to_owned(),
         Call::SetAspmPolicy { .. } => "aspm_policy".to_owned(),
         Call::SetSuspendMode { .. } => "suspend_mode".to_owned(),
+        Call::SetBatteryTurbo { .. } => "battery_turbo".to_owned(),
+        Call::SetZswap { .. } => "zswap".to_owned(),
+        Call::SetDiskScheduler { disk, .. } => format!("scheduler:{disk}"),
         _ => return None,
     })
 }
@@ -83,6 +86,11 @@ fn identity(call: &Call, root: &Path) -> Option<String> {
             let pair =
                 |a: &str, b: &str| Some(format!("{}:{}", read(&dir.join(a))?, read(&dir.join(b))?));
             pair("idVendor", "idProduct").or_else(|| pair("vendor", "device"))
+        }
+        // Disk names (sda, sdb) can change between starts; the drive's own ID cannot.
+        Call::SetDiskScheduler { disk, .. } => {
+            let dir = root.join("sys/block").join(disk).join("device");
+            read(&dir.join("wwid")).or_else(|| read(&dir.join("model")))
         }
         Call::SetChargeLimits { battery, .. } | Call::SetChargeMode { battery, .. } => read(
             &root
@@ -106,6 +114,8 @@ fn present(call: &Call, root: &Path) -> bool {
         Call::SetBatteryCpuLimit { .. } => root.join("sys/devices/system/cpu/cpufreq").exists(),
         Call::SetAspmPolicy { .. } => root.join("sys/module/pcie_aspm/parameters/policy").exists(),
         Call::SetSuspendMode { .. } => root.join("sys/power/mem_sleep").exists(),
+        Call::SetZswap { .. } => root.join("sys/module/zswap/parameters/enabled").exists(),
+        Call::SetDiskScheduler { disk, .. } => root.join("sys/block").join(disk).exists(),
         _ => {
             root.join("sys/devices/system/cpu/intel_pstate/no_turbo")
                 .exists()
@@ -125,6 +135,22 @@ fn keep_flag(call: &Call) -> Option<bool> {
 /// Is this setting kept now?
 pub fn is_kept(root: &Path, key: &str) -> bool {
     load(&root.join(SAVED)).settings.contains_key(key)
+}
+
+/// The kept turbo setting (`turbo`), when there is one.
+pub fn kept_turbo(root: &Path) -> Option<bool> {
+    match load(&root.join(SAVED)).settings.get("turbo")?.call {
+        Call::SetTurbo { on } => Some(on),
+        _ => None,
+    }
+}
+
+/// The kept turbo-on-battery rule (`battery_turbo`), when there is one.
+pub fn battery_turbo(root: &Path) -> Option<bool> {
+    match load(&root.join(SAVED)).settings.get("battery_turbo")?.call {
+        Call::SetBatteryTurbo { on } => Some(on),
+        _ => None,
+    }
 }
 
 /// The kept highest CPU speed on battery, in percent.
