@@ -32,7 +32,7 @@ The code is `crates/deecure-helper`. It is installed as `/usr/libexec/deecure/de
 | `upgrade_packages` | `apt-get -y install --only-upgrade -- <packages>` | Package names; each must be installed |
 | `set_firewall` | `ufw --force enable` / `ufw disable` | ufw installed |
 | `restart_service` | `systemctl restart -- <unit>` | Unit pattern; it must exist |
-| `set_service_enabled` | `systemctl enable/disable --now -- <unit>` | As above; essential units (D-Bus, logind, journald, udev, GDM, polkit, NetworkManager) can never be turned off |
+| `set_service_enabled` | `systemctl enable/disable --now -- <unit>` | As above, and timers too (`<name>.timer`, such as `fstrim.timer`; restarting stays for services only); essential units (D-Bus, logind, journald, udev, GDM, polkit, NetworkManager) can never be turned off |
 | `remove_kernels` | `apt-get -y purge -- linux-image-…` | Version pattern; never the running or newest kernel; at least two are always kept |
 | `set_battery_action` | Edits `/etc/UPower/UPower.conf`, then `systemctl try-restart upower` | PowerOff, Hibernate, or HybridSleep at 1-20%. If a later step fails, the file is put back. Returns the old values for undo. |
 | `set_charge_limits` | Writes `/sys/class/power_supply/<battery>/charge_control_{start,end}_threshold` | Battery name pattern (`BAT0`, `BATT`, `CMB0`) and `type` is `Battery`; stop 20-100%; start below stop, and only when the battery has a start limit; written in an order that never puts start at or above stop. Returns the old limits for undo. |

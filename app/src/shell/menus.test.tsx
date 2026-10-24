@@ -50,6 +50,19 @@ describe("Beginner and Expert menus", () => {
     }
   });
 
+  it("Optimize is in the Expert sidebar only, and stays while it is open", () => {
+    sidebar("expert", "#/overview/summary");
+    expect(screen.getByText("Optimize")).toBeTruthy();
+    cleanup();
+    for (const mode of ["beginner", "advanced"] as const) {
+      sidebar(mode, "#/overview/summary");
+      expect(screen.queryByText("Optimize")).toBeNull();
+      cleanup();
+    }
+    sidebar("advanced", "#/optimize/all");
+    expect(screen.getByText("Optimize")).toBeTruthy();
+  });
+
   it("a link to an Advanced page keeps that page in the Beginner sidebar", () => {
     sidebar("beginner", "#/network/ports");
     const link = screen.getByText("Network").closest("a");

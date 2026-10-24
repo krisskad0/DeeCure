@@ -22,6 +22,7 @@ import { ContainersImages, ContainersList, ContainersVms, ContainersVolumes } fr
 import { PackagesCleanup, PackagesInstalled, PackagesPermissions, PackagesSources } from "./pages/packages/Packages";
 import { AssistantChat } from "./pages/assistant/Assistant";
 import { DiagnosticsHardware, DiagnosticsNetwork, DiagnosticsPerformance } from "./pages/diagnostics/Diagnostics";
+import { OptimizeAll } from "./pages/optimize/Optimize";
 import { SettingsAbout, SettingsAccess, SettingsAssistant, SettingsData, SettingsGeneral, SettingsNotifications } from "./pages/settings/Settings";
 import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "./pages/activity/Activity";
 import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
@@ -113,6 +114,7 @@ const TABS: Record<string, Record<string, Tab>> = {
   packages: { installed: PackagesInstalled, sources: PackagesSources, cleanup: PackagesCleanup, permissions: PackagesPermissions },
   containers: { containers: ContainersList, images: stack(["images", ContainersImages], ["volumes", ContainersVolumes]), vms: ContainersVms },
   backups: { jobs: stack(["jobs", BackupsJobs], ["snapshots", BackupsSnapshots]), restore: BackupsRestore },
+  optimize: { all: OptimizeAll },
   diagnostics: { performance: DiagnosticsPerformance, network: DiagnosticsNetwork, hardware: DiagnosticsHardware },
   assistant: { chat: AssistantChat },
   settings: { general: SettingsGeneral, access: SettingsAccess, notifications: SettingsNotifications, assistant: SettingsAssistant, data: SettingsData, about: SettingsAbout },

@@ -25,6 +25,7 @@
 | Network & Access | Accounts | `accounts` | `users` | {ok:Healthy} | - | `users`: Users and Groups · `sessions`: Sign-ins · `ssh`: SSH Keys |
 | Network & Access | Security | `security` | `shield` | {warn:Warning} | Yellow dot | `overview`: Overview · `vulns`: Vulnerabilities (count 3) · `hardening`: Hardening · `integrity`: File Integrity · `malware`: Malware Scan |
 | Network & Access | Privacy | `privacy` | `eye` | {ok:Healthy} | - | `access`: Device Access · `perms`: App Permissions · `settings`: Privacy Settings |
+| Tools | Optimize | `optimize` | `bolt` | none (no badge) | - | `all`: Improvements |
 | Tools | Diagnostics | `diagnostics` | `gauge` | none (no badge) | - | `performance`: Performance Check · `network`: Network Test · `hardware`: Hardware Tests |
 | Tools | Assistant | `assistant` | `chat` | none (no badge) | - | `chat`: Chat |
 | Footer | Settings | `settings` | `sliders` | none (no badge) | - | `general`: General · `access`: Access · `notifications`: Notifications · `assistant`: Assistant · `data`: Data · `about`: About |
@@ -40,7 +41,7 @@
 
 ## Beginner mode
 
-Beginner (the default [view level](../../01-product/view-levels.md)) keeps the app light. The sidebar, the page tabs, and the search palette show only these pages and sub-pages, in the same order. Advanced and Expert show everything above. The list lives in one place in code: `BEGINNER` in `app/src/visible.ts`.
+Beginner (the default [view level](../../01-product/view-levels.md)) keeps the app light. The sidebar, the page tabs, and the search palette show only these pages and sub-pages, in the same order. Advanced shows everything above except Optimize, which only Expert shows. The list lives in one place in code: `BEGINNER` in `app/src/visible.ts`.
 
 | Page | Sub-pages in Beginner mode |
 | --- | --- |

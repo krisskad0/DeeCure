@@ -33,6 +33,7 @@ Before the shell, the first launch shows [Onboarding and first scan](00-onboardi
 | 19 | Network & Access | [Privacy](19-privacy.md) | Device Access, App Permissions, Privacy Settings |
 | 20 | Tools | [Diagnostics](20-diagnostics.md) | Performance Check, Network Test, Hardware Tests |
 | 21 | Tools | [Assistant](21-assistant.md) | Chat |
+| 23 | Tools | [Optimize](23-optimize.md) | Improvements (Expert level only) |
 | 22 | (footer) | [Settings](22-settings.md) | General, Access, Notifications, Assistant, Data, About |
 
 That is 22 pages and 91 sub-pages in total.

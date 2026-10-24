@@ -23,7 +23,8 @@ describe("visible pages", () => {
 
   it("Beginner mode keeps the menus short, Expert mode shows everything", () => {
     expect(menuPages("expert")).toBe(VISIBLE_PAGES);
-    expect(menuPages("advanced")).toBe(VISIBLE_PAGES);
+    // Advanced shows every page except Optimize, which is Expert only.
+    expect(menuPages("advanced").map((p) => p.id)).toEqual(VISIBLE_PAGES.map((p) => p.id).filter((id) => id !== "optimize"));
     const beginner = menuPages("beginner");
     expect(beginner.map((p) => p.id)).toEqual(["overview", "performance", "activity", "system", "power", "storage", "security", "settings"]);
     expect(beginner.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "disk", "network", "gpu"]);
@@ -77,7 +78,7 @@ describe("visible pages", () => {
     }
   });
 
-  it("the full view has 77 sub-pages", () => {
-    expect(VISIBLE_PAGES.reduce((n, p) => n + p.tabs.length, 0)).toBe(77);
+  it("the full view has 78 sub-pages: 77 after the tab merges, plus Optimize", () => {
+    expect(VISIBLE_PAGES.reduce((n, p) => n + p.tabs.length, 0)).toBe(78);
   });
 });

@@ -227,6 +227,13 @@ a.btn { text-decoration: none; }
 .tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: var(--hover); border: 1px solid var(--line); font-size: 12px; color: var(--ink-2); }
 .plain-list { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+/* Optimize: one row per improvement, text left, badges and button right; stacked when narrow. */
+.optimize-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.optimize-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.optimize-item:first-child { border-top: 0; padding-top: 0; }
+.optimize-text { display: grid; gap: 4px; min-width: 0; }
+.optimize-summary { cursor: pointer; padding: 10px 16px; color: var(--ink-2); }
+@media (max-width: 640px) { .optimize-item { flex-direction: column; } }
 
 /* 23 Diagnostics runner */
 .runner { display: flex; flex-direction: column; gap: 12px; }

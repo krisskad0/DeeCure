@@ -94,4 +94,4 @@ What is built: **Keep history for** is a real choice saved by the agent; a short
 
 ---
 
-← Previous: [Assistant](21-assistant.md) · [Index](README.md)
+← Previous: [Assistant](21-assistant.md) · [Index](README.md) · Next: [Optimize](23-optimize.md) →

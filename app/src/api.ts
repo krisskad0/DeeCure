@@ -361,6 +361,21 @@ export interface LidSettings {
   running_power?: string;
 }
 
+/** One Optimize check and what it measured (docs/01-product/optimize-catalog.md). */
+export interface OptimizeCheck {
+  id: string;
+  /** `fix` opens the fix preview; `advice` says what to do by hand. */
+  kind: "fix" | "advice";
+  title: string;
+  measured: string;
+  /** Needed now. */
+  offered: boolean;
+  action?: string;
+  subject?: string;
+  access?: "you" | "admin";
+  advice?: string;
+}
+
 /** A power setting kept after restart, and what happened to it at this start. */
 export interface KeptSetting {
   /** Such as `charge_limits:BAT0`, `turbo`, or `wakeup:<device>`. */
@@ -1065,6 +1080,7 @@ export function getInventory(kind: "graphics_stack"): Promise<GraphicsStack>;
 export function getInventory(kind: "net_deep"): Promise<NetDeep>;
 export function getInventory(kind: "tcp_traffic"): Promise<TcpTraffic>;
 export function getInventory(kind: "power_detail"): Promise<PowerDetail>;
+export function getInventory(kind: "optimize"): Promise<OptimizeCheck[]>;
 export function getInventory(kind: "thermal"): Promise<ThermalInfo>;
 export function getInventory(kind: "boot_detail"): Promise<BootDetail>;
 export function getInventory(kind: "unit_files"): Promise<UnitFile[]>;

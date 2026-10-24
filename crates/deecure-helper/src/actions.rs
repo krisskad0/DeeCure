@@ -167,7 +167,14 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
             }])
         }
         Call::SetServiceEnabled { unit, enabled } => {
-            check_unit(unit, sys)?;
+            // Timers too (such as fstrim.timer); restarting stays for services only.
+            if is_timer(unit) {
+                if !sys.unit_loaded(unit) {
+                    return Err(format!("{unit} does not exist"));
+                }
+            } else {
+                check_unit(unit, sys)?;
+            }
             // Never switch off what the system needs to start or to sign in.
             const ESSENTIAL: &[&str] = &[
                 "dbus.service",
@@ -238,6 +245,12 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
         }
         other => Err(format!("{other:?} is not an admin action")),
     }
+}
+
+/// A timer unit name, such as `fstrim.timer`: same characters as a service.
+fn is_timer(s: &str) -> bool {
+    s.strip_suffix(".timer")
+        .is_some_and(|base| is_unit(&format!("{base}.service")))
 }
 
 fn check_unit(unit: &str, sys: &dyn Probe) -> Result<(), String> {
@@ -317,7 +330,13 @@ mod tests {
     struct Fake;
     impl Probe for Fake {
         fn unit_loaded(&self, unit: &str) -> bool {
-            ["cups.service", "dbus.service", "bluetooth.service"].contains(&unit)
+            [
+                "cups.service",
+                "dbus.service",
+                "bluetooth.service",
+                "fstrim.timer",
+            ]
+            .contains(&unit)
         }
         fn package_state(&self, name: &str) -> Option<String> {
             match name {
@@ -453,6 +472,35 @@ mod tests {
             Call::EmptyTrash,
         ] {
             assert!(prepare(&bad, &Fake).is_err(), "{bad:?} should be refused");
+        }
+    }
+
+    #[test]
+    fn timers_can_be_turned_on_or_off_but_not_restarted() {
+        let on = Call::SetServiceEnabled {
+            unit: "fstrim.timer".into(),
+            enabled: true,
+        };
+        let cmds = prepare(&on, &Fake).unwrap();
+        assert_eq!(cmds[0].args, ["enable", "--now", "--", "fstrim.timer"]);
+        for bad in [
+            Call::RestartService {
+                unit: "fstrim.timer".into(),
+            },
+            Call::SetServiceEnabled {
+                unit: "missing.timer".into(),
+                enabled: true,
+            },
+            Call::SetServiceEnabled {
+                unit: "x;y.timer".into(),
+                enabled: true,
+            },
+            Call::SetServiceEnabled {
+                unit: "-now.timer".into(),
+                enabled: true,
+            },
+        ] {
+            assert!(prepare(&bad, &Fake).is_err(), "{bad:?}");
         }
     }
 

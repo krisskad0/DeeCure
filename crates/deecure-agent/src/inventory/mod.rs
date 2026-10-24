@@ -29,6 +29,7 @@ mod memory_detail;
 pub(crate) mod net;
 mod net_deep;
 mod network;
+mod optimize;
 mod os;
 pub(crate) mod packages;
 mod pci_detail;
@@ -79,6 +80,7 @@ pub const KINDS: &[&str] = &[
     "net_deep",
     "tcp_traffic",
     "power_detail",
+    "optimize",
     "thermal",
     "boot_detail",
     "unit_files",
@@ -178,6 +180,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
             (detail.lid.running_battery, detail.lid.running_power) = logind::running(agent).await;
             serde_json::to_value(detail)
         }
+        "optimize" => serde_json::to_value(optimize::read(agent).await),
         "thermal" => serde_json::to_value(thermal::read(&agent.root)),
         "boot_detail" => serde_json::to_value(services_detail::read_boot().await),
         "unit_files" => serde_json::to_value(services_detail::read_units().await),

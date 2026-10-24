@@ -6,7 +6,7 @@ import type { AppError, Finding, StatusReport } from "./api";
 import type { StatusVariant } from "./components/StatusBadge";
 
 /** Tools and Settings never show a status badge. */
-const NO_BADGE = new Set(["diagnostics", "assistant", "settings"]);
+const NO_BADGE = new Set(["optimize", "diagnostics", "assistant", "settings"]);
 const RANK: Record<Finding["severity"], number> = { info: 1, warning: 2, critical: 3 };
 const VARIANT: Record<Finding["severity"], StatusVariant> = { info: "info", warning: "warn", critical: "crit" };
 
