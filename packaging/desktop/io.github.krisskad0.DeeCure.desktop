@@ -2,7 +2,7 @@
 Type=Application
 Name=DeeCure
 GenericName=System Control Center
-Comment=Understand your computer, keep it healthy, and fix problems safely
+Comment=Deep insight into every layer of your computer, with warnings and safe fixes
 Exec=deecure-desktop
 Icon=io.github.krisskad0.DeeCure
 Terminal=false

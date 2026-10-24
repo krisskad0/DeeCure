@@ -5,15 +5,15 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>Apache-2.0</project_license>
   <name>DeeCure</name>
-  <summary>Control center for your Linux computer</summary>
+  <summary>Deep insight into every layer of your computer</summary>
   <developer id="io.github.krisskad0">
     <name>DeeCure contributors</name>
   </developer>
   <description>
     <p>
-      DeeCure shows every part of your computer in depth, keeps it healthy, warns you
-      before something breaks, and fixes problems safely. It explains everything in
-      plain words, and tells you what needs attention first.
+      DeeCure gives deep insight into every layer of your computer: sensor limits, PCIe
+      links, firmware, kernel settings, and services. It warns on the hardware's own
+      limits, explains everything in plain words, and fixes problems safely.
     </p>
     <ul>
       <li>A health score and a short list of problems, most serious first</li>

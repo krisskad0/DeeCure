@@ -1,6 +1,6 @@
-# DeeCure: the control center for your Linux computer
+# DeeCure: deep insight into every layer of your Linux computer
 
-**One app to monitor, protect, and fix your Linux computer. Free and private.** A free, open-source system monitor, hardware health checker, battery and power manager, and one-click fixer for Ubuntu. Everything stays on your computer.
+**Deep insight into every layer of a Linux computer: sensor limits, PCIe links, firmware, kernel settings, and services. Warns on the hardware's own limits and fixes problems safely.** Free, open source, and private: everything stays on your computer.
 
 [![CI](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml/badge.svg)](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -9,7 +9,7 @@
 [![Release](https://img.shields.io/github/v/release/krisskad0/DeeCure?include_prereleases&label=pre-release)](https://github.com/krisskad0/DeeCure/releases)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/krisskad0/DeeCure/badge)](https://securityscorecards.dev/viewer/?uri=github.com/krisskad0/DeeCure)
 
-> **DeeCure in one sentence:** it shows you *everything* about your Linux computer, tells you *what is wrong and why*, warns you *before* it becomes a problem, and *fixes it safely* with a preview and an undo button.
+> **In one sentence:** DeeCure reads what your computer knows about itself, from each sensor's own limit to the file that set each kernel setting, explains it, warns when something can harm the machine, and fixes it with a preview and undo.
 
 **Install on Ubuntu 24.04 or 26.04** (open the Terminal with `Ctrl` + `Alt` + `T`):
 
@@ -21,8 +21,28 @@ Then open **DeeCure** from the app menu. [All install options](docs/07-user-guid
 
 ---
 
+## What DeeCure shows you
+
+Things that normally take many commands, or are not shown anywhere at all:
+
+- A drive running on a **slower PCIe link** than both the drive and its slot support.
+- The **temperature limits your CPU and NVMe drive report themselves**, and how long they stayed near them.
+- **Which app keeps the second graphics card awake**, draining the battery.
+- **Which device woke the laptop** from sleep, and every device allowed to.
+- **Which config file set each kernel setting**, and whether a later file overrides it.
+- Whether **automatic security updates really installed**, and why not ("stopped: metered connection").
+- What a **USB-C charger offers** against what the laptop accepts.
+- What really **delayed the boot**: the critical chain, step by step.
+- **Real memory per app** (PSS and USS), not the misleading total.
+- How locked down **each service** is (systemd's exposure score), and what it costs in CPU, memory, and disk.
+- A **USB 3 device stuck at USB 2 speed**, and the firmware security level (HSI) with every check behind it.
+- **Every installed file checked** against its package, every screen read from its own EDID, every CPU security flaw with its state.
+
+62 kinds of live data, 22 pages and 78 tabs, each with real data from your computer.
+
 ## Contents
 
+- [What DeeCure shows you](#what-deecure-shows-you)
 - [What is DeeCure?](#what-is-deecure)
 - [Why one app instead of ten tools](#why-one-app-instead-of-ten-tools)
 - [Features](#features)
@@ -38,7 +58,7 @@ Then open **DeeCure** from the app menu. [All install options](docs/07-user-guid
 
 ## What is DeeCure?
 
-Your Linux computer knows a lot about itself: every temperature limit, every battery cell, every drive's wear, every service, every change. That knowledge is spread over `/proc`, `/sys`, systemd, the journal, apt, snap, D-Bus, and dozens of commands. DeeCure brings it all into one place and turns it into answers:
+Your Linux computer knows a great deal about itself: every sensor's limit, every battery cell, every drive's link, every wake-up source, every service's sandbox, every change. That knowledge is spread over `/proc`, `/sys`, systemd, the journal, apt, snap, D-Bus, firmware, and dozens of commands. DeeCure reads all of it, connects it, and turns it into answers:
 
 1. **Understand:** a deep view of the whole machine: CPU, memory, disks, graphics, battery, sensors, firmware, USB and PCIe, network, services, packages, containers, security, and what changed.
 2. **Keep it healthy:** 53 health warnings that use each part's **own** limits (the CPU's own critical temperature, the drive's own warning temperature) and fire only when a problem lasts.
@@ -46,11 +66,11 @@ Your Linux computer knows a lot about itself: every temperature limit, every bat
 4. **Fix safely:** 45 fixes with a preview of every step, your password only for admin steps, a check afterwards, and undo.
 5. **Control:** battery charge limits, CPU turbo and speed on battery, sleep and wake-up, lid action, device power saving, all kept after restart.
 
-It is for anyone who wants **full control of their own computer**: beginners who want it to "just work", and experts who want every detail.
+It is for anyone who wants **full control of their own computer**: experts who want every detail, and beginners who want it explained (the Beginner view keeps it short).
 
 ## Why one app instead of ten tools
 
-Keeping a Linux PC healthy usually means a system monitor, a sensor tool, a disk cleaner, a battery tool, a power tuner, a log viewer, a package tool, a firewall tool, and a lot of forum searching. DeeCure does these jobs together, and connects them:
+Getting this picture today means a dozen tools and commands (`lspci -vv`, `sensors`, `smartctl`, `systemd-analyze`, `journalctl`, `upower`, `powertop`, `sysctl`, `debsums`, and forum searching), and none of them connects one finding to another. DeeCure does:
 
 | You want to… | DeeCure |
 | --- | --- |
@@ -164,9 +184,9 @@ Add `--json` for scripts. [User guide](docs/07-user-guide/using-deecure.md)
 
 ## FAQ
 
-**What is DeeCure?** A free, open-source control center for Linux computers: a deep system and hardware monitor, health warnings, power and battery controls, an optimizer, and safe fixes with undo, in one desktop app and one command.
+**What is DeeCure?** Free, open-source software that gives deep insight into every layer of a Linux computer (sensors and their own limits, PCIe links, firmware, the kernel, services, packages), warns on the hardware's own limits, controls battery and power settings, and fixes problems safely with undo, in one desktop app and one command.
 
-**Is it a replacement for GNOME System Monitor or htop?** It covers what they show (processes, CPU, memory, disks, network) and adds what they do not: health warnings, hardware limits, battery and power controls, history of what changed, and fixes.
+**Is it a replacement for GNOME System Monitor or htop?** It shows what they show (processes, CPU, memory, disks, network), and goes much deeper: each part's own limits, PCIe and USB link speeds, firmware security, kernel settings and their source files, service sandboxing, real memory per app, what changed, and warnings and fixes built on all of that.
 
 **Does it send my data anywhere?** No. There is no account, no telemetry, and no cloud.
 

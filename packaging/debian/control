@@ -12,11 +12,12 @@ Rules-Requires-Root: no
 Package: deecure
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: watches your Linux computer, warns early, and fixes it safely
- DeeCure understands every part of your computer and explains it in plain
- English: hardware and sensors, battery, memory, disks, services, network,
- and security. It warns about harm (heat, stalls, errors, wear), judged
- against each part's own limits, and never about normal use.
+Description: deep insight into every layer of a Linux computer, with safe fixes
+ DeeCure reads every layer of your computer and explains it in plain
+ English: sensors and their limits, PCIe links, firmware, the kernel,
+ battery, memory, disks, services, network, and security. It warns about
+ harm (heat, stalls, errors, wear), judged against each part's own
+ limits, and never about normal use.
  .
  A small background agent collects data every minute, keeps a history,
  and runs rules that turn the data into findings such as "Main disk is

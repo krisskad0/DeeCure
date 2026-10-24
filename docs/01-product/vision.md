@@ -4,7 +4,9 @@
 
 ## The idea in one line
 
-DeeCure is **the control center for your Linux computer**: it understands every part of it in depth, keeps it healthy, warns you before something breaks, and fixes problems safely, with a preview and an undo button.
+DeeCure gives **deep insight into every layer of a Linux computer**: sensor limits, PCIe links, firmware, kernel settings, and services. It warns on the hardware's own limits, and fixes problems safely, with a preview and an undo button.
+
+It is not a generic monitor: it reads what the computer knows about itself (each sensor's own limit, each drive's link speed against what it supports, the file that set each kernel setting, which app keeps a graphics card awake) and connects those facts into answers.
 
 ## The goal
 
