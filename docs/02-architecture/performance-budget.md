@@ -24,13 +24,13 @@
 
 The limits are at the top of the script. Change them only together with this page.
 
-Last measured on 2026-10-23, on a real Ubuntu 24.04 laptop, with the history task, notifications, and all 16 rules:
+Last measured on 2026-10-24, on a real Ubuntu 24.04 laptop, with the history task, notifications, the health collectors, and all 53 rules:
 
 | Measure | Result | Budget |
 | --- | --- | --- |
-| First useful results | 1.5 s | 10 s |
-| Agent CPU when idle | 0.37% | 1% |
-| Agent RAM (peak) | 18.9 MB | 60 MB |
+| First useful results | 0.8 s | 10 s |
+| Agent CPU when idle | 0.12% | 1% |
+| Agent RAM (peak) | 20.9 MB | 60 MB |
 | Database after the first scan | 10 MB | 200 MB |
 | Database after 2 simulated years | 124 MB | 200 MB |
 

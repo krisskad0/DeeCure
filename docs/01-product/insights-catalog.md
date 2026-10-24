@@ -90,25 +90,19 @@ Sources are listed in [Collectors](../02-architecture/collectors.md).
 
 ## Checks that turn into findings (rules)
 
-| Rule | Access |
-| --- | --- |
-All 16 rules work in Basic access. Every one of the 13 areas in Overview › Subsystems has at least one.
+53 rules, all in Basic access (no password). Every one of the 13 areas in Overview › Subsystems has at least one. The full list, with each limit and why: [Health warnings](health-warnings.md). Two more need the admin helper and come with its read-outs: drive wear (SMART and NVMe) and SSH root login.
 
-| Area | Rule | Access |
-| --- | --- | --- |
-| Storage | `storage.root_almost_full`, `storage.filling_up` (7-day forecast) | Yes |
-| Services | `services.unit_failed` | Yes |
-| Scheduled Jobs | `jobs.job_failed` (a timer-started service failed) | Yes |
-| Hardware | `hardware.cpu_hot` | Yes (needs a CPU sensor) |
-| Power | `power.battery_worn` | Yes |
-| System | `system.reboot_required` | Yes |
-| Packages | `packages.updates_available` | Yes |
-| Containers | `containers.port_exposed` | Yes (in the `docker` group) |
-| Backups | `backups.none`, `backups.overdue` | Yes |
-| Network | `network.offline` | Yes |
-| Accounts | `accounts.extra_root` (another UID 0 account) | Yes (`/etc/passwd` only) |
-| Security | `security.updates_pending`, `security.firewall_off` | Yes |
-| Privacy | `privacy.popcon` (popularity contest on) | Yes |
+| Area | Examples |
+| --- | --- |
+| Hardware | CPU too hot (its own limit), cooling cannot keep up, a part too hot, a fan stopped while hot, machine checks, memory and PCIe errors, firmware crashes, USB over-current, thermal shutdowns, graphics hangs, no acceleration |
+| Memory and disk speed | Memory short (stalls), apps stopped for memory, swap almost full, everything waiting for the disk |
+| Storage | Main disk and other disks low on space (GB and percent), `/boot` and EFI, filling up, inodes, filesystem errors, read-only disks, read or write errors |
+| Power | Battery worn, too hot, reporting a fault, ran empty, charger too weak |
+| System and services | Kernel crash, clock not in sync, time sync off, restart needed, a service failed or keeps restarting, a scheduled job failed |
+| Packages | Updates waiting, a broken package install |
+| Network | Offline, internet not reachable, network errors, weak Wi-Fi |
+| Security and privacy | Security updates waiting, automatic updates stopped, firewall off, AppArmor off, Secure Boot off, CPU flaws not protected, an extra root account, a container port open to every network, popularity contest |
+| Backups | No backup, backup overdue |
 
 ## History, predictions, and reports (Phase 3)
 

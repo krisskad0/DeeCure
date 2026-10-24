@@ -5,25 +5,26 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>Apache-2.0</project_license>
   <name>DeeCure</name>
-  <summary>Understand your Linux computer and fix it safely</summary>
+  <summary>Control center for your Linux computer</summary>
   <developer id="io.github.krisskad0">
     <name>DeeCure contributors</name>
   </developer>
   <description>
     <p>
-      DeeCure looks at your whole computer: hardware, the operating system, apps,
-      services, storage, networks, and security. It explains what it finds in plain
-      words, and tells you what needs attention first.
+      DeeCure shows every part of your computer in depth, keeps it healthy, warns you
+      before something breaks, and fixes problems safely. It explains everything in
+      plain words, and tells you what needs attention first.
     </p>
     <ul>
       <li>A health score and a short list of problems, most serious first</li>
+      <li>Health warnings judged against each part's own limits: CPU, drives, graphics, battery, memory, disks, network, and security; never about normal use, and you can change every limit</li>
+      <li>Deep hardware details: sensors and their limits, drives and their links, graphics, firmware, USB and PCIe, screens, and every wake-up source</li>
+      <li>Battery and power controls: charge limits, charge mode, turbo, CPU speed on battery, sleep type, lid action, and device power saving, kept after restart</li>
+      <li>An Optimize page that offers only what this computer measurably needs</li>
       <li>Safe fixes with a preview of every step, a check that they worked, and undo</li>
-      <li>A timeline of what changed: updates, config files, devices, boots, and crashes</li>
-      <li>A warning before the disk is full, from the last week's history</li>
-      <li>Live performance charts, processes, sensors, battery health, and disks</li>
-      <li>Security and privacy checks that need no password</li>
+      <li>A timeline of what changed: updates, config files, devices, crashes, and hardware errors</li>
       <li>Notifications for serious problems, quiet hours, and a weekly summary</li>
-      <li>A performance check that finds why the computer is slow</li>
+      <li>Beginner, Advanced, and Expert views: light for newcomers, every detail for experts</li>
     </ul>
     <p>Everything stays on this computer. There is no account, and nothing is sent anywhere.</p>
   </description>

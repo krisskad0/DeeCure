@@ -38,6 +38,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- DeeCure describes itself as what it now is, a control center for the computer: the app menu entry (more search words, such as battery, temperature, fan, and optimize), the app store listing, the package descriptions, and the README.
 - "CPU very hot" uses the CPU's own limit and needs 5 minutes near it, instead of a fixed 90 °C (many laptop CPUs run at 90-95 °C under load by design). "Main disk almost full" looks at free space in GB and percent together (under 10% and 20 GB: warning; under 5% or 5 GB: critical) instead of 85% and 93% used, so a large disk with hundreds of GB free no longer warns; other disks, `/boot`, and the EFI partition have their own warnings. The Storage page shows the same warning.
 
 - The package details panel points to Packages › Cleanup for removing packages no longer needed, instead of saying it "comes with the fix engine".

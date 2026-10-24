@@ -2,7 +2,9 @@
 
 Start here. Each folder covers one area. Each file covers one topic and stays short.
 
-> **Status:** Phases 0-3 are built. The newest pre-release is `v0.1.0-alpha.3`: [install it with one command](07-user-guide/install.md). **To continue the work, start with [Pending work and handoff](05-roadmap/pending.md)**: where the project stands, what is left in order, what waits for the owner, and how to work here.
+DeeCure is the control center for a Linux computer: it understands every part in depth, keeps it healthy, warns early, fixes safely, and controls power and battery settings ([Vision](01-product/vision.md)).
+
+> **Status:** Phases 0-3 and the Expert build (three view levels, deep data, power controls, Optimize, health warnings with user limits) are built. The newest pre-release is `v0.1.0-alpha.3`: [install it with one command](07-user-guide/install.md). **To continue the work, start with [Pending work and handoff](05-roadmap/pending.md)**: where the project stands, what is left in order, what waits for the owner, and how to work here.
 
 ## Reading order
 

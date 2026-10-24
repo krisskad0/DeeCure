@@ -1,12 +1,12 @@
 [Desktop Entry]
 Type=Application
 Name=DeeCure
-GenericName=System Insights
-Comment=See what is happening on your computer and why, in plain words
+GenericName=System Control Center
+Comment=Understand your computer, keep it healthy, and fix problems safely
 Exec=deecure-desktop
 Icon=io.github.krisskad0.DeeCure
 Terminal=false
 Categories=System;Monitor;
-Keywords=system;monitor;health;disk;memory;cpu;battery;services;logs;diagnostics;
+Keywords=system;monitor;health;hardware;temperature;sensors;fan;battery;charge;power;disk;cleanup;storage;memory;cpu;gpu;services;logs;security;firewall;updates;optimize;fix;diagnostics;
 StartupNotify=true
 StartupWMClass=deecure-desktop

@@ -11,11 +11,12 @@ Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster install
 | Area | State |
 | --- | --- |
 | Phases 0-3 | Built: agent, history, rules, desktop app with real data on every page, safe fixes with undo, root helper, notifications, weekly report, tray, CLI ([roadmap](README.md)) |
-| Checks | 16 rules; all 13 areas in Overview › Subsystems are checked |
+| Expert build | Three view levels, deep data, power controls kept after restart, Optimize (Tools › Optimize), and 53 health warnings with user limits are built (section 2, item 0) |
+| Checks | 53 rules on each part's own limits ([Health warnings](../01-product/health-warnings.md)); all 13 areas in Overview › Subsystems are checked |
 | Releases | `v0.1.0-alpha.3` is the newest (pre-release). `v0.1.0-alpha.2` before it. The tag `v0.1.0-alpha.1` has no release (its build failed; harmless). |
 | Install | One command, from GitHub Releases: `curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh \| sudo sh` ([install guide](../07-user-guide/install.md)). `install.sh` is served from `main`, so installer fixes reach users without a release. The signed APT repository is built but not online (needs the signing key, decision #12). |
 | Tests | All green on 2026-10-23: CI (lint, tests, web, perf, `.deb`), CodeQL, Dependencies, Scorecard; container tests `make deb-test`, `make helper-test`, `make install-test`, `make clean-install-test` (real one-command install on clean 24.04 with curl and 26.04 with wget) |
-| Performance | First result 1.5 s, idle CPU 0.11%, peak RAM 18.9 MB, 2 years of history 124 MB (`make perf`, `make db-size`) |
+| Performance | First result 0.8 s, idle CPU 0.12%, peak RAM 20.9 MB (2026-10-24), 2 years of history 124 MB (`make perf`, `make db-size`) |
 | GitHub | Protected by 5 rulesets (applied through the API): pull requests with review and 6 required checks on `main` and `release/*`, squash only, tags locked; owner `krisskad0` has an admin bypass. Security features on. 27 labels. Dependabot monthly. |
 | Docs | Current: architecture, UI, development, packaging, user guide (install, everyday use), contributing guide ([08-contributing](../08-contributing/README.md)) |
 
@@ -31,7 +32,7 @@ Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster install
    6. Admin reads in the helper, one by one with its security review (BIOS settings, memory slots, power meters, NVMe details, self-tests, wake-up tracing, low-power residency, sudo rules, `sshd -T`); eBPF traffic counters last.
 1. **First version complete** (owner and developer, no downloads): the owner reviews every page and names what looks empty or "dummy"; fix each one (section 4). Then the real-desktop checks in section 3.
 2. **Owner decisions** before a stable release (section 5): contact emails (#11), app ID (#6), signing key (#12, also turns on the APT repository and signed commits and tags), supported systems (#9), health points (#15).
-3. **People and machines** (section 6): the 22 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.
+3. **People and machines** (section 6): the 45 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.
 4. **Public beta:** fix the findings, release `v0.1.0-beta.1`, then `v0.1.0` ([how to release](#7-how-to-release)). When contributors arrive: admin bypass on `main` to "pull requests only", and CodeQL and Dependencies as required checks.
 5. **Next features, on the owner's word:** Phase 4 (assistant; un-hide it in `app/src/visible.ts`), use per app (disk I/O, power, and network traffic; their panels are designed but hidden until a collector exists), "optimize everything", Phase 5 (bring back "Add a machine"), coverage-guided fuzzing.
 
@@ -70,7 +71,7 @@ All 91 tabs show real data and every data source was checked on a real laptop. F
 
 | Item | Detail |
 | --- | --- |
-| Fixes in real VMs | Apply → verify → undo each of the 22 fixes in full Ubuntu 24.04 and 26.04 VMs (unit tests and the container helper test pass) |
+| Fixes in real VMs | Apply → verify → undo each of the 45 fixes in full Ubuntu 24.04 and 26.04 VMs (unit tests and the container helper test pass) |
 | Security review of the helper | Two people, with the [review checklist](../02-architecture/security-model.md#helper-review-checklist) |
 | Beginner tests | 5-10 people: can they free up space alone? Do the timeline, the "new kernel" tip, and the notifications make sense? |
 | A second maintainer | So two-person review of the helper can really happen |

@@ -2,7 +2,7 @@
 
 [Docs](../README.md) › [User guide](README.md)
 
-Everything you need for everyday use, in short steps.
+Everything you need for everyday use, in short steps. DeeCure shows every part of your computer, warns before something breaks, fixes problems safely, and controls battery and power settings.
 
 Not installed yet? On Ubuntu 24.04 or 26.04, paste this in the Terminal, then open DeeCure from the app menu ([details](install.md)):
 
@@ -76,18 +76,48 @@ DeeCure tells you about serious problems, even when the window is closed:
 
 Change all of this in **Settings › Notifications**. **Send a test notification** checks that it works.
 
-## 7. Settings worth knowing
+## 7. Warnings, and your own limits
+
+DeeCure warns about things that can harm the computer, not about normal use: a busy CPU or full RAM cache never warns ([every warning](../01-product/health-warnings.md)).
+
+- **Each part's own limits:** temperatures are judged against the limit the CPU, drive, graphics card, or Wi-Fi chip reports itself.
+- **Only when it lasts:** most warnings need the problem to go on for a few minutes, so a short spike never warns.
+- **Each warning says** what was measured, why it matters, and what to do, with a **Fix** button or a help page.
+
+To change them, switch to Advanced or Expert, then open **Settings › Notifications › Warnings and limits**:
+
+1. Use the switch to turn a warning off. Its open problem closes.
+2. Change a limit, such as the minutes near the limit before the CPU warning. DeeCure's default is shown next to it, and the value stays inside a safe range.
+3. **Use default** puts it back.
+
+## 8. Battery and power controls
+
+In **Power › Power Profile** (Expert):
+
+- **Charge limits:** Full (100%), Balanced (90%), Long life (80%), or your own start and stop values, when the battery supports it.
+- **Charge mode**, **CPU turbo**, and the **highest CPU speed on battery** (full speed again when you plug in).
+- **PCIe power saving** and **suspend type** (such as deep): press **Try** first; it lasts until the next restart. Press **Keep** only when everything works.
+- **Closing the lid:** on battery and plugged in; it applies after the next restart.
+- **Kept after restart:** the list shows what DeeCure sets again at each start, and whether it worked at this start.
+
+In **Power › Sleep**: stop a device waking the computer, and let devices save power when idle.
+
+## 9. Optimize
+
+**Tools › Optimize** (Expert) lists improvements only when a measurement on this computer shows they are needed, each with its numbers and a **Preview** button. At the bottom, **Checked, nothing needed** shows every check that passed and what it measured. Some checks need history first, such as 14 days of readings for a charge limit; they say how many days they have so far.
+
+## 10. Settings worth knowing
 
 | Where | Setting |
 | --- | --- |
 | Settings › General | **View level** (Beginner, Advanced, or Expert), default time range, **refresh interval** (2 s, 5 s, 15 s, or Manual), **temperature unit** (°C or °F), narrow sidebar, **tray icon** |
 | Settings › Access | Basic or Full access |
-| Settings › Notifications | Critical, warnings, weekly summary, quiet hours |
+| Settings › Notifications | Critical, warnings, weekly summary, quiet hours; **Warnings and limits** (Advanced and Expert): turn any warning off or change its limits |
 | Settings › Data | Keep history for 90 days, 1 year, or 2 years; database size; **Export report** (an HTML file in your Downloads folder); **Delete history** (restore points and settings are kept) |
 
 **Tray icon** (off by default): when it is on, closing the window keeps DeeCure in the tray, and it starts there when you log in. It needs a tray area on your desktop (Ubuntu has one).
 
-## 8. In the Terminal
+## 11. In the Terminal
 
 The same information is available in the Terminal:
 
@@ -105,7 +135,7 @@ deecure undo 12                    # take fix number 12 back
 
 Add `--json` to `status`, `history`, or `report` for scripts.
 
-## 9. Privacy
+## 12. Privacy
 
 - DeeCure reads your computer to explain it. Everything stays here: no account, no tracking, nothing sent.
 - The history lives in `~/.local/share/deecure/deecure.db`, readable only by you.

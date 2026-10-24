@@ -12,14 +12,17 @@ Rules-Requires-Root: no
 Package: deecure
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: explains your Linux computer and helps fix it safely
- DeeCure checks your computer and explains what it finds in plain
- English: disk space, memory, CPU, battery health, and system services.
+Description: watches your Linux computer, warns early, and fixes it safely
+ DeeCure understands every part of your computer and explains it in plain
+ English: hardware and sensors, battery, memory, disks, services, network,
+ and security. It warns about harm (heat, stalls, errors, wear), judged
+ against each part's own limits, and never about normal use.
  .
- A small background agent collects data every minute, keeps a short
- history, and runs simple rules that turn the data into findings such as
- "Main disk is almost full". The deecure command shows those findings in
- the terminal, and as JSON for scripts.
+ A small background agent collects data every minute, keeps a history,
+ and runs rules that turn the data into findings such as "Main disk is
+ low on space". A small root helper, started only when needed, makes
+ admin changes after polkit asks for your password. The deecure command
+ shows the findings in the terminal, and as JSON for scripts.
  .
  Everything stays on this computer. Nothing is sent anywhere.
 
@@ -29,9 +32,9 @@ Depends: deecure (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Recommends: libayatana-appindicator3-1
 Description: desktop app for DeeCure
  The DeeCure window: a health score, problems explained in plain English,
- live performance, hardware and sensors, storage, services, logs,
- networks, security, and privacy, with one page for each part of the
- computer.
+ deep hardware details, live performance, battery and power controls,
+ storage, services, logs, networks, security, privacy, an Optimize page,
+ and safe fixes with undo, in Beginner, Advanced, and Expert views.
  .
  It shows what the deecure background agent collects. Everything stays
  on this computer. Nothing is sent anywhere.
