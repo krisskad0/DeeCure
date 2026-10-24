@@ -434,7 +434,7 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
             vec![step(
                 "charge-limits",
                 &text,
-                "Keeping a battery below full slows its wear. Some laptops forget this at restart."
+                "Keeping a battery below full slows its wear. DeeCure sets it again at each start."
                     .into(),
                 None,
                 Undo::Full,
@@ -471,7 +471,7 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 .root
                 .path("/sys/devices/system/cpu/intel_pstate/no_turbo")
                 .exists();
-            subtitle = "Until the next restart".into();
+            subtitle = "Kept after restart".into();
             let command = if intel {
                 format!(
                     "echo {} | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo",
@@ -506,7 +506,7 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
             let raw = need(subject, "device|on|off")?;
             let (device, state) = raw.rsplit_once('|').ok_or("the subject is device|on|off")?;
             let on = on_off(state)?;
-            subtitle = format!("/sys/devices/{device} · until the next restart");
+            subtitle = format!("/sys/devices/{device} · kept after restart");
             if action == "power.set_device_wakeup" {
                 vec![step(
                     "wakeup",

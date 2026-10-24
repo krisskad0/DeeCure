@@ -6,7 +6,7 @@
 //! types offered; every wake source with what it belongs to and how often it fired; and each
 //! USB device's power saving. From `/sys`, no admin rights.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::collect::SystemRoot;
 
@@ -160,6 +160,76 @@ pub struct KbdBacklight {
     pub max: u32,
 }
 
+/// A power setting the helper sets again at each start (`/etc/deecure/power.json`), and what
+/// happened to it at this start (`/run/deecure/power-boot.json`).
+#[derive(Debug, Serialize)]
+pub struct KeptSetting {
+    /// Such as `charge_limits:BAT0`, `turbo`, or `wakeup:<device>`.
+    pub setting: String,
+    pub call: deecure_core::fix::Call,
+    /// `None` when it was kept after this start, so it was not applied at boot yet.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub boot_ok: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub boot_message: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct SavedFile {
+    settings: std::collections::BTreeMap<String, SavedEntry>,
+}
+
+#[derive(Deserialize)]
+struct SavedEntry {
+    call: deecure_core::fix::Call,
+}
+
+#[derive(Deserialize)]
+struct BootFile {
+    results: Vec<BootResult>,
+}
+
+#[derive(Deserialize)]
+struct BootResult {
+    setting: String,
+    call: Option<deecure_core::fix::Call>,
+    ok: bool,
+    message: String,
+}
+
+/// The kept settings with this start's results. Unreadable files count as none.
+pub fn kept(root: &SystemRoot) -> Vec<KeptSetting> {
+    let Some(saved) = root
+        .read("/etc/deecure/power.json")
+        .ok()
+        .and_then(|t| serde_json::from_str::<SavedFile>(&t).ok())
+    else {
+        return Vec::new();
+    };
+    let boot = root
+        .read("/run/deecure/power-boot.json")
+        .ok()
+        .and_then(|t| serde_json::from_str::<BootFile>(&t).ok())
+        .map(|b| b.results)
+        .unwrap_or_default();
+    saved
+        .settings
+        .into_iter()
+        .map(|(setting, entry)| {
+            // A result for an earlier value of the same setting does not count.
+            let result = boot
+                .iter()
+                .find(|r| r.setting == setting && r.call.as_ref() == Some(&entry.call));
+            KeptSetting {
+                boot_ok: result.map(|r| r.ok),
+                boot_message: result.map(|r| r.message.clone()),
+                setting,
+                call: entry.call,
+            }
+        })
+        .collect()
+}
+
 /// What `power_detail` answers.
 #[derive(Debug, Default, Serialize)]
 pub struct PowerDetail {
@@ -180,6 +250,8 @@ pub struct PowerDetail {
     pub radios: Vec<Radio>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keyboard_backlight: Option<KbdBacklight>,
+    /// Power settings DeeCure sets again at each start.
+    pub kept: Vec<KeptSetting>,
 }
 
 /// A device's path under `/sys/devices`, from a link such as `/sys/bus/usb/devices/3-6`.
@@ -417,6 +489,7 @@ pub fn read(root: &SystemRoot) -> PowerDetail {
             })
         });
     PowerDetail {
+        kept: kept(root),
         radios,
         keyboard_backlight,
         last_wake_irq,
@@ -620,5 +693,31 @@ mod tests {
             "a receiver for a keyboard and mouse stays awake"
         );
         assert!(!p.usb[1].keep_awake);
+    }
+
+    #[test]
+    fn kept_settings_show_this_starts_result() {
+        let root = fixture_root(
+            "power-kept",
+            &[
+                (
+                    "/etc/deecure/power.json",
+                    r#"{"settings":{"charge_limits:BAT0":{"call":{"op":"set_charge_limits","battery":"BAT0","start":null,"stop":80},"original":{"op":"set_charge_limits","battery":"BAT0","start":null,"stop":100},"id":"5B10W51867"},
+                        "turbo":{"call":{"op":"set_turbo","on":false},"original":{"op":"set_turbo","on":true}}}}"#,
+                ),
+                (
+                    "/run/deecure/power-boot.json",
+                    r#"{"time":1,"results":[{"setting":"charge_limits:BAT0","call":{"op":"set_charge_limits","battery":"BAT0","start":null,"stop":80},"ok":false,"message":"a different device is there now, so nothing was changed"},
+                        {"setting":"turbo","call":{"op":"set_turbo","on":true},"ok":true,"message":"no_turbo = 0"}]}"#,
+                ),
+            ],
+        );
+        let k = kept(&root);
+        assert_eq!(k.len(), 2);
+        assert_eq!(k[0].setting, "charge_limits:BAT0");
+        assert_eq!(k[0].boot_ok, Some(false));
+        assert_eq!(k[1].call, deecure_core::fix::Call::SetTurbo { on: false });
+        assert_eq!(k[1].boot_ok, None, "the boot set an earlier value");
+        assert!(kept(&fixture_root("power-kept-none", &[])).is_empty());
     }
 }

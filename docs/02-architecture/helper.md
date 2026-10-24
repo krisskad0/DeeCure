@@ -43,6 +43,16 @@ The code is `crates/deecure-helper`. It is installed as `/usr/libexec/deecure/de
 
 The five power calls write one value to one checked file each; they run no program. All of them go through a test root in the unit tests (`crates/deecure-helper/src/power.rs`), never the real `/sys`: a container shares the host's kernel, so a container test could change the real computer.
 
+### Kept after restart
+
+Linux forgets charge limits, turbo, and device power settings at every start. The helper keeps them (`crates/deecure-helper/src/saved.rs`):
+
+- After a power call works, it is saved in `/etc/deecure/power.json` (root only can change it), one entry per setting: `charge_limits:<battery>`, `charge_mode:<battery>`, `turbo`, `wakeup:<device>`, `power_saving:<device>`. Each entry has the change, the value before the first change, and the device's vendor and product (`idVendor:idProduct` or `vendor:device`) or the battery's model.
+- Setting a value back to the one before the first change removes its entry; the last one removes the file. No other call is ever saved.
+- At boot, `deecure-power.service` (enabled by the package, skipped while the file does not exist) runs `deecure-helper --apply-saved`. It uses the file only when it is a plain file owned by root that no one else can write. Every entry goes through the same checks as a change from the app; a device setting is skipped when a different device is in that place. Batteries and devices that are not there yet are waited for up to 20 seconds. The unit is `Type=exec`, so this never holds up the boot, and it runs with no extra powers, no network, and a read-only system except `/sys`, `/run/deecure`, and `/var/log/deecure`.
+- Each result (setting, change tried, done or why not) goes to `/run/deecure/power-boot.json` and the audit log. The app shows the list with this start's result in Power › Power Profile.
+- Purging the package removes `/etc/deecure/power.json`, `/run/deecure`, and `/var/log/deecure`.
+
 How every call is handled:
 
 1. The caller's user ID is looked up on the bus.
@@ -55,6 +65,6 @@ How every call is handled:
 ## Tests
 
 - Unit tests: command building, every refusal (shell characters, paths, missing units, essential units, the running kernel, wrong package states), the UPower edit, and literal arguments.
-- `make helper-test` (also in CI): a clean Ubuntu container with a real system D-Bus and polkit. An approved user cleans the apt cache; a bad unit name, an unknown operation, and a user-level call are refused; an unapproved user is denied; a failed step puts `UPower.conf` back; the audit log records everything and never a password hash.
+- `make helper-test` (also in CI): a clean Ubuntu container with a real system D-Bus and polkit. An approved user cleans the apt cache; a bad unit name, an unknown operation, and a user-level call are refused; an unapproved user is denied; a failed step puts `UPower.conf` back; the audit log records everything and never a password hash; `--apply-saved` refuses a settings file others can write and a run without root, and reports a battery that is not there without writing anything.
 - Not yet: apply → verify → undo of every fix in a full VM, and the security review by two people (Phase 2 tasks 7 and 9).
 

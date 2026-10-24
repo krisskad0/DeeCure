@@ -5,7 +5,7 @@
 // offers them.
 
 import { useState } from "react";
-import { type CpuDetail, type NetDeep, type PciDevice, type PowerDetail, getInventory } from "../../api";
+import { type CpuDetail, type KeptSetting, type NetDeep, type PciDevice, type PowerDetail, getInventory } from "../../api";
 import { Button } from "../../components/Button";
 import { FieldRow } from "../../components/FormControls";
 import { Panel } from "../../components/Panel";
@@ -43,6 +43,54 @@ export function radioKinds(radios: PowerDetail["radios"]) {
 }
 
 const RADIO_NAMES: Record<string, string> = { wlan: "Wi-Fi", bluetooth: "Bluetooth", wwan: "Mobile broadband" };
+
+/** A kept setting in words, with the device's product name when the agent knows it. */
+export function describeKept(k: KeptSetting, p: Pick<PowerDetail, "usb" | "wake_sources">): string {
+  const c = k.call;
+  const device = c.device ?? "";
+  const name =
+    p.usb.find((u) => u.sys_path === device)?.product ??
+    p.wake_sources.find((w) => w.device === device)?.product ??
+    (device.split("/").pop() || device);
+  switch (c.op) {
+    case "set_charge_limits":
+      return `Charge limits · ${c.battery}: ${c.start != null ? `start below ${c.start}%, ` : ""}stop at ${c.stop}%`;
+    case "set_charge_mode":
+      return `Charge mode · ${c.battery}: ${c.mode}`;
+    case "set_turbo":
+      return `CPU turbo ${c.on ? "on" : "off"}`;
+    case "set_device_wakeup":
+      return `${name}: ${c.enabled ? "may wake the computer" : "does not wake the computer"}`;
+    case "set_device_power_saving":
+      return `${name}: power saving ${c.on ? "on" : "off"}`;
+    default:
+      return k.setting;
+  }
+}
+
+function KeptList({ p }: { p: PowerDetail }) {
+  if (!p.kept?.length) return null;
+  return (
+    <FieldRow label="Kept after restart" description="DeeCure sets these again at each start, after the same checks. A device setting is skipped when a different device is in its place.">
+      <ul className="plain-list">
+        {p.kept.map((k) => (
+          <li key={k.setting}>
+            {describeKept(k, p)}{" "}
+            {k.boot_ok === undefined ? (
+              <StatusBadge variant="info" label="From the next start" />
+            ) : k.boot_ok ? (
+              <StatusBadge variant="ok" label="Set at this start" />
+            ) : (
+              <>
+                <StatusBadge variant="warn" label="Not set at this start" /> <span className="muted">{k.boot_message}</span>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </FieldRow>
+  );
+}
 
 function BatteryControls({ b }: { b: PowerDetail["batteries"][number] }) {
   const openFix = useFix();
@@ -116,14 +164,15 @@ export function PowerControls() {
     <Panel
       title="Power controls"
       subtitle="each change shows a preview and can be undone"
-      info="Changes to the battery, turbo, and devices need your password. Some laptops forget charge limits and turbo at restart."
+      info="Changes to the battery, turbo, and devices need your password. Linux forgets these at each start, so DeeCure saves each change and sets it again at boot. Setting a value back to what it was stops keeping it."
       span={12}
     >
+      <KeptList p={p} />
       {p.batteries.map((b) => (
         <BatteryControls key={b.name} b={b} />
       ))}
       {cpu?.turbo !== undefined && (
-        <FieldRow label="CPU turbo" description={`Now ${cpu.turbo ? "on" : "off"}. Off: lower top speed, less heat, longer battery. Until the next restart.`}>
+        <FieldRow label="CPU turbo" description={`Now ${cpu.turbo ? "on" : "off"}. Off: lower top speed, less heat, longer battery. Kept after restart.`}>
           <Button small onClick={() => openFix("power.set_turbo", cpu.turbo ? "off" : "on")}>
             Turn turbo {cpu.turbo ? "off" : "on"}
           </Button>

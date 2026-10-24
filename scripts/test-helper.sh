@@ -74,4 +74,19 @@ echo "$out" | grep -q "deecure-test" || fail "accounts read-out lacks the user: 
 echo "$out" | grep -q '\$y\$\|\$6\$' && fail "a password hash left the helper"
 out="$(su deecure-test -s /bin/sh -c "dbus-send --system --print-reply --dest=io.github.krisskad0.DeeCure.Helper /io/github/krisskad0/DeeCure/Helper io.github.krisskad0.DeeCure.Helper1.Read string:smart string:../../etc/shadow" 2>&1)" && fail "a path was accepted as a disk"
 echo "ok: account status without hashes; paths refused as disks"
+
+echo "== kept power settings at boot (deecure-power.service)"
+mkdir -p /etc/deecure
+# A battery no computer here has: the same checks as in the app refuse it, so /sys is never
+# written (the container's /sys is also read-only).
+printf '{"settings":{"charge_limits:BAT9":{"call":{"op":"set_charge_limits","battery":"BAT9","start":null,"stop":80},"original":{"op":"set_charge_limits","battery":"BAT9","start":null,"stop":100}}}}' >/etc/deecure/power.json
+chmod 0666 /etc/deecure/power.json
+/usr/libexec/deecure/deecure-helper --apply-saved 2>/dev/null && fail "a settings file others can change was trusted"
+chmod 0644 /etc/deecure/power.json
+if su deecure-test -s /bin/sh -c "/usr/libexec/deecure/deecure-helper --apply-saved" 2>/dev/null; then fail "apply-saved ran without root"; fi
+/usr/libexec/deecure/deecure-helper --apply-saved || fail "apply-saved failed"
+r="$(cat /run/deecure/power-boot.json)"
+case "$r" in *'"setting":"charge_limits:BAT9"'*'"ok":false'* | *'"ok":false'*'"setting":"charge_limits:BAT9"'*) ;; *) false ;; esac || fail "the missing battery was not reported: $(cat /run/deecure/power-boot.json)"
+grep -q '"ApplySaved"' /var/log/deecure/helper.log || fail "the boot run was not in the audit log"
+echo "ok: only a root-only file is used, and each setting's result is reported"
 echo "PASS: helper end to end"

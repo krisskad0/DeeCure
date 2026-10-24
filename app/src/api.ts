@@ -340,6 +340,18 @@ export interface PowerDetail {
   usb: { port: string; sys_path?: string; product?: string; maker?: string; control?: string; state?: string; keep_awake: boolean; may_wake?: boolean }[];
   radios: { name: string; kind: string; soft_blocked: boolean; hard_blocked: boolean }[];
   keyboard_backlight?: { level: number; max: number };
+  /** Settings DeeCure sets again at each start. Older agents do not send it. */
+  kept?: KeptSetting[];
+}
+
+/** A power setting kept after restart, and what happened to it at this start. */
+export interface KeptSetting {
+  /** Such as `charge_limits:BAT0`, `turbo`, or `wakeup:<device>`. */
+  setting: string;
+  call: { op: string; battery?: string; start?: number | null; stop?: number; mode?: string; on?: boolean; device?: string; enabled?: boolean };
+  /** Missing when it was kept after this start. */
+  boot_ok?: boolean;
+  boot_message?: string;
 }
 
 export interface PdOffer {

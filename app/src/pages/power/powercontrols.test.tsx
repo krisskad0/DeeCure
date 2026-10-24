@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PowerDetail } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
-import { PowerControls, limitsSubject, pciPowerSavingSafe, radioKinds } from "./PowerControls";
+import { PowerControls, describeKept, limitsSubject, pciPowerSavingSafe, radioKinds } from "./PowerControls";
 import { WakeExpertSections, mustKeepWaking } from "./PowerExpert";
 
 const power: PowerDetail = {
@@ -24,6 +24,11 @@ const power: PowerDetail = {
     { name: "dell-bluetooth", kind: "bluetooth", soft_blocked: true, hard_blocked: false },
   ],
   keyboard_backlight: { level: 0, max: 2 },
+  kept: [
+    { setting: "charge_limits:BAT0", call: { op: "set_charge_limits", battery: "BAT0", start: 50, stop: 80 }, boot_ok: true, boot_message: "charge_control_start_threshold = 50" },
+    { setting: "power_saving:pci0000:00/0000:00:14.0/usb3/3-1", call: { op: "set_device_power_saving", device: "pci0000:00/0000:00:14.0/usb3/3-1", on: false }, boot_ok: false, boot_message: "a different device is there now, so nothing was changed" },
+    { setting: "turbo", call: { op: "set_turbo", on: false } },
+  ],
 };
 
 vi.mock("../../api", () => ({
@@ -73,6 +78,21 @@ describe("Power controls", () => {
       ["power.set_radio", "bluetooth|on"],
       ["power.set_wifi_power_save", "798005ca-d9fd-4047-86c5-8ed2ff14b23d|off"],
     ]);
+  });
+
+  it("kept settings show in words with this start's result", async () => {
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("Kept after restart")).toBeTruthy());
+    expect(screen.getByText(/Charge limits · BAT0: start below 50%, stop at 80%/)).toBeTruthy();
+    expect(screen.getByText(/Receiver: power saving off/)).toBeTruthy();
+    expect(screen.getByText("Set at this start")).toBeTruthy();
+    expect(screen.getByText("Not set at this start")).toBeTruthy();
+    expect(screen.getByText("a different device is there now, so nothing was changed")).toBeTruthy();
+    expect(screen.getByText("From the next start")).toBeTruthy();
+    // Without a known product, the device's last path part names it.
+    expect(describeKept({ setting: "wakeup:x", call: { op: "set_device_wakeup", device: "pci0000:00/0000:00:1f.3", enabled: false } }, { usb: [], wake_sources: [] })).toBe(
+      "0000:00:1f.3: does not wake the computer",
+    );
   });
 
   it("an invalid custom limit cannot be sent", async () => {

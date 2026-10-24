@@ -14,6 +14,7 @@
 mod actions;
 mod power;
 mod reads;
+mod saved;
 
 use std::collections::HashMap;
 use std::io::Write;
@@ -272,9 +273,15 @@ impl Helper {
         let result =
             tokio::task::spawn_blocking(move || -> Result<(String, Option<Call>), String> {
                 // Power settings are single writes to checked files in /sys, not programs.
+                // They are also saved, so they come back after a restart (saved.rs).
                 if let Some(plan) = power::plan(&task, Path::new("/")) {
                     let (writes, undo) = plan?;
-                    return power::apply(&writes).map(|m| (m, Some(undo)));
+                    let message = power::apply(&writes)?;
+                    let message = match saved::remember(Path::new("/"), &task, &undo) {
+                        Ok(()) => message,
+                        Err(e) => format!("{message} (only until the next restart: {e})"),
+                    };
+                    return Ok((message, Some(undo)));
                 }
                 let commands = actions::prepare(&task, &Live)?;
                 let mut undo = None;
@@ -429,8 +436,12 @@ fn main() -> ExitCode {
             println!("deecure-helper {VERSION}");
             return ExitCode::SUCCESS;
         }
+        if arg == "--apply-saved" && std::env::args().len() == 2 {
+            return apply_saved();
+        }
         eprintln!(
-            "deecure-helper: D-Bus starts this program; it takes no arguments except --version"
+            "deecure-helper: D-Bus starts this program; it takes no arguments except --version \
+             (and --apply-saved, which deecure-power.service runs at boot)"
         );
         return ExitCode::from(2);
     }
@@ -455,6 +466,41 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+/// Puts back the kept power settings at boot (deecure-power.service).
+fn apply_saved() -> ExitCode {
+    if !rustix::process::geteuid().is_root() {
+        eprintln!("deecure-helper: must run as root");
+        return ExitCode::FAILURE;
+    }
+    let root = Path::new("/");
+    if let Err(e) = saved::trusted(&root.join(saved::SAVED)) {
+        eprintln!("deecure-helper: {e}");
+        audit(0, "ApplySaved", &Value::Null, false, &e);
+        return ExitCode::FAILURE;
+    }
+    let outcomes = saved::apply_saved(root, Duration::from_secs(1));
+    for o in &outcomes {
+        eprintln!(
+            "deecure-helper: {}: {}{}",
+            o.setting,
+            if o.ok { "" } else { "not applied: " },
+            o.message
+        );
+        audit(
+            0,
+            "ApplySaved",
+            &json!({"setting": o.setting}),
+            o.ok,
+            &o.message,
+        );
+    }
+    if let Err(e) = saved::write_results(root, now_ms(), &outcomes) {
+        eprintln!("deecure-helper: {e}");
+    }
+    // Settings that could not be applied are in the results; the boot itself is fine.
+    ExitCode::SUCCESS
 }
 
 async fn serve() -> zbus::Result<()> {

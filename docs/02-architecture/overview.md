@@ -90,6 +90,8 @@ flowchart TB
 | `/usr/share/deecure/kb/` | Knowledge base YAML files |
 | `/usr/lib/systemd/user/deecure-agent.{socket,service}` | Agent units |
 | `/usr/lib/systemd/system/deecure-helper.service` | Helper unit (D-Bus activated) |
+| `/usr/lib/systemd/system/deecure-power.service` | Sets kept power settings again at boot; does nothing until one is kept |
+| `/etc/deecure/power.json` | Power settings kept after restart (written by the helper) ([Helper](helper.md#kept-after-restart)) |
 | `/usr/share/dbus-1/system-services/io.github.krisskad0.DeeCure.Helper.service` | D-Bus activation file |
 | `/usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf` | D-Bus policy: who may call the helper |
 | `/usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy` | polkit actions, one per helper action |

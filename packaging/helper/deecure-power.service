@@ -1,0 +1,38 @@
+[Unit]
+Description=DeeCure: put back kept power settings
+Documentation=https://github.com/krisskad0/DeeCure/blob/main/docs/02-architecture/helper.md
+# Only when a power setting was kept in the app; otherwise this does nothing.
+ConditionPathExists=/etc/deecure/power.json
+
+[Service]
+# exec, not oneshot: waiting for a late battery or device never holds up the boot.
+Type=exec
+ExecStart=/usr/libexec/deecure/deecure-helper --apply-saved
+# It only writes the checked files in /sys, its results, and the audit log.
+ProtectSystem=strict
+RuntimeDirectory=deecure
+RuntimeDirectoryPreserve=yes
+LogsDirectory=deecure
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+PrivateDevices=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+NoNewPrivileges=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_UNIX
+SystemCallArchitectures=native
+# Root writes root-owned files without extra powers.
+CapabilityBoundingSet=
+UMask=0022
+
+[Install]
+WantedBy=multi-user.target
