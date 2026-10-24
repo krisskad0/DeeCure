@@ -161,6 +161,22 @@ async fn set_notify_settings(settings: Value) -> Result<Value, AppError> {
     .await
 }
 
+/// Every warning with its limits and whether it is turned off.
+#[tauri::command]
+async fn warning_settings() -> Result<Value, AppError> {
+    ask(method::WARNING_SETTINGS, None).await
+}
+
+/// Saves the user's warning choices; the agent keeps only known warnings and checks again.
+#[tauri::command]
+async fn set_warning_settings(settings: Value) -> Result<Value, AppError> {
+    ask(
+        method::SET_WARNING_SETTINGS,
+        Some(json!({ "settings": settings })),
+    )
+    .await
+}
+
 /// Shows a test notification.
 #[tauri::command]
 async fn notify_test() -> Result<bool, AppError> {
@@ -439,6 +455,8 @@ fn main() {
             event,
             notify_settings,
             set_notify_settings,
+            warning_settings,
+            set_warning_settings,
             notify_test,
             notifications,
             report,
