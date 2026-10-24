@@ -22,8 +22,9 @@ export function SwimLanes({ lanes, now }: { lanes: Lane[]; now: Date }) {
   return (
     <div className="lanes-scroll">
       <div className="lanes">
-        {lanes.map((lane) => (
-          <div className="lane" key={lane.name}>
+        {lanes.map((lane, i) => (
+          // Two jobs can have the same short name, so the lane number is part of the key.
+          <div className="lane" key={`${i}|${lane.name}`}>
             <span className="lane-name mono" title={lane.name}>
               {lane.name}
             </span>

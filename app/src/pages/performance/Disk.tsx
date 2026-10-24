@@ -3,6 +3,7 @@
 // Queue depth and disk use per process are not collected yet, so they are not shown.
 // Each device shows its type (SSD, hard disk, USB drive) from the hardware inventory.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { DiskIoExpertSections } from "./DiskExpert";
 import { atLeast, useUi } from "../../ui";
 import type { HardwareInfo, Metric } from "../../api";
@@ -84,7 +85,7 @@ export function PerformanceDisk() {
       <Panel title="Devices" subtitle="last minute" source="/proc/diskstats" span={12} flush>
         <DataTable rows={devices(latest, disks)} columns={COLUMNS} rowKey={(d) => d.name} empty="Measuring… (needs two readings, one minute apart)" />
       </Panel>
-      {atLeast(mode, "expert") && <DiskIoExpertSections />}
+      {atLeast(mode, "expert") && <Guard><DiskIoExpertSections /></Guard>}
     </>
   );
 }

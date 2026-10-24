@@ -2,6 +2,7 @@
 // Performance › GPU (docs/03-ui-design/05-pages/02-performance.md), with real data.
 // Load history is not stored yet: drivers that report load without admin rights are rare.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { GpuExpertSections } from "./GpuExpert";
 import { tempUnit, tempValue } from "../../units";
@@ -73,7 +74,7 @@ export function PerformanceGpu() {
       <Panel title="Graphics cards" subtitle={`${gpus.length} found`} source="/sys/class/drm · pci.ids" span={12} flush>
         <DataTable rows={gpus} columns={COLUMNS} rowKey={(g) => g.card} />
       </Panel>
-      {atLeast(mode, "expert") && <GpuExpertSections />}
+      {atLeast(mode, "expert") && <Guard><GpuExpertSections /></Guard>}
     </>
   );
 }

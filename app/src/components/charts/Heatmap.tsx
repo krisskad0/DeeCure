@@ -15,14 +15,15 @@ export function Heatmap({ rows, unit }: { rows: { label: string; values: number[
             {h % 3 === 0 ? String(h).padStart(2, "0") : ""}
           </span>
         ))}
-        {rows.map((row) => [
-          <span key={`${row.label}-label`} className="heat-label">
+        {rows.map((row, r) => [
+          // Labels can repeat (two jobs with one name), so the row number keeps keys unique.
+          <span key={`${r}-label`} className="heat-label">
             {row.label}
           </span>,
           ...hours.map((h) => {
             const v = row.values[h] ?? 0;
             const tip = `${row.label} ${String(h).padStart(2, "0")}:00 · ${v} ${unit}`;
-            return <span key={`${row.label}-${h}`} className={`heat-cell h${heatLevel(v, max)}`} title={tip} aria-label={tip} />;
+            return <span key={`${r}-${h}`} className={`heat-cell h${heatLevel(v, max)}`} title={tip} aria-label={tip} />;
           }),
         ])}
       </div>

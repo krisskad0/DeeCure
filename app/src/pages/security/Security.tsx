@@ -2,6 +2,7 @@
 // Security › Overview, Vulnerabilities, Hardening, File Integrity, Malware Scan
 // (docs/03-ui-design/05-pages/18-security.md), with real data. All checks are read-only.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { SecurityExpertSections } from "./SecurityExpert";
 import { FileCheck } from "../packages/SoftwareExpert";
@@ -89,7 +90,7 @@ export function SecurityOverview() {
           center={{ value: `${count("pass")}/${checks.length}`, subtitle: "passing" }}
         />
       </Panel>
-      {atLeast(mode, "expert") && <SecurityExpertSections />}
+      {atLeast(mode, "expert") && <Guard><SecurityExpertSections /></Guard>}
     </>
   );
 }

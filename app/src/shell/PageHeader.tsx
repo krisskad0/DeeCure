@@ -22,7 +22,8 @@ export function PageHeader(props: {
     <div className="page-header">
       <div className="crumbs">
         {crumbs.map((crumb, i) => (
-          <span key={crumb} className="crumb">
+          // A page can have its group's name (System › System), so the place is the key.
+          <span key={i} className="crumb">
             {i > 0 && <Icon name="chev" size={12} />}
             {crumb === page.label ? <a href={href(page.id, page.tabs[0].id)}>{crumb}</a> : crumb}
           </span>

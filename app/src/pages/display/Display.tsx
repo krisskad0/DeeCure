@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Display & Audio (docs/03-ui-design/05-pages/08-display.md), with real data.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { ScreensExpert, SoundHardwareExpert } from "../hardware/DevicesExpert";
 import { atLeast, useUi } from "../../ui";
 import { type AudioDevice, type DisplayInfo, getInventory, getMachine } from "../../api";
@@ -58,7 +59,7 @@ export function DisplayDisplays() {
       <Panel title="Connected displays" source="/sys/class/drm · Mutter" span={8} flush>
         <DataTable rows={display.outputs} columns={OUTPUTS} rowKey={(o) => o.connector} empty="No display outputs found" />
       </Panel>
-      {atLeast(mode, "expert") && <ScreensExpert />}
+      {atLeast(mode, "expert") && <Guard><ScreensExpert /></Guard>}
     </>
   );
 }
@@ -105,7 +106,7 @@ export function DisplayAudio() {
       <Panel title="Input devices" source="pw-dump" span={6} flush>
         <DataTable rows={audio.inputs} columns={devices("Level")} rowKey={(d) => d.name} empty="No input devices" />
       </Panel>
-      {atLeast(mode, "expert") && <SoundHardwareExpert />}
+      {atLeast(mode, "expert") && <Guard><SoundHardwareExpert /></Guard>}
     </>
   );
 }

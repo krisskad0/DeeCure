@@ -2,6 +2,7 @@
 // System › Boot (docs/03-ui-design/05-pages/05-system.md), with real data.
 // The history holds the boots since DeeCure was installed.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { BootExpertSections } from "../services/ServicesExpert";
 import { atLeast, useUi } from "../../ui";
 import { type BootInfo, getMetrics, getSnapshot } from "../../api";
@@ -65,7 +66,7 @@ export function SystemBoot() {
           highlight={slow ? [recent.length - 1] : []}
         />
       </Panel>
-      {atLeast(mode, "expert") && <BootExpertSections />}
+      {atLeast(mode, "expert") && <Guard><BootExpertSections /></Guard>}
     </>
   );
 }

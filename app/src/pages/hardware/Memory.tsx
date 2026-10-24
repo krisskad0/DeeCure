@@ -2,6 +2,7 @@
 // Hardware › Memory (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // Module type, speed, and slots come from dmidecode through the admin helper (Full access).
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { MemoryErrors } from "../performance/MemoryExpert";
 import { LinkButton } from "../../components/Button";
@@ -73,7 +74,7 @@ export function HardwareMemory() {
           }}
         </AdminRead>
       </Panel>
-      {atLeast(mode, "expert") && <MemoryErrors />}
+      {atLeast(mode, "expert") && <Guard><MemoryErrors /></Guard>}
     </>
   );
 }

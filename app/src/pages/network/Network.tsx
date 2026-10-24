@@ -2,6 +2,7 @@
 // Network › Interfaces, Connections, Open Ports, Firewall, DNS & VPN, Traffic
 // (docs/03-ui-design/05-pages/16-network.md), with real data.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { DnsRoutesExpert, InterfacesExpert, TrafficExpert } from "./NetworkExpert";
 import { type SocketInfo, getInventory } from "../../api";
@@ -100,7 +101,7 @@ export function NetworkInterfaces() {
           ]}
         />
       </Panel>
-      {atLeast(mode, "expert") && <InterfacesExpert />}
+      {atLeast(mode, "expert") && <Guard><InterfacesExpert /></Guard>}
     </>
   );
 }
@@ -245,7 +246,7 @@ export function NetworkDns() {
           empty="No VPN connections are set up"
         />
       </Panel>
-      {atLeast(mode, "expert") && <DnsRoutesExpert />}
+      {atLeast(mode, "expert") && <Guard><DnsRoutesExpert /></Guard>}
     </>
   );
 }
@@ -258,7 +259,7 @@ export function NetworkTraffic() {
       <Panel title="Throughput" source="/proc/net/dev" span={12}>
         <TimeChart history={history} names={["Download", "Upload"]} unit="MB/s" scale={(v) => v / MB} />
       </Panel>
-      {atLeast(mode, "expert") && <TrafficExpert />}
+      {atLeast(mode, "expert") && <Guard><TrafficExpert /></Guard>}
     </>
   );
 }

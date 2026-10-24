@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // 01 Panel (docs/03-ui-design/03-components/01-panel.md): the frame around every widget.
 
+import { ErrorBoundary } from "./ErrorBoundary";
 import type { ReactNode } from "react";
 import { useUi } from "../ui";
 import { Icon } from "./Icon";
@@ -46,7 +47,11 @@ export function Panel(props: {
           </span>
         </div>
       )}
-      <div className={props.flush ? "panel-body flush" : "panel-body"}>{props.children}</div>
+      <div className={props.flush ? "panel-body flush" : "panel-body"}>
+        <ErrorBoundary inline what={props.title ?? "This panel"}>
+          {props.children}
+        </ErrorBoundary>
+      </div>
     </section>
   );
 }

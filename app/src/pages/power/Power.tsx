@@ -2,6 +2,7 @@
 // Power › Battery, Power Profile, and Sleep (docs/03-ui-design/05-pages/07-power.md), with real data.
 // Changing the power mode and the low-battery power-off go through the fix engine.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { CpuSleepStates } from "../performance/CpuExpert";
 import { BatteryExpertSections, WakeExpertSections } from "./PowerExpert";
@@ -88,7 +89,7 @@ export function PowerBattery() {
           <div className="chart-empty muted">The trend fills in as DeeCure keeps measuring.</div>
         )}
       </Panel>
-      {atLeast(mode, "expert") && <BatteryExpertSections />}
+      {atLeast(mode, "expert") && <Guard><BatteryExpertSections /></Guard>}
     </>
   );
 }
@@ -147,7 +148,7 @@ export function PowerProfile() {
           ]}
         />
       </Panel>
-      {atLeast(mode, "expert") && <PowerControls />}
+      {atLeast(mode, "expert") && <Guard><PowerControls /></Guard>}
     </>
   );
 }
@@ -185,10 +186,12 @@ export function PowerSleep() {
         <DataTable rows={events} columns={EVENTS} rowKey={(e) => String(e.at)} pageSize={12} empty="No sleep in the last 30 days, or the journal cannot be read" />
       </Panel>
       {atLeast(mode, "expert") && (
+        <Guard>
         <>
           <WakeExpertSections />
           <CpuSleepStates />
         </>
+        </Guard>
       )}
     </>
   );

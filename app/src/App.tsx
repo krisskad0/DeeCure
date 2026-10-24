@@ -62,6 +62,7 @@ import { stack } from "./shell/Stack";
 import { inBeginner } from "./visible";
 import { AlertBanner } from "./components/AlertBanner";
 import { Button } from "./components/Button";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Gallery } from "./dev/Gallery";
 
 const REFRESH_MS = 10_000;
@@ -290,7 +291,9 @@ export default function App() {
         )}
         <div className="grid">
           {levelNote}
-          {content}
+          <ErrorBoundary what={route.page.label} resetKey={`${route.page.id}/${route.tab.id}/${mode}`}>
+            {content}
+          </ErrorBoundary>
         </div>
       </main>
     </div>

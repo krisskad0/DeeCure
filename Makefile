@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status app web perf db-size deb deb-test helper-test install-test clean-install-test clean
+.PHONY: help build test lint fmt agent status app web ui-real perf db-size deb deb-test helper-test install-test clean-install-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -31,6 +31,9 @@ app: ## Run the desktop app with live reload (start the agent first: make agent)
 
 web: ## Test, type-check, and build the web UI
 	cd app && ([ -d node_modules ] || npm ci) && npm test && npm run build
+
+ui-real: ## Render every page at the Expert level with this computer's real agent answers (about 2 min; private data stays in /tmp)
+	sh scripts/ui-real.sh
 
 perf: ## Check the agent against the performance budget (takes about 80 s)
 	scripts/perf-check.sh

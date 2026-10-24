@@ -14,7 +14,9 @@
 | --- | --- | --- | --- |
 | Rust unit and integration tests | `cargo test` (`make test`) | Every push (CI) | ✅ About 270 tests |
 | Real-machine fixtures | `cargo test` against `tests/fixtures/` | Every push | ✅ 3 machines |
-| UI tests | Vitest + React Testing Library (`make web`) | Every push | ✅ About 120 tests |
+| UI tests | Vitest + React Testing Library (`make web`) | Every push | ✅ About 190 tests |
+| Every page, Expert level, no agent | `app/src/allpages.test.tsx` (part of `make web`) | Every push | ✅ All 77 tabs show their help, nothing crashes, no React error or warning |
+| Every page with this computer's real answers, and with an older agent | `make ui-real` (records a throwaway agent's answers to a private file in `/tmp`, never the repository) | Before a release, on a real desktop | ✅ All 77 tabs and the row drawers |
 | Lint and format | `cargo fmt`, `cargo clippy -D warnings`, `tsc` | Every push | ✅ |
 | Generated UI code matches the spec | `scripts/gen-ui.py --check` | Every push | ✅ |
 | Performance budget | `make perf` | Every push | ✅ |

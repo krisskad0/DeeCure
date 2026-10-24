@@ -55,7 +55,17 @@ export function DataTable<R>(props: {
   onRowClick?: (row: R) => void;
 }) {
   const { mode } = useUi();
-  const { rows, rowKey, pageSize = 12 } = props;
+  const { rows, pageSize = 12 } = props;
+  // Rows can repeat a key (such as two untagged Docker images): later ones get "#2", "#3", …
+  const keys = new Map<R, string>();
+  const seen = new Map<string, number>();
+  for (const row of rows) {
+    const base = props.rowKey(row);
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    keys.set(row, n === 1 ? base : `${base}#${n}`);
+  }
+  const rowKey = (row: R) => keys.get(row) ?? props.rowKey(row);
   const columns = props.columns.filter((c) => !c.expert || mode === "expert");
   const [query, setQuery] = useState("");
   const [chip, setChip] = useState<string | null>(null);

@@ -78,7 +78,12 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    match runtime.block_on(run(socket_path, db_path, rules_dir)) {
+    let result = runtime.block_on(run(socket_path, db_path, rules_dir));
+    // A read-only scan (folder sizes) can run for minutes on its own thread. Wait a little for
+    // background work, then exit: the database is in WAL mode, so an unfinished write is rolled
+    // back, never left half done. Without this, stopping the agent waited for the scan.
+    runtime.shutdown_timeout(std::time::Duration::from_secs(5));
+    match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
             eprintln!("deecure-agent: {e}");

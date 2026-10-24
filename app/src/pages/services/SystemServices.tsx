@@ -2,6 +2,7 @@
 // Services › System Services (docs/03-ui-design/05-pages/10-services.md), with real data.
 // The unit list comes from the 5-minute snapshot; memory is read live.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { ServicesExpertSections } from "./ServicesExpert";
 import { atLeast, useUi } from "../../ui";
 import { useState } from "react";
@@ -112,7 +113,7 @@ export function SystemServices() {
         />
       </Panel>
       {inspect && <UnitDrawer unit={inspect} info={kbService(kb, inspect.name)} onClose={() => setInspect(null)} />}
-      {atLeast(mode, "expert") && <ServicesExpertSections />}
+      {atLeast(mode, "expert") && <Guard><ServicesExpertSections /></Guard>}
     </>
   );
 }

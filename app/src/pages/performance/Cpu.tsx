@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Performance › CPU (docs/03-ui-design/05-pages/02-performance.md), with real data.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { tempUnit, tempValue } from "../../units";
 import { type Process, type SystemInfo, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -79,7 +80,7 @@ export function PerformanceCpu() {
       <Panel title="Top CPU consumers" subtitle="% of one CPU" source="/proc/[pid]/stat" span={6} flush>
         {processes ? <DataTable rows={processes.slice(0, 7)} columns={COLUMNS} rowKey={(p) => String(p.pid)} pageSize={7} /> : <div className="empty muted">Loading…</div>}
       </Panel>
-      {atLeast(mode, "expert") && <CpuExpertSections waitingForDisk={processes?.filter((p) => p.state === "D").map((p) => p.name)} />}
+      {atLeast(mode, "expert") && <Guard><CpuExpertSections waitingForDisk={processes?.filter((p) => p.state === "D").map((p) => p.name)} /></Guard>}
     </>
   );
 }

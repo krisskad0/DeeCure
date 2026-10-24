@@ -2,6 +2,7 @@
 // Hardware › Firmware (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // Installing firmware needs the helper (Phase 2).
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { FirmwareExpertSections } from "./PlatformExpert";
 import type { FirmwareInfo } from "../../api";
@@ -62,7 +63,7 @@ export function HardwareFirmware() {
           <DataTable rows={fw.devices} columns={COLUMNS} rowKey={(d) => `${d.name}-${d.version}`} empty="fwupd knows no devices" />
         )}
       </Panel>
-      {atLeast(mode, "expert") && <FirmwareExpertSections />}
+      {atLeast(mode, "expert") && <Guard><FirmwareExpertSections /></Guard>}
     </>
   );
 }

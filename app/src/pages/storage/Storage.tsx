@@ -2,6 +2,7 @@
 // Storage › Overview, Filesystems, Disk Usage, and Cleanup (docs/03-ui-design/05-pages/14-storage.md),
 // with real data. Cleaning goes through the fix engine, with a preview and undo.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { FilesystemExpert } from "../performance/DiskExpert";
 import { atLeast, useUi } from "../../ui";
 import { type Metric, type SizedPath, type StorageInfo, getInventory, getMetrics, getSnapshot } from "../../api";
@@ -184,7 +185,7 @@ export function StorageFilesystems() {
       <Panel title="Filesystem checks" span={12} flush>
         {storage ? <Checklist checks={checks} /> : <div className="empty muted">Loading…</div>}
       </Panel>
-      {atLeast(mode, "expert") && <FilesystemExpert />}
+      {atLeast(mode, "expert") && <Guard><FilesystemExpert /></Guard>}
     </>
   );
 }

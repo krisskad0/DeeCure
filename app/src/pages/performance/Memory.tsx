@@ -2,6 +2,7 @@
 // Performance › Memory (docs/03-ui-design/05-pages/02-performance.md), with real data.
 // Not shown yet: OOM kills, which come from the journal with the Logs page.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { type Process, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { InlineMeter } from "../../components/InlineMeter";
@@ -95,7 +96,7 @@ export function PerformanceMemory() {
       <Panel title="Top memory consumers" source="/proc/[pid]/status" span={12} flush>
         {processes ? <DataTable rows={top} columns={columns(total)} rowKey={(p) => String(p.pid)} pageSize={8} /> : <div className="empty muted">Loading…</div>}
       </Panel>
-      {atLeast(mode, "expert") && <MemoryExpertSections />}
+      {atLeast(mode, "expert") && <Guard><MemoryExpertSections /></Guard>}
     </>
   );
 }

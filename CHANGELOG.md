@@ -39,6 +39,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- One part of a page that fails to draw no longer blanks the page: it shows the reason and "Try again", and the rest keeps working.
+- Rows were dropped or doubled where two had the same name: two untagged Docker images, two wake sources, two jobs with one name, and the "System › System" breadcrumb.
+- Stopping the agent while a folder-size scan ran waited for the scan; it now stops within 5 seconds.
+
 - `install.sh` on a bare system with only `python3-minimal` (no `json` module) now installs `python3`, and says "could not read the release list" instead of "no published release" when it cannot read GitHub's answer.
 
 ## [0.1.0-alpha.3] - 2026-10-23

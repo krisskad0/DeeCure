@@ -2,6 +2,7 @@
 // System › Kernel (docs/03-ui-design/05-pages/05-system.md), with real data.
 // Removing old kernels goes through the fix engine and the admin helper.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { KernelExpertSections } from "./KernelExpert";
 import { type KernelInfo, getInventory } from "../../api";
@@ -63,7 +64,7 @@ export function SystemKernel() {
       <Panel title="Kernel modules" source="/proc/modules" span={12} flush>
         <DataTable rows={k.modules} columns={MODULES} rowKey={(m) => m.name} search={{ placeholder: "Search modules" }} pageSize={8} total={k.modules.length} />
       </Panel>
-      {atLeast(mode, "expert") && <KernelExpertSections />}
+      {atLeast(mode, "expert") && <Guard><KernelExpertSections /></Guard>}
     </>
   );
 }

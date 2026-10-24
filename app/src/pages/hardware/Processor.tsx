@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Processor (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { temp as tempText } from "../../units";
 import type { HardwareInfo } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -89,7 +90,7 @@ export function HardwareProcessor() {
       <Panel title="Cores" subtitle="utilization over the last minute" source="/sys/devices/system/cpu" span={12} flush>
         <DataTable rows={rows(p, latest)} columns={COLUMNS} rowKey={(r) => r.label} pageSize={16} />
       </Panel>
-      {atLeast(mode, "expert") && <ProcessorExpertSections />}
+      {atLeast(mode, "expert") && <Guard><ProcessorExpertSections /></Guard>}
     </>
   );
 }

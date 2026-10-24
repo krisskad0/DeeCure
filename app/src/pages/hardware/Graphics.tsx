@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Graphics (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { GraphicsStackSection } from "../performance/GpuExpert";
 import { temp as tempText } from "../../units";
@@ -48,7 +49,7 @@ export function HardwareGraphics() {
           </Panel>,
         ];
       })}
-      {atLeast(mode, "expert") && <GraphicsStackSection drivers={gpus.map((g) => g.driver).filter((d): d is string => !!d)} />}
+      {atLeast(mode, "expert") && <Guard><GraphicsStackSection drivers={gpus.map((g) => g.driver).filter((d): d is string => !!d)} /></Guard>}
     </>
   );
 }

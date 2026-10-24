@@ -3,6 +3,7 @@
 // with real data. Cleanup removes packages no longer needed and leftover settings through
 // the fix engine; removing any one package is not offered.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { PackageExpertDetail, SoftwareHealthExpert } from "./SoftwareExpert";
 import { useState } from "react";
@@ -93,7 +94,7 @@ export function PackagesInstalled() {
               ["About", kbPackage(kb, inspect.name)?.plain ?? (inspect.summary || "-")],
             ]}
           />
-          {atLeast(mode, "expert") && <PackageExpertDetail name={inspect.name} />}
+          {atLeast(mode, "expert") && <Guard><PackageExpertDetail name={inspect.name} /></Guard>}
         </Drawer>
       )}
     </>
@@ -121,7 +122,7 @@ export function PackagesSources() {
       <Panel title="Software sources" source="/etc/apt/sources.list · sources.list.d" span={12} flush>
         <DataTable rows={info.sources} columns={SOURCE_COLUMNS} rowKey={(s) => `${s.file}|${s.line}`} filter={{ column: "kind", options: ["Official", "PPA", "Third-party"] }} />
       </Panel>
-      {atLeast(mode, "expert") && <SoftwareHealthExpert />}
+      {atLeast(mode, "expert") && <Guard><SoftwareHealthExpert /></Guard>}
     </>
   );
 }

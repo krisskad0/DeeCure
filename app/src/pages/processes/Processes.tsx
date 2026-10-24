@@ -2,6 +2,7 @@
 // Processes › All Processes and Top Consumers (docs/03-ui-design/05-pages/09-processes.md),
 // with real data. Ending a process goes through the fix engine.
 
+import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { ProcessExpertDetail } from "./ProcessExpert";
 import { useState } from "react";
@@ -110,7 +111,7 @@ export function ProcessesAll() {
           onClose={() => setInspect(null)}
         >
           <ProcessDetails process={live ?? inspect} ended={!live} />
-          {live && atLeast(mode, "expert") && <ProcessExpertDetail pid={live.pid} />}
+          {live && atLeast(mode, "expert") && <Guard><ProcessExpertDetail pid={live.pid} /></Guard>}
         </Drawer>
       )}
     </>
