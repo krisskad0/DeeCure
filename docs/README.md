@@ -4,7 +4,7 @@ Start here. Each folder covers one area. Each file covers one topic and stays sh
 
 DeeCure gives deep insight into every layer of a Linux computer (sensor limits, PCIe links, firmware, kernel settings, and services), warns on the hardware's own limits, fixes problems safely, and controls power and battery settings ([Vision](01-product/vision.md)).
 
-> **Status:** Phases 0-3 and the Expert build (three view levels, deep data, power controls, Optimize, health warnings with user limits) are built. The newest pre-release is `v0.1.0-alpha.3`: [install it with one command](07-user-guide/install.md). **To continue the work, start with [Pending work and handoff](05-roadmap/pending.md)**: where the project stands, what is left in order, what waits for the owner, and how to work here.
+> **Status:** Phases 0-3 and the Expert build (three view levels, deep data, power controls, Optimize, health warnings with user limits) are built. The newest pre-release is `v0.1.0-alpha.4`: [install it with one command](07-user-guide/install.md). **To continue the work, start with [Pending work and handoff](05-roadmap/pending.md)**: where the project stands, what is left in order, what waits for the owner, and how to work here.
 
 ## Reading order
 

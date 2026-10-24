@@ -1,3 +1,11 @@
+deecure (0.1.0~alpha.4-1) noble; urgency=medium
+
+  * New pre-release: Beginner, Advanced, and Expert views, deep hardware
+    data, health warnings on each part's own limits with user limits,
+    power controls kept after restart, Optimize, and self-updates.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Sat, 24 Oct 2026 17:29:39 +0530
+
 deecure (0.1.0~alpha.3-1) noble; urgency=medium
 
   * The agent starts right after installing, without signing out and in

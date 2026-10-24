@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.4" date="2026-10-24" type="development">
+      <description>
+        <p>Beginner, Advanced, and Expert views with deep hardware and system details; about 50 health warnings judged against each part's own limits, with your own limits in Settings; battery and power controls kept after restart; an Optimize page; and updates that check themselves and install after your OK.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.3" date="2026-10-23" type="development">
       <description>
         <p>The agent starts right after installing, so the app works without signing out and in again.</p>

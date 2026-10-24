@@ -4,7 +4,7 @@
 
 **Read this first when you continue the work.** It says where the project stands, what is left in order, and how to work here. When an item is done, delete it here and note it in the phase's Progress table and in `CHANGELOG.md`.
 
-Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster installer, and the light Beginner mode.
+Last updated: 2026-10-24, with the release `v0.1.0-alpha.4`: the Expert build, health warnings with user limits, and self-updates.
 
 ## 1. Where the project stands
 
@@ -13,7 +13,7 @@ Last updated: 2026-10-23, after the release `v0.1.0-alpha.3`, the faster install
 | Phases 0-3 | Built: agent, history, rules, desktop app with real data on every page, safe fixes with undo, root helper, notifications, weekly report, tray, CLI ([roadmap](README.md)) |
 | Expert build | Three view levels, deep data, power controls kept after restart, Optimize (Tools › Optimize), and 53 health warnings with user limits are built (section 2, item 0) |
 | Checks | 53 rules on each part's own limits ([Health warnings](../01-product/health-warnings.md)); all 13 areas in Overview › Subsystems are checked |
-| Releases | `v0.1.0-alpha.3` is the newest (pre-release). `v0.1.0-alpha.2` before it. The tag `v0.1.0-alpha.1` has no release (its build failed; harmless). |
+| Releases | `v0.1.0-alpha.4` is the newest (pre-release), the first with the in-app updater; users of `v0.1.0-alpha.3` and older update once with the one-command install. `v0.1.0-alpha.3` and `v0.1.0-alpha.2` before it. The tag `v0.1.0-alpha.1` has no release (its build failed; harmless). |
 | Install | One command, from GitHub Releases: `curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh \| sudo sh` ([install guide](../07-user-guide/install.md)). `install.sh` is served from `main`, so installer fixes reach users without a release. The signed APT repository is built but not online (needs the signing key, decision #12). |
 | Tests | All green on 2026-10-23: CI (lint, tests, web, perf, `.deb`), CodeQL, Dependencies, Scorecard; container tests `make deb-test`, `make helper-test`, `make install-test`, `make clean-install-test` (real one-command install on clean 24.04 with curl and 26.04 with wget) |
 | Performance | First result 0.8 s, idle CPU 0.12%, peak RAM 20.9 MB (2026-10-24), 2 years of history 124 MB (`make perf`, `make db-size`) |

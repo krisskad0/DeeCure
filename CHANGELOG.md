@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.4] - 2026-10-24
+
 ### Added
 
 - Three view levels: **Beginner** (the default: the sidebar, page tabs, and search show only 8 pages and 22 sub-pages), **Advanced** (every page), and **Expert** (also data sources, commands, raw columns, and deep details). Switch in the top bar or Settings › General. Links inside pages still open other pages from Beginner, with a note and a **Switch to Advanced** button. The first-run screens ask "Are you new to Linux?" to pick the level. A saved choice is kept.

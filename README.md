@@ -219,7 +219,7 @@ Add `--json` for scripts. [User guide](docs/07-user-guide/using-deecure.md)
 | 4 | "Ask DeeCure": a private, local AI that answers questions with sources | Planned |
 | 5 | More distros, KDE, server mode, many PCs | Planned |
 
-The newest pre-release is [v0.1.0-alpha.3](https://github.com/krisskad0/DeeCure/releases). Details: [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
+The newest pre-release is [v0.1.0-alpha.4](https://github.com/krisskad0/DeeCure/releases). Details: [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
 
 ## Build from source
 
