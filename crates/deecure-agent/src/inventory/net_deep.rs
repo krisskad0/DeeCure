@@ -42,6 +42,9 @@ pub struct WifiLink {
     pub noise_dbm: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub security: Option<String>,
+    /// The NetworkManager connection's UUID, for the power saving control.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uuid: Option<String>,
     /// Power saving, from NetworkManager's setting for this network or its global default.
     /// Missing when nothing sets it (the driver decides).
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -274,6 +277,14 @@ async fn wifi(root: &SystemRoot) -> Vec<WifiLink> {
         )
         .await
         .map(|c| c.trim().to_owned());
+        let uuid = command::output(
+            "nmcli",
+            &["-t", "-g", "GENERAL.CON-UUID", "dev", "show", &interface],
+            LIMIT,
+        )
+        .await
+        .map(|c| c.trim().to_owned())
+        .filter(|u| u.len() == 36);
         let own = match &connection {
             Some(c) if !c.is_empty() => command::output(
                 "nmcli",
@@ -309,6 +320,7 @@ async fn wifi(root: &SystemRoot) -> Vec<WifiLink> {
             noise_dbm,
             security: f.get(6).cloned().filter(|s| !s.is_empty()),
             power_save: setting.and_then(powersave_on),
+            uuid,
             interface,
         });
     }

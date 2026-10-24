@@ -5,6 +5,7 @@
 import { atLeast, useUi } from "../../ui";
 import { CpuSleepStates } from "../performance/CpuExpert";
 import { BatteryExpertSections, WakeExpertSections } from "./PowerExpert";
+import { PowerControls } from "./PowerControls";
 import { type SleepEvent, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
@@ -102,6 +103,7 @@ const minutes = (s?: number) => (s === undefined ? "-" : s === 0 ? "Never" : dur
 const SLEEP_MODE: Record<string, string> = { s2idle: "Modern standby (s2idle)", deep: "Deep sleep (S3)", shallow: "Light sleep (S1)" };
 
 export function PowerProfile() {
+  const { mode } = useUi();
   const { data: power, error } = usePower();
   const openFix = useFix();
   if (!power) {
@@ -145,6 +147,7 @@ export function PowerProfile() {
           ]}
         />
       </Panel>
+      {atLeast(mode, "expert") && <PowerControls />}
     </>
   );
 }

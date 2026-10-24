@@ -12,6 +12,7 @@
 //! The helper exits after 2 minutes without calls.
 
 mod actions;
+mod power;
 mod reads;
 
 use std::collections::HashMap;
@@ -270,6 +271,11 @@ impl Helper {
         let task = parsed.clone();
         let result =
             tokio::task::spawn_blocking(move || -> Result<(String, Option<Call>), String> {
+                // Power settings are single writes to checked files in /sys, not programs.
+                if let Some(plan) = power::plan(&task, Path::new("/")) {
+                    let (writes, undo) = plan?;
+                    return power::apply(&writes).map(|m| (m, Some(undo)));
+                }
                 let commands = actions::prepare(&task, &Live)?;
                 let mut undo = None;
                 // The file as it was, put back if anything after the edit fails.
@@ -499,6 +505,61 @@ mod tests {
             }),
             "io.github.krisskad0.deecure.set-service-enabled"
         );
+    }
+
+    #[test]
+    fn every_admin_call_is_in_the_polkit_policy() {
+        let policy = include_str!("../../../packaging/helper/io.github.krisskad0.deecure.policy");
+        let calls = [
+            Call::CleanAptCache,
+            Call::Autoremove,
+            Call::VacuumJournal { keep_mb: 100 },
+            Call::RemoveSnapRevision {
+                name: "x".into(),
+                revision: "1".into(),
+            },
+            Call::PurgeResidual { packages: vec![] },
+            Call::UpgradePackages { packages: vec![] },
+            Call::SetFirewall { on: true },
+            Call::RestartService {
+                unit: "x.service".into(),
+            },
+            Call::SetServiceEnabled {
+                unit: "x.service".into(),
+                enabled: true,
+            },
+            Call::RemoveKernels { versions: vec![] },
+            Call::SetBatteryAction {
+                action: "PowerOff".into(),
+                percent: 5,
+            },
+            Call::SetChargeLimits {
+                battery: "BAT0".into(),
+                start: None,
+                stop: 80,
+            },
+            Call::SetChargeMode {
+                battery: "BAT0".into(),
+                mode: "Standard".into(),
+            },
+            Call::SetTurbo { on: true },
+            Call::SetDeviceWakeup {
+                device: "x".into(),
+                enabled: true,
+            },
+            Call::SetDevicePowerSaving {
+                device: "x".into(),
+                on: true,
+            },
+        ];
+        for call in calls {
+            assert!(call.admin(), "{call:?}");
+            let action = polkit_action(&call);
+            assert!(
+                policy.contains(&format!("<action id=\"{action}\">")),
+                "{action} is missing from the polkit policy"
+            );
+        }
     }
 
     #[test]

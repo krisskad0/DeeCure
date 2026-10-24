@@ -265,6 +265,7 @@ export interface PciDevice {
   slot_max_link_speed?: string;
   slot_max_link_width?: number;
   errors?: { corrected: number; nonfatal: number; fatal: number };
+  sys_path?: string;
   power_control?: string;
   power_state?: string;
 }
@@ -306,7 +307,7 @@ export interface GraphicsStack {
 /** Network in depth (Expert); counters are totals since start. */
 export interface NetDeep {
   at: number;
-  wifi: { interface: string; ssid: string; channel?: number; frequency_mhz?: number; band?: string; rate_mbps?: number; signal_percent?: number; signal_dbm?: number; noise_dbm?: number; security?: string; power_save?: boolean }[];
+  wifi: { interface: string; ssid: string; uuid?: string; channel?: number; frequency_mhz?: number; band?: string; rate_mbps?: number; signal_percent?: number; signal_dbm?: number; noise_dbm?: number; security?: string; power_save?: boolean }[];
   interfaces: { name: string; rx_errors: number; tx_errors: number; rx_dropped: number; tx_dropped: number; collisions: number; carrier_changes?: number }[];
   /** /proc/net/snmp counters such as "Tcp.RetransSegs". */
   counters: Record<string, number>;
@@ -336,7 +337,9 @@ export interface PowerDetail {
   wake_sources: { name: string; device?: string; pci_address?: string; product?: string; events: number; wakeups: number; active: number; may_wake?: boolean }[];
   last_wake_irq?: string;
   last_wake_device?: string;
-  usb: { port: string; product?: string; maker?: string; control?: string; state?: string; keep_awake: boolean; may_wake?: boolean }[];
+  usb: { port: string; sys_path?: string; product?: string; maker?: string; control?: string; state?: string; keep_awake: boolean; may_wake?: boolean }[];
+  radios: { name: string; kind: string; soft_blocked: boolean; hard_blocked: boolean }[];
+  keyboard_backlight?: { level: number; max: number };
 }
 
 export interface PdOffer {

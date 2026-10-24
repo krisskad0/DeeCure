@@ -56,6 +56,9 @@ pub struct PciDevice {
     /// Missing when the device or kernel does not report link errors.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub errors: Option<LinkErrors>,
+    /// Its path under `/sys/devices`, as the helper's power controls take it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sys_path: Option<String>,
     /// Power saving: `auto` (on) or `on` (always awake).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub power_control: Option<String>,
@@ -168,6 +171,14 @@ pub fn read(root: &SystemRoot) -> Vec<PciDevice> {
                 slot_max_link_speed: from_bridge("max_link_speed"),
                 slot_max_link_width: from_bridge("max_link_width").and_then(|w| w.parse().ok()),
                 errors,
+                sys_path: std::fs::canonicalize(root.path(&format!("{base}/{address}")))
+                    .ok()
+                    .zip(std::fs::canonicalize(root.path("/sys/devices")).ok())
+                    .and_then(|(real, devices)| {
+                        real.strip_prefix(&devices)
+                            .ok()
+                            .map(|p| p.to_string_lossy().into_owned())
+                    }),
                 power_control: text(root, &at("power/control")),
                 power_state: text(root, &at("power/runtime_status")),
                 address,

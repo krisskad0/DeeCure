@@ -35,6 +35,13 @@ The code is `crates/deecure-helper`. It is installed as `/usr/libexec/deecure/de
 | `set_service_enabled` | `systemctl enable/disable --now -- <unit>` | As above; essential units (D-Bus, logind, journald, udev, GDM, polkit, NetworkManager) can never be turned off |
 | `remove_kernels` | `apt-get -y purge -- linux-image-…` | Version pattern; never the running or newest kernel; at least two are always kept |
 | `set_battery_action` | Edits `/etc/UPower/UPower.conf`, then `systemctl try-restart upower` | PowerOff, Hibernate, or HybridSleep at 1-20%. If a later step fails, the file is put back. Returns the old values for undo. |
+| `set_charge_limits` | Writes `/sys/class/power_supply/<battery>/charge_control_{start,end}_threshold` | Battery name pattern (`BAT0`, `BATT`, `CMB0`) and `type` is `Battery`; stop 20-100%; start below stop, and only when the battery has a start limit; written in an order that never puts start at or above stop. Returns the old limits for undo. |
+| `set_charge_mode` | Writes `…/<battery>/charge_types` | The mode must be one the battery lists. Returns the old mode. |
+| `set_turbo` | Writes `/sys/devices/system/cpu/intel_pstate/no_turbo` or `…/cpufreq/boost` | One of the two must exist. Returns the old state. |
+| `set_device_wakeup` | Writes `/sys/devices/<device>/power/wakeup` | Path pattern (letters, digits, `:._-/`, no `..`, not absolute); it must resolve inside `/sys/devices` after links and have the file. The lid, power and sleep buttons, the built-in keyboard (i8042, serio), and USB keyboards are never stopped from waking the computer. Returns the old value. |
+| `set_device_power_saving` | Writes `/sys/devices/<device>/power/control` (`auto` or `on`) | As above; keyboards, mice and other input (USB class 03), sound devices (USB class 01, PCI class 04) never get power saving. Returns the old value. |
+
+The five power calls write one value to one checked file each; they run no program. All of them go through a test root in the unit tests (`crates/deecure-helper/src/power.rs`), never the real `/sys`: a container shares the host's kernel, so a container test could change the real computer.
 
 How every call is handled:
 

@@ -74,6 +74,46 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         "Power off cleanly when the battery is empty",
         None,
     ),
+    (
+        "power.set_charge_limits",
+        "Change the battery charge limits",
+        Some("battery:start:stop"),
+    ),
+    (
+        "power.set_charge_mode",
+        "Change the battery charge mode",
+        Some("battery:mode"),
+    ),
+    (
+        "power.set_turbo",
+        "Turn CPU turbo on or off",
+        Some("on|off"),
+    ),
+    (
+        "power.set_device_wakeup",
+        "Allow or stop a device waking the computer",
+        Some("device|on|off"),
+    ),
+    (
+        "power.set_device_power_saving",
+        "Turn power saving on or off for a device",
+        Some("device|on|off"),
+    ),
+    (
+        "power.set_keyboard_backlight",
+        "Change the keyboard backlight",
+        Some("level"),
+    ),
+    (
+        "power.set_radio",
+        "Turn a radio on or off",
+        Some("kind|on|off"),
+    ),
+    (
+        "power.set_wifi_power_save",
+        "Turn Wi-Fi power saving on or off",
+        Some("uuid|on|off|default"),
+    ),
 ];
 
 /// Whether a step can be taken back.
@@ -119,6 +159,25 @@ pub enum Call {
     SetPowerProfile {
         /// `power-saver`, `balanced`, or `performance`.
         profile: String,
+    },
+    /// Set the keyboard backlight through UPower.
+    SetKeyboardBacklight {
+        /// A level from 0 to the most the keyboard offers.
+        level: u32,
+    },
+    /// Turn a radio on or off with rfkill.
+    SetRadio {
+        /// `wlan`, `bluetooth`, or `wwan`.
+        kind: String,
+        /// On or off.
+        on: bool,
+    },
+    /// Set Wi-Fi power saving for one NetworkManager connection (`802-11-wireless.powersave`).
+    SetWifiPowerSave {
+        /// The connection's UUID.
+        uuid: String,
+        /// `0` (default), `2` (off), or `3` (on).
+        value: u32,
     },
 
     // Admin: through the root helper.
@@ -170,6 +229,41 @@ pub enum Call {
         /// Kernel versions, such as `6.8.0-41-generic`.
         versions: Vec<String>,
     },
+    /// Set a battery's charge limits (`charge_control_start_threshold`, `…_end_threshold`).
+    SetChargeLimits {
+        /// The battery, such as `BAT0`.
+        battery: String,
+        /// Charging starts below this percent, when the battery has a start limit.
+        start: Option<u32>,
+        /// Charging stops at this percent.
+        stop: u32,
+    },
+    /// Set a battery's charge mode (`charge_types`), such as `Adaptive` on Dell.
+    SetChargeMode {
+        /// The battery, such as `BAT0`.
+        battery: String,
+        /// One of the modes the battery offers.
+        mode: String,
+    },
+    /// Turn CPU turbo on or off (`intel_pstate/no_turbo` or `cpufreq/boost`).
+    SetTurbo {
+        /// On or off.
+        on: bool,
+    },
+    /// Allow or stop one device waking the computer from suspend (`power/wakeup`).
+    SetDeviceWakeup {
+        /// The device path under `/sys/devices`, such as `pci0000:00/0000:00:14.0`.
+        device: String,
+        /// Allowed to wake the computer.
+        enabled: bool,
+    },
+    /// Turn runtime power saving on or off for one device (`power/control`: `auto` or `on`).
+    SetDevicePowerSaving {
+        /// The device path under `/sys/devices`.
+        device: String,
+        /// Power saving on (`auto`).
+        on: bool,
+    },
     /// Set UPower's critical battery action.
     SetBatteryAction {
         /// `PowerOff`, `Hibernate`, or `HybridSleep`.
@@ -191,6 +285,9 @@ impl Call {
                 | Call::SetStartupApp { .. }
                 | Call::EndProcess { .. }
                 | Call::SetPowerProfile { .. }
+                | Call::SetKeyboardBacklight { .. }
+                | Call::SetRadio { .. }
+                | Call::SetWifiPowerSave { .. }
         )
     }
 }

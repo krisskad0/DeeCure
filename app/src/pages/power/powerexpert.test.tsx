@@ -15,15 +15,16 @@ const power: PowerDetail = {
   suspend: { current: "s2idle", offered: ["s2idle"] },
   wake_sources: [
     { name: "PNP0C0D:00", events: 4, wakeups: 0, active: 0, may_wake: true },
-    { name: "device:53", pci_address: "0000:2c:00.0", events: 2, wakeups: 1, active: 0, may_wake: true },
+    { name: "device:53", pci_address: "0000:2c:00.0", device: "pci0000:00/0000:00:1c.0/0000:2c:00.0", events: 2, wakeups: 1, active: 0, may_wake: true },
     { name: "serio0", events: 9, wakeups: 0, active: 0, may_wake: false },
   ],
   last_wake_irq: "9",
   last_wake_device: "IR-IO-APIC 9-fasteoi acpi",
   usb: [
     { port: "3-1", product: "Dell Universal Receiver", control: "on", keep_awake: true },
-    { port: "3-7", product: "Fingerprint reader", control: "on", keep_awake: false, state: "active" },
+    { port: "3-7", product: "Fingerprint reader", control: "on", keep_awake: false, state: "active", sys_path: "pci0000:00/0000:00:14.0/usb3/3-7" },
   ],
+  radios: [],
 };
 
 vi.mock("../../api", () => ({
@@ -31,7 +32,7 @@ vi.mock("../../api", () => ({
     Promise.resolve(
       ({
         power_detail: power,
-        pci_detail: [{ address: "0000:2c:00.0", class: "Network", model: "RTL8111 Ethernet", power_control: "on", power_state: "suspended" }],
+        pci_detail: [{ address: "0000:2c:00.0", class: "Network", model: "RTL8111 Ethernet", driver: "r8169", sys_path: "pci0000:00/0000:00:1c.0/0000:2c:00.0", power_control: "on", power_state: "suspended" }],
         sleep: [
           { at: t0, kind: "suspend", duration_ms: 8 * HOUR, failed: false },
           { at: t0 + 20 * HOUR, kind: "suspend", duration_ms: 2 * HOUR, failed: false },

@@ -123,6 +123,9 @@ pub struct WakeSource {
 pub struct UsbPower {
     /// The USB path, such as `3-6`.
     pub port: String,
+    /// Its path under `/sys/devices`, as the helper's power controls take it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sys_path: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub product: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -137,6 +140,24 @@ pub struct UsbPower {
     pub keep_awake: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub may_wake: Option<bool>,
+}
+
+/// One radio from rfkill.
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+pub struct Radio {
+    pub name: String,
+    /// `wlan`, `bluetooth`, `wwan`, …
+    pub kind: String,
+    /// Turned off in software (can be turned on), or by a hardware switch or key.
+    pub soft_blocked: bool,
+    pub hard_blocked: bool,
+}
+
+/// The keyboard backlight.
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+pub struct KbdBacklight {
+    pub level: u32,
+    pub max: u32,
 }
 
 /// What `power_detail` answers.
@@ -156,6 +177,18 @@ pub struct PowerDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_wake_device: Option<String>,
     pub usb: Vec<UsbPower>,
+    pub radios: Vec<Radio>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keyboard_backlight: Option<KbdBacklight>,
+}
+
+/// A device's path under `/sys/devices`, from a link such as `/sys/bus/usb/devices/3-6`.
+fn sys_path(root: &SystemRoot, link: &str) -> Option<String> {
+    let real = std::fs::canonicalize(root.path(link)).ok()?;
+    let base = std::fs::canonicalize(root.path("/sys/devices")).ok()?;
+    real.strip_prefix(&base)
+        .ok()
+        .map(|p| p.to_string_lossy().into_owned())
 }
 
 fn text(root: &SystemRoot, path: &str) -> Option<String> {
@@ -332,6 +365,7 @@ fn usb(root: &SystemRoot) -> Vec<UsbPower> {
                 .chain(class.iter())
                 .any(|c| KEEP_AWAKE.contains(&c.as_str()));
             UsbPower {
+                sys_path: sys_path(root, &format!("{base}/{port}")),
                 port: port.clone(),
                 product: text(root, &at("product")),
                 maker: text(root, &at("manufacturer")),
@@ -361,7 +395,30 @@ pub fn read(root: &SystemRoot) -> PowerDetail {
             .find(|i| &i.irq == irq)
             .map(|i| i.device)
     });
+    let radios = names(root, "/sys/class/rfkill")
+        .into_iter()
+        .filter_map(|r| {
+            let at = |f: &str| format!("/sys/class/rfkill/{r}/{f}");
+            Some(Radio {
+                name: text(root, &at("name")).unwrap_or_else(|| r.clone()),
+                kind: text(root, &at("type"))?,
+                soft_blocked: text(root, &at("soft")).as_deref() == Some("1"),
+                hard_blocked: text(root, &at("hard")).as_deref() == Some("1"),
+            })
+        })
+        .collect();
+    let keyboard_backlight = names(root, "/sys/class/leds")
+        .into_iter()
+        .find(|l| l.ends_with("kbd_backlight"))
+        .and_then(|l| {
+            Some(KbdBacklight {
+                level: number(root, &format!("/sys/class/leds/{l}/brightness"))? as u32,
+                max: number(root, &format!("/sys/class/leds/{l}/max_brightness"))? as u32,
+            })
+        });
     PowerDetail {
+        radios,
+        keyboard_backlight,
         last_wake_irq,
         last_wake_device,
         batteries: supplies

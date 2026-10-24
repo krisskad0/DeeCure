@@ -4,11 +4,14 @@
 // computer and what last did, and devices that could save power but do not.
 
 import { type PciDevice, type PdOffer, type PowerDetail, type SleepEvent, getInventory, getMetrics } from "../../api";
+import { Button } from "../../components/Button";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
+import { useFix } from "../../shell/FixDrawer";
 import { useLive } from "../../useLive";
+import { pciPowerSavingSafe } from "./PowerControls";
 import { NoData } from "../NoData";
 
 const loadPower = () => getInventory("power_detail");
@@ -153,7 +156,13 @@ function SuspendDrain({ battery }: { battery?: string }) {
 
 // ---------- Power › Sleep ----------
 
+/** The lid, power and sleep buttons, and the built-in keyboard always keep waking the computer. */
+export function mustKeepWaking(w: PowerDetail["wake_sources"][number]): boolean {
+  return /PNP0C0D|PNP0C0C|PNP0C0E|LNXPWRBN|LNXSLPBN|serio|i8042/.test(`${w.name} ${w.device ?? ""}`) || /keyboard/i.test(w.product ?? "");
+}
+
 export function WakeExpertSections() {
+  const openFix = useFix();
   const { data: d, error } = useLive(loadPower, 30_000);
   const pci = useLive(loadPci, 60_000).data;
   if (!d) {
@@ -165,8 +174,8 @@ export function WakeExpertSections() {
   }
   const allowed = d.wake_sources.filter((w) => w.may_wake);
   const savers = [
-    ...(pci ?? []).filter((p) => p.power_control === "on").map((p) => ({ key: p.address, name: p.model ?? p.address, bus: "PCI", state: p.power_state })),
-    ...d.usb.filter((u) => u.control === "on" && !u.keep_awake).map((u) => ({ key: u.port, name: u.product ?? u.port, bus: "USB", state: u.state })),
+    ...(pci ?? []).filter(pciPowerSavingSafe).map((p) => ({ key: p.address, name: p.model ?? p.address, bus: "PCI", state: p.power_state, path: p.sys_path })),
+    ...d.usb.filter((u) => u.control === "on" && !u.keep_awake && u.sys_path).map((u) => ({ key: u.port, name: u.product ?? u.port, bus: "USB", state: u.state, path: u.sys_path })),
   ];
   const keptAwake = d.usb.filter((u) => u.keep_awake && u.control === "on").length;
   return (
@@ -183,7 +192,7 @@ export function WakeExpertSections() {
       <Panel
         title="Devices that could save power but do not"
         subtitle={`${savers.length} found`}
-        info="These devices support power saving, but it is turned off, so they stay awake and use power. Keyboards, mice, and sound devices are left out on purpose."
+        info="Power saving is off for these devices, so they stay awake and use power. Turning it on usually saves power; if a device then responds slowly or stops, undo it. Keyboards, mice, sound devices, storage, graphics, and bridges are left out on purpose."
         source="/sys/bus/pci · /sys/bus/usb (power/control)"
         span={6}
         flush
@@ -194,6 +203,7 @@ export function WakeExpertSections() {
             { key: "name", label: "Device", text: (s) => s.name, wrap: true },
             { key: "bus", label: "Bus", text: (s) => s.bus },
             { key: "state", label: "Now", text: (s) => (s.state === "suspended" ? "Asleep" : s.state === "active" ? "Awake" : (s.state ?? "-")) },
+            { key: "act", label: "", text: () => "", render: (s) => (s.path ? <Button small onClick={() => openFix("power.set_device_power_saving", `${s.path}|on`)}>Try power saving…</Button> : null) },
           ]}
           rowKey={(s) => s.key}
           empty="Every device that supports power saving uses it"
@@ -214,6 +224,12 @@ export function WakeExpertSections() {
             { key: "label", label: "Device", text: (w) => wakeLabel(w, pci), wrap: true },
             { key: "events", label: "Signalled", text: (w) => w.events.toLocaleString(), numeric: true },
             { key: "wakeups", label: "Stopped a suspend", text: (w) => w.wakeups.toLocaleString(), numeric: true },
+            {
+              key: "act",
+              label: "",
+              text: () => "",
+              render: (w) => (w.device && !mustKeepWaking(w) ? <Button small onClick={() => openFix("power.set_device_wakeup", `${w.device}|off`)}>Stop waking…</Button> : mustKeepWaking(w) ? <span className="muted">Always kept</span> : null),
+            },
             { key: "name", label: "Kernel name", text: (w) => w.name, expert: true },
           ]}
           rowKey={(w) => w.name}

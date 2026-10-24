@@ -131,6 +131,9 @@ pub async fn run_call(call: &Call) -> Result<(String, Option<Call>), String> {
         }
         Call::EndProcess { pid, name } => end_process(*pid, name).map(|m| (m, None)),
         Call::SetPowerProfile { profile } => set_power_profile(profile).await,
+        Call::SetKeyboardBacklight { level } => set_keyboard_backlight(*level).await,
+        Call::SetRadio { kind, on } => set_radio(kind, *on).await,
+        Call::SetWifiPowerSave { uuid, value } => set_wifi_power_save(uuid, *value).await,
         _ => Err("not a user-level call".into()),
     }
 }
@@ -328,6 +331,138 @@ async fn set_power_profile(profile: &str) -> Result<(String, Option<Call>), Stri
     Err("the power profiles service is not running".into())
 }
 
+/// Sets the keyboard backlight through UPower, after checking the level is in range.
+async fn set_keyboard_backlight(level: u32) -> Result<(String, Option<Call>), String> {
+    const SERVICE: &str = "org.freedesktop.UPower";
+    const OBJECT: &str = "/org/freedesktop/UPower/KbdBacklight";
+    const INTERFACE: &str = "org.freedesktop.UPower.KbdBacklight";
+    let bus = zbus::Connection::system()
+        .await
+        .map_err(|e| e.to_string())?;
+    let get = |method: &'static str| {
+        let bus = bus.clone();
+        async move {
+            bus.call_method(Some(SERVICE), OBJECT, Some(INTERFACE), method, &())
+                .await
+                .ok()
+                .and_then(|r| r.body().deserialize::<i32>().ok())
+        }
+    };
+    let max = get("GetMaxBrightness")
+        .await
+        .ok_or("this keyboard has no backlight")?;
+    let old = get("GetBrightness").await;
+    if level > max.max(0) as u32 {
+        return Err(format!("the keyboard backlight goes up to {max}"));
+    }
+    bus.call_method(
+        Some(SERVICE),
+        OBJECT,
+        Some(INTERFACE),
+        "SetBrightness",
+        &(level as i32),
+    )
+    .await
+    .map_err(|e| format!("could not change the keyboard backlight: {e}"))?;
+    Ok((
+        format!("keyboard backlight is now {level} of {max}"),
+        old.map(|o| Call::SetKeyboardBacklight {
+            level: o.max(0) as u32,
+        }),
+    ))
+}
+
+/// Whether a radio of this kind is turned off in software, from `rfkill list`.
+fn soft_blocked(list: &str) -> Option<bool> {
+    list.lines().find_map(|l| {
+        l.trim()
+            .strip_prefix("Soft blocked:")
+            .map(|v| v.trim() == "yes")
+    })
+}
+
+/// Turns a radio on or off with rfkill. A radio switched off by a hardware switch stays off.
+async fn set_radio(kind: &str, on: bool) -> Result<(String, Option<Call>), String> {
+    if !["wlan", "bluetooth", "wwan"].contains(&kind) {
+        return Err(format!("unknown radio '{kind}'"));
+    }
+    let before = program("rfkill", &["list", kind]).await.ok();
+    if before
+        .as_deref()
+        .is_some_and(|l| l.contains("Hard blocked: yes"))
+        && on
+    {
+        return Err("this radio is switched off by a hardware switch or key".into());
+    }
+    let was_on = before
+        .as_deref()
+        .and_then(soft_blocked)
+        .map(|blocked| !blocked);
+    program("rfkill", &[if on { "unblock" } else { "block" }, kind]).await?;
+    Ok((
+        format!("{kind} is now {}", if on { "on" } else { "off" }),
+        was_on.map(|w| Call::SetRadio {
+            kind: kind.to_owned(),
+            on: w,
+        }),
+    ))
+}
+
+/// A NetworkManager connection UUID, such as `0a1b2c3d-…`.
+fn is_uuid(s: &str) -> bool {
+    s.len() == 36
+        && s.chars().enumerate().all(|(i, c)| {
+            if [8, 13, 18, 23].contains(&i) {
+                c == '-'
+            } else {
+                c.is_ascii_hexdigit()
+            }
+        })
+}
+
+/// Sets Wi-Fi power saving for one connection. It applies the next time Wi-Fi connects, so the
+/// connection is not dropped now.
+async fn set_wifi_power_save(uuid: &str, value: u32) -> Result<(String, Option<Call>), String> {
+    if !is_uuid(uuid) || ![0, 2, 3].contains(&value) {
+        return Err("not a connection and a power saving value".into());
+    }
+    let old = program(
+        "nmcli",
+        &[
+            "-g",
+            "802-11-wireless.powersave",
+            "connection",
+            "show",
+            uuid,
+        ],
+    )
+    .await
+    .ok()
+    .and_then(|v| {
+        v.split_whitespace()
+            .next()
+            .and_then(|n| n.parse::<u32>().ok())
+    });
+    program(
+        "nmcli",
+        &[
+            "connection",
+            "modify",
+            uuid,
+            "802-11-wireless.powersave",
+            &value.to_string(),
+        ],
+    )
+    .await?;
+    Ok((
+        "Wi-Fi power saving changed; it applies the next time Wi-Fi connects".into(),
+        old.map(|o| Call::SetWifiPowerSave {
+            uuid: uuid.to_owned(),
+            value: o,
+        }),
+    ))
+}
+
 /// Sends an admin call to the root helper. polkit may show the password box.
 async fn helper_run(call: &Call) -> Result<(String, Option<Call>), String> {
     let bus = zbus::Connection::system()
@@ -478,5 +613,17 @@ mod tests {
         );
         std::fs::remove_dir_all(&dir).unwrap();
         std::fs::remove_dir_all(&outside).unwrap();
+    }
+
+    #[test]
+    fn radio_and_wifi_inputs() {
+        assert_eq!(
+            soft_blocked("1: hci0: Bluetooth\n\tSoft blocked: yes\n\tHard blocked: no\n"),
+            Some(true)
+        );
+        assert_eq!(soft_blocked("nothing"), None);
+        assert!(is_uuid("0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"));
+        assert!(!is_uuid("Home; rm -rf /"));
+        assert!(!is_uuid("0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5"));
     }
 }

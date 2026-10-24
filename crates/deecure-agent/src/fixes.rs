@@ -39,6 +39,15 @@ fn step(
     }
 }
 
+/// `on` or `off`.
+fn on_off(state: &str) -> Result<bool, String> {
+    match state {
+        "on" => Ok(true),
+        "off" => Ok(false),
+        other => Err(format!("'{other}' is not on or off")),
+    }
+}
+
 fn need<'a>(subject: Option<&'a str>, what: &str) -> Result<&'a str, String> {
     subject
         .filter(|s| !s.is_empty())
@@ -393,6 +402,230 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 },
             )]
         }
+        "power.set_charge_limits" => {
+            // `BAT0:75:80`, or `BAT0:-:80` for a battery with only a stop limit.
+            let raw = need(subject, "battery:start:stop")?;
+            let parts: Vec<&str> = raw.split(':').collect();
+            let [battery, start, stop] = parts.as_slice() else {
+                return Err("the subject is battery:start:stop".into());
+            };
+            let stop: u32 = stop.parse().map_err(|_| "the stop limit is not a number")?;
+            let start: Option<u32> = if *start == "-" {
+                None
+            } else {
+                Some(
+                    start
+                        .parse()
+                        .map_err(|_| "the start limit is not a number")?,
+                )
+            };
+            let dir = format!("/sys/class/power_supply/{battery}");
+            subtitle = format!("{battery} · {dir}");
+            let text = match start {
+                Some(s) => format!("Charge from below {s}% up to {stop}%"),
+                None => format!("Stop charging at {stop}%"),
+            };
+            let command = match start {
+                Some(s) => format!(
+                    "echo {s} | sudo tee {dir}/charge_control_start_threshold; echo {stop} | sudo tee {dir}/charge_control_end_threshold"
+                ),
+                None => format!("echo {stop} | sudo tee {dir}/charge_control_end_threshold"),
+            };
+            vec![step(
+                "charge-limits",
+                &text,
+                "Keeping a battery below full slows its wear. Some laptops forget this at restart."
+                    .into(),
+                None,
+                Undo::Full,
+                true,
+                command,
+                Call::SetChargeLimits {
+                    battery: (*battery).to_owned(),
+                    start,
+                    stop,
+                },
+            )]
+        }
+        "power.set_charge_mode" => {
+            let raw = need(subject, "battery:mode")?;
+            let (battery, mode) = raw.split_once(':').ok_or("the subject is battery:mode")?;
+            subtitle = format!("{battery} · charge_types");
+            vec![step(
+                "charge-mode",
+                &format!("Use the {mode} charge mode"),
+                "The firmware's own charging behaviour".into(),
+                None,
+                Undo::Full,
+                true,
+                format!("echo {mode} | sudo tee /sys/class/power_supply/{battery}/charge_types"),
+                Call::SetChargeMode {
+                    battery: battery.to_owned(),
+                    mode: mode.to_owned(),
+                },
+            )]
+        }
+        "power.set_turbo" => {
+            let on = on_off(need(subject, "on|off")?)?;
+            let intel = agent
+                .root
+                .path("/sys/devices/system/cpu/intel_pstate/no_turbo")
+                .exists();
+            subtitle = "Until the next restart".into();
+            let command = if intel {
+                format!(
+                    "echo {} | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo",
+                    if on { 0 } else { 1 }
+                )
+            } else {
+                format!(
+                    "echo {} | sudo tee /sys/devices/system/cpu/cpufreq/boost",
+                    if on { 1 } else { 0 }
+                )
+            };
+            vec![step(
+                "turbo",
+                if on {
+                    "Turn turbo on"
+                } else {
+                    "Turn turbo off"
+                },
+                if on {
+                    "Full speed when busy, more heat and power".into()
+                } else {
+                    "Lower top speed, less heat, longer battery".into()
+                },
+                None,
+                Undo::Full,
+                true,
+                command,
+                Call::SetTurbo { on },
+            )]
+        }
+        "power.set_device_wakeup" | "power.set_device_power_saving" => {
+            let raw = need(subject, "device|on|off")?;
+            let (device, state) = raw.rsplit_once('|').ok_or("the subject is device|on|off")?;
+            let on = on_off(state)?;
+            subtitle = format!("/sys/devices/{device} · until the next restart");
+            if action == "power.set_device_wakeup" {
+                vec![step(
+                    "wakeup",
+                    if on {
+                        "Allow it to wake the computer"
+                    } else {
+                        "Stop it waking the computer"
+                    },
+                    "From suspend".into(),
+                    None,
+                    Undo::Full,
+                    true,
+                    format!(
+                        "echo {} | sudo tee /sys/devices/{device}/power/wakeup",
+                        if on { "enabled" } else { "disabled" }
+                    ),
+                    Call::SetDeviceWakeup {
+                        device: device.to_owned(),
+                        enabled: on,
+                    },
+                )]
+            } else {
+                vec![step(
+                    "power-saving",
+                    if on {
+                        "Let it save power when idle"
+                    } else {
+                        "Keep it always awake"
+                    },
+                    "Runtime power management".into(),
+                    None,
+                    Undo::Full,
+                    true,
+                    format!(
+                        "echo {} | sudo tee /sys/devices/{device}/power/control",
+                        if on { "auto" } else { "on" }
+                    ),
+                    Call::SetDevicePowerSaving {
+                        device: device.to_owned(),
+                        on,
+                    },
+                )]
+            }
+        }
+        "power.set_keyboard_backlight" => {
+            let level: u32 = need(subject, "level")?
+                .parse()
+                .map_err(|_| "the level is not a number")?;
+            subtitle = "UPower".into();
+            vec![step(
+                "kbd",
+                &format!("Set the keyboard backlight to level {level}"),
+                String::new(),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "busctl call org.freedesktop.UPower /org/freedesktop/UPower/KbdBacklight org.freedesktop.UPower.KbdBacklight SetBrightness i {level}"
+                ),
+                Call::SetKeyboardBacklight { level },
+            )]
+        }
+        "power.set_radio" => {
+            let raw = need(subject, "kind|on|off")?;
+            let (kind, state) = raw.split_once('|').ok_or("the subject is kind|on|off")?;
+            if !["wlan", "bluetooth", "wwan"].contains(&kind) {
+                return Err(format!("unknown radio '{kind}'"));
+            }
+            let on = on_off(state)?;
+            let name = match kind {
+                "wlan" => "Wi-Fi",
+                "bluetooth" => "Bluetooth",
+                _ => "Mobile broadband",
+            };
+            subtitle = "rfkill".into();
+            vec![step(
+                "radio",
+                &format!("Turn {name} {}", if on { "on" } else { "off" }),
+                String::new(),
+                None,
+                Undo::Full,
+                true,
+                format!("rfkill {} {kind}", if on { "unblock" } else { "block" }),
+                Call::SetRadio {
+                    kind: kind.to_owned(),
+                    on,
+                },
+            )]
+        }
+        "power.set_wifi_power_save" => {
+            let raw = need(subject, "uuid|on|off|default")?;
+            let (uuid, state) = raw
+                .rsplit_once('|')
+                .ok_or("the subject is uuid|on|off|default")?;
+            let value = match state {
+                "on" => 3,
+                "off" => 2,
+                "default" => 0,
+                other => return Err(format!("unknown state '{other}'")),
+            };
+            subtitle = "NetworkManager · applies the next time Wi-Fi connects".into();
+            vec![step(
+                "wifi-powersave",
+                match value {
+                    3 => "Turn Wi-Fi power saving on",
+                    2 => "Turn Wi-Fi power saving off",
+                    _ => "Use the default Wi-Fi power saving",
+                },
+                "Saves battery, but can add a little delay".into(),
+                None,
+                Undo::Full,
+                true,
+                format!("nmcli connection modify {uuid} 802-11-wireless.powersave {value}"),
+                Call::SetWifiPowerSave {
+                    uuid: uuid.to_owned(),
+                    value,
+                },
+            )]
+        }
         other => return Err(format!("no planner for '{other}'")),
     };
     Ok(Plan {
@@ -424,6 +657,93 @@ mod tests {
         for (a, _, _) in ACTIONS {
             assert!(FixActionId::new(*a).is_ok(), "{a}");
         }
+    }
+
+    #[tokio::test]
+    async fn power_controls_read_their_subjects() {
+        let a = agent();
+        let call = |p: Plan| p.steps[0].call.clone();
+        assert_eq!(
+            call(
+                plan(&a, "power.set_charge_limits", Some("BAT0:75:80"))
+                    .await
+                    .unwrap()
+            ),
+            Call::SetChargeLimits {
+                battery: "BAT0".into(),
+                start: Some(75),
+                stop: 80
+            }
+        );
+        assert_eq!(
+            call(
+                plan(&a, "power.set_charge_limits", Some("BAT0:-:80"))
+                    .await
+                    .unwrap()
+            ),
+            Call::SetChargeLimits {
+                battery: "BAT0".into(),
+                start: None,
+                stop: 80
+            }
+        );
+        assert_eq!(
+            call(
+                plan(
+                    &a,
+                    "power.set_device_wakeup",
+                    Some("pci0000:00/0000:00:14.0|off")
+                )
+                .await
+                .unwrap()
+            ),
+            Call::SetDeviceWakeup {
+                device: "pci0000:00/0000:00:14.0".into(),
+                enabled: false
+            },
+            "device paths keep their colons"
+        );
+        assert_eq!(
+            call(
+                plan(
+                    &a,
+                    "power.set_wifi_power_save",
+                    Some("0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d|off")
+                )
+                .await
+                .unwrap()
+            ),
+            Call::SetWifiPowerSave {
+                uuid: "0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d".into(),
+                value: 2
+            }
+        );
+        assert_eq!(
+            call(plan(&a, "power.set_turbo", Some("off")).await.unwrap()),
+            Call::SetTurbo { on: false }
+        );
+        for (action, subject) in [
+            ("power.set_charge_limits", "BAT0:80"),
+            ("power.set_charge_limits", "BAT0:x:80"),
+            ("power.set_turbo", "maybe"),
+            ("power.set_radio", "nfc|on"),
+            ("power.set_device_power_saving", "pci0000:00/0000:00:14.0"),
+            ("power.set_keyboard_backlight", "bright"),
+            ("power.set_wifi_power_save", "uuid|sometimes"),
+        ] {
+            assert!(
+                plan(&a, action, Some(subject)).await.is_err(),
+                "{action} {subject}"
+            );
+        }
+        assert!(
+            !Call::SetRadio {
+                kind: "wlan".into(),
+                on: true
+            }
+            .admin()
+        );
+        assert!(Call::SetTurbo { on: true }.admin());
     }
 
     #[tokio::test]

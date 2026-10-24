@@ -115,4 +115,49 @@
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
+  <action id="io.github.krisskad0.deecure.set-charge-limits">
+    <description>Change the battery charge limits</description>
+    <message>Authentication is required to change when the battery starts and stops charging</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-charge-mode">
+    <description>Change the battery charge mode</description>
+    <message>Authentication is required to change how the battery charges</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-turbo">
+    <description>Turn CPU turbo on or off</description>
+    <message>Authentication is required to turn CPU turbo on or off</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-device-wakeup">
+    <description>Allow or stop a device waking the computer</description>
+    <message>Authentication is required to change which devices may wake the computer</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-device-power-saving">
+    <description>Turn power saving on or off for a device</description>
+    <message>Authentication is required to change power saving for a device</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
 </policyconfig>
