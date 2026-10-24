@@ -285,7 +285,7 @@ pub async fn read_health() -> SoftwareHealth {
     }
 }
 
-/// The paragraph of one package in `/var/lib/dpkg/status`, as field → value.
+/// The paragraph of one package in `dpkg-query -s` output, as field → value.
 pub fn status_paragraph(status: &str, name: &str) -> Option<BTreeMap<String, String>> {
     status.split("\n\n").find_map(|p| {
         let first = p.lines().next()?;
@@ -417,74 +417,68 @@ pub fn parse_verify(text: &str) -> Vec<FileProblem> {
         .collect()
 }
 
-/// Reads one package for `package_detail`.
-pub async fn package_detail(root: &SystemRoot, name: &str) -> Result<PackageDetail, String> {
-    if name.is_empty()
-        || !name
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || "+-.:".contains(c))
-    {
-        return Err(format!("'{name}' is not a package name"));
-    }
-    let status = root
-        .read("/var/lib/dpkg/status")
-        .map_err(|e| format!("the package list could not be read: {e}"))?;
-    let fields = status_paragraph(&status, name)
+/// The answers `package_detail` is built from, so the parsing is tested without dpkg.
+pub struct PackageAnswers<'a> {
+    /// `dpkg-query -s name`.
+    pub status: &'a str,
+    /// `dpkg-query -W` lines: package, status, and its Pre-Depends and Depends.
+    pub listing: &'a str,
+    /// `/var/lib/apt/extended_states`.
+    pub extended: &'a str,
+    /// `apt-cache policy name`.
+    pub policy: &'a str,
+    /// `dpkg-query -L name`.
+    pub files: &'a str,
+    /// `dpkg -V name`.
+    pub verify: &'a str,
+}
+
+/// Builds `package_detail` from the answers of dpkg-query, apt-cache, and dpkg -V. (The dpkg
+/// database is never read directly: its format is dpkg's own business.)
+pub fn assemble(name: &str, a: &PackageAnswers) -> Result<PackageDetail, String> {
+    let fields = status_paragraph(a.status, name)
         .ok_or_else(|| format!("package {name} is not installed"))?;
+    if !fields.get("Status").is_some_and(|s| {
+        s.ends_with("installed") && !s.contains("not-installed") && !s.contains("config-files")
+    }) {
+        return Err(format!("package {name} is not installed"));
+    }
     let needs = ["Pre-Depends", "Depends"]
         .iter()
         .filter_map(|k| fields.get(*k))
         .flat_map(|f| depends_names(f))
         .collect();
-    let needed_by = status
-        .split("\n\n")
-        .filter(|p| p.contains("Status: install ok installed"))
-        .filter_map(|p| {
-            let pkg = p.lines().next()?.strip_prefix("Package: ")?.trim();
-            let deps = p
-                .lines()
-                .filter(|l| l.starts_with("Depends:") || l.starts_with("Pre-Depends:"))
-                .flat_map(|l| depends_names(l.split_once(':').map_or("", |(_, v)| v)))
-                .collect::<Vec<_>>();
-            deps.iter().any(|d| d == name).then(|| pkg.to_owned())
+    let needed_by = a
+        .listing
+        .lines()
+        .filter_map(|l| {
+            let mut f = l.splitn(3, '\t');
+            let (pkg, state, deps) = (f.next()?, f.next()?, f.next().unwrap_or(""));
+            (state.starts_with("ii") && depends_names(deps).iter().any(|d| d == name))
+                .then(|| pkg.to_owned())
         })
         .collect();
-    let auto = root
-        .read("/var/lib/apt/extended_states")
-        .unwrap_or_default();
-    let manual = !auto.split("\n\n").any(|p| {
+    let manual = !a.extended.split("\n\n").any(|p| {
         p.lines().any(|l| l.trim() == format!("Package: {name}")) && p.contains("Auto-Installed: 1")
     });
     let Policy {
         installed,
         candidate,
         sources,
-    } = command::output("apt-cache", &["policy", name], LIMIT)
-        .await
-        .map(|t| parse_policy(&t))
-        .unwrap_or_default();
-    let list = root
-        .read(&format!("/var/lib/dpkg/info/{name}.list"))
-        .or_else(|_| root.read(&format!("/var/lib/dpkg/info/{name}:amd64.list")))
-        .unwrap_or_default();
-    let changed_files = command::output_any("dpkg", &["-V", name], LIMIT)
-        .await
-        .map(|t| {
-            parse_verify(&t)
-                .into_iter()
-                .map(|p| {
-                    (
-                        p.file,
-                        format!(
-                            "{}{}",
-                            p.problem,
-                            if p.config { " (configuration)" } else { "" }
-                        ),
-                    )
-                })
-                .collect()
+    } = parse_policy(a.policy);
+    let changed_files = parse_verify(a.verify)
+        .into_iter()
+        .map(|p| {
+            (
+                p.file,
+                format!(
+                    "{}{}",
+                    p.problem,
+                    if p.config { " (configuration)" } else { "" }
+                ),
+            )
         })
-        .unwrap_or_default();
+        .collect();
     Ok(PackageDetail {
         name: name.to_owned(),
         manual,
@@ -493,7 +487,11 @@ pub async fn package_detail(root: &SystemRoot, name: &str) -> Result<PackageDeta
         installed,
         candidate,
         sources,
-        files: list.lines().filter(|l| !l.is_empty()).count(),
+        files: a
+            .files
+            .lines()
+            .filter(|l| l.starts_with('/') && *l != "/.")
+            .count(),
         changed_files,
         fields: fields
             .into_iter()
@@ -512,6 +510,53 @@ pub async fn package_detail(root: &SystemRoot, name: &str) -> Result<PackageDeta
             })
             .collect(),
     })
+}
+
+/// Reads one package for `package_detail`.
+pub async fn package_detail(root: &SystemRoot, name: &str) -> Result<PackageDetail, String> {
+    if name.is_empty()
+        || !name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "+-.:".contains(c))
+    {
+        return Err(format!("'{name}' is not a package name"));
+    }
+    let status = command::output_any("dpkg-query", &["-s", name], LIMIT)
+        .await
+        .unwrap_or_default();
+    let listing = command::output(
+        "dpkg-query",
+        &[
+            "-W",
+            "-f=${Package}\t${db:Status-Abbrev}\t${Pre-Depends}, ${Depends}\n",
+        ],
+        LIMIT,
+    )
+    .await
+    .unwrap_or_default();
+    let extended = root
+        .read("/var/lib/apt/extended_states")
+        .unwrap_or_default();
+    let policy = command::output("apt-cache", &["policy", name], LIMIT)
+        .await
+        .unwrap_or_default();
+    let files = command::output_any("dpkg-query", &["-L", name], LIMIT)
+        .await
+        .unwrap_or_default();
+    let verify = command::output_any("dpkg", &["-V", name], LIMIT)
+        .await
+        .unwrap_or_default();
+    assemble(
+        name,
+        &PackageAnswers {
+            status: &status,
+            listing: &listing,
+            extended: &extended,
+            policy: &policy,
+            files: &files,
+            verify: &verify,
+        },
+    )
 }
 
 /// Starts the full file check, unless one runs.
@@ -673,23 +718,17 @@ mod tests {
         );
     }
 
-    #[tokio::test]
-    async fn package_detail_reads_the_status_file() {
-        let root = fixture_root(
-            "package-detail",
-            &[
-                (
-                    "/var/lib/dpkg/status",
-                    "Package: htop\nStatus: install ok installed\nVersion: 3.3.0\nDepends: libc6 (>= 2.34), libncursesw6\nDescription: process viewer\n longer text\n\nPackage: tool\nStatus: install ok installed\nDepends: htop\n\nPackage: gone\nStatus: deinstall ok config-files\nDepends: htop\n",
-                ),
-                (
-                    "/var/lib/apt/extended_states",
-                    "Package: htop\nArchitecture: amd64\nAuto-Installed: 1\n",
-                ),
-                ("/var/lib/dpkg/info/htop.list", "/.\n/usr/bin/htop\n"),
-            ],
-        );
-        let d = package_detail(&root, "htop").await.unwrap();
+    #[test]
+    fn package_detail_from_dpkg_query() {
+        let answers = |status: &'static str| PackageAnswers {
+            status,
+            listing: "htop\tii \t, libc6 (>= 2.34), libncursesw6\ntool\tii \t, htop\ngone\trc \t, htop\n",
+            extended: "Package: htop\nArchitecture: amd64\nAuto-Installed: 1\n",
+            policy: "",
+            files: "/.\n/usr\n/usr/bin/htop\n",
+            verify: "",
+        };
+        let d = assemble("htop", &answers("Package: htop\nStatus: install ok installed\nVersion: 3.3.0\nDepends: libc6 (>= 2.34), libncursesw6\nDescription: process viewer\n longer text\n")).unwrap();
         assert_eq!(d.needs, ["libc6", "libncursesw6"]);
         assert_eq!(d.needed_by, ["tool"], "removed packages do not count");
         assert!(!d.manual);
@@ -698,10 +737,26 @@ mod tests {
             d.fields.get("Description").map(String::as_str),
             Some("process viewer")
         );
-        assert!(package_detail(&root, "nope").await.is_err());
         assert!(
-            package_detail(&root, "rm -rf").await.is_err(),
-            "only package names are accepted"
+            assemble(
+                "htop",
+                &answers("dpkg-query: package 'htop' is not installed\n")
+            )
+            .is_err()
         );
+        assert!(
+            assemble(
+                "htop",
+                &answers("Package: htop\nStatus: deinstall ok config-files\n")
+            )
+            .is_err()
+        );
+    }
+
+    #[tokio::test]
+    async fn only_package_names_are_accepted() {
+        let root = fixture_root("package-detail", &[]);
+        assert!(package_detail(&root, "rm -rf").await.is_err());
+        assert!(package_detail(&root, "").await.is_err());
     }
 }
