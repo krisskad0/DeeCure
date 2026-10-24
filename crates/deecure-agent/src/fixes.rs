@@ -669,6 +669,59 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 },
             )]
         }
+        "system.update_deecure" => {
+            let version = need(subject, "version")?.to_owned();
+            if !deecure_core::update::valid_version(&version) {
+                return Err(format!("'{version}' is not a DeeCure version"));
+            }
+            subtitle = format!("DeeCure {} to {version}", deecure_core::VERSION);
+            vec![step(
+                "update",
+                &format!("Install DeeCure {version}"),
+                "Downloads it from DeeCure's GitHub release page, checks each package against the release's checksums and its own name and version, then installs it with apt. Afterwards, open DeeCure again.".into(),
+                None,
+                Undo::None,
+                true,
+                format!(
+                    "sudo apt-get install ./deecure_{}_amd64.deb   # after the checksum check",
+                    deecure_core::update::deb_version(&version)
+                ),
+                Call::InstallUpdate { version },
+            )]
+        }
+        "system.set_auto_update" => {
+            let on = on_off(need(subject, "on|off")?)?;
+            let settings =
+                crate::updates::settings(&store::lock(&agent.store)).map_err(|e| e.to_string())?;
+            subtitle = "deecure-update.timer".into();
+            vec![step(
+                "auto-update",
+                if on {
+                    "Install DeeCure updates by themselves"
+                } else {
+                    "Ask before installing DeeCure updates"
+                },
+                if on {
+                    "A small timer looks for a new release and installs it with the same checks, not on a metered connection. You get a notification afterwards.".into()
+                } else {
+                    "The timer stops installing; DeeCure tells you about new releases instead."
+                        .into()
+                },
+                None,
+                Undo::Full,
+                true,
+                if on {
+                    "echo '{\"auto\": true}' | sudo tee /etc/deecure/update.json".into()
+                } else {
+                    "sudo rm /etc/deecure/update.json".into()
+                },
+                Call::SetAutoUpdate {
+                    on,
+                    check: settings.check,
+                    channel: settings.channel,
+                },
+            )]
+        }
         "power.set_battery_turbo" => {
             let on = on_off(need(subject, "on|off")?)?;
             subtitle = "Set again at each plug in, unplug, and start".into();
@@ -1190,6 +1243,22 @@ mod tests {
             ),
             ("packages.finish_setup", None, Call::FinishPackageSetup),
             (
+                "system.update_deecure",
+                Some("0.1.0-alpha.4"),
+                Call::InstallUpdate {
+                    version: "0.1.0-alpha.4".into(),
+                },
+            ),
+            (
+                "system.set_auto_update",
+                Some("on"),
+                Call::SetAutoUpdate {
+                    on: true,
+                    check: deecure_core::update::CheckEvery::Daily,
+                    channel: deecure_core::update::Channel::Prerelease,
+                },
+            ),
+            (
                 "packages.install_driver",
                 Some("mesa-va-drivers"),
                 Call::InstallPackages {
@@ -1212,6 +1281,9 @@ mod tests {
         }
         for (action, subject) in [
             ("storage.cap_journal", "10"),
+            ("system.update_deecure", "0.1.0; reboot"),
+            ("system.update_deecure", "latest"),
+            ("system.set_auto_update", "sometimes"),
             ("storage.keep_fewer_snaps", "1"),
             ("packages.remove_unused_flatpaks", "everyone"),
             ("system.raise_file_watches", "10"),

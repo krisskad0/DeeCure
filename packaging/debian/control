@@ -25,7 +25,8 @@ Description: deep insight into every layer of a Linux computer, with safe fixes
  admin changes after polkit asks for your password. The deecure command
  shows the findings in the terminal, and as JSON for scripts.
  .
- Everything stays on this computer. Nothing is sent anywhere.
+ Nothing about this computer is sent anywhere; the only connection is a
+ daily check for DeeCure updates on GitHub, which can be turned off.
 
 Package: deecure-desktop
 Architecture: any
@@ -37,6 +38,6 @@ Description: desktop app for DeeCure
  storage, services, logs, networks, security, privacy, an Optimize page,
  and safe fixes with undo, in Beginner, Advanced, and Expert views.
  .
- It shows what the deecure background agent collects. Everything stays
- on this computer. Nothing is sent anywhere.
+ It shows what the deecure background agent collects. Nothing about this
+ computer is sent anywhere.
 

@@ -57,6 +57,8 @@ function answer(cmd: string, args: Record<string, unknown> = {}): Promise<unknow
     case "status":
     case "latest":
     case "events":
+    case "update_status":
+      return older ? Promise.reject({ kind: "agent_outdated", message: outdated.message }) : Promise.resolve(real[cmd]);
     case "warning_settings":
       // An agent from before this version does not know it.
       return older ? Promise.reject({ kind: "agent_outdated", message: outdated.message }) : Promise.resolve(real[cmd]);

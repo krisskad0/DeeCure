@@ -175,6 +175,16 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         Some("device id"),
     ),
     (
+        "system.update_deecure",
+        "Install the DeeCure update",
+        Some("version"),
+    ),
+    (
+        "system.set_auto_update",
+        "Install DeeCure updates automatically",
+        Some("on|off"),
+    ),
+    (
         "power.set_keyboard_backlight",
         "Change the keyboard backlight",
         Some("level"),
@@ -428,6 +438,22 @@ pub enum Call {
     UpdateFirmware {
         /// fwupd's device ID: 40 hex characters.
         device: String,
+    },
+    /// Download a DeeCure release from its GitHub page, check every package against the
+    /// release's `SHA256SUMS` and its own name, version, and architecture, and install it with
+    /// apt. Only a newer version.
+    InstallUpdate {
+        /// Such as `0.1.0-alpha.4`.
+        version: String,
+    },
+    /// Turn automatic updates on or off for the root timer (`/etc/deecure/update.json`).
+    SetAutoUpdate {
+        /// Install new releases by itself.
+        on: bool,
+        /// How often: `daily` or `weekly`.
+        check: crate::update::CheckEvery,
+        /// Which releases.
+        channel: crate::update::Channel,
     },
     /// Set UPower's critical battery action.
     SetBatteryAction {

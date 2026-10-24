@@ -146,7 +146,7 @@ function FirstCheck({ onDone }: { onDone: () => void }) {
 
 const PROMISES: [IconName, string][] = [
   ["lock", "No account and no sign-in."],
-  ["shield", "Nothing is sent anywhere. DeeCure works offline."],
+  ["shield", "Nothing about your computer is sent anywhere. The only connection is a daily check for DeeCure updates on GitHub; turn it off in Settings › About."],
   ["eye", "It only reads. Changes always need your OK, with a preview and undo."],
 ];
 

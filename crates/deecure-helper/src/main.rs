@@ -17,6 +17,7 @@ mod power;
 mod reads;
 mod saved;
 mod tuning;
+mod update;
 
 use std::collections::HashMap;
 use std::io::Write;
@@ -284,6 +285,14 @@ impl Helper {
         let task = parsed.clone();
         let result =
             tokio::task::spawn_blocking(move || -> Result<(String, Option<Call>), String> {
+                // DeeCure's own update: downloaded, checked, then installed with apt (update.rs).
+                if let Call::InstallUpdate { version } = &task {
+                    return update::install(version).map(|m| (m, None));
+                }
+                if let Call::SetAutoUpdate { on, check, channel } = &task {
+                    return update::set_auto(Path::new("/"), *on, *check, *channel)
+                        .map(|(m, undo)| (m, Some(undo)));
+                }
                 // A settings file, then its commands; the file is put back if they fail.
                 if let Some(plan) = tuning::plan(&task, Path::new("/")) {
                     let p = plan?;
@@ -483,10 +492,14 @@ fn main() -> ExitCode {
         if arg == "--power-source-changed" && std::env::args().len() == 2 {
             return power_source_changed();
         }
+        if arg == "--auto-update" && std::env::args().len() == 2 {
+            return auto_update();
+        }
         eprintln!(
             "deecure-helper: D-Bus starts this program; it takes no arguments except --version \
              (and --apply-saved, which deecure-power.service runs at boot, and \
-             --power-source-changed, which a udev rule runs when a charger is plugged in or out)"
+             --power-source-changed, which a udev rule runs when a charger is plugged in or out, and \
+             --auto-update, which deecure-update.timer runs)"
         );
         return ExitCode::from(2);
     }
@@ -572,6 +585,33 @@ fn power_source_changed() -> ExitCode {
         }
     }
     ExitCode::SUCCESS
+}
+
+/// Installs a new DeeCure release when the user turned automatic updates on
+/// (deecure-update.timer). The result goes to the audit log and `/run/deecure`.
+fn auto_update() -> ExitCode {
+    if !rustix::process::geteuid().is_root() {
+        eprintln!("deecure-helper: must run as root");
+        return ExitCode::FAILURE;
+    }
+    let root = Path::new("/");
+    let result = update::auto_run(root, now_ms() as i64);
+    let (ok, message) = match &result {
+        Ok(None) => return ExitCode::SUCCESS,
+        Ok(Some(m)) => (true, m.clone()),
+        Err(e) => (false, e.clone()),
+    };
+    eprintln!("deecure-helper: automatic update: {message}");
+    audit(0, "AutoUpdate", &Value::Null, ok, &message);
+    let text = json!({"time": now_ms(), "ok": ok, "message": message}).to_string();
+    if let Err(e) = tuning::write(&root.join(update::RESULT_FILE), Some(&text)) {
+        eprintln!("deecure-helper: {e}");
+    }
+    if ok {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    }
 }
 
 async fn serve() -> zbus::Result<()> {
@@ -683,6 +723,14 @@ mod tests {
                 scheduler: "mq-deadline".into(),
             },
             Call::FinishPackageSetup,
+            Call::InstallUpdate {
+                version: "0.1.0-alpha.4".into(),
+            },
+            Call::SetAutoUpdate {
+                on: true,
+                check: deecure_core::update::CheckEvery::Daily,
+                channel: deecure_core::update::Channel::Prerelease,
+            },
             Call::InstallPackages {
                 packages: vec!["mesa-va-drivers".into()],
             },

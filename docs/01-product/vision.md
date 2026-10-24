@@ -42,7 +42,7 @@ These rules decide every design question.
 1. **Explain, don't just show.** Every item has a one-line meaning in plain English.
 2. **Safe by default.** Every fix shows the exact command first, and keeps an undo point where possible. Risky settings are tried for one session before they are kept.
 3. **Honest.** If something cannot be checked, DeeCure says "your hardware does not report this", not a fake value.
-4. **Private.** Everything stays on the computer. Nothing goes to the internet unless the user turns it on.
+4. **Private.** Nothing about the computer ever leaves it. The one connection is the update check (daily by default; the user can set it to weekly or never), which only asks GitHub for DeeCure's release list.
 5. **Light.** It should never be the reason the PC is slow. Deep data is read only while its page is open.
 6. **Warn about harm, not use.** A busy CPU or full RAM cache is the computer doing its job. DeeCure warns about stalls, errors, heat, wear, and risk, against the hardware's own limits, and only when a problem lasts. The user can turn any warning off or change its limit.
 7. **Measured, not assumed.** An improvement is offered only when a measurement on this computer shows it is needed; common tips that do not help are never offered.

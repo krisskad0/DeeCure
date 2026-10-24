@@ -15,7 +15,7 @@ curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/in
 DeeCure shows four short screens:
 
 1. **Welcome:** what DeeCure does.
-2. **Privacy:** everything stays on this computer. No account. Nothing is sent anywhere.
+2. **Privacy:** nothing about your computer is sent anywhere. No account. The only connection is a daily check for DeeCure updates on GitHub, which you can turn off.
 3. **New to Linux?**
    - **Yes, keep it simple** (Beginner mode): only the pages most people need.
    - **I know my way around** (Advanced): every page and tab.
@@ -106,18 +106,30 @@ In **Power › Sleep**: stop a device waking the computer, and let devices save 
 
 **Tools › Optimize** (Expert) lists improvements only when a measurement on this computer shows they are needed, each with its numbers and a **Preview** button. At the bottom, **Checked, nothing needed** shows every check that passed and what it measured. Some checks need history first, such as 14 days of readings for a charge limit; they say how many days they have so far.
 
-## 10. Settings worth knowing
+## 10. Updates
+
+**Settings › About › Updates**:
+
+- **Check for updates:** every day (the default), every week, or never. Checking only asks GitHub for DeeCure's release list; nothing about your computer is sent.
+- **Releases:** pre-releases too (the default, while there is no stable release), or stable only.
+- **Install updates:** **Ask me first** (the default): when a new version is out, you get one notification, and **Install** shows the steps and asks for your password. **Automatically:** a small timer installs new versions by itself, not on a metered connection; setting it up asks for your password once.
+- **Check now** looks right away.
+
+After an update, open DeeCure again. You get a notification that it was updated. Before anything is installed, every package is checked against the release's checksums and its own name and version, and only a newer version is accepted.
+
+## 11. Settings worth knowing
 
 | Where | Setting |
 | --- | --- |
 | Settings › General | **View level** (Beginner, Advanced, or Expert), default time range, **refresh interval** (2 s, 5 s, 15 s, or Manual), **temperature unit** (°C or °F), narrow sidebar, **tray icon** |
 | Settings › Access | Basic or Full access |
 | Settings › Notifications | Critical, warnings, weekly summary, quiet hours; **Warnings and limits** (Advanced and Expert): turn any warning off or change its limits |
+| Settings › About | Version, **Updates** (how often to check, which releases, ask first or automatic, check now) |
 | Settings › Data | Keep history for 90 days, 1 year, or 2 years; database size; **Export report** (an HTML file in your Downloads folder); **Delete history** (restore points and settings are kept) |
 
 **Tray icon** (off by default): when it is on, closing the window keeps DeeCure in the tray, and it starts there when you log in. It needs a tray area on your desktop (Ubuntu has one).
 
-## 11. In the Terminal
+## 12. In the Terminal
 
 The same information is available in the Terminal:
 
@@ -135,9 +147,9 @@ deecure undo 12                    # take fix number 12 back
 
 Add `--json` to `status`, `history`, or `report` for scripts.
 
-## 12. Privacy
+## 13. Privacy
 
-- DeeCure reads your computer to explain it. Everything stays here: no account, no tracking, nothing sent.
+- DeeCure reads your computer to explain it. Everything stays here: no account, no tracking, nothing about your computer sent. The only connection is the update check (Settings › About), which you can set to Never.
 - The history lives in `~/.local/share/deecure/deecure.db`, readable only by you.
 - Small copies of text configuration files are kept to show what changed. They stay in the same private database.
 - **Settings › Data › Delete history** removes the history at any time.

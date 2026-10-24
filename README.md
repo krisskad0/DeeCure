@@ -123,6 +123,10 @@ Battery charge limits (presets or your own), charge mode, CPU turbo, highest CPU
 - **Disk forecast:** "full in about N days", only when the disk keeps filling over both the last day and the last 3 days, so one big install never causes a false alarm.
 - **Notifications:** critical problems right away, quiet hours, never the same alert twice in 24 hours, and a weekly summary with your health trend.
 
+### Updates that check themselves
+
+DeeCure looks for a new release daily (or weekly, or never), tells you once, and installs it after your OK, or automatically if you choose. Before apt installs anything, every package is checked against the release's checksums and its own name, version, and architecture, and only a newer version is accepted. [How updates work](docs/02-architecture/updates.md)
+
 ## Three view levels: Beginner, Advanced, Expert
 
 - **Beginner** (default): a short menu of 8 pages in plain words. Light and calm.
@@ -160,7 +164,7 @@ Measured on a real laptop: about **0.1% CPU** when idle, about **21 MB** of memo
 
 ## Safety and privacy
 
-- **Private by design:** no account, no telemetry, no cloud. Nothing leaves your computer.
+- **Private by design:** no account, no telemetry, no cloud. Nothing about your computer leaves it. The one connection is the update check (daily by default, or weekly, or never), which only asks GitHub for DeeCure's release list.
 - **Read-only by default:** about 80% of everything works without a password.
 - **Honest data:** a value DeeCure cannot read is shown as unknown, never guessed. Warnings never act on stale or missing data.
 - **No surprises:** DeeCure never restarts services it does not have to (for example, the lid setting waits for the next restart instead of ending your session).
@@ -188,7 +192,9 @@ Add `--json` for scripts. [User guide](docs/07-user-guide/using-deecure.md)
 
 **Is it a replacement for GNOME System Monitor or htop?** It shows what they show (processes, CPU, memory, disks, network), and goes much deeper: each part's own limits, PCIe and USB link speeds, firmware security, kernel settings and their source files, service sandboxing, real memory per app, what changed, and warnings and fixes built on all of that.
 
-**Does it send my data anywhere?** No. There is no account, no telemetry, and no cloud.
+**Does it send my data anywhere?** No. There is no account, no telemetry, and no cloud. The only connection is the update check, which asks GitHub for DeeCure's release list and sends nothing about your computer; set it to Never in Settings › About to stay fully offline.
+
+**How does DeeCure update itself?** It checks GitHub daily (or weekly, or never) and tells you when a new version is out. Install it from Settings › About with your password, or let it install automatically. Either way, every package is checked against the release's checksums and its own name and version before apt installs it.
 
 **Does it need root?** No, not to look. Your password is asked only for admin fixes and admin read-outs, each time, through the standard Ubuntu dialog.
 

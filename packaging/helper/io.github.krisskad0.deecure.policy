@@ -286,4 +286,22 @@
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
+  <action id="io.github.krisskad0.deecure.install-update">
+    <description>Install a DeeCure update</description>
+    <message>Authentication is required to install a DeeCure update</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+  <action id="io.github.krisskad0.deecure.set-auto-update">
+    <description>Turn automatic DeeCure updates on or off</description>
+    <message>Authentication is required to change automatic DeeCure updates</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
 </policyconfig>

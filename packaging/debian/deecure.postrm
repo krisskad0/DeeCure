@@ -12,7 +12,9 @@ case "$1" in
     rm -f /etc/systemd/journald.conf.d/50-deecure-size.conf /etc/systemd/journald.conf.d/50-deecure-size.deecure-tmp
     rmdir /etc/systemd/journald.conf.d 2>/dev/null || true
     rm -f /etc/sysctl.d/60-deecure-inotify.conf /etc/sysctl.d/60-deecure-inotify.deecure-tmp
-    rm -rf /run/deecure /var/log/deecure
+    rm -f /etc/deecure/update.json /etc/deecure/update.deecure-tmp
+    rmdir /etc/deecure 2>/dev/null || true
+    rm -rf /run/deecure /var/log/deecure /var/cache/deecure /var/lib/deecure
     ;;
 esac
 

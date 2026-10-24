@@ -25,8 +25,9 @@
       <li>A timeline of what changed: updates, config files, devices, crashes, and hardware errors</li>
       <li>Notifications for serious problems, quiet hours, and a weekly summary</li>
       <li>Beginner, Advanced, and Expert views: light for newcomers, every detail for experts</li>
+      <li>Updates checked daily, weekly, or never, installed after your OK or automatically, each package checked first</li>
     </ul>
-    <p>Everything stays on this computer. There is no account, and nothing is sent anywhere.</p>
+    <p>Nothing about this computer is sent anywhere, and there is no account. The only connection is a daily check for DeeCure updates on GitHub, which you can turn off.</p>
   </description>
   <launchable type="desktop-id">io.github.krisskad0.DeeCure.desktop</launchable>
   <url type="homepage">https://github.com/krisskad0/DeeCure</url>

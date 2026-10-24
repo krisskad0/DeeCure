@@ -49,6 +49,9 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | `event` | `{"id": 42}` | One `<Event>` with every detail, such as a config file's `diff`, or `null` | Phase 3 |
 | `notify_settings` | none | `{"critical": true, "warnings": false, "weekly": true, "quiet_hours": "22-07"}` ([Notifications](notifications.md#settings)) | Phase 3 |
 | `set_notify_settings` | `{"settings": {…}}` (missing fields take their defaults) | The saved settings. Unknown fields or values are a `-32602` error. | Phase 3 |
+| `update_status` | none | `{"settings": {"check": "daily", "channel": "prerelease", "auto": false}, "current": "0.1.0-alpha.3", "checked_at": <ms>?, "latest": {"version", "prerelease", "published_at", "url", "notes"}?, "available": false, "error"?, "from_apt": false, "auto_ready": false, "last_auto"?}` ([Updates](updates.md)) | Expert build |
+| `set_update_settings` | `{"settings": {"check": "daily" \| "weekly" \| "off", "channel": "prerelease" \| "stable", "auto": false}}` | The status, as `update_status` | Expert build |
+| `check_updates` | none | Checks GitHub now; the status | Expert build |
 | `warning_settings` | none | Every warning: `[{"id": "hardware.cpu_hot", "name": "CPU too hot", "category": "hardware", "off": false, "limits": [{"name": "minutes", "label": "…", "unit": "minutes", "default": 5, "value": 5, "min": 1, "max": 60}]}, …]` ([Health warnings](../01-product/health-warnings.md)) | Expert build |
 | `set_warning_settings` | `{"settings": {"off": ["network.weak_wifi"], "limits": {"hardware.cpu_hot": {"minutes": 10}}}}` | The same list as `warning_settings`. Unknown warnings and limits are dropped, values are kept inside each limit's range, and the rules run again right away. | Expert build |
 | `notify_test` | none | `true` when a test notification was shown; otherwise an error saying why (such as no desktop session) | Phase 3 |

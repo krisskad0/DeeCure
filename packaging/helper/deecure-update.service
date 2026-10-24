@@ -1,0 +1,27 @@
+[Unit]
+Description=DeeCure: install a new release when automatic updates are on
+Documentation=https://github.com/krisskad0/DeeCure/blob/main/docs/02-architecture/updates.md
+# Only when the user turned automatic updates on in the app; otherwise this does nothing.
+ConditionPathExists=/etc/deecure/update.json
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/deecure/deecure-helper --auto-update
+# It runs apt, which writes to the whole system, so it cannot be locked down like
+# deecure-power.service; these limits still apply.
+PrivateTmp=yes
+ProtectHome=read-only
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+SystemCallArchitectures=native
+RuntimeDirectory=deecure
+RuntimeDirectoryPreserve=yes
+LogsDirectory=deecure
+UMask=0022

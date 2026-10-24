@@ -76,6 +76,13 @@ pub mod method {
     /// Saves [`WarningSettings`] and returns the [`WarningRule`] list. Takes
     /// [`SetWarningSettingsParams`].
     pub const SET_WARNING_SETTINGS: &str = "set_warning_settings";
+    /// Returns the [`UpdateStatus`](crate::update::UpdateStatus). Takes no params.
+    pub const UPDATE_STATUS: &str = "update_status";
+    /// Saves [`UpdateSettings`](crate::update::UpdateSettings) and returns the status. Takes
+    /// [`SetUpdateSettingsParams`].
+    pub const SET_UPDATE_SETTINGS: &str = "set_update_settings";
+    /// Checks GitHub for a new release now and returns the status. Takes no params.
+    pub const CHECK_UPDATES: &str = "check_updates";
     /// Shows a test notification now. Returns `true`, or an error saying why it could not.
     /// Takes no params.
     pub const NOTIFY_TEST: &str = "notify_test";
@@ -176,6 +183,14 @@ pub struct WarningRule {
 pub struct SetWarningSettingsParams {
     /// The new choices; they replace the old ones.
     pub settings: WarningSettings,
+}
+
+/// Params of the `set_update_settings` method.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SetUpdateSettingsParams {
+    /// The new choices.
+    pub settings: crate::update::UpdateSettings,
 }
 
 /// Params of the `set_notify_settings` method.

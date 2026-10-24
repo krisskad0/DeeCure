@@ -25,6 +25,7 @@ How DeeCure is built. Start with the overview, then read the part you work on.
 | [fix-engine.md](fix-engine.md) | Plan → preview → apply → verify, and undo | Agent plans; app or CLI applies; helper for admin steps |
 | [helper.md](helper.md) | The small root helper with a fixed list of actions | Helper |
 | [notifications.md](notifications.md) | Desktop notifications, quiet hours, and the weekly summary | Agent |
+| [updates.md](updates.md) | Checking for and installing DeeCure's own releases, by hand or automatically | Agent, helper |
 | [cli.md](cli.md) | The `deecure` command, including `history` and `report` | CLI |
 | [ai-assistant.md](ai-assistant.md) | The planned local AI with read-only tools (Phase 4) | Agent |
 

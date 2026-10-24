@@ -880,6 +880,41 @@ export function setNotifySettings(settings: NotifySettings): Promise<NotifySetti
   return invoke<NotifySettings>("set_notify_settings", { settings });
 }
 
+/** DeeCure's own updates (docs/02-architecture/updates.md). */
+export interface UpdateSettings {
+  check: "off" | "daily" | "weekly";
+  channel: "prerelease" | "stable";
+  /** Install by itself (the root timer); otherwise ask first. */
+  auto: boolean;
+}
+
+export interface UpdateStatus {
+  settings: UpdateSettings;
+  current: string;
+  checked_at?: number;
+  latest?: { version: string; prerelease: boolean; published_at?: string; url: string; notes: string };
+  available: boolean;
+  error?: string;
+  /** Installed from an APT repository: Software Updater installs the updates. */
+  from_apt: boolean;
+  /** The root timer is set up for automatic updates. */
+  auto_ready: boolean;
+  /** What the last automatic update did. */
+  last_auto?: string;
+}
+
+export function getUpdateStatus(): Promise<UpdateStatus> {
+  return invoke<UpdateStatus>("update_status");
+}
+
+export function setUpdateSettings(settings: UpdateSettings): Promise<UpdateStatus> {
+  return invoke<UpdateStatus>("set_update_settings", { settings });
+}
+
+export function checkUpdates(): Promise<UpdateStatus> {
+  return invoke<UpdateStatus>("check_updates");
+}
+
 /** One limit of a warning (docs/01-product/health-warnings.md). */
 export interface WarningLimit {
   name: string;

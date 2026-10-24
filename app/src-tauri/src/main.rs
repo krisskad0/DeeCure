@@ -161,6 +161,28 @@ async fn set_notify_settings(settings: Value) -> Result<Value, AppError> {
     .await
 }
 
+/// DeeCure's own update status: settings, the newest release, and whether it is newer.
+#[tauri::command]
+async fn update_status() -> Result<Value, AppError> {
+    ask(method::UPDATE_STATUS, None).await
+}
+
+/// Saves how often to check, which releases, and whether to install by itself.
+#[tauri::command]
+async fn set_update_settings(settings: Value) -> Result<Value, AppError> {
+    ask(
+        method::SET_UPDATE_SETTINGS,
+        Some(json!({ "settings": settings })),
+    )
+    .await
+}
+
+/// Checks GitHub for a new release now.
+#[tauri::command]
+async fn check_updates() -> Result<Value, AppError> {
+    ask(method::CHECK_UPDATES, None).await
+}
+
 /// Every warning with its limits and whether it is turned off.
 #[tauri::command]
 async fn warning_settings() -> Result<Value, AppError> {
@@ -457,6 +479,9 @@ fn main() {
             set_notify_settings,
             warning_settings,
             set_warning_settings,
+            update_status,
+            set_update_settings,
+            check_updates,
             notify_test,
             notifications,
             report,

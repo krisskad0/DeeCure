@@ -23,9 +23,13 @@ override_dh_auto_build:
 # D-Bus starts the helper only when an admin action is asked for; installing the
 # package must never enable or start it. deecure-power.service is enabled for the next
 # boots but does nothing until a power setting is kept in the app (/etc/deecure/power.json).
+# deecure-update.timer runs daily but does nothing until automatic updates are turned on
+# (/etc/deecure/update.json); an upgrade it starts must not stop or restart it.
 override_dh_installsystemd:
 	dh_installsystemd -pdeecure --no-enable --no-start deecure-helper.service
 	dh_installsystemd -pdeecure --no-start deecure-power.service
+	dh_installsystemd -pdeecure --no-stop-on-upgrade --no-restart-after-upgrade deecure-update.timer
+	dh_installsystemd -pdeecure --no-enable --no-start deecure-update.service
 
 # Tests run in CI with `make test`, not while packaging.
 override_dh_auto_test:
@@ -42,6 +46,8 @@ override_dh_auto_install:
 	install -D -m 0644 packaging/helper/deecure-helper.service $(DEST)/usr/lib/systemd/system/deecure-helper.service
 	install -D -m 0644 packaging/helper/deecure-power.service $(DEST)/usr/lib/systemd/system/deecure-power.service
 	install -D -m 0644 packaging/helper/90-deecure-power.rules $(DEST)/usr/lib/udev/rules.d/90-deecure-power.rules
+	install -D -m 0644 packaging/helper/deecure-update.service $(DEST)/usr/lib/systemd/system/deecure-update.service
+	install -D -m 0644 packaging/helper/deecure-update.timer $(DEST)/usr/lib/systemd/system/deecure-update.timer
 	install -D -m 0644 packaging/helper/io.github.krisskad0.DeeCure.Helper.service $(DEST)/usr/share/dbus-1/system-services/io.github.krisskad0.DeeCure.Helper.service
 	install -D -m 0644 packaging/helper/io.github.krisskad0.DeeCure.Helper.conf $(DEST)/usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf
 	install -D -m 0644 packaging/helper/io.github.krisskad0.deecure.policy $(DEST)/usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy

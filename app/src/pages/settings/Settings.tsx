@@ -4,6 +4,7 @@
 // features that come later are shown honestly as "later".
 
 import { Guard } from "../../components/ErrorBoundary";
+import { Updates } from "./Updates";
 import { WarningLimits } from "./WarningLimits";
 import { type KeepHistory, type NotifySettings, type TrayState, deleteHistory, exportReport, getDataSettings, setDataSettings, getInventory, getTrayState, setTray, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
 import { useState } from "react";
@@ -355,8 +356,11 @@ export function SettingsAbout() {
         />
       </Panel>
       <Panel title="Privacy" span={6}>
-        <p>DeeCure reads your computer to explain it. Everything stays on this computer: there is no account, no tracking, and nothing is sent anywhere.</p>
+        <p>DeeCure reads your computer to explain it. Everything stays on this computer: there is no account and no tracking. The only time it contacts the internet is the update check below, which asks GitHub for DeeCure's release list and sends nothing about your computer. Set it to Never to stay fully offline.</p>
       </Panel>
+      <Guard>
+        <Updates />
+      </Guard>
     </>
   );
 }

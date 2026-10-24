@@ -30,6 +30,7 @@ done
 echo "== admin helper (installed, never started by the package)"
 for f in /usr/libexec/deecure/deecure-helper /usr/lib/systemd/system/deecure-helper.service \
   /usr/lib/systemd/system/deecure-power.service /usr/lib/udev/rules.d/90-deecure-power.rules \
+  /usr/lib/systemd/system/deecure-update.service /usr/lib/systemd/system/deecure-update.timer \
   /usr/share/dbus-1/system-services/io.github.krisskad0.DeeCure.Helper.service \
   /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf \
   /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy; do
@@ -40,6 +41,9 @@ done
 # Enabled for boot, but it does nothing until a power setting is kept.
 [ -L /etc/systemd/system/multi-user.target.wants/deecure-power.service ] || fail "deecure-power.service is not enabled"
 [ -e /etc/deecure/power.json ] && fail "the package must not keep any power setting"
+# The daily timer is on, but nothing updates until the user turns automatic updates on.
+[ -L /etc/systemd/system/timers.target.wants/deecure-update.timer ] || fail "deecure-update.timer is not enabled"
+[ -e /etc/deecure/update.json ] && fail "the package must not turn automatic updates on"
 # Run as a normal user, it refuses to start.
 id deecure-test >/dev/null 2>&1 || useradd -m deecure-test
 if su deecure-test -c /usr/libexec/deecure/deecure-helper 2>/dev/null; then fail "the helper ran without root"; fi
@@ -98,6 +102,6 @@ fi
 echo "== purge"
 [ -z "$app" ] || apt-get purge -y -qq deecure-desktop >/dev/null
 apt-get purge -y -qq deecure >/dev/null
-left="$(ls -d /usr/bin/deecure /usr/bin/deecure-desktop /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf /usr/libexec/deecure /usr/share/deecure /usr/share/applications/io.github.krisskad0.DeeCure.desktop /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* /usr/lib/systemd/system/deecure-power.service /usr/lib/udev/rules.d/90-deecure-power.rules /etc/systemd/system/*/deecure-power.service /etc/deecure /var/log/deecure 2>/dev/null || true)"
+left="$(ls -d /usr/bin/deecure /usr/bin/deecure-desktop /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf /usr/libexec/deecure /usr/share/deecure /usr/share/applications/io.github.krisskad0.DeeCure.desktop /usr/lib/systemd/user/deecure-agent.* /etc/systemd/user/*/deecure-agent.* /usr/lib/systemd/system/deecure-power.service /usr/lib/udev/rules.d/90-deecure-power.rules /etc/systemd/system/*/deecure-power.service /usr/lib/systemd/system/deecure-update.* /etc/systemd/system/*/deecure-update.timer /etc/deecure /var/log/deecure /var/cache/deecure 2>/dev/null || true)"
 [ -z "$left" ] || fail "left behind: $left"
 echo "ok: nothing left behind"

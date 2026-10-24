@@ -1,0 +1,12 @@
+[Unit]
+Description=DeeCure: look for a new release once a day (only when automatic updates are on)
+Documentation=https://github.com/krisskad0/DeeCure/blob/main/docs/02-architecture/updates.md
+
+[Timer]
+OnCalendar=daily
+# Spread over the day, so computers do not all ask GitHub at the same minute.
+RandomizedDelaySec=4h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -6,8 +6,8 @@ use deecure_core::rpc::{
     EventList, EventParams, EventsParams, FixPlanParams, FixRecordParams, FixUndoneParams,
     InventoryParams, MAX_EVENTS, MAX_MESSAGE_BYTES, MAX_POINTS, MetricsParams, PROTOCOL_VERSION,
     PackageDetailParams, ProcessDetailParams, Request, RequestId, Response, RpcError,
-    SetNotifySettingsParams, SetWarningSettingsParams, SnapshotParams, StatusReport, VersionInfo,
-    WarningLimit, WarningRule, WarningSettings, method,
+    SetNotifySettingsParams, SetUpdateSettingsParams, SetWarningSettingsParams, SnapshotParams,
+    StatusReport, VersionInfo, WarningLimit, WarningRule, WarningSettings, method,
 };
 use deecure_core::{Timestamp, VERSION, health, thin};
 use serde::Serialize;
@@ -200,6 +200,21 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
         }),
         method::EVENT => params::<EventParams>(&request)
             .and_then(|p| to_result(&store().event_by_id(p.id).map_err(store_failed)?)),
+        method::UPDATE_STATUS => no_params(&request)
+            .and_then(|()| to_result(&crate::updates::status(agent).map_err(store_failed)?)),
+        method::SET_UPDATE_SETTINGS => params::<SetUpdateSettingsParams>(&request).and_then(|p| {
+            store()
+                .set_setting(crate::updates::SETTINGS, &p.settings)
+                .map_err(store_failed)?;
+            to_result(&crate::updates::status(agent).map_err(store_failed)?)
+        }),
+        method::CHECK_UPDATES => match no_params(&request) {
+            Ok(()) => crate::updates::check_now(agent)
+                .await
+                .map_err(store_failed)
+                .and_then(|s| to_result(&s)),
+            Err(e) => Err(e),
+        },
         method::WARNING_SETTINGS => no_params(&request).and_then(|()| {
             let settings: WarningSettings = store()
                 .setting(crate::rules::WARNINGS_SETTING)
@@ -645,6 +660,36 @@ mod tests {
         )
         .await;
         assert_eq!(reply["result"].as_array().unwrap().len(), list.len());
+    }
+
+    #[tokio::test]
+    async fn update_settings_are_kept_and_the_status_says_what_runs_now() {
+        let agent = agent();
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":1,"method":"update_status"}"#,
+        )
+        .await;
+        let s = &reply["result"];
+        assert_eq!(s["current"], VERSION);
+        assert_eq!(
+            s["settings"],
+            json!({"check": "daily", "channel": "prerelease", "auto": false}),
+            "the defaults"
+        );
+        assert_eq!(s["available"], false, "nothing was checked yet");
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":2,"method":"set_update_settings","params":{"settings":{"check":"weekly","channel":"stable","auto":false}}}"#,
+        )
+        .await;
+        assert_eq!(reply["result"]["settings"]["check"], "weekly");
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":3,"method":"set_update_settings","params":{"settings":{"check":"hourly"}}}"#,
+        )
+        .await;
+        assert_eq!(reply["error"]["code"], -32602, "unknown values are refused");
     }
 
     #[test]

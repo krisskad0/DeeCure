@@ -35,7 +35,7 @@ describe("onboarding", () => {
     render(<Onboarding onDone={done} />);
     expect(screen.getByRole("heading", { name: "Welcome to DeeCure" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByText("Nothing is sent anywhere. DeeCure works offline.")).toBeTruthy();
+    expect(screen.getByText(/Nothing about your computer is sent anywhere/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("heading", { name: "Are you new to Linux?" })).toBeTruthy();
     expect((screen.getByRole("radio", { name: /keep it simple/ }) as HTMLInputElement).checked).toBe(true);

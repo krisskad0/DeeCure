@@ -166,6 +166,7 @@ async fn run(
         rule_checker(rules),
     ));
     tokio::spawn(notify::run(agent.clone()));
+    tokio::spawn(deecure_agent::updates::run(agent.clone()));
     let _ = agent.facts.set(Facts {
         database: db_path.clone(),
         rules_dir: rules_dir.clone(),

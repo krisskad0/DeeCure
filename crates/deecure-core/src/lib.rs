@@ -22,6 +22,7 @@ pub mod rpc;
 mod severity;
 mod snapshot;
 mod time;
+pub mod update;
 
 pub use category::{Category, UnknownCategory};
 pub use event::{Event, EventKind};

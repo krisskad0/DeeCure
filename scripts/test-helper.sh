@@ -89,4 +89,17 @@ r="$(cat /run/deecure/power-boot.json)"
 case "$r" in *'"setting":"charge_limits:BAT9"'*'"ok":false'* | *'"ok":false'*'"setting":"charge_limits:BAT9"'*) ;; *) false ;; esac || fail "the missing battery was not reported: $(cat /run/deecure/power-boot.json)"
 grep -q '"ApplySaved"' /var/log/deecure/helper.log || fail "the boot run was not in the audit log"
 echo "ok: only a root-only file is used, and each setting's result is reported"
+echo "== automatic updates (deecure-update.timer)"
+# No network needed: an unsafe settings file is refused, and "off" does nothing.
+printf '{"auto": true, "check": "daily", "channel": "prerelease"}' >/etc/deecure/update.json
+chmod 0666 /etc/deecure/update.json
+/usr/libexec/deecure/deecure-helper --auto-update 2>/dev/null && fail "an update settings file others can change was trusted"
+grep -q "must be a plain file owned by root" /run/deecure/update-result.json || fail "the refusal is not in the result file"
+rm -f /run/deecure/update-result.json
+printf '{"auto": false}' >/etc/deecure/update.json
+chmod 0644 /etc/deecure/update.json
+/usr/libexec/deecure/deecure-helper --auto-update || fail "auto-update with automatic updates off failed"
+[ -e /run/deecure/update-result.json ] && fail "auto-update did something although it is off"
+rm -f /etc/deecure/update.json
+echo "ok: only a root-only file is used, and nothing happens while automatic updates are off"
 echo "PASS: helper end to end"
