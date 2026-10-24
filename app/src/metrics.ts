@@ -12,6 +12,18 @@ export function pick(latest: Metric[] | undefined, name: string, subject?: strin
 }
 
 /** All subjects of one metric, such as every temperature sensor. */
+/**
+ * A temperature against the part's own limits (`temp.limit` and `temp.critical`, or the CPU's
+ * `temp.cpu_limit` and `temp.cpu_critical`), as the health warnings judge it; never one number
+ * for every computer. `undefined` (no colour) when the part reports no limit.
+ */
+export function heatStatus(celsius: number | undefined, limit?: number, critical?: number): "ok" | "warn" | "crit" | undefined {
+  if (celsius === undefined || (limit === undefined && critical === undefined)) return undefined;
+  if (critical !== undefined && celsius >= critical) return "crit";
+  if (limit !== undefined && celsius >= limit) return "warn";
+  return "ok";
+}
+
 export function pickAll(latest: Metric[] | undefined, name: string): Metric[] {
   return (latest ?? []).filter((m) => m.name === name && m.subject !== undefined);
 }

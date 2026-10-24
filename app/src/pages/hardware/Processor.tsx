@@ -9,7 +9,7 @@ import { InlineMeter } from "../../components/InlineMeter";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
 import { GaugeGroup } from "../../components/charts/Gauge";
-import { bytes, pick } from "../../metrics";
+import { bytes, heatStatus, pick } from "../../metrics";
 import { useLatest } from "../performance/shared";
 import { ProcessorExpertSections } from "../performance/CpuExpert";
 import { atLeast, useUi } from "../../ui";
@@ -69,7 +69,7 @@ export function HardwareProcessor() {
         <GaugeGroup
           gauges={[
             { value: usage ?? 0, display: usage === undefined ? "-" : `${Math.round(usage)}%`, subtitle: "utilization", caption: "Load" },
-            { value: temp ?? 0, display: temp === undefined ? "N/A" : tempText(temp), subtitle: "package", caption: "Temperature", status: temp === undefined ? undefined : temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok" },
+            { value: temp ?? 0, display: temp === undefined ? "N/A" : tempText(temp), subtitle: "package", caption: "Temperature", status: heatStatus(temp, pick(latest, "temp.cpu_limit"), pick(latest, "temp.cpu_critical")) },
             { value: freq ?? 0, max: p.max_hz ?? 1, display: freq === undefined ? "-" : GHZ(freq), subtitle: p.max_hz ? `of ${GHZ(p.max_hz)}` : "", caption: "Frequency" },
           ]}
         />

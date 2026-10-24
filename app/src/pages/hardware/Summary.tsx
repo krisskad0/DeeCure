@@ -10,7 +10,7 @@ import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { type StatusRow, StatusList } from "../../components/StatusList";
-import { bytes, pick, pickAll } from "../../metrics";
+import { bytes, heatStatus, pick, pickAll } from "../../metrics";
 import { href } from "../../route";
 import { useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
@@ -40,9 +40,9 @@ export function HardwareSummary() {
   const updates = firmware?.devices.filter((d) => d.available).length ?? 0;
   const gpu = gpus?.[0];
   const rows: StatusRow[] = [
-    { icon: "chip", label: "Processor", metric: [shortCpu(hw.processor.model), temp !== undefined && tempText(temp)].filter(Boolean).join(" · "), status: temp === undefined ? "off" : temp >= 90 ? "crit" : temp >= 80 ? "warn" : "ok", href: href("hardware", "processor") },
+    { icon: "chip", label: "Processor", metric: [shortCpu(hw.processor.model), temp !== undefined && tempText(temp)].filter(Boolean).join(" · "), status: heatStatus(temp, pick(latest, "temp.cpu_limit"), pick(latest, "temp.cpu_critical")) ?? "off", href: href("hardware", "processor") },
     { icon: "layers", label: "Memory", metric: hw.memory_total ? bytes(hw.memory_total) : "-", status: "ok", href: href("hardware", "memory") },
-    { icon: "db", label: "Storage", metric: disk ? `${disk.kind} ${bytes(disk.size, 0)}` : "No disks found", status: "off", href: href("hardware", "storage") },
+    { icon: "db", label: "Storage", metric: disk ? `${disk.kind} ${bytes(disk.size, 0)}` : "No disks found", status: "off", statusLabel: disk ? "Health needs Full access" : undefined, href: href("hardware", "storage") },
     { icon: "bat", label: "Battery", metric: health === undefined ? "No battery" : `${Math.round(health)}% of design`, status: health === undefined ? "off" : health < 60 ? "warn" : health < 80 ? "info" : "ok", href: href("power", "battery") },
     { icon: "mon", label: "Graphics", metric: gpu ? [gpu.model?.match(/\[(.+)\]/)?.[1] ?? gpu.model, gpu.driver].filter(Boolean).join(" · ") : "-", status: gpu ? (gpu.driver ? "ok" : "warn") : "off", href: href("hardware", "graphics") },
     { icon: "fan", label: "Fans", metric: fans.length ? fans.map((f) => `${Math.round(f.value)} RPM`).join(", ") : "Not reported", status: fans.length ? "ok" : "off", href: href("hardware", "sensors") },

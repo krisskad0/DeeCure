@@ -31,6 +31,7 @@ pub struct WifiLink {
     /// `2.4 GHz`, `5 GHz`, or `6 GHz`, from the frequency.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub band: Option<&'static str>,
+    /// The network's top rate from the last scan (`nmcli` RATE), not the link speed now.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rate_mbps: Option<u32>,
     /// Signal as NetworkManager shows it (0-100) and in dBm from the kernel.

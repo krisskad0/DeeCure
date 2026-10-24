@@ -16,6 +16,7 @@ const m = (name: string, value: number, subject?: string, at = now): Metric => (
 let usage: unknown = { scanning: true };
 
 vi.mock("../../api", () => ({
+  getEvents: () => Promise.resolve({ events: [], truncated: false }),
   getLatest: () => Promise.resolve([m("disk.used_percent", 94, "/"), m("disk.used", 224e9, "/"), m("disk.free", 13.8e9, "/"), m("disk.inodes_percent", 21, "/")]),
   // 30 daily points rising 0.7% a day, ending at 94%.
   getMetrics: () => Promise.resolve(Array.from({ length: 30 }, (_, i) => m("disk.used_percent", 73.7 + i * 0.7, "/", now - (29 - i) * 86_400_000))),
@@ -94,6 +95,8 @@ describe("Storage", () => {
     render(<StorageFilesystems />);
     await waitFor(() => expect(screen.getByText("1 problem in /etc/fstab")).toBeTruthy());
     expect(screen.getByText("Disk encryption off")).toBeTruthy();
+    // Counted from the recorded hardware events, not "see the kernel log".
+    await waitFor(() => expect(screen.getByText("No disk read or write errors in the kernel log")).toBeTruthy());
   });
 
   it("usage shows scan results; cleanup lists candidates without deleting", async () => {

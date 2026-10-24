@@ -33,7 +33,7 @@ Last updated: 2026-10-24, with the release `v0.1.0-alpha.4`: the Expert build, h
    6. Admin reads in the helper, one by one with its security review (BIOS settings, memory slots, power meters, NVMe details, self-tests, wake-up tracing, low-power residency, sudo rules, `sshd -T`); eBPF traffic counters last.
 1. **First version complete** (owner and developer, no downloads): the owner reviews every page and names what looks empty or "dummy"; fix each one (section 4). Then the real-desktop checks in section 3.
 2. **Owner decisions** before a stable release (section 5): contact emails (#11), app ID (#6), signing key (#12, also turns on the APT repository and signed commits and tags), supported systems (#9), health points (#15).
-3. **People and machines** (section 6): the 45 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.
+3. **People and machines** (section 6): the 47 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.
 4. **Public beta:** fix the findings, release `v0.1.0-beta.1`, then `v0.1.0` ([how to release](#7-how-to-release)). When contributors arrive: admin bypass on `main` to "pull requests only", and CodeQL and Dependencies as required checks.
 5. **Next features, on the owner's word:** Phase 4 (assistant; un-hide it in `app/src/visible.ts`), use per app (disk I/O, power, and network traffic; their panels are designed but hidden until a collector exists), "optimize everything", Phase 5 (bring back "Add a machine"), coverage-guided fuzzing.
 
@@ -72,7 +72,7 @@ All 78 tabs show real data and every data source was checked on a real laptop. F
 
 | Item | Detail |
 | --- | --- |
-| Fixes in real VMs | Apply → verify → undo each of the 45 fixes in full Ubuntu 24.04 and 26.04 VMs (unit tests and the container helper test pass) |
+| Fixes in real VMs | Apply → verify → undo each of the 47 fixes in full Ubuntu 24.04 and 26.04 VMs (unit tests and the container helper test pass) |
 | Security review of the helper | Two people, with the [review checklist](../02-architecture/security-model.md#helper-review-checklist) |
 | Beginner tests | 5-10 people: can they free up space alone? Do the timeline, the "new kernel" tip, and the notifications make sense? |
 | A second maintainer | So two-person review of the helper can really happen |

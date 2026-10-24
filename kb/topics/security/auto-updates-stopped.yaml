@@ -1,0 +1,8 @@
+title: "Get automatic security updates working again"
+summary: "Ubuntu installs security updates by itself, but it stops on a connection marked as metered (such as a phone hotspot), and fixes then wait."
+steps:
+  - "Open Security › Overview in DeeCure: the last runs say why they stopped, such as \"System is on metered connection\"."
+  - "If the network is not really metered: open Settings › Wi-Fi (or Network), click the gear next to the network, open Details, and turn off \"Metered connection\"."
+  - "Install the waiting updates now: open the Software Updater, or run: sudo apt update && sudo apt upgrade"
+  - "If the runs failed with an error instead, the same Security › Overview list shows the message; a broken package install (Optimize) is a common cause."
+notes: "DeeCure warns when automatic updates are on but the last good run is 7 days or more ago and the newest run stopped or failed. Change the days in Settings › Notifications."

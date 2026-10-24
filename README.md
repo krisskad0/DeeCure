@@ -63,7 +63,7 @@ Your Linux computer knows a great deal about itself: every sensor's limit, every
 1. **Understand:** a deep view of the whole machine: CPU, memory, disks, graphics, battery, sensors, firmware, USB and PCIe, network, services, packages, containers, security, and what changed.
 2. **Keep it healthy:** 53 health warnings that use each part's **own** limits (the CPU's own critical temperature, the drive's own warning temperature) and fire only when a problem lasts.
 3. **Warn early:** a disk that keeps filling, a battery that gets too hot while charging, cooling that cannot keep up, memory errors, disk read errors, automatic security updates that silently stopped.
-4. **Fix safely:** 45 fixes with a preview of every step, your password only for admin steps, a check afterwards, and undo.
+4. **Fix safely:** 47 fixes with a preview of every step, your password only for admin steps, a check afterwards, and undo.
 5. **Control:** battery charge limits, CPU turbo and speed on battery, sleep and wake-up, lid action, device power saving, all kept after restart.
 
 It is for anyone who wants **full control of their own computer**: experts who want every detail, and beginners who want it explained (the Beginner view keeps it short).
@@ -115,7 +115,7 @@ Battery charge limits (presets or your own), charge mode, CPU turbo, highest CPU
 
 ### Safe fixes with undo
 
-45 fixes. Each shows its exact steps and commands first; untick any step; admin steps ask for your password through the normal Ubuntu dialog; DeeCure checks that it worked and keeps an undo for every step that can be undone. Steps that cannot be undone say so before you apply them.
+47 fixes. Each shows its exact steps and commands first; untick any step; admin steps ask for your password through the normal Ubuntu dialog; DeeCure checks that it worked and keeps an undo for every step that can be undone. Steps that cannot be undone say so before you apply them.
 
 ### What changed, predictions, notifications
 
@@ -157,7 +157,7 @@ flowchart LR
 
 1. **The agent** runs in the background as your normal user. Every minute it reads the system, keeps a compact history (2 years in under 200 MB), and checks 53 rules that turn readings into findings. Deep data is read only while its page is open.
 2. **The desktop app and the `deecure` command** ask the agent over a private Unix socket only your user can open.
-3. **Admin steps** go to a small **root helper** that knows a fixed list of actions (31, each with its own polkit prompt), checks every input against the live system, runs no shell, and writes an audit log. It starts only when needed and exits after 2 idle minutes.
+3. **Admin steps** go to a small **root helper** that knows a fixed list of actions (32, each with its own polkit prompt), checks every input against the live system, runs no shell, and writes an audit log. It starts only when needed and exits after 2 idle minutes.
 4. **Kept power settings** are set again at boot by a small service, with the same checks.
 
 Measured on a real laptop: about **0.1% CPU** when idle, about **21 MB** of memory, first results in under a second. [Architecture](docs/02-architecture/overview.md)

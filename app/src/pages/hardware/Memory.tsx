@@ -12,17 +12,19 @@ import { Panel } from "../../components/Panel";
 import { bytes, pick } from "../../metrics";
 import { href } from "../../route";
 import { useHistory, useLatest } from "../performance/shared";
+import { useEventCount } from "../../useEventCount";
 import { NoData } from "../NoData";
 import { useHardware } from "./shared";
 import { AdminRead } from "../../components/AdminRead";
 
-const FULL = <span className="muted">See below</span>;
+const FULL = <span className="muted">With Full access (below)</span>;
 
 export function HardwareMemory() {
   const { mode } = useUi();
   const { data: hw, error } = useHardware();
   const latest = useLatest();
   const pressure = useHistory(["pressure.memory"], undefined, "24h");
+  const oom = useEventCount(["out_of_memory_kill"]);
   if (!hw) {
     return (
       <Panel title="Modules" span={12}>
@@ -38,7 +40,11 @@ export function HardwareMemory() {
       : peak > 20
         ? { state: "warn", title: `Memory pressure reached ${peak.toFixed(1)}% today`, detail: "Apps waited for memory. Close some, or add memory." }
         : { state: "pass", title: "No memory pressure stalls above 20% today" },
-    { state: "na", title: "Out-of-memory kills", detail: "See the kernel log", action: <LinkButton to={href("logs", "kernel")}>View</LinkButton> },
+    oom === undefined
+      ? { state: "na", title: "Out-of-memory kills", detail: "See the kernel log", action: <LinkButton to={href("logs", "kernel")}>View</LinkButton> }
+      : oom === 0
+        ? { state: "pass", title: "No app was stopped for lack of memory", detail: "Last 7 days" }
+        : { state: "warn", title: `${oom} app${oom === 1 ? " was" : "s were"} stopped because memory ran out`, detail: "Last 7 days", action: <LinkButton to={href("activity", "timeline")}>View</LinkButton> },
     hw.ecc_reporting ? { state: "pass", title: "Error correction (ECC) reporting", detail: "The kernel reports memory errors (EDAC)" } : { state: "na", title: "Error correction (ECC) reporting", detail: "Not available on this memory type" },
     { state: "na", title: "Full memory test", detail: "Restart, hold Shift, and choose Memory test (memtest86+)" },
   ];

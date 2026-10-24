@@ -37,6 +37,8 @@ let audio: unknown = {};
 let firmware: unknown = { available: false, devices: [] };
 
 vi.mock("../../api", () => ({
+  // Two apps stopped for memory this week, one event of two.
+  getEvents: () => Promise.resolve({ events: [{ id: 1, kind: "out_of_memory_kill", at, title: "chrome was stopped", source: "journal", data: { count: 2 } }], truncated: false }),
   getLatest: () => Promise.resolve(LATEST),
   getMetrics: (name: string) => Promise.resolve([0, 1, 2].map((i) => ({ ...m(name, 70 + i), at: at - (2 - i) * 86_400_000 }))),
   getMachine: () => Promise.resolve({ hostname: "h", os: "o", user: "u", session_type: "wayland" }),
@@ -93,7 +95,7 @@ describe("Hardware pages", () => {
 
   it("memory, storage, graphics, and sensors render", async () => {
     for (const [Tab, text] of [
-      [HardwareMemory, "Not available on this memory type"],
+      [HardwareMemory, "2 apps were stopped because memory ran out"],
       [HardwareStorage, "Samsung PM991a"],
       [HardwareGraphics, "Hardware acceleration available"],
       [HardwareSensors, "Fan speed not reported"],

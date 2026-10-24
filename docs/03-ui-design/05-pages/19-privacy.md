@@ -16,7 +16,7 @@
 | `screen` | Screen sharing | Off |
 | `pin` | Location | Off |
 
-2. **Data table**: "Recent access" · span 12
+2. **Data table**: "Recent access" · span 12 · **not built yet:** it needs a stored history of camera and microphone use (PipeWire polled every minute), so the app shows only "Right now" until then, with no placeholder
 - Subtitle: "7 days"
 - Source chip (Expert): `PipeWire · xdg-desktop-portal`
 

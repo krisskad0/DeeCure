@@ -15,4 +15,4 @@ limits:
     max: 60
 severity:
   warning: "updates.auto_enabled == 1 and updates.auto_last_failed == 1 and updates.auto_last_ok_days >= limit.days"
-learn_more: topics/security/updates
+learn_more: topics/security/auto-updates-stopped

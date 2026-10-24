@@ -131,7 +131,7 @@ export function SettingsAccess() {
             ["Status", helper === null ? "Checking…" : <StatusBadge key="st" variant={helper ? "ok" : "off"} label={helper ? "Installed" : "Not installed"} />],
             ["Access level", access.full ? "Full" : "Basic"],
             ["Activation", "D-Bus, on demand; exits after 2 idle minutes"],
-            ["Allowed actions", "12 fixed actions and 6 read-outs"],
+            ["Allowed actions", "32 fixed actions and 6 read-outs"],
             ["Approval", "polkit asks for your password for each action"],
             ["Audit log", <code key="a">/var/log/deecure/helper.log</code>],
           ]}

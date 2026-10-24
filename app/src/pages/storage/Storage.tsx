@@ -22,6 +22,7 @@ import { LineChart } from "../../components/charts/LineChart";
 import { RANGE_MS, bytes, pick, when } from "../../metrics";
 import { href } from "../../route";
 import { useFix } from "../../shell/FixDrawer";
+import { useEventCount } from "../../useEventCount";
 import { useLive } from "../../useLive";
 import { useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
@@ -77,6 +78,8 @@ export function StorageOverview() {
   const size = filesystems?.find((f) => f.mount_point === "/")?.size;
   const inodes = pick(latest, "disk.inodes_percent", "/");
   const forecast = fullIn(storage, size);
+  // Where "Main disk low on space" starts with its default limits: under 10% and under 20 GB free.
+  const warnAt = size ? 100 - Math.min(10, (20 * GB * 100) / size) : 90;
   const days = forecast.days;
   const reclaim = reclaimable(storage);
   const lowSpace = useFinding("storage.root_almost_full");
@@ -133,7 +136,7 @@ export function StorageOverview() {
             min={Math.max(0, Math.floor(Math.min(...trend.map((p) => p.value)) / 10) * 10 - 10)}
             max={100}
             unit="%"
-            threshold={{ value: 85, label: "Warning 85%" }}
+            threshold={{ value: warnAt, label: `Low on space from ${Math.round(warnAt)}%` }}
             forecast={ahead ? { ahead, value: 100, label: `Full ~${fullDate}` } : undefined}
           />
         ) : (
@@ -161,6 +164,7 @@ export function StorageFilesystems() {
   const latest = useLatest();
   const filesystems = useLive(loadFilesystems, 60_000).data?.data;
   const storage = useLive(loadStorage, 300_000).data;
+  const diskErrors = useEventCount(["hardware_error"], "disk_io");
   const columns: Column<FsEntry>[] = [
     { key: "device", label: "Device", text: (f) => f.device, render: (f) => <code>{f.device}</code> },
     { key: "mount", label: "Mount", text: (f) => f.mount_point, render: (f) => <code>{f.mount_point}</code> },
@@ -174,7 +178,11 @@ export function StorageFilesystems() {
   const checks: Check[] = storage
     ? [
         storage.fstab_problems.length ? { state: "fail", title: `${storage.fstab_problems.length} problem${storage.fstab_problems.length === 1 ? "" : "s"} in /etc/fstab`, detail: storage.fstab_problems.map((p) => `line ${p.line}: ${p.problem}`).join(" · ") } : { state: "pass", title: "fstab entries valid", detail: `${storage.fstab_entries} entries, every device found` },
-        { state: "na", title: "Filesystem errors in the kernel log", detail: "See the kernel log", action: <LinkButton to={href("logs", "kernel")}>View</LinkButton> },
+        diskErrors === undefined
+          ? { state: "na", title: "Filesystem errors in the kernel log", detail: "See the kernel log", action: <LinkButton to={href("logs", "kernel")}>View</LinkButton> }
+          : diskErrors === 0
+            ? { state: "pass", title: "No disk read or write errors in the kernel log", detail: "Last 7 days" }
+            : { state: "fail", title: `${diskErrors} disk read or write error${diskErrors === 1 ? "" : "s"} in the kernel log`, detail: "Last 7 days · back up your files", action: <LinkButton to={href("logs", "kernel")}>View</LinkButton> },
         storage.root_reserved ? { state: "pass", title: `Reserved for root: ${bytes(storage.root_reserved)}`, detail: "Lets the system keep working when the disk is full" } : { state: "na", title: "No space reserved for root", detail: "Normal for btrfs and some other filesystems" },
         storage.encrypted ? { state: "pass", title: "Disk encryption on", detail: "LUKS" } : { state: "warn", title: "Disk encryption off", detail: "Files are readable if the computer is stolen · needs a reinstall to turn on" },
         { state: "na", title: "Full filesystem check (fsck)", detail: "Runs at start when needed" },

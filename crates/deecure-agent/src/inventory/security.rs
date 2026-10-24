@@ -323,26 +323,44 @@ pub async fn read(root: &SystemRoot, users: &HashMap<u32, String>) -> SecurityIn
         .unwrap_or_default();
     foreign.sort();
     let heuristics = vec![
+        // A failed check says what it found, not what it hoped for.
         Heuristic {
-            title: "No startup apps run from temporary or download folders".into(),
+            title: if bad_startup.is_empty() {
+                "No startup apps run from temporary or download folders".into()
+            } else {
+                "A startup app runs from a temporary or download folder".into()
+            },
             passed: bad_startup.is_empty(),
             detail: if bad_startup.is_empty() {
                 String::new()
             } else {
-                format!("Check: {}", bad_startup.join(", "))
+                format!(
+                    "{}. Malware often starts from there. If you know and trust it, keep it in a folder of its own (such as ~/Applications); if not, turn it off in Services › Startup Applications.",
+                    bad_startup.join(", ")
+                )
             },
         },
         Heuristic {
-            title: "No cron jobs that download and run scripts".into(),
+            title: if bad_cron == 0 {
+                "No cron jobs that download and run scripts".into()
+            } else {
+                "A cron job downloads and runs a script".into()
+            },
             passed: bad_cron == 0,
             detail: if bad_cron == 0 {
                 String::new()
             } else {
-                format!("{bad_cron} lines pipe a download into a shell")
+                format!(
+                    "{bad_cron} lines pipe a download into a shell, which runs whatever the server sends. Scheduled Jobs › All Jobs shows them."
+                )
             },
         },
         Heuristic {
-            title: "No kernel modules from outside the kernel".into(),
+            title: if foreign.is_empty() {
+                "No kernel modules from outside the kernel".into()
+            } else {
+                "Kernel modules from outside the kernel are loaded".into()
+            },
             passed: foreign.is_empty(),
             detail: if foreign.is_empty() {
                 String::new()

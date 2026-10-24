@@ -10,7 +10,7 @@ import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
 import { Panel } from "../../components/Panel";
 import { GaugeGroup } from "../../components/charts/Gauge";
-import { pick, pickAll } from "../../metrics";
+import { heatStatus, pick, pickAll } from "../../metrics";
 import { TimeChart, useHistory, useLatest } from "../performance/shared";
 
 /** The hottest sensor of each chip, hottest chip first. */
@@ -50,7 +50,7 @@ export function HardwareSensors() {
               display: tempText(t.value),
               subtitle: t.subject?.split("/")[1] ?? "",
               caption: t.subject?.split("/")[0] ?? "sensor",
-              status: t.value >= 90 ? "crit" : t.value >= 80 ? "warn" : "ok",
+              status: heatStatus(t.value, pick(latest, "temp.limit", t.subject), pick(latest, "temp.critical", t.subject)),
             }))}
           />
         ) : (

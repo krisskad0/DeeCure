@@ -6,6 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- Temperatures on Hardware › Summary, Processor, and Sensors are judged against each part's own limits, as the warnings do, instead of a fixed 80 and 90 °C; a sensor without limits gets no colour instead of a guess.
+- Security › Overview no longer says "automatic security updates on" while they have stopped working; it shows the same warning as Overview › Issues, and that warning's help now explains metered connections step by step.
+- Malware checks that fail now say what they found ("A startup app runs from a temporary or download folder") instead of the passing sentence with "Check:".
+- Storage › Overview's chart line marks where "low on space" really starts for that disk, instead of a fixed 85%.
+- Hardware › Memory and Storage › Filesystems count apps stopped for memory and disk errors from the last 7 days, instead of "see the kernel log".
+- Network › Interfaces no longer shows two different "link speed" values: the one from the Wi-Fi scan is the network's top rate.
+- Settings › Access shows the helper's real number of actions (32), and Hardware › Summary says that drive health needs Full access.
+
+### Removed
+
+- Privacy › Device Access: the "Recent access" panel, which only said a history "comes in a later version".
+
 ## [0.1.0-alpha.4] - 2026-10-24
 
 ### Added

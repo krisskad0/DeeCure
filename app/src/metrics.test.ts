@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Metric } from "./api";
-import { align, bytes, duration, pick, scoreTone } from "./metrics";
+import { align, bytes, duration, heatStatus, pick, scoreTone } from "./metrics";
 
 const m = (at: number, value: number, name = "cpu.usage", subject?: string): Metric => ({ name, subject, value, unit: "percent", at });
 
@@ -36,3 +36,16 @@ describe("metric helpers", () => {
     expect([scoreTone(95), scoreTone(80), scoreTone(60)]).toEqual(["ok", "warn", "crit"]);
   });
 });
+
+describe("heatStatus", () => {
+  it("judges a temperature only against the part's own limits", () => {
+    // A laptop CPU at 93 °C whose own limit is 95 °C is working normally.
+    expect(heatStatus(93, 95, 100)).toBe("ok");
+    expect(heatStatus(96, 95, 100)).toBe("warn");
+    expect(heatStatus(100, 95, 100)).toBe("crit");
+    // No limit reported: no colour, rather than a guess.
+    expect(heatStatus(97)).toBeUndefined();
+    expect(heatStatus(undefined, 95, 100)).toBeUndefined();
+  });
+});
+

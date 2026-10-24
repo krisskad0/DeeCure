@@ -39,9 +39,6 @@ export function PrivacyAccess() {
           ]}
         />
       </Panel>
-      <Panel title="Recent access" subtitle="7 days" span={12}>
-        <div className="empty muted">DeeCure shows who uses the camera and microphone right now. A history of past use comes in a later version.</div>
-      </Panel>
     </>
   );
 }

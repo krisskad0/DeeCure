@@ -67,7 +67,7 @@ export function InterfacesExpert() {
                 ["Signal", w.signal_dbm !== undefined ? <span key="s">{w.signal_dbm} dBm {verdict && <StatusBadge variant={verdict.variant} label={verdict.text} />}</span> : w.signal_percent !== undefined ? `${w.signal_percent}%` : "-"],
                 ["Noise", w.noise_dbm !== undefined ? `${w.noise_dbm} dBm` : "Not reported by this driver"],
                 ["Band · channel", `${w.band ?? "-"} · ${w.channel ?? "-"}${w.frequency_mhz ? ` (${w.frequency_mhz} MHz)` : ""}`],
-                ["Link speed", w.rate_mbps ? `${w.rate_mbps} Mbit/s` : "-"],
+                ["Network's top rate", w.rate_mbps ? `${w.rate_mbps} Mbit/s (from the last scan; the link speed now is above)` : "-"],
                 ["Security", w.security ?? "Open (no password)"],
                 ["Power saving", w.power_save === undefined ? "Set by the driver" : w.power_save ? "On (saves battery, can add delay)" : "Off"],
                 ["Interface", w.interface],

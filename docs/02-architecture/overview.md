@@ -13,7 +13,7 @@ flowchart TB
     KB["Knowledge base: YAML files"]
   end
   subgraph System["Runs as root, only when needed"]
-    HP["deecure-helper: 31 fixed actions, 6 read-outs"]
+    HP["deecure-helper: 32 fixed actions, 6 read-outs"]
   end
   OS[("Linux: proc, sys, systemd, journal, apt, dpkg, snap, flatpak, NetworkManager, UPower, PipeWire")]
   Desk["Desktop: notifications, tray"]

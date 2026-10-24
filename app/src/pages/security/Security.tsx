@@ -18,6 +18,7 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { Donut } from "../../components/charts/Donut";
 import { href } from "../../route";
 import { ago } from "../../time";
+import { useFinding } from "../../report";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 
@@ -46,6 +47,8 @@ export function SecurityOverview() {
   const storage = useLive(loadStorage, 600_000).data;
   const accounts = useLive(loadAccounts, 600_000).data;
   const os = useLive(loadOs, 600_000).data;
+  // The agent's own warning, so this list and Overview › Issues always agree.
+  const autoStopped = useFinding("security.auto_updates_stopped");
   if (!sec) return <Waiting title="Security posture" error={error} />;
   const security = updates?.pending.filter((p) => p.security).length;
   const failedHardening = sec.hardening.filter((h) => h.result === "fail").length;
@@ -56,7 +59,11 @@ export function SecurityOverview() {
     checks.push({ state: ok ? "pass" : warnOnly ? "warn" : "fail", title: ok ? pass : fail, detail, action: ok ? undefined : action });
   };
   add(security === undefined ? undefined : security === 0, "Security updates installed", `${security} security updates waiting`, "", false, <LinkButton to={href("system", "updates")}>View</LinkButton>);
-  add(updates?.automatic_security, "Automatic security updates on", "Automatic security updates off", "unattended-upgrades", true);
+  if (updates?.automatic_security && autoStopped) {
+    checks.push({ state: "warn", title: "Automatic security updates are on, but stopped working", detail: "The newest runs stopped or failed (see below), so security fixes do not arrive" });
+  } else {
+    add(updates?.automatic_security, "Automatic security updates on", "Automatic security updates off", "unattended-upgrades", true);
+  }
   add(net?.firewall.installed ? net.firewall.enabled : undefined, "Firewall enabled", "Firewall off", net?.firewall.enabled ? `ufw · incoming ${net.firewall.incoming === "DROP" ? "denied" : (net?.firewall.incoming ?? "")}` : "ufw is installed but off", true, <LinkButton to={href("network", "firewall")}>View</LinkButton>);
   add(hw?.machine.secure_boot, "Secure Boot enabled", "Secure Boot off", "", true);
   add(storage?.encrypted, "Disk encryption on", "Disk encryption off", storage?.encrypted ? "LUKS" : "Files are readable if the computer is stolen", true);
