@@ -49,6 +49,8 @@ echo '{"jsonrpc":"2.0","id":1,"method":"version"}' | socat - UNIX-CONNECT:$XDG_R
 | `event` | `{"id": 42}` | One `<Event>` with every detail, such as a config file's `diff`, or `null` | Phase 3 |
 | `notify_settings` | none | `{"critical": true, "warnings": false, "weekly": true, "quiet_hours": "22-07"}` ([Notifications](notifications.md#settings)) | Phase 3 |
 | `set_notify_settings` | `{"settings": {…}}` (missing fields take their defaults) | The saved settings. Unknown fields or values are a `-32602` error. | Phase 3 |
+| `warning_settings` | none | Every warning: `[{"id": "hardware.cpu_hot", "name": "CPU too hot", "category": "hardware", "off": false, "limits": [{"name": "minutes", "label": "…", "unit": "minutes", "default": 5, "value": 5, "min": 1, "max": 60}]}, …]` ([Health warnings](../01-product/health-warnings.md)) | Expert build |
+| `set_warning_settings` | `{"settings": {"off": ["network.weak_wifi"], "limits": {"hardware.cpu_hot": {"minutes": 10}}}}` | The same list as `warning_settings`. Unknown warnings and limits are dropped, values are kept inside each limit's range, and the rules run again right away. | Expert build |
 | `notify_test` | none | `true` when a test notification was shown; otherwise an error saying why (such as no desktop session) | Phase 3 |
 | `notifications` | none | `[{"at": <ms>, "title": …, "body": …}, …]`: the last 30 shown, newest first | Phase 3 |
 | `report` | `{"since": <ms>?, "until": <ms>?}` (default: the last 7 days) | A report: `created_at`, `since`, `until`, `host`, `os`, `score`?, `score_trend` (`[[<ms>, <score>], …]`, daily), `findings`, `changes` (counts by type), `highlights` (at most 12 events), `disks` (with `days_until_full` while filling), and `tip` | Phase 3 |

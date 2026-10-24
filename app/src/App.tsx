@@ -51,6 +51,7 @@ import { SystemServices } from "./pages/services/SystemServices";
 import { usePref } from "./prefs";
 import { useRoute } from "./route";
 import { CommandPalette } from "./shell/CommandPalette";
+import { ReportContext } from "./report";
 import { FixContext, FixDrawer } from "./shell/FixDrawer";
 import { Onboarding } from "./shell/Onboarding";
 import { PageHeader } from "./shell/PageHeader";
@@ -231,6 +232,7 @@ export default function App() {
   }
 
   return (
+    <ReportContext.Provider value={report}>
     <FixContext.Provider value={openFix}>
     <UiContext.Provider value={{ mode, range }}>
     <div className={`app ${rail ? "is-rail" : ""} mode-${mode}`}>
@@ -301,5 +303,6 @@ export default function App() {
     </div>
     </UiContext.Provider>
     </FixContext.Provider>
+    </ReportContext.Provider>
   );
 }

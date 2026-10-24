@@ -1,0 +1,15 @@
+id: storage.boot_low
+category: storage
+for_each: filesystems
+name: "/boot or EFI low on space"
+title: "{item.mount_point} is almost full"
+explain: >
+  {item.mount_point} has {item.free_gb} GB left. A kernel update needs about 0.1 GB
+  there, and boot loader updates need some space on the EFI partition; without it they
+  fail half way. Removing old kernels (Optimize) frees /boot.
+severity:
+  critical: "(item.mount_point == '/boot' and item.free_gb < 0.06) or (item.mount_point == '/boot/efi' and item.free_gb < 0.005)"
+  warning: "(item.mount_point == '/boot' and item.free_gb < 0.15) or (item.mount_point == '/boot/efi' and item.free_gb < 0.01)"
+fixes:
+  - action: system.remove_old_kernels
+learn_more: topics/storage/boot-full

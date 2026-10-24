@@ -1,0 +1,20 @@
+id: power.charger_weak
+category: power
+for_each: batteries
+name: "Charger too weak"
+title: "The battery drains on the charger"
+explain: >
+  The charger is plugged in, but battery {item.name} has been draining for
+  {item.drain_on_mains_minutes} minutes. The charger gives less power than the laptop
+  uses. Use the laptop's own charger, or one with more watts (Power › Battery shows
+  what the charger offers).
+limits:
+  - name: minutes
+    label: "Minutes before warning"
+    default: 10
+    unit: minutes
+    min: 2
+    max: 120
+severity:
+  warning: "item.drain_on_mains_minutes >= limit.minutes"
+learn_more: topics/power/charger

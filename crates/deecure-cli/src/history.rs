@@ -49,7 +49,7 @@ pub fn kinds(word: &str) -> Result<&'static [EventKind], String> {
         "devices" => &[K::DeviceAdded, K::DeviceRemoved],
         "system" => &[K::Boot, K::UncleanShutdown],
         "services" => &[K::ServiceFailed],
-        "crashes" => &[K::Crash, K::OutOfMemoryKill],
+        "crashes" => &[K::Crash, K::OutOfMemoryKill, K::HardwareError],
         "deecure" => &[K::FixApplied, K::FixUndone],
         other => {
             return Err(format!(
@@ -67,7 +67,7 @@ fn area(kind: EventKind) -> &'static str {
         K::DeviceAdded | K::DeviceRemoved => "Devices",
         K::Boot | K::UncleanShutdown | K::LoginFailed => "System",
         K::ServiceFailed => "Services",
-        K::Crash | K::OutOfMemoryKill => "Crashes",
+        K::Crash | K::OutOfMemoryKill | K::HardwareError => "Crashes",
         K::FixApplied | K::FixUndone => "DeeCure",
     }
 }
@@ -294,7 +294,11 @@ mod tests {
     fn kinds_have_words() {
         assert_eq!(
             kinds("crashes").unwrap(),
-            [EventKind::Crash, EventKind::OutOfMemoryKill]
+            [
+                EventKind::Crash,
+                EventKind::OutOfMemoryKill,
+                EventKind::HardwareError
+            ]
         );
         assert!(kinds("toasters").is_err());
     }

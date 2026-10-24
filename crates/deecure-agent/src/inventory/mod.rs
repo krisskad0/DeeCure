@@ -41,7 +41,7 @@ mod process_detail;
 mod process_io;
 pub(crate) mod processes;
 mod security;
-mod security_detail;
+pub(crate) mod security_detail;
 mod services_detail;
 mod sleep;
 mod sockets;
@@ -206,7 +206,17 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "bluetooth" => serde_json::to_value(bluetooth::read(agent).await),
         "firmware" => serde_json::to_value(firmware::read(agent).await),
         "sleep" => serde_json::to_value(sleep::read().await),
-        "storage" => serde_json::to_value(storage::read(&agent.root).await),
+        "storage" => {
+            let mut info = storage::read(&agent.root).await;
+            let now = deecure_core::Timestamp::now();
+            let since = deecure_core::Timestamp(now.0 - crate::rules::forecast::WINDOW_MS);
+            let points = crate::store::lock(&agent.store)
+                .metrics("disk.used_percent", Some("/"), since, now)
+                .unwrap_or_default();
+            info.root_history_days = crate::rules::forecast::history_days(&points);
+            info.root_forecast = crate::rules::forecast::disk(points);
+            serde_json::to_value(info)
+        }
         "disk_usage" => serde_json::to_value(disk_usage(agent)),
         "user_services" => serde_json::to_value(units::user_services(agent).await?),
         "service_memory" => serde_json::to_value(units::service_memory(agent).await?),

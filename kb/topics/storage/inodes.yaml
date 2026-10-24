@@ -1,0 +1,5 @@
+title: "Out of file slots (inodes)"
+summary: "A filesystem has a fixed number of file slots. Millions of small files can use them all up while space is left."
+steps:
+  - "Look for folders with many small files: caches, build folders, mail, or old snapshots."
+  - "Clear caches in Storage › Cleanup."

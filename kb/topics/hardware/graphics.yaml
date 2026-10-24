@@ -1,0 +1,6 @@
+title: "Get the graphics card working well"
+summary: "Without its driver the desktop is drawn by the processor, and a graphics card that hangs freezes the desktop."
+steps:
+  - "Open Hardware › Graphics to see the card and its driver."
+  - "Open Tools › Optimize: it offers the driver Ubuntu recommends when one is missing."
+  - "Install all updates and restart: kernel and Mesa updates fix most graphics hangs."

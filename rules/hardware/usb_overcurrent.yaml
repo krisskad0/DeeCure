@@ -1,0 +1,11 @@
+id: hardware.usb_overcurrent
+category: hardware
+name: "USB port overloaded"
+title: "A USB port was overloaded"
+explain: >
+  The kernel logged {log.usb_overcurrent_24h} over-current events in the last 24 hours:
+  a device drew more power than the port can give. The port can be damaged and the
+  device cuts out. Use a powered hub or another port for that device.
+severity:
+  warning: "log.usb_overcurrent_24h >= 1"
+learn_more: topics/hardware/hardware-errors

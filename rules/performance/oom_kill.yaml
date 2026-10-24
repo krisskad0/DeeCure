@@ -1,0 +1,11 @@
+id: performance.oom_kill
+category: performance
+name: "App killed for memory"
+title: "Apps were stopped because memory ran out"
+explain: >
+  In the last 24 hours, {log.oom_kills_24h} apps were stopped by the kernel or
+  systemd-oomd because memory ran out. Unsaved work in them is lost. Activity › Timeline
+  shows which ones.
+severity:
+  warning: "log.oom_kills_24h >= 1"
+learn_more: topics/performance/memory

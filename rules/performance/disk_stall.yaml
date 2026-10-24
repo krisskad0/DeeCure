@@ -1,0 +1,18 @@
+id: performance.disk_stall
+category: performance
+name: "Everything waits for the disk"
+title: "Everything is waiting for the disk"
+explain: >
+  For {pressure.io_stall_minutes} minutes, all apps had to wait for the disk at least
+  20% of the time, so the computer freezes for moments. Performance › Disk I/O shows
+  which apps use the disk.
+limits:
+  - name: minutes
+    label: "Minutes of disk stalls before warning"
+    default: 5
+    unit: minutes
+    min: 1
+    max: 60
+severity:
+  warning: "pressure.io_stall_minutes >= limit.minutes"
+learn_more: topics/performance/disk-wait

@@ -1,0 +1,11 @@
+id: security.secure_boot_off
+category: security
+name: "Secure Boot off"
+title: "Secure Boot is off"
+explain: >
+  The firmware starts any boot loader, including changed ones. Secure Boot checks
+  that the boot loader and kernel are signed. Turn it on in the firmware settings if
+  you do not need unsigned drivers.
+severity:
+  info: "security.secure_boot == 0"
+learn_more: topics/security/secure-boot

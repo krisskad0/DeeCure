@@ -1,0 +1,5 @@
+title: "Processor security flaws"
+summary: "Known flaws in processors let programs read other programs' memory. Microcode and kernel updates protect against them."
+steps:
+  - "Install all updates, including microcode, and restart."
+  - "Hardware › Processor shows each flaw and its state."

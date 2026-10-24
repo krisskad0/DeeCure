@@ -159,7 +159,7 @@ pub async fn performance(agent: &Agent) -> Report {
         })
         .fold(0.0f64, f64::max)
         .min(100.0);
-    let temp = Sensors
+    let temp = Sensors::default()
         .collect(root, deecure_core::Timestamp::now())
         .ok()
         .and_then(|s| {

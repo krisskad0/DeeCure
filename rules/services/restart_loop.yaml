@@ -1,0 +1,18 @@
+id: services.restart_loop
+category: services
+for_each: services
+name: "Service keeps restarting"
+title: "{item.name} keeps restarting"
+explain: >
+  {item.name} restarted {item.restarts} times since the computer started. It crashes in
+  a loop, which wastes power and can fill the log. System Services shows its log.
+limits:
+  - name: restarts
+    label: "Restarts before warning"
+    default: 10
+    unit: restarts
+    min: 3
+    max: 1000
+severity:
+  warning: "item.restarts >= limit.restarts"
+learn_more: topics/services/restart-loop

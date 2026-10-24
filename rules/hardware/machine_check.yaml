@@ -1,0 +1,12 @@
+id: hardware.machine_check
+category: hardware
+name: "CPU hardware errors"
+title: "The processor reported hardware errors"
+explain: >
+  The kernel logged {log.machine_check_7d} machine-check errors in the last 7 days.
+  The processor, its memory, or its power supply is reporting faults, which can cause
+  crashes and wrong results. Hardware › Summary shows the messages. If they keep coming,
+  have the computer checked.
+severity:
+  critical: "log.machine_check_7d >= 1"
+learn_more: topics/hardware/hardware-errors

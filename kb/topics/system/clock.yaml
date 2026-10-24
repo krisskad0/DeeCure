@@ -1,0 +1,5 @@
+title: "Keep the clock right"
+summary: "A wrong clock breaks secure websites, logins, and log times."
+steps:
+  - "Turn on Automatic date and time in Settings › Date & Time."
+  - "Check that the computer is online; the clock syncs over the internet."

@@ -33,6 +33,9 @@ pub enum EventKind {
     Crash,
     /// The kernel stopped a program because memory ran out.
     OutOfMemoryKill,
+    /// The kernel logged a hardware or kernel problem: disk errors, a graphics hang, a kernel
+    /// crash, a machine check, a firmware crash, an overloaded USB port, or a thermal shutdown.
+    HardwareError,
     /// Someone failed to log in.
     LoginFailed,
     /// DeeCure applied a fix.

@@ -18,7 +18,8 @@ use deecure_core::{FixActionId, RuleId, Severity};
 use serde::Deserialize;
 
 pub use engine::{
-    CHECKED_CATEGORIES_SETTING, LAST_CHECK_SETTING, Outcome, apply, evaluate, fill_in,
+    CHECKED_CATEGORIES_SETTING, LAST_CHECK_SETTING, Outcome, WARNINGS_SETTING, apply, evaluate,
+    evaluate_with, fill_in, limit_value,
 };
 pub use facts::{Facts, gather};
 
@@ -27,11 +28,32 @@ use expr::Expr;
 /// Where installed rules live.
 pub const INSTALLED_DIR: &str = "/usr/share/deecure/rules";
 
+/// A limit a rule uses as `limit.<name>`, which the user can change in Settings.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Limit {
+    /// What it is, such as "Minutes near the limit".
+    pub label: String,
+    /// The value DeeCure uses unless the user sets another.
+    pub default: f64,
+    /// Such as `°C`, `%`, `GB`, `minutes`.
+    #[serde(default)]
+    pub unit: String,
+    /// The lowest value the user can set.
+    pub min: f64,
+    /// The highest value the user can set.
+    pub max: f64,
+}
+
 /// One loaded, checked rule.
 #[derive(Debug, Clone)]
 pub struct Rule {
     /// Such as `storage.root_almost_full`.
     pub id: RuleId,
+    /// A short name for Settings, such as "CPU too hot".
+    pub name: String,
+    /// Limits by name, in file order.
+    pub limits: Vec<(String, Limit)>,
     /// The list to go through, one finding per entry, if any.
     pub for_each: Option<String>,
     /// One short line. May contain `{fact}` placeholders.
@@ -53,6 +75,10 @@ struct RuleFile {
     id: String,
     category: String,
     #[serde(default)]
+    name: Option<String>,
+    #[serde(default)]
+    limits: Vec<LimitEntry>,
+    #[serde(default)]
     for_each: Option<String>,
     title: String,
     explain: String,
@@ -63,6 +89,13 @@ struct RuleFile {
     cause_hint: Option<String>,
     #[serde(default)]
     learn_more: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct LimitEntry {
+    name: String,
+    #[serde(flatten)]
+    limit: Limit,
 }
 
 #[derive(Deserialize)]
@@ -136,6 +169,26 @@ impl Rule {
                 "'{name}' needs for_each, because only lists have items"
             ));
         }
+        let mut limits: Vec<(String, Limit)> = Vec::new();
+        for entry in file.limits {
+            let l = &entry.limit;
+            if !(l.min <= l.default && l.default <= l.max) {
+                return Err(format!(
+                    "limit {}: the default {} is not between {} and {}",
+                    entry.name, l.default, l.min, l.max
+                ));
+            }
+            if limits.iter().any(|(n, _)| *n == entry.name) {
+                return Err(format!("limit {} is listed twice", entry.name));
+            }
+            limits.push((entry.name, entry.limit));
+        }
+        if let Some(name) = names.iter().find(|n| {
+            n.strip_prefix("limit.")
+                .is_some_and(|l| !limits.iter().any(|(x, _)| x == l))
+        }) {
+            return Err(format!("'{name}' is not in limits"));
+        }
 
         let fixes = file
             .fixes
@@ -146,6 +199,8 @@ impl Rule {
         let _ = file.cause_hint;
 
         Ok(Rule {
+            name: file.name.unwrap_or_else(|| title.clone()),
+            limits,
             id,
             for_each: file.for_each,
             title,

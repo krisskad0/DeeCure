@@ -62,7 +62,7 @@ Safety rules for live reads:
 | `bluetooth` | BlueZ (system D-Bus) | Adapters, whether one is on, and paired or connected devices with battery level |
 | `firmware` | fwupd (system D-Bus) | Devices with firmware, their version, and updates fwupd's local metadata offers |
 | `sleep` | `journalctl` (systemd-sleep) | Suspends and hibernates of the last 30 days, how long each lasted, and failures |
-| `storage` | `/proc/mounts`, `/sys/class/block` (device-mapper layers), `statvfs`, `/etc/fstab`, Trash, thumbnail cache, `/var/cache/apt/archives`, `snap list --all`, `journalctl --disk-usage`, `docker system df` (only when Docker runs) | Root encryption (LUKS anywhere below `/`), the root-only reserve, `/etc/fstab` problems, and cleanup candidates with size, undo note, and whether the admin password is needed. Docker volumes are never offered: they hold data. |
+| `storage` | `/proc/mounts`, `/sys/class/block` (device-mapper layers), `statvfs`, `/etc/fstab`, Trash, thumbnail cache, `/var/cache/apt/archives`, `snap list --all`, `journalctl --disk-usage`, `docker system df` (only when Docker runs) | Root encryption (LUKS anywhere below `/`), the root-only reserve, `/etc/fstab` problems, cleanup candidates with size, undo note, and whether the admin password is needed, and the forecast for `/` from the stored history (`root_forecast`, the same as the "filling up" finding, and `root_history_days`). Docker volumes are never offered: they hold data. |
 | `disk_usage` | A walk of home and `/` (one filesystem), like `du` | Top folders of home and the system disk, and the 25 biggest files in home. Runs on a background thread only when asked, at most once an hour; while it runs the answer says `scanning`. Stops after 3 million entries. |
 | `user_services` | user systemd (session D-Bus) | The user's services with state, enabled state, memory, and restarts |
 | `service_memory` | systemd (system D-Bus) `MemoryCurrent` | Memory of each running system service |
@@ -113,6 +113,9 @@ Safety rules for live reads:
 The 2-second rate while the app is open comes with the app in Phase 1. The collectors above read standard Linux files, so they work on any distro. Distro adapters arrive with the package collectors.
 
 ## History events
+
+Hardware and kernel problems are history events too (`hardware_error`, grouped per hour like crashes): disk read or write errors, graphics hangs, kernel crashes (not app crashes, which start with `traps:`), machine checks, firmware crashes, USB over-current, and thermal shutdowns, each by the exact kernel words in `history/journal.rs`. systemd-oomd stopping apps for memory is an out-of-memory event.
+
 
 The code is in `crates/deecure-agent/src/history/`. A separate task reads these sources at start and then every 5 minutes, and saves what is new in the `event` table ([Storage › Events](storage.md#events)). Each event has a key, so reading a source twice stores nothing twice. A failing source is logged once and skipped; the others still run.
 
@@ -183,6 +186,26 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 | `temp.cpu` | - | celsius | The CPU temperature |
 | `cpu.throttle_total` | - | count | Times heat slowed the whole chip since start (Intel `package_throttle_count`); the app charts the change per interval |
 | `fan` | fan, as `<chip>/<label>` | count | Fan speed in RPM |
+| `pressure.memory_stall_minutes`, `pressure.io_stall_minutes` | - | count | Minutes in a row with all work waiting for memory 10% or more, or for the disk 20% or more |
+| `temp.limit`, `temp.critical` | sensor | celsius | Where the sensor starts to be too hot (its own `temp*_max`, or 5 °C under `temp*_crit`) and its critical temperature; only limits between 40 and 150 °C |
+| `temp.hot_minutes` | sensor | count | Minutes in a row at or over `temp.limit` |
+| `temp.cpu_limit`, `temp.cpu_critical`, `temp.cpu_hot_minutes` | - | celsius, count | The same for the CPU sensor; a CPU that reports no limit uses 100 °C and 105 °C |
+| `cpu.throttle_minutes_hour` | - | count | Minutes in the last hour with heat slowdowns |
+| `fan.stopped_hot_minutes` | - | count | Minutes in a row with a fan at 0 RPM while the CPU is 75 °C or more |
+| `battery.temp`, `battery.charging`, `battery.fault`, `battery.empty`, `battery.drain_on_mains_minutes` | battery | celsius, count | Its temperature; 1 while charging; 1 when its `health` says Dead, Overheat, Over voltage, Cold, Over current, or another failure; 1 at 2% or less while draining; minutes in a row draining on the charger |
+| `kernel.died`, `kernel.machine_check` | - | count | 1 when the kernel is marked after a crash (taint `D`) or a machine check (`M`) |
+| `pcie.errors_fatal`, `pcie.errors_nonfatal`, `pcie.errors_corrected` | - | count | PCIe AER error totals since start, all devices |
+| `memory.errors_corrected`, `memory.errors_uncorrected` | - | count | EDAC memory error totals since start (only with an EDAC driver) |
+| `disk.fs_errors`, `disk.read_only` | mount point | count | ext4's recorded error count; 1 when a local disk is read-only although `/etc/fstab` mounts it writable |
+| `graphics.accelerated` | - | count | 1 when a graphics card has a real driver (not only a framebuffer such as `simpledrm`) |
+| `security.apparmor`, `security.secure_boot` | - | count | 1 when on (Secure Boot only on EFI computers) |
+| `cpu.flaws_vulnerable` | - | count | Known CPU flaws the kernel says are "Vulnerable" |
+| `wifi.signal_dbm`, `wifi.weak_minutes` | - | dBm, count | The Wi-Fi signal, and minutes in a row under -75 dBm |
+| `net.error_percent` | interface | percent | Errors over packets in the last 10 minutes (only with 1000 packets or more), physical interfaces |
+| `time.ntp`, `time.synchronized`, `time.unsynced_minutes` | - | count | From `timedatectl` every 5 minutes |
+| `packages.broken` | - | count | Packages `dpkg --audit` lists, every 5 minutes |
+| `net.limited_minutes` | - | count | Minutes NetworkManager says "limited" (connected, the internet does not answer), every 5 minutes |
+| `updates.auto_enabled`, `updates.auto_last_failed`, `updates.auto_last_ok_days` | - | count | Automatic updates on; the newest run stopped or failed; days since the last good run, from the unattended-upgrades log, every 5 minutes |
 | `boot.time` | - | seconds | How long a boot took, stored at the time of that boot |
 | `updates.pending`, `updates.security` | - | count | Packages with a newer version, and how many of those are security updates |
 | `system.reboot_required` | - | count | 1 when an update asks for a restart, else 0 |

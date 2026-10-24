@@ -27,6 +27,8 @@ pub struct ChangeCounts {
     pub boots: u32,
     /// Stops without an orderly shutdown.
     pub unclean_shutdowns: u32,
+    /// Hardware and kernel problems the kernel logged.
+    pub hardware_errors: u32,
     /// Fixes DeeCure applied.
     pub fixes: u32,
 }
@@ -51,6 +53,7 @@ impl ChangeCounts {
                 EventKind::ServiceFailed => &mut c.failed_services,
                 EventKind::Boot => &mut c.boots,
                 EventKind::UncleanShutdown => &mut c.unclean_shutdowns,
+                EventKind::HardwareError => &mut c.hardware_errors,
                 EventKind::FixApplied => &mut c.fixes,
                 EventKind::FixUndone | EventKind::LoginFailed => continue,
             };
@@ -69,6 +72,7 @@ impl ChangeCounts {
             self.failed_services,
             self.boots,
             self.unclean_shutdowns,
+            self.hardware_errors,
             self.fixes,
         ]
         .iter()

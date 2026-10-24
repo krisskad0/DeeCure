@@ -1,0 +1,11 @@
+id: hardware.gpu_hang
+category: hardware
+name: "Graphics card hung"
+title: "The graphics card hung"
+explain: >
+  The kernel logged {log.gpu_hang_24h} graphics hangs or resets in the last 24 hours.
+  The desktop can freeze or apps can crash. A driver or kernel update often fixes it;
+  Hardware › Graphics shows the driver in use.
+severity:
+  warning: "log.gpu_hang_24h >= 1"
+learn_more: topics/hardware/graphics

@@ -1,0 +1,37 @@
+id: storage.disk_low
+category: storage
+for_each: filesystems
+name: "Other disk low on space"
+title: "{item.mount_point} is low on space"
+explain: >
+  {item.mount_point} has {item.free_gb} GB ({item.free_percent}%) left. When it is full,
+  apps that save there fail, and files can be cut short.
+limits:
+  - name: warning_percent
+    label: "Warn under this much free"
+    default: 10
+    unit: "%"
+    min: 1
+    max: 50
+  - name: warning_gb
+    label: "and under this much free"
+    default: 20
+    unit: GB
+    min: 1
+    max: 1000
+  - name: critical_percent
+    label: "Critical under this much free"
+    default: 5
+    unit: "%"
+    min: 1
+    max: 50
+  - name: critical_gb
+    label: "or under this much free"
+    default: 5
+    unit: GB
+    min: 1
+    max: 1000
+severity:
+  critical: "item.mount_point != '/' and item.mount_point != '/boot' and item.mount_point != '/boot/efi' and (item.free_percent < limit.critical_percent or item.free_gb < limit.critical_gb)"
+  warning: "item.mount_point != '/' and item.mount_point != '/boot' and item.mount_point != '/boot/efi' and item.free_percent < limit.warning_percent and item.free_gb < limit.warning_gb"
+learn_more: topics/storage/disk-full

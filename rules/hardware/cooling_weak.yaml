@@ -1,0 +1,18 @@
+id: hardware.cooling_weak
+category: hardware
+name: "Cooling cannot keep up"
+title: "The cooling cannot keep up"
+explain: >
+  In {cpu.throttle_minutes_hour} of the last 60 minutes, the processor slowed itself
+  down because of heat. The cooling is not keeping up: often dust in the fan or vents,
+  blocked vents (a bed or a lap), or a fan that does not spin well.
+limits:
+  - name: minutes
+    label: "Minutes with heat slowdowns in an hour"
+    default: 15
+    unit: minutes
+    min: 5
+    max: 60
+severity:
+  warning: "cpu.throttle_minutes_hour >= limit.minutes"
+learn_more: topics/hardware/overheating

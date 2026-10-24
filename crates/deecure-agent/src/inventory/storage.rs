@@ -47,6 +47,12 @@ pub struct StorageInfo {
     pub fstab_entries: usize,
     pub fstab_problems: Vec<FstabProblem>,
     pub candidates: Vec<Candidate>,
+    /// How fast `/` fills, from the stored history (the same trend as the "filling up" finding);
+    /// missing until there are 3 days of readings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub root_forecast: Option<crate::rules::forecast::Forecast>,
+    /// Days of stored history for `/` so far.
+    pub root_history_days: f64,
 }
 
 /// Follows a block device down through device-mapper layers, noting each name.
@@ -356,6 +362,9 @@ pub async fn read(root: &SystemRoot) -> StorageInfo {
         fstab_entries,
         fstab_problems,
         candidates: candidates(root).await,
+        // Filled in from the stored history by the inventory answer.
+        root_forecast: None,
+        root_history_days: 0.0,
     }
 }
 

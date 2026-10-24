@@ -1,0 +1,5 @@
+title: "Finish a broken package install"
+summary: "An install or update stopped half way, and later updates wait for it."
+steps:
+  - "Open Tools › Optimize and finish the install."
+  - "Or run: sudo dpkg --configure -a"

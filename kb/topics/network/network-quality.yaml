@@ -1,0 +1,6 @@
+title: "Network errors and weak Wi-Fi"
+summary: "Packet errors and a weak Wi-Fi signal make the connection slow and unreliable."
+steps:
+  - "For cable errors, try another cable or port."
+  - "For weak Wi-Fi, move closer to the router or use the 2.4 GHz band."
+  - "Diagnostics › Network Test finds where the connection stops."

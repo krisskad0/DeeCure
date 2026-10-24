@@ -1,0 +1,18 @@
+id: network.no_internet
+category: network
+name: "Internet not reachable"
+title: "Connected, but the internet does not answer"
+explain: >
+  The computer is connected to a network, but NetworkManager could not reach the
+  internet for {net.limited_minutes} minutes. Websites and updates fail. Restart the
+  router, or try another network; Diagnostics › Network Test finds where it stops.
+limits:
+  - name: minutes
+    label: "Minutes before warning"
+    default: 10
+    unit: minutes
+    min: 5
+    max: 120
+severity:
+  warning: "net.limited_minutes >= limit.minutes and net.default_route == 1"
+learn_more: topics/network/no-connection

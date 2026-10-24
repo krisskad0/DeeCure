@@ -1,0 +1,5 @@
+title: "A service that keeps restarting"
+summary: "The service crashes and systemd starts it again, again and again."
+steps:
+  - "Open System Services and look at its log for the error."
+  - "Install all updates; if it is not needed, turn it off."

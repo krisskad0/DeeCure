@@ -1,12 +1,38 @@
 id: storage.root_almost_full
 category: storage
-title: "Main disk is almost full"
+name: "Main disk low on space"
+title: "Main disk is low on space"
 explain: >
-  Your main disk has only {root.free_gb} GB left. When it is full, apps can
-  crash and updates can fail. Free up space with the suggested fixes.
+  Your main disk has {root.free_gb} GB ({root.free_percent}%) left. When it is full,
+  apps can crash and updates can fail. Free up space with the suggested fixes.
+limits:
+  - name: warning_percent
+    label: "Warn under this much free"
+    default: 10
+    unit: "%"
+    min: 1
+    max: 50
+  - name: warning_gb
+    label: "and under this much free"
+    default: 20
+    unit: GB
+    min: 1
+    max: 1000
+  - name: critical_percent
+    label: "Critical under this much free"
+    default: 5
+    unit: "%"
+    min: 1
+    max: 50
+  - name: critical_gb
+    label: "or under this much free"
+    default: 5
+    unit: GB
+    min: 1
+    max: 1000
 severity:
-  critical: "root.used_percent >= 93"
-  warning: "root.used_percent >= 85"
+  critical: "root.free_percent < limit.critical_percent or root.free_gb < limit.critical_gb"
+  warning: "root.free_percent < limit.warning_percent and root.free_gb < limit.warning_gb"
 fixes:
   - action: storage.free_space
 learn_more: topics/storage/disk-full

@@ -3,6 +3,8 @@
 // (docs/03-ui-design/05-pages/22-settings.md). View settings work now; settings for
 // features that come later are shown honestly as "later".
 
+import { Guard } from "../../components/ErrorBoundary";
+import { WarningLimits } from "./WarningLimits";
 import { type KeepHistory, type NotifySettings, type TrayState, deleteHistory, exportReport, getDataSettings, setDataSettings, getInventory, getTrayState, setTray, getNotifications, getNotifySettings, sendTestNotification, setNotifySettings, toAppError } from "../../api";
 import { useState } from "react";
 import { Button } from "../../components/Button";
@@ -14,7 +16,7 @@ import { bytes, duration, when } from "../../metrics";
 import { usePref } from "../../prefs";
 import type { RefreshChoice, TempUnit } from "../../units";
 import { useToast } from "../../shell/Toast";
-import type { Mode, Range } from "../../ui";
+import { type Mode, type Range, atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 import { accessOptions, useAccess } from "../../access";
@@ -147,6 +149,7 @@ const QUIET = [
 ] as const;
 
 export function SettingsNotifications() {
+  const { mode } = useUi();
   const toast = useToast();
   const { data, error } = useLive(loadNotify, 300_000);
   const sent = useLive(loadSent, 60_000).data;
@@ -210,6 +213,15 @@ export function SettingsNotifications() {
           <div className="empty muted">No notifications yet.</div>
         )}
       </Panel>
+      {atLeast(mode, "advanced") ? (
+        <Guard>
+          <WarningLimits />
+        </Guard>
+      ) : (
+        <Panel title="Warnings and limits" span={12}>
+          <div className="empty muted">Switch to the Advanced view to turn warnings off or change their limits.</div>
+        </Panel>
+      )}
     </>
   );
 }

@@ -1,0 +1,11 @@
+id: security.cpu_flaws
+category: security
+name: "CPU security flaw not protected"
+title: "A processor security flaw is not protected"
+explain: >
+  {cpu.flaws_vulnerable} known processor flaws are not protected on this computer, so
+  programs can read other programs' memory. A microcode or kernel update usually
+  fixes it; Hardware › Processor lists the flaws.
+severity:
+  warning: "cpu.flaws_vulnerable >= 1"
+learn_more: topics/security/cpu-flaws

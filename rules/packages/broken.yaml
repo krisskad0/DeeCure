@@ -1,0 +1,12 @@
+id: packages.broken
+category: packages
+name: "Broken package install"
+title: "A package install stopped half way"
+explain: >
+  dpkg reports {packages.broken} packages that are half installed or half removed.
+  Updates stop working until they are finished. Optimize can finish them.
+severity:
+  warning: "packages.broken >= 1"
+fixes:
+  - action: packages.finish_setup
+learn_more: topics/packages/broken-install

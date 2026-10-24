@@ -47,7 +47,7 @@ for kind in ["filesystems", "services", "boot", "updates"]:
     data["snapshot"][kind] = ask("snapshot", {"kind": kind})
 for name in ["cpu.usage", "temp.cpu", "battery.charge", "memory.used", "net.rx", "disk.read", "cpu.throttle_total", "health.score"]:
     data["metrics"][name] = ask("metrics", {"name": name, "since": now - 86_400_000, "until": now, "max_points": 160})
-for m in ["status", "latest", "notify_settings", "data_settings", "weekly_reports", "fix_runs", "notifications"]:
+for m in ["status", "latest", "notify_settings", "warning_settings", "data_settings", "weekly_reports", "fix_runs", "notifications"]:
     data[m] = ask(m)
 data["events"] = ask("events", {"since": now - 7 * 86_400_000, "until": now, "limit": 500})
 procs = data["inventory"].get("processes") or []

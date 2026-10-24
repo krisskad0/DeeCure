@@ -1,0 +1,6 @@
+title: "Disk and filesystem errors"
+summary: "Read or write errors, a filesystem that records errors, or a disk that turned read-only mean data is at risk."
+steps:
+  - "Back up your important files now, to another disk or online."
+  - "Restart: the filesystem check runs at boot and repairs what it can."
+  - "Check the drive in Hardware › Storage Devices; replace it if the errors come back."

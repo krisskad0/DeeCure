@@ -1,0 +1,17 @@
+id: performance.swap_full
+category: performance
+name: "Swap almost full"
+title: "Swap is almost full"
+explain: >
+  Swap is {swap.used_percent}% used and memory is {memory.used_percent}% used. When both
+  run out, the kernel stops apps. Close apps you do not need, or add swap.
+limits:
+  - name: swap_percent
+    label: "Swap used before warning"
+    default: 90
+    unit: "%"
+    min: 50
+    max: 100
+severity:
+  warning: "swap.used_percent >= limit.swap_percent and memory.used_percent >= 95"
+learn_more: topics/performance/memory

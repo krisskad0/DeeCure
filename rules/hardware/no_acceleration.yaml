@@ -1,0 +1,11 @@
+id: hardware.no_acceleration
+category: hardware
+name: "No graphics acceleration"
+title: "The graphics card is not used"
+explain: >
+  No graphics driver is loaded, so the desktop is drawn by the processor. It is slow,
+  uses more power, and makes more heat. Hardware › Graphics shows the card; installing
+  its driver fixes this.
+severity:
+  warning: "graphics.accelerated == 0"
+learn_more: topics/hardware/graphics

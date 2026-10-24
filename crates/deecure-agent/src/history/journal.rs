@@ -19,7 +19,126 @@ pub const HOUR_MS: i64 = 3_600_000;
 /// The journal pattern for everything this module reads.
 pub const GREP: &str = "^usb .*(New USB device found|Product:|USB disconnect)|segfault at|Out of memory: Killed|code=dumped|: Failed with result|Reached target .*shutdown.target";
 /// Key prefixes of the events this module makes, so a new read can replace them.
-pub const KEY_PREFIXES: &[&str] = &["usb:", "crash:", "failed:"];
+pub const KEY_PREFIXES: &[&str] = &["usb:", "crash:", "failed:", "hw:", "oomd:"];
+
+/// Hardware and kernel problems for health warnings (docs/01-product/health-warnings.md):
+/// a kind, its plain words, and the exact text that marks it (case matters).
+pub const HARDWARE: &[(&str, &str, &[&str])] = &[
+    (
+        "disk_io",
+        "Disk read or write errors",
+        &[
+            "I/O error, dev ",
+            "Buffer I/O error on dev",
+            "failed command: READ",
+            "failed command: WRITE",
+            "timeout, aborting",
+            "timeout, reset controller",
+            "controller is down",
+            "EXT4-fs error",
+            "BTRFS error",
+            "Remounting filesystem read-only",
+        ],
+    ),
+    (
+        "gpu_hang",
+        "The graphics card hung",
+        &[
+            "GPU HANG",
+            "GPU hang",
+            "GPU reset",
+            "GPU recovery",
+            "NVRM: Xid",
+            "amdgpu_job_timedout",
+        ],
+    ),
+    (
+        "kernel_crash",
+        "The kernel crashed",
+        &[
+            "Oops:",
+            "kernel BUG at",
+            "BUG: unable to handle",
+            "BUG: kernel NULL pointer",
+            "general protection fault",
+            "Kernel panic",
+            "soft lockup",
+            "hard LOCKUP",
+            "workqueue lockup",
+        ],
+    ),
+    (
+        "machine_check",
+        "Hardware errors (machine check)",
+        &[
+            "[Hardware Error]",
+            "Machine check events logged",
+            "Machine Check Exception",
+        ],
+    ),
+    (
+        "firmware_crash",
+        "Device firmware crashed",
+        &[
+            "firmware crash",
+            "Firmware crash",
+            "FW crash",
+            "fw crash",
+            "Microcode SW error",
+            "firmware has crashed",
+            "Firmware has halted",
+        ],
+    ),
+    (
+        "usb_overcurrent",
+        "A USB port was overloaded",
+        &["over-current change", "over-current condition"],
+    ),
+    (
+        "thermal_shutdown",
+        "Switched off at a critical temperature",
+        &["critical temperature reached"],
+    ),
+];
+/// systemd-oomd's words when it stops an app to free memory.
+const OOMD: &[&str] = &["due to memory pressure", "due to swap used"];
+
+/// The hardware kind of a log line. App crashes (`traps: …`) and empty drives, loop devices,
+/// and floppies are not hardware problems.
+pub fn hardware_kind(message: &str) -> Option<&'static str> {
+    if message.starts_with("traps:") {
+        return None;
+    }
+    let (kind, _, marks) = HARDWARE
+        .iter()
+        .find(|(_, _, marks)| marks.iter().any(|m| message.contains(m)))?;
+    let no_disk = ["dev loop", "dev sr", "dev fd"];
+    (!(marks == &HARDWARE[0].2 && no_disk.iter().any(|d| message.contains(d)))).then_some(*kind)
+}
+
+/// The journal pattern: [`GREP`], every hardware mark, and systemd-oomd, as one PCRE.
+pub fn grep() -> String {
+    let escape = |s: &str| {
+        s.chars()
+            .flat_map(|c| {
+                let special = "\\^$.|?*+()[]{}".contains(c);
+                special
+                    .then_some('\\')
+                    .into_iter()
+                    .chain(std::iter::once(c))
+            })
+            .collect::<String>()
+    };
+    let marks = HARDWARE
+        .iter()
+        .flat_map(|(_, _, m)| m.iter())
+        .chain(OOMD)
+        .map(|m| escape(m));
+    std::iter::once(GREP.to_owned())
+        .chain(marks)
+        .collect::<Vec<_>>()
+        .join("|")
+}
 /// Services stopped around a shutdown or logout often "fail"; that is not a problem.
 const SHUTDOWN_BEFORE_MS: i64 = 120_000;
 const SHUTDOWN_AFTER_MS: i64 = 30_000;
@@ -133,6 +252,59 @@ pub fn events(entries: &[Entry]) -> Vec<(String, Event)> {
                 subject: Some(app.clone()),
                 source: "journal".into(),
                 data: Some(json!({ "signal": signal, "count": g.count })),
+            },
+        ));
+    }
+
+    let mut hardware = BTreeMap::new();
+    let mut example: BTreeMap<(String, i64), String> = BTreeMap::new();
+    for e in entries {
+        if let Some(kind) = hardware_kind(&e.message) {
+            add(&mut hardware, (kind.to_owned(), String::new()), e.at);
+            example
+                .entry((kind.to_owned(), e.at.div_euclid(HOUR_MS)))
+                .or_insert_with(|| e.message.clone());
+        }
+        if OOMD.iter().any(|m| e.message.contains(m)) {
+            add(&mut hardware, ("oomd".to_owned(), String::new()), e.at);
+            example
+                .entry(("oomd".to_owned(), e.at.div_euclid(HOUR_MS)))
+                .or_insert_with(|| e.message.clone());
+        }
+    }
+    for ((kind, _, hour), g) in hardware {
+        let detail = example.get(&(kind.clone(), hour)).cloned();
+        if kind == "oomd" {
+            out.push((
+                format!("oomd:{hour}"),
+                Event {
+                    id: None,
+                    kind: EventKind::OutOfMemoryKill,
+                    at: Timestamp(g.at),
+                    title: format!("systemd-oomd stopped apps to free memory{}", times(g.count)),
+                    detail,
+                    subject: Some("systemd-oomd".into()),
+                    source: "journal".into(),
+                    data: Some(json!({ "signal": "memory pressure", "count": g.count })),
+                },
+            ));
+            continue;
+        }
+        let words = HARDWARE
+            .iter()
+            .find(|(k, ..)| *k == kind)
+            .map_or("Hardware problem", |(_, w, _)| *w);
+        out.push((
+            format!("hw:{kind}:{hour}"),
+            Event {
+                id: None,
+                kind: EventKind::HardwareError,
+                at: Timestamp(g.at),
+                title: format!("{words}{}", times(g.count)),
+                detail,
+                subject: Some(kind.clone()),
+                source: "kernel".into(),
+                data: Some(json!({ "kind": kind, "count": g.count })),
             },
         ));
     }

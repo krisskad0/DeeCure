@@ -1,0 +1,12 @@
+id: storage.fs_errors
+category: storage
+for_each: filesystems
+name: "Filesystem errors"
+title: "{item.mount_point} has filesystem errors"
+explain: >
+  The filesystem on {item.mount_point} recorded {item.fs_errors} errors. Files may be
+  damaged, and it can switch to read-only. Back up your files, then let the filesystem
+  check run at the next restart.
+severity:
+  critical: "item.fs_errors >= 1"
+learn_more: topics/storage/disk-errors

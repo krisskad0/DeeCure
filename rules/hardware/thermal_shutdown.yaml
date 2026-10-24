@@ -1,0 +1,11 @@
+id: hardware.thermal_shutdown
+category: hardware
+name: "Switched off from heat"
+title: "The computer switched off at a critical temperature"
+explain: >
+  In the last 7 days the kernel switched the computer off {log.thermal_shutdown_7d}
+  times because a part reached its critical temperature. Unsaved work is lost each
+  time. Clean the fans and vents, and do not block the air flow.
+severity:
+  critical: "log.thermal_shutdown_7d >= 1"
+learn_more: topics/hardware/overheating

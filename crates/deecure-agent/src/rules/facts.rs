@@ -6,7 +6,7 @@
 
 use std::collections::BTreeMap;
 
-use deecure_core::{SnapshotKind, Timestamp};
+use deecure_core::{EventKind, SnapshotKind, Timestamp};
 use serde_json::Value as Json;
 
 use super::expr::{Lookup, Value};
@@ -17,7 +17,29 @@ use crate::store::{self, Store};
 pub const FRESH_FOR_MS: i64 = 10 * 60_000;
 
 /// The lists a rule can go through with `for_each`.
-pub const LISTS: &[&str] = &["filesystems", "batteries", "services"];
+pub const LISTS: &[&str] = &[
+    "filesystems",
+    "batteries",
+    "services",
+    "sensors",
+    "interfaces",
+];
+
+/// CPU sensor chips: the CPU warning covers them, so the "part too hot" warning leaves them out.
+const CPU_CHIPS: &[&str] = &["coretemp", "k10temp", "zenpower", "cpu_thermal"];
+/// Counters whose rise over the last 24 hours rules can use as `<name>_24h`.
+const RISE_24H: &[&str] = &["memory.errors_corrected", "pcie.errors_corrected"];
+/// Hardware kinds in the log (`history/journal.rs`), counted as `log.<kind>_24h` and `_7d`.
+const LOG_KINDS: &[&str] = &[
+    "disk_io",
+    "gpu_hang",
+    "kernel_crash",
+    "machine_check",
+    "firmware_crash",
+    "usb_overcurrent",
+    "thermal_shutdown",
+];
+const DAY_MS: i64 = 86_400_000;
 
 /// One entry of a list, such as one filesystem.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -65,6 +87,8 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
     let mut facts = Facts::default();
     let mut filesystems: BTreeMap<String, Item> = BTreeMap::new();
     let mut batteries: BTreeMap<String, Item> = BTreeMap::new();
+    let mut sensors: BTreeMap<String, Item> = BTreeMap::new();
+    let mut interfaces: BTreeMap<String, Item> = BTreeMap::new();
 
     for metric in store.latest_metrics(Timestamp(now.as_millis() - FRESH_FOR_MS))? {
         let value = Value::Number(metric.value);
@@ -82,6 +106,28 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
                 entry(&mut filesystems, mount)
                     .fields
                     .insert("free_gb".into(), gb);
+            }
+            ("disk.inodes_percent" | "disk.fs_errors" | "disk.read_only", Some(mount)) => {
+                let field = metric.name.trim_start_matches("disk.").to_owned();
+                entry(&mut filesystems, mount).fields.insert(field, value);
+            }
+            ("temp" | "temp.limit" | "temp.critical" | "temp.hot_minutes", Some(sensor)) => {
+                let field = match metric.name.as_str() {
+                    "temp" => "celsius",
+                    other => other.trim_start_matches("temp."),
+                };
+                let chip = sensor.split('/').next().unwrap_or("").to_owned();
+                let item = entry(&mut sensors, sensor);
+                item.fields.insert(field.into(), value);
+                item.fields.insert(
+                    "cpu".into(),
+                    Value::Bool(CPU_CHIPS.contains(&chip.as_str())),
+                );
+            }
+            ("net.error_percent", Some(iface)) => {
+                entry(&mut interfaces, iface)
+                    .fields
+                    .insert("error_percent".into(), value);
             }
             (name, Some(battery)) => {
                 if let Some(field) = name.strip_prefix("battery.") {
@@ -115,9 +161,30 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
     for (mount, item) in &mut filesystems {
         let since = Timestamp(now.as_millis() - super::forecast::WINDOW_MS);
         let points = store.metrics("disk.used_percent", Some(mount), since, now)?;
+        // Too little history: it cannot be said to be filling, so an earlier "filling" finding
+        // closes. A gap in a longer history stays unknown, so a real one does not flicker.
+        if super::forecast::history_days(&points) < super::forecast::MIN_HISTORY_DAYS {
+            item.fields.insert("filling".into(), Value::Bool(false));
+        }
         if let Some(f) = super::forecast::disk(points) {
             item.fields
                 .insert("percent_per_day".into(), Value::Number(f.percent_per_day));
+            // GB a day reads better than "% of the disk"; the size comes from the filesystem
+            // list, or from free space and use.
+            let num = |k: &str| match item.fields.get(k) {
+                Some(Value::Number(n)) => Some(*n),
+                _ => None,
+            };
+            let size = num("size_gb").or_else(|| {
+                let (free, used) = (num("free_gb")?, num("used_percent")?);
+                (used < 100.0).then(|| free * 100.0 / (100.0 - used))
+            });
+            if let Some(size) = size {
+                item.fields.insert(
+                    "gb_per_day".into(),
+                    Value::Number(f.percent_per_day / 100.0 * size),
+                );
+            }
             item.fields
                 .insert("filling".into(), Value::Bool(f.days_until_full.is_some()));
             if let Some(days) = f.days_until_full {
@@ -126,6 +193,14 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
                 item.fields
                     .insert("days_until_full".into(), Value::Number(days));
             }
+        }
+    }
+
+    // Free space in percent, for "low on space" (the rule language has no arithmetic).
+    for item in filesystems.values_mut() {
+        if let Some(Value::Number(used)) = item.fields.get("used_percent").cloned() {
+            item.fields
+                .insert("free_percent".into(), Value::Number(100.0 - used));
         }
     }
 
@@ -162,6 +237,103 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
         facts.lists.insert("services".into(), items);
     }
 
+    // How much error counters rose in 24 hours (counters start again at 0 after a restart).
+    for name in RISE_24H {
+        let points = store.metrics(name, None, Timestamp(now.as_millis() - DAY_MS), now)?;
+        if points.len() >= 2 {
+            let rise: f64 = points
+                .windows(2)
+                .map(|w| {
+                    if w[1].value >= w[0].value {
+                        w[1].value - w[0].value
+                    } else {
+                        w[1].value
+                    }
+                })
+                .sum();
+            facts
+                .values
+                .insert(format!("{name}_24h"), Value::Number(rise));
+        }
+    }
+
+    // Problems the kernel logged, and apps stopped for memory, over 24 hours and 7 days.
+    let week = store.events(
+        Timestamp(now.as_millis() - 7 * DAY_MS),
+        now,
+        &[EventKind::HardwareError, EventKind::OutOfMemoryKill],
+        10_000,
+    )?;
+    let count = |e: &deecure_core::Event| {
+        e.data
+            .as_ref()
+            .and_then(|d| d.get("count")?.as_f64())
+            .unwrap_or(1.0)
+    };
+    for kind in LOG_KINDS {
+        let of = |days: i64| -> f64 {
+            week.iter()
+                .filter(|e| e.kind == EventKind::HardwareError)
+                .filter(|e| e.subject.as_deref() == Some(*kind))
+                .filter(|e| e.at.as_millis() >= now.as_millis() - days * DAY_MS)
+                .map(count)
+                .sum()
+        };
+        facts
+            .values
+            .insert(format!("log.{kind}_24h"), Value::Number(of(1)));
+        facts
+            .values
+            .insert(format!("log.{kind}_7d"), Value::Number(of(7)));
+    }
+    let oom: f64 = week
+        .iter()
+        .filter(|e| e.kind == EventKind::OutOfMemoryKill)
+        .filter(|e| e.at.as_millis() >= now.as_millis() - DAY_MS)
+        .map(count)
+        .sum();
+    facts
+        .values
+        .insert("log.oom_kills_24h".into(), Value::Number(oom));
+
+    // Plain names for parts, and a critical limit that is never reached when the sensor has
+    // none (a missing fact would make the whole rule "unknown").
+    for item in sensors.values_mut() {
+        let name = item.subject.clone();
+        let (chip, label) = name.split_once('/').unwrap_or((name.as_str(), ""));
+        let part = match chip {
+            "nvme" => format!("The NVMe drive ({label})"),
+            "drivetemp" => format!("A disk drive ({label})"),
+            c if c.starts_with("iwlwifi")
+                || c.starts_with("mt79")
+                || c.starts_with("ath")
+                || c.starts_with("rtw") =>
+            {
+                "The Wi-Fi card".to_owned()
+            }
+            "amdgpu" | "nouveau" | "radeon" | "i915" | "xe" => {
+                format!("The graphics card ({label})")
+            }
+            c if c.starts_with("pch_") => "The chipset".to_owned(),
+            "acpitz" => "The board (ACPI zone)".to_owned(),
+            _ => format!("{chip} {label}"),
+        };
+        item.fields
+            .insert("part".into(), Value::Text(part.trim().to_owned()));
+        item.fields
+            .entry("critical".into())
+            .or_insert(Value::Number(1000.0));
+    }
+    if !sensors.is_empty() {
+        facts
+            .lists
+            .insert("sensors".into(), sensors.into_values().collect());
+    }
+    if !interfaces.is_empty() {
+        facts
+            .lists
+            .insert("interfaces".into(), interfaces.into_values().collect());
+    }
     if !filesystems.is_empty() {
         facts
             .lists
@@ -265,13 +437,13 @@ mod tests {
     fn a_filling_disk_gets_a_forecast() {
         let store = Store::open_in_memory().unwrap();
         let day = 86_400_000;
-        let points: Vec<Metric> = (0..=48)
+        let points: Vec<Metric> = (0..=72)
             .map(|h| Metric {
                 name: "disk.used_percent".into(),
                 subject: Some("/".into()),
-                value: 90.0 + 2.0 * f64::from(h) / 24.0, // 2% a day, 94% now
+                value: 88.0 + 2.0 * f64::from(h) / 24.0, // 2% a day for 3 days, 94% now
                 unit: Unit::Percent,
-                at: Timestamp(NOW - 2 * day + i64::from(h) * 3_600_000),
+                at: Timestamp(NOW - 3 * day + i64::from(h) * 3_600_000),
             })
             .collect();
         store.add_metrics(&points).unwrap();
@@ -281,10 +453,34 @@ mod tests {
     }
 
     #[test]
+    fn too_little_history_is_not_filling() {
+        let store = Store::open_in_memory().unwrap();
+        let points: Vec<Metric> = (0..=30)
+            .map(|h| Metric {
+                name: "disk.used_percent".into(),
+                subject: Some("/".into()),
+                value: 42.0 + 8.0 * f64::from(h) / 30.0, // a build added 8% in a day
+                unit: Unit::Percent,
+                at: Timestamp(NOW - 30 * 3_600_000 + i64::from(h) * 3_600_000),
+            })
+            .collect();
+        store.add_metrics(&points).unwrap();
+        let facts = gather(&store, Timestamp(NOW)).unwrap();
+        assert_eq!(facts.get("root.filling"), Some(Value::Bool(false)));
+        assert_eq!(facts.get("root.days_until_full"), None);
+    }
+
+    #[test]
     fn missing_data_means_missing_lists() {
         let store = Store::open_in_memory().unwrap();
         let facts = gather(&store, Timestamp(NOW)).unwrap();
         assert!(facts.lists.is_empty());
-        assert!(facts.values.is_empty());
+        // Only the log counts, which are 0 when nothing was logged.
+        assert!(
+            facts.values.keys().all(|k| k.starts_with("log.")),
+            "{:?}",
+            facts.values
+        );
+        assert_eq!(facts.get("log.disk_io_24h"), Some(Value::Number(0.0)));
     }
 }

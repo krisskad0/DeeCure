@@ -2,17 +2,55 @@
 
 //! Runs rules against facts and keeps the stored findings in step.
 
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 
+use deecure_core::rpc::WarningSettings;
 use deecure_core::{Category, Finding, FindingState, Severity, Timestamp};
 
 use super::Rule;
-use super::expr::{EvalError, Lookup};
+use super::expr::{EvalError, Lookup, Value};
 use super::facts::{Facts, ItemScope};
 use crate::store::{self, Store};
 
 /// The setting that holds when the rules last ran.
 pub const LAST_CHECK_SETTING: &str = "rules.checked_at";
+/// The setting that holds the user's warning choices ([`WarningSettings`]).
+pub const WARNINGS_SETTING: &str = "warnings";
+
+/// Facts plus the rule's limits: `limit.<name>` is the user's value (kept inside the limit's
+/// range) or the default.
+struct LimitScope<'a> {
+    inner: &'a dyn Lookup,
+    rule: &'a Rule,
+    user: Option<&'a BTreeMap<String, f64>>,
+}
+
+impl Lookup for LimitScope<'_> {
+    fn get(&self, name: &str) -> Option<Value> {
+        let Some(limit) = name.strip_prefix("limit.") else {
+            return self.inner.get(name);
+        };
+        let (_, l) = self.rule.limits.iter().find(|(n, _)| n == limit)?;
+        let chosen = self.user.and_then(|u| u.get(limit)).copied();
+        Some(Value::Number(
+            chosen.map_or(l.default, |v| v.clamp(l.min, l.max)),
+        ))
+    }
+}
+
+/// The value a limit has with these settings.
+pub fn limit_value(rule: &Rule, name: &str, settings: &WarningSettings) -> Option<f64> {
+    let scope = LimitScope {
+        inner: &Facts::default(),
+        rule,
+        user: settings.limits.get(rule.id.as_str()),
+    };
+    match scope.get(&format!("limit.{name}"))? {
+        Value::Number(n) => Some(n),
+        _ => None,
+    }
+}
+
 /// The setting that holds the categories that have rules.
 pub const CHECKED_CATEGORIES_SETTING: &str = "rules.categories";
 
@@ -39,15 +77,37 @@ pub enum Outcome {
 /// Decides one rule. Returns one outcome per subject, or `None` when the rule goes
 /// through a list that is not known right now (nothing should change).
 pub fn evaluate(rule: &Rule, facts: &Facts) -> Option<Vec<(Option<String>, Outcome)>> {
+    evaluate_with(rule, facts, &WarningSettings::default())
+}
+
+/// Like [`evaluate`], with the user's limits.
+pub fn evaluate_with(
+    rule: &Rule,
+    facts: &Facts,
+    settings: &WarningSettings,
+) -> Option<Vec<(Option<String>, Outcome)>> {
+    let user = settings.limits.get(rule.id.as_str());
     match &rule.for_each {
-        None => Some(vec![(None, decide(rule, facts))]),
+        None => {
+            let scope = LimitScope {
+                inner: facts,
+                rule,
+                user,
+            };
+            Some(vec![(None, decide(rule, &scope))])
+        }
         Some(list) => {
             let items = facts.lists.get(list)?;
             Some(
                 items
                     .iter()
                     .map(|item| {
-                        let scope = ItemScope { facts, item };
+                        let items = ItemScope { facts, item };
+                        let scope = LimitScope {
+                            inner: &items,
+                            rule,
+                            user,
+                        };
                         (Some(item.subject.clone()), decide(rule, &scope))
                     })
                     .collect(),
@@ -116,9 +176,17 @@ pub fn apply(
         .map(|f| (f.rule.to_string(), f.subject))
         .collect();
     let mut mistakes = Vec::new();
+    let settings: WarningSettings = store.setting(WARNINGS_SETTING)?.unwrap_or_default();
 
     for rule in rules {
-        let Some(results) = evaluate(rule, facts) else {
+        // Turned off by the user: its open findings close, and it is not checked.
+        if settings.off.contains(rule.id.as_str()) {
+            for (_, subject) in open.iter().filter(|(id, _)| *id == rule.id.as_str()) {
+                store.set_finding_state(&rule.id, subject.as_deref(), FindingState::Resolved)?;
+            }
+            continue;
+        }
+        let Some(results) = evaluate_with(rule, facts, &settings) else {
             continue;
         };
         let mut seen = HashSet::new();
@@ -329,6 +397,25 @@ severity:
             .unwrap();
         apply(&store, &rules, &disk(96.0, 9.0), Timestamp(5)).unwrap();
         assert!(store.open_findings().unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_warning_turned_off_closes_and_stays_quiet() {
+        let store = Store::open_in_memory().unwrap();
+        let rules = [root_rule()];
+        apply(&store, &rules, &disk(95.0, 10.0), Timestamp(1)).unwrap();
+        assert_eq!(store.open_findings().unwrap().len(), 1);
+        let mut off = WarningSettings::default();
+        off.off.insert("storage.root_almost_full".into());
+        store.set_setting(WARNINGS_SETTING, &off).unwrap();
+        apply(&store, &rules, &disk(97.0, 5.0), Timestamp(2)).unwrap();
+        assert!(store.open_findings().unwrap().is_empty());
+        // On again: it fires again.
+        store
+            .set_setting(WARNINGS_SETTING, &WarningSettings::default())
+            .unwrap();
+        apply(&store, &rules, &disk(97.0, 5.0), Timestamp(3)).unwrap();
+        assert_eq!(store.open_findings().unwrap().len(), 1);
     }
 
     #[test]

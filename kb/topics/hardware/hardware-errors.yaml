@@ -1,0 +1,9 @@
+title: "Hardware errors in the kernel log"
+summary: "The kernel logs when a part reports a fault: the processor (machine checks), memory, PCIe links, device firmware, graphics, or a USB port."
+steps:
+  - "Open Hardware › Summary to see the messages and which device they come from."
+  - "Install all updates and restart: firmware, microcode, and kernel updates fix many of them."
+  - "For memory errors, run memtest86+ from the boot menu (hold Shift or press Esc at start)."
+  - "For a USB over-current, unplug that device, or use a hub with its own power supply."
+  - "If the same errors keep coming after updates, back up your files and have the computer checked."
+notes: "One error after a sudden power loss can be harmless; errors that repeat are not."

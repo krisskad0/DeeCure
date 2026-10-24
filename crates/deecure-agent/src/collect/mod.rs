@@ -14,6 +14,7 @@ mod containers;
 mod cpu;
 mod diskio;
 mod filesystems;
+mod health;
 mod memory;
 mod network;
 mod pressure;
@@ -39,6 +40,7 @@ pub use containers::Containers;
 pub use cpu::Cpu;
 pub use diskio::DiskIo;
 pub use filesystems::{Filesystems, FsUsage};
+pub use health::{Health, HealthSlow};
 pub use memory::Memory;
 pub use network::Network;
 pub use pressure::Pressure;
@@ -106,14 +108,16 @@ pub async fn run(
     let mut collectors: Vec<Box<dyn Collector>> = vec![
         Box::new(Cpu::default()),
         Box::new(Memory::default()),
-        Box::new(Battery),
+        Box::new(Battery::default()),
         Box::new(Filesystems::real()),
         Box::new(Network::default()),
         Box::new(DiskIo::default()),
-        Box::new(Pressure),
-        Box::new(Sensors),
+        Box::new(Pressure::default()),
+        Box::new(Sensors::default()),
         Box::new(Accounts),
+        Box::new(Health::default()),
     ];
+    let mut health_slow = HealthSlow::default();
     let mut services = Services::default();
     let mut boot = Boot::default();
     let mut updates = Updates::default();
@@ -145,6 +149,10 @@ pub async fn run(
             merge(&mut sample, &mut failing, Boot::NAME, result);
             let result = containers.collect(&root, now).await;
             merge(&mut sample, &mut failing, Containers::NAME, result);
+        }
+        if run_number.is_multiple_of(HealthSlow::EVERY_NTH_RUN) {
+            let result = health_slow.collect(&root, now).await;
+            merge(&mut sample, &mut failing, HealthSlow::NAME, result);
         }
         let result = updates.collect(&root, now).await;
         merge(&mut sample, &mut failing, Updates::NAME, result);

@@ -99,7 +99,7 @@ fn run(dir: &Path, rules: &[Rule]) -> Vec<Expected> {
     let collectors: Vec<Box<dyn Collector>> = vec![
         Box::new(Cpu::default()),
         Box::new(Memory::default()),
-        Box::new(Battery),
+        Box::new(Battery::default()),
         Box::new(Filesystems::with_stat(stat)),
     ];
     for mut collector in collectors {

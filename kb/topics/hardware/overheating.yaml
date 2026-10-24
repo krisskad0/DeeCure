@@ -5,4 +5,4 @@ steps:
   - "Open Processes and see which app uses the most CPU. Close it if you do not need it."
   - "Clean the vents and the fan with short bursts of compressed air, with the computer off."
   - "If it stays hot when the computer is idle, the fan or the thermal paste may need service."
-notes: "DeeCure warns from 90 °C and calls it critical from 100 °C."
+notes: "DeeCure uses each part's own limit: it warns after 5 minutes within its limit (5 °C under the critical temperature, or the part's own warning temperature), and calls it critical at the critical temperature. You can change the minutes in Settings › Notifications."

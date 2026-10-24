@@ -1,0 +1,6 @@
+title: "When everything waits for the disk"
+summary: "All apps stall while the disk catches up: a slow or failing drive, or one app reading and writing a lot."
+steps:
+  - "Open Performance › Disk I/O to see which app uses the disk."
+  - "On a hard disk, Tools › Optimize may offer a better scheduler."
+  - "If it happens with little activity, check the drive health in Hardware › Storage Devices."

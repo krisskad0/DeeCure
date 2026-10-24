@@ -1,12 +1,20 @@
 id: hardware.cpu_hot
 category: hardware
+name: "CPU too hot"
 title: "The processor is very hot ({temp.cpu} °C)"
 explain: >
-  The processor is at {temp.cpu} °C. Above about 90 °C it slows itself down to
-  avoid damage, so everything feels slow, and very high heat can make the
-  computer switch off. Check that the air vents are free and the fan is not
-  full of dust, and see which app keeps the processor busy.
+  The processor has been at or over {temp.cpu_limit} °C for {temp.cpu_hot_minutes}
+  minutes; its own critical limit is {temp.cpu_critical} °C. Near the limit it slows
+  itself down hard, and long stays shorten its life. Check that the air vents are free
+  and the fan is not full of dust, and see which app keeps the processor busy.
+limits:
+  - name: minutes
+    label: "Minutes near its limit before warning"
+    default: 5
+    unit: minutes
+    min: 1
+    max: 60
 severity:
-  critical: "temp.cpu >= 100"
-  warning: "temp.cpu >= 90"
+  critical: "temp.cpu >= temp.cpu_critical"
+  warning: "temp.cpu_hot_minutes >= limit.minutes"
 learn_more: topics/hardware/overheating

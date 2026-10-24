@@ -6,7 +6,8 @@ use deecure_core::rpc::{
     EventList, EventParams, EventsParams, FixPlanParams, FixRecordParams, FixUndoneParams,
     InventoryParams, MAX_EVENTS, MAX_MESSAGE_BYTES, MAX_POINTS, MetricsParams, PROTOCOL_VERSION,
     PackageDetailParams, ProcessDetailParams, Request, RequestId, Response, RpcError,
-    SetNotifySettingsParams, SnapshotParams, StatusReport, VersionInfo, method,
+    SetNotifySettingsParams, SetWarningSettingsParams, SnapshotParams, StatusReport, VersionInfo,
+    WarningLimit, WarningRule, WarningSettings, method,
 };
 use deecure_core::{Timestamp, VERSION, health, thin};
 use serde::Serialize;
@@ -16,6 +17,41 @@ use serde_json::Value;
 use crate::context::Agent;
 use crate::inventory;
 use crate::rules::facts::FRESH_FOR_MS;
+
+/// The rules from the folder the agent loaded them from.
+fn load_rules(agent: &Agent) -> Vec<crate::rules::Rule> {
+    agent
+        .facts
+        .get()
+        .map(|f| crate::rules::load_dir(&f.rules_dir).0)
+        .unwrap_or_default()
+}
+
+/// Every warning with its limits and the user's choices, for Settings.
+fn warning_rules(agent: &Agent, settings: &WarningSettings) -> Vec<WarningRule> {
+    load_rules(agent)
+        .iter()
+        .map(|rule| WarningRule {
+            id: rule.id.to_string(),
+            name: rule.name.clone(),
+            category: rule.id.category().id().to_owned(),
+            off: settings.off.contains(rule.id.as_str()),
+            limits: rule
+                .limits
+                .iter()
+                .map(|(name, l)| WarningLimit {
+                    name: name.clone(),
+                    label: l.label.clone(),
+                    unit: l.unit.clone(),
+                    default: l.default,
+                    value: crate::rules::limit_value(rule, name, settings).unwrap_or(l.default),
+                    min: l.min,
+                    max: l.max,
+                })
+                .collect(),
+        })
+        .collect()
+}
 use crate::rules::{CHECKED_CATEGORIES_SETTING, LAST_CHECK_SETTING};
 use crate::store::{self, StoreError};
 
@@ -164,6 +200,45 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
         }),
         method::EVENT => params::<EventParams>(&request)
             .and_then(|p| to_result(&store().event_by_id(p.id).map_err(store_failed)?)),
+        method::WARNING_SETTINGS => no_params(&request).and_then(|()| {
+            let settings: WarningSettings = store()
+                .setting(crate::rules::WARNINGS_SETTING)
+                .map_err(store_failed)?
+                .unwrap_or_default();
+            to_result(&warning_rules(agent, &settings))
+        }),
+        method::SET_WARNING_SETTINGS => {
+            params::<SetWarningSettingsParams>(&request).and_then(|p| {
+                // Only known warnings and limits are kept; values stay inside each range.
+                let rules = load_rules(agent);
+                let mut clean = WarningSettings::default();
+                for rule in &rules {
+                    let id = rule.id.as_str();
+                    if p.settings.off.contains(id) {
+                        clean.off.insert(id.to_owned());
+                    }
+                    for (name, limit) in &rule.limits {
+                        if let Some(v) = p.settings.limits.get(id).and_then(|l| l.get(name))
+                            && v.is_finite()
+                        {
+                            let v = v.clamp(limit.min, limit.max);
+                            if v != limit.default {
+                                clean
+                                    .limits
+                                    .entry(id.to_owned())
+                                    .or_default()
+                                    .insert(name.clone(), v);
+                            }
+                        }
+                    }
+                }
+                store()
+                    .set_setting(crate::rules::WARNINGS_SETTING, &clean)
+                    .map_err(store_failed)?;
+                agent.recheck.notify_one();
+                to_result(&warning_rules(agent, &clean))
+            })
+        }
         method::NOTIFY_SETTINGS => no_params(&request)
             .and_then(|()| to_result(&crate::notify::settings(&store()).map_err(store_failed)?)),
         method::SET_NOTIFY_SETTINGS => params::<SetNotifySettingsParams>(&request).and_then(|p| {
@@ -523,6 +598,53 @@ mod tests {
         .await;
         assert_eq!(reply["result"]["events"], json!([]));
         assert_eq!(reply["result"]["truncated"], false);
+    }
+
+    #[tokio::test]
+    async fn warning_settings_keep_only_known_warnings_and_safe_values() {
+        let agent = agent();
+        let rules = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../rules");
+        let _ = agent.facts.set(crate::context::Facts {
+            database: "test.db".into(),
+            rules_dir: rules,
+            rules: 0,
+            started: std::time::Instant::now(),
+            kb: crate::kb::Kb::default(),
+        });
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":1,"method":"set_warning_settings","params":{"settings":{"off":["network.weak_wifi","made.up"],"limits":{"hardware.cpu_hot":{"minutes":500,"made_up":3},"made.up":{"x":1}}}}}"#,
+        )
+        .await;
+        let list = reply["result"].as_array().unwrap();
+        let cpu = list.iter().find(|r| r["id"] == "hardware.cpu_hot").unwrap();
+        assert_eq!(cpu["name"], "CPU too hot");
+        assert_eq!(cpu["off"], false);
+        assert_eq!(cpu["limits"][0]["value"], 60.0, "kept at the most allowed");
+        assert_eq!(cpu["limits"][0]["default"], 5.0);
+        let wifi = list
+            .iter()
+            .find(|r| r["id"] == "network.weak_wifi")
+            .unwrap();
+        assert_eq!(wifi["off"], true);
+        let stored: WarningSettings = crate::store::lock(&agent.store)
+            .setting(crate::rules::WARNINGS_SETTING)
+            .unwrap()
+            .unwrap();
+        assert_eq!(stored.off.iter().collect::<Vec<_>>(), ["network.weak_wifi"]);
+        assert_eq!(
+            stored.limits,
+            std::collections::BTreeMap::from([(
+                "hardware.cpu_hot".to_owned(),
+                std::collections::BTreeMap::from([("minutes".to_owned(), 60.0)])
+            )])
+        );
+        let reply = answer_with(
+            &agent,
+            r#"{"jsonrpc":"2.0","id":2,"method":"warning_settings"}"#,
+        )
+        .await;
+        assert_eq!(reply["result"].as_array().unwrap().len(), list.len());
     }
 
     #[test]

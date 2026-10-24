@@ -1,0 +1,11 @@
+id: hardware.firmware_crash
+category: hardware
+name: "Device firmware crashed"
+title: "Device firmware crashed"
+explain: >
+  The kernel logged {log.firmware_crash_24h} firmware crashes in the last 24 hours
+  (Wi-Fi, Bluetooth, or graphics). That device drops out until its driver restarts it.
+  A firmware update (Optimize) or a newer kernel often fixes it.
+severity:
+  warning: "log.firmware_crash_24h >= 1"
+learn_more: topics/hardware/hardware-errors

@@ -12,17 +12,7 @@ Categories match the app pages: `storage`, `security`, `power`, `services`, `pac
 
 | Rule | Fires when |
 | --- | --- |
-| `storage.root_almost_full` | The main disk is 85% full (warning) or 93% (critical) |
-| `hardware.cpu_hot` | The processor is at 90 °C (warning) or 100 °C (critical) |
-| `network.offline` | No default route for IPv4 or IPv6 (info) |
-| `packages.updates_available` | Updates other than security updates are waiting (info) |
-| `accounts.extra_root` | An account other than root has user ID 0 (critical) |
-| `storage.filling_up` | At the last 7 days' rate, a disk is full within 14 days (warning) or 3 days (critical) |
-| `services.unit_failed` | A service failed (warning); services started by a timer go to `jobs.job_failed` |
-| `jobs.job_failed` | A scheduled job (a service started by a timer of the same name) failed its last run (warning) |
-| `containers.port_exposed` | A running Docker container publishes a port on every network address (warning) |
-| `privacy.popcon` | The package popularity contest sends the package list weekly (info) |
-| `power.battery_worn` | Battery health is under 80% (info) or 60% (warning) |
+| Every rule | See [Health warnings](../docs/01-product/health-warnings.md): what fires when, at which level, and why. Each rule's limits can be changed in Settings › Notifications. |
 
 - Format: [Rules engine](../docs/02-architecture/rules-engine.md#rule-file-reference)
 - How to add one: [Writing rules and KB entries](../docs/04-development/writing-rules-and-kb.md)

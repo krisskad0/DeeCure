@@ -6,7 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Metric } from "../../api";
 import { ServicesStartup, ServicesUser } from "../services/OtherServices";
 import { SystemServices } from "../services/SystemServices";
-import { StorageCleanup, StorageFilesystems, StorageOverview, StorageUsage, daysToFull } from "../storage/Storage";
+import type { StatusReport } from "../../api";
+import { ReportContext } from "../../report";
+import { StorageCleanup, StorageFilesystems, StorageOverview, StorageUsage, fullIn } from "../storage/Storage";
 import { JobsAnacron, JobsAt, JobsCalendar, JobsCron, JobsTimers, shortCommand } from "./Jobs";
 
 const now = Date.now();
@@ -33,6 +35,8 @@ vi.mock("../../api", () => ({
           root_reserved: 11.9e9,
           fstab_entries: 3,
           fstab_problems: [{ line: 3, problem: "UUID=2222 is not connected" }],
+          root_forecast: { percent_per_day: 0.7, days_until_full: 8.6 },
+          root_history_days: 7,
           candidates: [
             { action: "storage.remove_old_snap_revisions", title: "Remove disabled snap revisions", details: "6 old revisions", size: 8.7e9, undo: "irreversible", needs_password: true },
             { action: "storage.empty_trash", title: "Empty Trash", details: "312 files", size: 2.1e9, undo: "irreversible", needs_password: false },
@@ -64,15 +68,24 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("Storage", () => {
-  it("forecasts when the disk fills", () => {
-    const points = Array.from({ length: 30 }, (_, i) => m("x", 73.7 + i * 0.7, "/", now - (29 - i) * 86_400_000));
-    expect(daysToFull(points)).toBeCloseTo((100 - 94) / 0.7, 0);
-    expect(daysToFull([m("x", 50, "/", 0), m("x", 49, "/", 86_400_000)])).toBeNull();
+  it("the Full in tile uses the agent's forecast and says when it needs more readings", () => {
+    const base = { encrypted: false, root_chain: [], root_reserved: 0, fstab_entries: 0, fstab_problems: [], candidates: [] };
+    expect(fullIn({ ...base, root_forecast: { percent_per_day: 0.7, days_until_full: 8.6 } }, 238e9)).toEqual({ value: "~9", unit: "days", subtext: "at 1.7 GB a day, over the last 3 days", days: 8.6 });
+    expect(fullIn({ ...base, root_forecast: { percent_per_day: 0.02 } }, 238e9).value).toBe("Not filling");
+    expect(fullIn({ ...base, root_history_days: 1.4 }).subtext).toBe("needs 3 days of readings (1.4 so far)");
+    expect(fullIn(undefined).value).toBe("-");
   });
 
-  it("overview warns, forecasts, and waits for the folder scan", async () => {
-    render(<StorageOverview />);
-    await waitFor(() => expect(screen.getByText("Root filesystem is 94% full")).toBeTruthy());
+  it("overview shows the agent's low-space warning, forecasts, and waits for the folder scan", async () => {
+    const report = {
+      findings: [{ rule: "storage.root_almost_full", severity: "warning", state: "open", title: "Main disk is low on space", explain: "Your main disk has 13.8 GB (5.8%) left.", first_seen: now, last_seen: now }],
+    } as unknown as StatusReport;
+    render(
+      <ReportContext.Provider value={report}>
+        <StorageOverview />
+      </ReportContext.Provider>,
+    );
+    await waitFor(() => expect(screen.getByText("Main disk is low on space")).toBeTruthy());
     await waitFor(() => expect(screen.getByText("~9")).toBeTruthy());
     expect(screen.getByText(/Scanning folders/)).toBeTruthy();
   });

@@ -1,0 +1,20 @@
+id: hardware.pcie_errors
+category: hardware
+name: "PCIe link failing"
+title: "A PCIe link reports errors"
+explain: >
+  Since the last start, PCIe links reported {pcie.errors_fatal} fatal and
+  {pcie.errors_nonfatal} uncorrectable errors, and {pcie.errors_corrected_24h} fixed
+  errors in the last 24 hours. A device (drive, graphics card, Wi-Fi) or its slot is
+  failing. Hardware › Peripherals shows the links with errors.
+limits:
+  - name: corrected
+    label: "Fixed errors in a day before warning"
+    default: 100
+    unit: errors
+    min: 10
+    max: 100000
+severity:
+  critical: "pcie.errors_fatal >= 1 or pcie.errors_nonfatal >= 1"
+  warning: "pcie.errors_corrected_24h >= limit.corrected"
+learn_more: topics/hardware/hardware-errors

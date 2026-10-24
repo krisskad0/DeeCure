@@ -318,7 +318,7 @@ impl History {
                 "-n",
                 &max_arg,
                 "--grep",
-                journal::GREP,
+                &journal::grep(),
             ],
             LIMIT,
         )

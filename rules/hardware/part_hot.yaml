@@ -1,0 +1,20 @@
+id: hardware.part_hot
+category: hardware
+for_each: sensors
+name: "A part is too hot"
+title: "{item.part} is too hot ({item.celsius} °C)"
+explain: >
+  {item.part} has been at or over {item.limit} °C, the limit it reports itself, for
+  {item.hot_minutes} minutes. Near its limit a part slows down, and at its critical
+  limit it can switch off. Give the computer air, and check the fans.
+limits:
+  - name: minutes
+    label: "Minutes near its limit before warning"
+    default: 5
+    unit: minutes
+    min: 1
+    max: 60
+severity:
+  critical: "not item.cpu and item.celsius >= item.critical"
+  warning: "not item.cpu and item.hot_minutes >= limit.minutes"
+learn_more: topics/hardware/overheating

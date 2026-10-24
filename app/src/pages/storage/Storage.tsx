@@ -5,7 +5,8 @@
 import { Guard } from "../../components/ErrorBoundary";
 import { FilesystemExpert } from "../performance/DiskExpert";
 import { atLeast, useUi } from "../../ui";
-import { type Metric, type SizedPath, type StorageInfo, getInventory, getMetrics, getSnapshot } from "../../api";
+import { type Finding, type SizedPath, type StorageInfo, getInventory, getMetrics, getSnapshot } from "../../api";
+import { useFinding } from "../../report";
 import { AlertBanner } from "../../components/AlertBanner";
 import { Button, LinkButton } from "../../components/Button";
 import { type Check, Checklist } from "../../components/Checklist";
@@ -41,28 +42,28 @@ const loadTrend = () => {
 };
 const GB = 1e9;
 
-/** Least-squares slope, in percent per day. */
-export function slopePerDay(points: Metric[]): number {
-  if (points.length < 2) return 0;
-  const xs = points.map((p) => p.at / 86_400_000);
-  const ys = points.map((p) => p.value);
-  const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
-  const my = ys.reduce((a, b) => a + b, 0) / ys.length;
-  const num = xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0);
-  const den = xs.reduce((s, x) => s + (x - mx) ** 2, 0);
-  return den === 0 ? 0 : num / den;
-}
-
-/** Days until 100% at the current rate; `null` when it is not filling up. */
-export function daysToFull(points: Metric[]): number | null {
-  const slope = slopePerDay(points);
-  const last = points[points.length - 1]?.value;
-  if (last === undefined || slope <= 0.01) return null;
-  return (100 - last) / slope;
+/**
+ * The "Full in" tile from the agent's forecast, which is the same trend as the "filling up"
+ * finding: both the last day and the last 3 days must show filling, so a one-time jump (an
+ * install, a build) does not count. `size` turns percent into GB.
+ */
+export function fullIn(s: StorageInfo | undefined, size?: number): { value: string; unit?: string; subtext: string; days: number | null } {
+  if (!s) return { value: "-", subtext: "Checking…", days: null };
+  const f = s.root_forecast;
+  if (!f) {
+    const have = s.root_history_days ?? 0;
+    return { value: "Not known yet", subtext: `needs 3 days of readings (${have.toFixed(1)} so far)`, days: null };
+  }
+  const perDay = size ? `${((f.percent_per_day / 100) * (size / GB)).toFixed(1)} GB` : `${f.percent_per_day.toFixed(2)}%`;
+  if (f.days_until_full === undefined) {
+    return { value: "Not filling", subtext: f.percent_per_day > 0 ? `${perDay} a day now, too slow to matter` : "steady or emptying", days: null };
+  }
+  return { value: `~${Math.max(0, Math.round(f.days_until_full))}`, unit: "days", subtext: `at ${perDay} a day, over the last 3 days`, days: f.days_until_full };
 }
 
 const reclaimable = (s?: StorageInfo) => s?.candidates.reduce((sum, c) => sum + c.size, 0) ?? 0;
-const tone = (pct?: number) => (pct === undefined ? "ok" : pct >= 93 ? "crit" : pct >= 85 ? "warn" : "ok");
+/** The tile's colour follows the agent's "main disk low on space" warning, with the user's limits. */
+const tone = (f?: Finding) => (!f ? "ok" : f.severity === "critical" ? "crit" : "warn");
 
 export function StorageOverview() {
   const latest = useLatest();
@@ -75,9 +76,11 @@ export function StorageOverview() {
   const free = pick(latest, "disk.free", "/");
   const size = filesystems?.find((f) => f.mount_point === "/")?.size;
   const inodes = pick(latest, "disk.inodes_percent", "/");
-  const days = daysToFull(trend);
+  const forecast = fullIn(storage, size);
+  const days = forecast.days;
   const reclaim = reclaimable(storage);
-  const t = tone(pct);
+  const lowSpace = useFinding("storage.root_almost_full");
+  const t = tone(lowSpace);
 
   const scan = usage?.scan;
   const segments: Allocation[] = [];
@@ -104,15 +107,15 @@ export function StorageOverview() {
           { label: "Used", value: used === undefined ? "-" : bytes(used).split(" ")[0], unit: used === undefined ? undefined : bytes(used).split(" ")[1], status: t, subtext: pct !== undefined && size ? `${Math.round(pct)}% of ${bytes(size, 0)}` : "", visual: pct === undefined ? undefined : { kind: "bar", percent: pct } },
           { label: "Free", value: free === undefined ? "-" : bytes(free).split(" ")[0], unit: free === undefined ? undefined : bytes(free).split(" ")[1] },
           { label: "Reclaimable", value: storage ? bytes(reclaim).split(" ")[0] : "-", unit: storage ? bytes(reclaim).split(" ")[1] : undefined, subtext: storage ? `${storage.candidates.length} items` : "Checking…", href: href("storage", "cleanup") },
-          { label: "Full in", value: days === null ? "Not filling" : `~${Math.max(0, Math.round(days))}`, unit: days === null ? undefined : "days", status: days !== null && days < 14 ? "crit" : days !== null && days < 60 ? "warn" : "ok", subtext: days === null ? "at the current rate" : `at ${slopePerDay(trend).toFixed(2)}% per day` },
+          { label: "Full in", value: forecast.value, unit: forecast.unit, status: days !== null && days < 14 ? "crit" : days !== null && days < 60 ? "warn" : "ok", subtext: forecast.subtext },
           { label: "Inodes used", value: inodes === undefined ? "N/A" : String(Math.round(inodes)), unit: inodes === undefined ? undefined : "%", subtext: inodes === undefined ? "No fixed limit on this filesystem" : "" },
           { label: "Encryption", value: storage ? (storage.encrypted ? "On" : "Off") : "-", subtext: storage ? (storage.encrypted ? "LUKS" : "LUKS not used") : "" },
         ]}
       />
-      {pct !== undefined && pct >= 85 && (
+      {lowSpace && (
         <AlertBanner
           tone={t === "crit" ? "crit" : "warn"}
-          title={`Root filesystem is ${Math.round(pct)}% full`}
+          title={lowSpace.title}
           text={reclaim ? `${bytes(reclaim)} can be cleaned. Personal files are not touched except Trash.` : "Free up space soon: apps and updates can fail on a full disk."}
           actions={<LinkButton to={href("storage", "cleanup")}>See what to clean</LinkButton>}
         />

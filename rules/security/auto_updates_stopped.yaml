@@ -1,0 +1,18 @@
+id: security.auto_updates_stopped
+category: security
+name: "Automatic security updates stopped"
+title: "Automatic security updates stopped working"
+explain: >
+  Automatic updates are on, but the last good run was {updates.auto_last_ok_days} days
+  ago, and the newest run stopped or failed. Security fixes do not arrive. Security ›
+  Overview shows what the last runs did, such as "stopped: metered connection".
+limits:
+  - name: days
+    label: "Days without a good run"
+    default: 7
+    unit: days
+    min: 2
+    max: 60
+severity:
+  warning: "updates.auto_enabled == 1 and updates.auto_last_failed == 1 and updates.auto_last_ok_days >= limit.days"
+learn_more: topics/security/updates

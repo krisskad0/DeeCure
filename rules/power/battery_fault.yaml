@@ -1,0 +1,12 @@
+id: power.battery_fault
+category: power
+for_each: batteries
+name: "Battery reports a fault"
+title: "Battery {item.name} reports a fault"
+explain: >
+  Battery {item.name} reports a fault itself (dead, overheat, over voltage, cold, or
+  another failure). It may stop working or be unsafe. Power › Battery shows what it
+  says; have it checked or replaced.
+severity:
+  critical: "item.fault == 1"
+learn_more: topics/power/battery-health

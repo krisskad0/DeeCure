@@ -1,0 +1,11 @@
+id: system.clock_unsynced
+category: system
+name: "Clock not in sync"
+title: "The clock is not in sync"
+explain: >
+  Time sync is on, but the clock has not synced for {time.unsynced_minutes} minutes
+  while online. A wrong clock breaks logins, secure websites, and log times. System ›
+  Time & Locale shows the time servers.
+severity:
+  warning: "time.ntp == 1 and time.unsynced_minutes >= 30 and net.default_route == 1"
+learn_more: topics/system/clock

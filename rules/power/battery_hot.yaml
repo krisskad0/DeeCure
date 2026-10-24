@@ -1,0 +1,26 @@
+id: power.battery_hot
+category: power
+for_each: batteries
+name: "Battery too hot"
+title: "Battery {item.name} is too hot ({item.temp} °C)"
+explain: >
+  Battery {item.name} is at {item.temp} °C. Charging a lithium battery above 45 °C
+  damages it, and above 60 °C it is unsafe. Let the laptop cool down, keep the vents
+  free, and do not charge it in the sun or under a blanket.
+limits:
+  - name: charging
+    label: "Warn while charging from"
+    default: 45
+    unit: "°C"
+    min: 35
+    max: 55
+  - name: critical
+    label: "Critical from"
+    default: 60
+    unit: "°C"
+    min: 50
+    max: 70
+severity:
+  critical: "item.temp >= limit.critical"
+  warning: "item.charging == 1 and item.temp >= limit.charging"
+learn_more: topics/power/battery-health

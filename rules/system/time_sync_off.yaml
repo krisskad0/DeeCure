@@ -1,0 +1,10 @@
+id: system.time_sync_off
+category: system
+name: "Time sync off"
+title: "Time sync is off"
+explain: >
+  The clock is not set from the internet, so it drifts over time. Turn on "Automatic
+  date and time" in Settings › Date & Time.
+severity:
+  info: "time.ntp == 0"
+learn_more: topics/system/clock

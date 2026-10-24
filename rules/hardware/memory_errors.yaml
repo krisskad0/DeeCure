@@ -1,0 +1,13 @@
+id: hardware.memory_errors
+category: hardware
+name: "Memory errors"
+title: "The memory reports errors"
+explain: >
+  The memory controller counts {memory.errors_uncorrected} errors it could not fix,
+  and {memory.errors_corrected_24h} it fixed in the last 24 hours. A module is failing:
+  uncorrected errors crash apps or damage files. Hardware › Memory shows which module;
+  test it with memtest86+ from the boot menu.
+severity:
+  critical: "memory.errors_uncorrected >= 1"
+  warning: "memory.errors_corrected_24h >= 1"
+learn_more: topics/hardware/hardware-errors

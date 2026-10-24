@@ -1,0 +1,5 @@
+title: "About Secure Boot"
+summary: "Secure Boot lets only signed boot loaders and kernels start."
+steps:
+  - "Turn it on in the firmware settings (often F2 or Del at start)."
+  - "Unsigned drivers (some NVIDIA or VirtualBox setups) then need to be signed (MOK)."

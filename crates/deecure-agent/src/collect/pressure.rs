@@ -21,10 +21,19 @@ pub fn parse_avg10(text: &str, kind: &str) -> Option<f64> {
         .ok()
 }
 
+/// Stalls this long are a problem (docs/01-product/health-warnings.md): all tasks waiting for
+/// memory 10% of the time, or for the disk 20% of the time.
+const MEMORY_STALL: f64 = 10.0;
+const IO_STALL: f64 = 20.0;
+
 /// `pressure.cpu`, `pressure.memory`, `pressure.io` (some), and `pressure.memory_full`,
-/// `pressure.io_full`. Kernels without PSI report nothing.
+/// `pressure.io_full`, with `pressure.memory_stall_minutes` and `pressure.io_stall_minutes`
+/// (minutes in a row over the stall limit). Kernels without PSI report nothing.
 #[derive(Debug, Default)]
-pub struct Pressure;
+pub struct Pressure {
+    memory_stall: f64,
+    io_stall: f64,
+}
 
 impl Collector for Pressure {
     fn name(&self) -> &'static str {
@@ -47,10 +56,25 @@ impl Collector for Pressure {
             push(format!("pressure.{resource}"), parse_avg10(&text, "some"));
             // The system-wide CPU "full" line is always zero, so it is left out.
             if resource != "cpu" {
-                push(
-                    format!("pressure.{resource}_full"),
-                    parse_avg10(&text, "full"),
-                );
+                let full = parse_avg10(&text, "full");
+                push(format!("pressure.{resource}_full"), full);
+                let (minutes, limit) = if resource == "memory" {
+                    (&mut self.memory_stall, MEMORY_STALL)
+                } else {
+                    (&mut self.io_stall, IO_STALL)
+                };
+                *minutes = if full.is_some_and(|f| f >= limit) {
+                    *minutes + 1.0
+                } else {
+                    0.0
+                };
+                sample.metrics.push(metric(
+                    &format!("pressure.{resource}_stall_minutes"),
+                    None,
+                    *minutes,
+                    Unit::Count,
+                    now,
+                ));
             }
         }
         Ok(sample)

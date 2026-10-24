@@ -63,31 +63,36 @@ fn every_shipped_rule_loads() {
 #[test]
 fn root_almost_full() {
     let rule = rule("storage.root_almost_full");
-    let disk = |used, free| {
+    let disk = |free_percent, free| {
         let mut facts = Facts::default();
         facts
             .values
-            .insert("root.used_percent".into(), Value::Number(used));
+            .insert("root.free_percent".into(), Value::Number(free_percent));
         facts
             .values
             .insert("root.free_gb".into(), Value::Number(free));
         facts
     };
     assert_eq!(
-        severity(&evaluate(&rule, &disk(41.0, 290.0)).unwrap()),
+        severity(&evaluate(&rule, &disk(59.0, 290.0)).unwrap()),
+        [None]
+    );
+    // A 2 TB disk at 92% still has 160 GB: not low. A small disk with 8% and 19 GB is.
+    assert_eq!(
+        severity(&evaluate(&rule, &disk(8.0, 160.0)).unwrap()),
         [None]
     );
     assert_eq!(
-        severity(&evaluate(&rule, &disk(88.0, 28.0)).unwrap()),
+        severity(&evaluate(&rule, &disk(8.0, 19.0)).unwrap()),
         [Some(Severity::Warning)]
     );
-    let results = evaluate(&rule, &disk(94.2, 13.8)).unwrap();
+    let results = evaluate(&rule, &disk(5.8, 4.2)).unwrap();
     assert_eq!(severity(&results), [Some(Severity::Critical)]);
     let Outcome::Fired { explain, .. } = &results[0].1 else {
         unreachable!()
     };
     assert!(
-        explain.starts_with("Your main disk has only 13.8 GB left."),
+        explain.starts_with("Your main disk has 4.2 GB (5.8%) left."),
         "{explain}"
     );
 }
@@ -161,8 +166,13 @@ fn filling_up() {
         let mut fields: Vec<(&str, Value)> = vec![
             ("mount_point", Value::Text(mount.into())),
             ("used_percent", Value::Number(used)),
-            ("free_gb", Value::Number(20.0)),
+            ("free_percent", Value::Number(100.0 - used)),
+            (
+                "free_gb",
+                Value::Number(if used >= 95.0 { 3.0 } else { 20.0 }),
+            ),
             ("percent_per_day", Value::Number(2.0)),
+            ("gb_per_day", Value::Number(4.6)),
             ("filling", Value::Bool(filling)),
         ];
         if let Some(d) = days {
@@ -200,7 +210,14 @@ fn filling_up() {
         panic!("expected a finding");
     };
     assert_eq!(title, "/home will be full in about 3 days");
-    assert!(explain.contains("about 2% a day"), "{explain}");
+    assert!(
+        explain.contains("about 4.6 GB a day (2% of the disk)"),
+        "{explain}"
+    );
+    assert!(
+        explain.contains("last 3 days and still in the last day"),
+        "{explain}"
+    );
 }
 
 fn values(pairs: &[(&str, f64)]) -> Facts {
@@ -217,16 +234,27 @@ fn one(id: &str, facts: &Facts) -> Option<Severity> {
 
 #[test]
 fn hardware_network_packages_and_accounts() {
+    // The CPU's own limit: 93 °C under load is normal for a CPU whose limit is 100 °C.
+    let cpu = |temp, minutes| {
+        values(&[
+            ("temp.cpu", temp),
+            ("temp.cpu_limit", 95.0),
+            ("temp.cpu_critical", 100.0),
+            ("temp.cpu_hot_minutes", minutes),
+        ])
+    };
+    assert_eq!(one("hardware.cpu_hot", &cpu(93.0, 0.0)), None);
     assert_eq!(
-        one("hardware.cpu_hot", &values(&[("temp.cpu", 62.0)])),
-        None
+        one("hardware.cpu_hot", &cpu(97.0, 2.0)),
+        None,
+        "a short spike"
     );
     assert_eq!(
-        one("hardware.cpu_hot", &values(&[("temp.cpu", 93.0)])),
+        one("hardware.cpu_hot", &cpu(97.0, 5.0)),
         Some(Severity::Warning)
     );
     assert_eq!(
-        one("hardware.cpu_hot", &values(&[("temp.cpu", 101.0)])),
+        one("hardware.cpu_hot", &cpu(100.0, 1.0)),
         Some(Severity::Critical)
     );
 
@@ -337,5 +365,114 @@ fn jobs_containers_and_privacy() {
     assert_eq!(
         one("privacy.popcon", &values(&[("privacy.popcon", 1.0)])),
         Some(Severity::Info)
+    );
+}
+
+#[test]
+fn user_limits_change_when_a_warning_fires() {
+    use deecure_agent::rules::evaluate_with;
+    use deecure_core::rpc::WarningSettings;
+    let rule = rule("hardware.cpu_hot");
+    let facts = values(&[
+        ("temp.cpu", 97.0),
+        ("temp.cpu_limit", 95.0),
+        ("temp.cpu_critical", 100.0),
+        ("temp.cpu_hot_minutes", 8.0),
+    ]);
+    let fired = |s: &WarningSettings| severity(&evaluate_with(&rule, &facts, s).unwrap())[0];
+    assert_eq!(fired(&WarningSettings::default()), Some(Severity::Warning));
+    let mut s = WarningSettings::default();
+    s.limits
+        .entry("hardware.cpu_hot".into())
+        .or_default()
+        .insert("minutes".into(), 20.0);
+    assert_eq!(fired(&s), None, "the user waits 20 minutes");
+    // Out of range values are kept inside the limit's range (1 to 60 minutes).
+    s.limits
+        .get_mut("hardware.cpu_hot")
+        .unwrap()
+        .insert("minutes".into(), -5.0);
+    assert_eq!(fired(&s), Some(Severity::Warning));
+}
+
+#[test]
+fn health_warnings_fire_on_harm_not_on_use() {
+    // Memory full of cache and a busy CPU are use: nothing fires.
+    assert_eq!(
+        one(
+            "performance.memory_short",
+            &values(&[("pressure.memory_stall_minutes", 0.0)])
+        ),
+        None
+    );
+    assert_eq!(
+        one(
+            "performance.memory_short",
+            &values(&[("pressure.memory_stall_minutes", 6.0)])
+        ),
+        Some(Severity::Warning)
+    );
+    assert_eq!(
+        one("storage.disk_errors", &values(&[("log.disk_io_24h", 3.0)])),
+        Some(Severity::Critical)
+    );
+    assert_eq!(
+        one(
+            "system.kernel_crash",
+            &values(&[("log.kernel_crash_7d", 0.0)])
+        ),
+        None
+    );
+    let battery = |temp, charging| {
+        list(
+            "batteries",
+            &[(
+                "BAT0",
+                &[
+                    ("name", Value::Text("BAT0".into())),
+                    ("temp", Value::Number(temp)),
+                    ("charging", Value::Number(charging)),
+                ],
+            )],
+        )
+    };
+    let hot = rule("power.battery_hot");
+    assert_eq!(
+        severity(&evaluate(&hot, &battery(46.0, 0.0)).unwrap()),
+        [None]
+    );
+    assert_eq!(
+        severity(&evaluate(&hot, &battery(46.0, 1.0)).unwrap()),
+        [Some(Severity::Warning)]
+    );
+    assert_eq!(
+        severity(&evaluate(&hot, &battery(61.0, 0.0)).unwrap()),
+        [Some(Severity::Critical)]
+    );
+    let sensor = |cpu: bool, celsius, minutes| {
+        list(
+            "sensors",
+            &[(
+                "nvme/Composite",
+                &[
+                    ("part", Value::Text("The NVMe drive (Composite)".into())),
+                    ("cpu", Value::Bool(cpu)),
+                    ("celsius", Value::Number(celsius)),
+                    ("limit", Value::Number(84.85)),
+                    ("critical", Value::Number(89.85)),
+                    ("hot_minutes", Value::Number(minutes)),
+                ],
+            )],
+        )
+    };
+    let part = rule("hardware.part_hot");
+    assert_eq!(
+        severity(&evaluate(&part, &sensor(false, 86.0, 6.0)).unwrap()),
+        [Some(Severity::Warning)]
+    );
+    assert_eq!(
+        severity(&evaluate(&part, &sensor(true, 95.0, 9.0)).unwrap()),
+        [None],
+        "the CPU has its own warning"
     );
 }

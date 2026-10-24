@@ -1,0 +1,6 @@
+title: "The battery drains on the charger"
+summary: "The charger gives less power than the laptop uses, so the battery runs down even when plugged in."
+steps:
+  - "Use the charger that came with the laptop, or one with at least as many watts."
+  - "With USB-C, use a cable that supports the charger's full power."
+  - "Power › Battery shows what the charger offers."

@@ -1,0 +1,5 @@
+title: "Turn AppArmor back on"
+summary: "AppArmor keeps apps inside their limits. Ubuntu turns it on by default."
+steps:
+  - "Check that the apparmor package is installed."
+  - "Remove apparmor=0 or security= from the boot options if someone added it."

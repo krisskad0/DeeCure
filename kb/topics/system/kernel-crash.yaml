@@ -1,0 +1,6 @@
+title: "After a kernel crash"
+summary: "The kernel itself hit an error (oops, BUG, panic, or a lockup). The system can be unstable until the next restart."
+steps:
+  - "Save your work and restart."
+  - "Open Logs › Errors and crashes to see the message and the driver named in it."
+  - "Install all updates; if it started after a kernel update, start the previous kernel from the boot menu."

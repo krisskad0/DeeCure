@@ -14,7 +14,22 @@ use super::{Collector, Sample, SystemRoot, metric, read_trimmed};
 /// Batteries of mice and keyboards (`scope` = `Device`) are skipped. A value the
 /// hardware does not report is left out, never guessed.
 #[derive(Debug, Default)]
-pub struct Battery;
+pub struct Battery {
+    /// Minutes in a row plugged in while the battery drains, per battery.
+    drain: std::collections::HashMap<String, f64>,
+}
+
+/// What the battery's own `health` file says when something is wrong (anything but "Good").
+pub const FAULTS: &[&str] = &[
+    "Dead",
+    "Overheat",
+    "Over voltage",
+    "Cold",
+    "Over current",
+    "Unspecified failure",
+    "Watchdog timer expire",
+    "Safety timer expire",
+];
 
 impl Collector for Battery {
     fn name(&self) -> &'static str {
@@ -88,6 +103,49 @@ impl Collector for Battery {
                     .metrics
                     .push(metric("battery.power", subject, watts, Unit::Watts, now));
             }
+            // For health warnings (docs/01-product/health-warnings.md).
+            let status = text("status");
+            if let Some(tenths) = number(&supply, "temp") {
+                sample.metrics.push(metric(
+                    "battery.temp",
+                    subject,
+                    tenths / 10.0,
+                    Unit::Celsius,
+                    now,
+                ));
+            }
+            let flag = |name: &str, on: bool| {
+                metric(name, subject, f64::from(u8::from(on)), Unit::Count, now)
+            };
+            sample.metrics.push(flag(
+                "battery.charging",
+                status.as_deref() == Some("Charging"),
+            ));
+            if let Some(word) = text("health") {
+                sample
+                    .metrics
+                    .push(flag("battery.fault", FAULTS.contains(&word.as_str())));
+            }
+            let draining = status.as_deref() == Some("Discharging");
+            if let Some(charge) = number(&supply, "capacity") {
+                sample
+                    .metrics
+                    .push(flag("battery.empty", draining && charge <= 2.0));
+            }
+            // "Not charging" at a charge limit is normal; only draining on the charger counts.
+            let minutes = self.drain.entry(name.clone()).or_insert(0.0);
+            *minutes = if draining && on_mains {
+                *minutes + 1.0
+            } else {
+                0.0
+            };
+            sample.metrics.push(metric(
+                "battery.drain_on_mains_minutes",
+                subject,
+                *minutes,
+                Unit::Count,
+                now,
+            ));
             if text("status").as_deref() == Some("Discharging")
                 && let Some(seconds) = time_left(&supply)
             {
@@ -170,7 +228,7 @@ mod tests {
                 ("/sys/class/power_supply/AC/type", "Mains\n"),
             ],
         );
-        let sample = Battery.collect(&root, Timestamp(0)).unwrap();
+        let sample = Battery::default().collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&sample, "battery.charge", Some("BAT0")), Some(64.0));
         assert_eq!(value(&sample, "battery.health", Some("BAT0")), Some(71.0));
         assert_eq!(value(&sample, "battery.power", Some("BAT0")), Some(12.0));
@@ -180,7 +238,14 @@ mod tests {
         );
         // The laptop has a battery, so on-mains is stored too: AC reports no "online", so 0.
         assert_eq!(value(&sample, "power.on_mains", None), Some(0.0));
-        assert_eq!(sample.metrics.len(), 4);
+        // Not charging, no fault word, not empty, not draining on the charger.
+        assert_eq!(value(&sample, "battery.charging", Some("BAT0")), Some(0.0));
+        assert_eq!(value(&sample, "battery.empty", Some("BAT0")), Some(0.0));
+        assert_eq!(
+            value(&sample, "battery.drain_on_mains_minutes", Some("BAT0")),
+            Some(0.0)
+        );
+        assert_eq!(sample.metrics.len(), 7);
     }
 
     #[test]
@@ -199,7 +264,7 @@ mod tests {
                 ("/sys/class/power_supply/BAT1/status", "Discharging\n"),
             ],
         );
-        let sample = Battery.collect(&root, Timestamp(0)).unwrap();
+        let sample = Battery::default().collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&sample, "battery.health", Some("BAT1")), Some(90.0));
         assert_eq!(value(&sample, "battery.power", Some("BAT1")), Some(7.5));
         assert_eq!(
@@ -218,7 +283,7 @@ mod tests {
     fn desktop_without_power_supplies_reports_nothing() {
         let root = fixture_root("desktop", &[("/proc/version", "Linux\n")]);
         assert_eq!(
-            Battery.collect(&root, Timestamp(0)).unwrap(),
+            Battery::default().collect(&root, Timestamp(0)).unwrap(),
             Sample::default()
         );
     }

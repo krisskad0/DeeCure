@@ -1,0 +1,7 @@
+title: "When memory runs short"
+summary: "Memory full of file cache is normal. It is a problem when apps have to wait for memory, swap fills up, or apps are stopped to free memory."
+steps:
+  - "Open Processes › Top Consumers and close what you do not need, such as browser tabs."
+  - "Open Activity › Timeline to see which apps were stopped for memory."
+  - "If it happens often, add memory or a larger swap file."
+notes: "DeeCure does not warn about memory that is simply in use."

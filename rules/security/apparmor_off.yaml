@@ -1,0 +1,11 @@
+id: security.apparmor_off
+category: security
+name: "AppArmor off"
+title: "AppArmor is off"
+explain: >
+  AppArmor, which keeps apps (snaps, browsers, services) inside their limits, is not
+  running. A broken or attacked app can then reach much more of the system. It is on
+  in Ubuntu by default; a boot option or a removed package turns it off.
+severity:
+  warning: "security.apparmor == 0"
+learn_more: topics/security/apparmor

@@ -3,14 +3,14 @@ category: storage
 for_each: filesystems
 title: "{item.mount_point} will be full in about {item.days_until_full} days"
 explain: >
-  Over the last days, {item.mount_point} filled by about {item.percent_per_day}% a day.
-  It has {item.free_gb} GB left, so at this rate it is full in about
-  {item.days_until_full} days. When a disk is full, apps can crash and updates can
+  {item.mount_point} kept filling over the last 3 days and still in the last day, by
+  about {item.gb_per_day} GB a day ({item.percent_per_day}% of the disk). It has
+  {item.free_gb} GB left, so at this rate it is full in about {item.days_until_full} days. When a disk is full, apps can crash and updates can
   fail. Free up space now, or find out what keeps growing.
 severity:
-  # The main disk at 93% already has a critical "almost full" problem; one is enough.
-  critical: "item.filling and item.days_until_full <= 3 and not (item.mount_point == '/' and item.used_percent >= 93)"
-  warning: "item.filling and item.days_until_full <= 14 and not (item.mount_point == '/' and item.used_percent >= 93)"
+  # A disk that is already almost full has its own critical warning; one is enough.
+  critical: "item.filling and item.days_until_full <= 3 and not (item.free_percent < 5 or item.free_gb < 5)"
+  warning: "item.filling and item.days_until_full <= 14 and not (item.free_percent < 5 or item.free_gb < 5)"
 fixes:
   - action: storage.free_space
 learn_more: topics/storage/disk-full

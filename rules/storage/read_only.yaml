@@ -1,0 +1,12 @@
+id: storage.read_only
+category: storage
+for_each: filesystems
+name: "Disk became read-only"
+title: "{item.mount_point} became read-only"
+explain: >
+  {item.mount_point} is read-only now, although /etc/fstab mounts it writable. The
+  kernel does this after disk or filesystem errors, so nothing can be saved there.
+  Back up what you can, then restart; the filesystem check runs at boot.
+severity:
+  critical: "item.read_only == 1"
+learn_more: topics/storage/disk-errors

@@ -1,0 +1,5 @@
+title: "Free space in /boot"
+summary: "/boot holds the kernels. A kernel update needs about 100 MB there and fails when it is full."
+steps:
+  - "Open Tools › Optimize and remove old kernels."
+  - "Keep the running kernel and one older one to go back to."

@@ -54,6 +54,7 @@ const TYPE: Record<EventKind, ChangeType> = {
   service_failed: "Services",
   crash: "Crashes",
   out_of_memory_kill: "Crashes",
+  hardware_error: "Crashes",
   login_failed: "System",
   fix_applied: "DeeCure",
   fix_undone: "DeeCure",
@@ -69,6 +70,7 @@ const TONE: Partial<Record<EventKind, TimelineTone>> = {
   service_failed: "warn",
   crash: "crit",
   out_of_memory_kill: "warn",
+  hardware_error: "crit",
   fix_applied: "info",
 };
 

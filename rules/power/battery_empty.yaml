@@ -1,0 +1,12 @@
+id: power.battery_empty
+category: power
+for_each: batteries
+name: "Battery ran empty"
+title: "Battery {item.name} ran empty"
+explain: >
+  Battery {item.name} is at {item.charge}% and still draining. Draining a lithium
+  battery to empty again and again wears it faster. Plug in the charger; Power ›
+  Power Profile can make the laptop suspend or power off before it is empty.
+severity:
+  warning: "item.empty == 1"
+learn_more: topics/power/battery-health

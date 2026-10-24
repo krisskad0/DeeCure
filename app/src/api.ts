@@ -677,6 +677,10 @@ export interface StorageInfo {
   fstab_entries: number;
   fstab_problems: { line: number; problem: string }[];
   candidates: { action: string; title: string; details: string; size: number; undo: "irreversible" | "regenerates"; needs_password: boolean }[];
+  /** How fast `/` fills, the same trend as the "filling up" finding; missing until 3 days of readings. */
+  root_forecast?: { percent_per_day: number; days_until_full?: number };
+  /** Days of stored history for `/` so far. Older agents do not send it. */
+  root_history_days?: number;
 }
 
 export interface SizedPath {
@@ -797,6 +801,7 @@ export type EventKind =
   | "service_failed"
   | "crash"
   | "out_of_memory_kill"
+  | "hardware_error"
   | "login_failed"
   | "fix_applied"
   | "fix_undone";
@@ -875,6 +880,41 @@ export function setNotifySettings(settings: NotifySettings): Promise<NotifySetti
   return invoke<NotifySettings>("set_notify_settings", { settings });
 }
 
+/** One limit of a warning (docs/01-product/health-warnings.md). */
+export interface WarningLimit {
+  name: string;
+  label: string;
+  unit: string;
+  default: number;
+  /** In use now: the user's value, or the default. */
+  value: number;
+  min: number;
+  max: number;
+}
+
+/** One warning, with its limits and whether the user turned it off. */
+export interface WarningRule {
+  id: string;
+  name: string;
+  category: string;
+  off: boolean;
+  limits: WarningLimit[];
+}
+
+/** The user's choices: warnings turned off, and limits changed from their default. */
+export interface WarningSettings {
+  off: string[];
+  limits: Record<string, Record<string, number>>;
+}
+
+export function getWarningSettings(): Promise<WarningRule[]> {
+  return invoke<WarningRule[]>("warning_settings");
+}
+
+export function setWarningSettings(settings: WarningSettings): Promise<WarningRule[]> {
+  return invoke<WarningRule[]>("set_warning_settings", { settings });
+}
+
 export function sendTestNotification(): Promise<boolean> {
   return invoke<boolean>("notify_test");
 }
@@ -894,7 +934,7 @@ export interface Report {
   score?: number;
   score_trend: [number, number][];
   findings: Finding[];
-  changes: { packages: number; config: number; devices: number; crashes: number; failed_services: number; boots: number; unclean_shutdowns: number; fixes: number };
+  changes: { packages: number; config: number; devices: number; crashes: number; failed_services: number; boots: number; unclean_shutdowns: number; hardware_errors?: number; fixes: number };
   highlights: HistoryEvent[];
   disks: { mount_point: string; used_percent: number; free_bytes: number; days_until_full?: number }[];
   tip: string;

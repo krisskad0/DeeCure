@@ -1,0 +1,18 @@
+id: network.weak_wifi
+category: network
+name: "Weak Wi-Fi"
+title: "The Wi-Fi signal is weak ({wifi.signal_dbm} dBm)"
+explain: >
+  The Wi-Fi signal has been under -75 dBm for {wifi.weak_minutes} minutes, so the
+  connection is slow and can drop. Move closer to the router, or use the 2.4 GHz band,
+  which reaches further.
+limits:
+  - name: minutes
+    label: "Minutes before telling"
+    default: 10
+    unit: minutes
+    min: 2
+    max: 120
+severity:
+  info: "wifi.weak_minutes >= limit.minutes"
+learn_more: topics/network/network-quality

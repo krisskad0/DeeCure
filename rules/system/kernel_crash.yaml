@@ -1,0 +1,11 @@
+id: system.kernel_crash
+category: system
+name: "Kernel crash"
+title: "The kernel crashed"
+explain: >
+  The kernel logged {log.kernel_crash_7d} crashes (oops, BUG, panic, or a lockup) in the
+  last 7 days. The system may be unstable until the next restart. Logs › Errors shows
+  the messages; a kernel or driver update often fixes it.
+severity:
+  critical: "log.kernel_crash_7d >= 1"
+learn_more: topics/system/kernel-crash

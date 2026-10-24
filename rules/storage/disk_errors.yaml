@@ -1,0 +1,11 @@
+id: storage.disk_errors
+category: storage
+name: "Disk read or write errors"
+title: "A disk had read or write errors"
+explain: >
+  The kernel logged {log.disk_io_24h} disk read or write errors in the last 24 hours.
+  The drive or its cable may be failing, and data can be lost. Back up your files now;
+  Hardware › Storage Devices shows the drives.
+severity:
+  critical: "log.disk_io_24h >= 1"
+learn_more: topics/storage/disk-errors

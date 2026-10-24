@@ -29,12 +29,14 @@ The file name must match the last part of the `id`.
 - If a technical word is needed, explain it in the same sentence.
 - Be honest. If DeeCure cannot check something, say so. Never guess a value.
 - Use the user's numbers: "only 13 GB left", not "low disk space".
+- Warn about harm, not use ([Health warnings](../01-product/health-warnings.md)): a busy CPU or full RAM cache is never a problem. Use the hardware's own limits when it reports them, and make the problem last (a `*_minutes` reading) so a spike never warns.
+- Give every number a user could disagree with a `limits` entry (`limit.<name>` in the condition), with a safe `min` and `max`, and a short `name` for Settings. Every rule needs a `learn_more` page (a test checks it).
 
 ## Choosing severity
 
 | Severity | Use it when | Example |
 | --- | --- | --- |
-| `critical` | Data loss, the PC may not boot, or a security hole is open now | Disk 94% full, SSD failing |
+| `critical` | Data loss, the PC may not boot, or a security hole is open now | Disk under 5% or 5 GB free, SSD failing |
 | `warning` | It will cause trouble soon, or it is a weak setting | No backup in 21 days |
 | `info` | Good to know, no action needed | Reboot pending after an update |
 

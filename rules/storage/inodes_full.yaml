@@ -1,0 +1,13 @@
+id: storage.inodes_full
+category: storage
+for_each: filesystems
+name: "Out of file slots (inodes)"
+title: "{item.mount_point} is running out of file slots"
+explain: >
+  {item.mount_point} uses {item.inodes_percent}% of its file slots (inodes). When they
+  run out, no new file can be made, even with space left. Many small files (caches,
+  build folders, mail) use them up.
+severity:
+  critical: "item.inodes_percent >= 97"
+  warning: "item.inodes_percent >= 90"
+learn_more: topics/storage/inodes

@@ -70,6 +70,12 @@ pub mod method {
     /// Saves new [`NotifySettings`](crate::notify::NotifySettings) and returns them. Takes
     /// [`SetNotifySettingsParams`](super::SetNotifySettingsParams).
     pub const SET_NOTIFY_SETTINGS: &str = "set_notify_settings";
+    /// Returns every warning as a [`WarningRule`] list: its limits (default and the user's
+    /// value) and whether it is turned off. Takes no params.
+    pub const WARNING_SETTINGS: &str = "warning_settings";
+    /// Saves [`WarningSettings`] and returns the [`WarningRule`] list. Takes
+    /// [`SetWarningSettingsParams`].
+    pub const SET_WARNING_SETTINGS: &str = "set_warning_settings";
     /// Shows a test notification now. Returns `true`, or an error saying why it could not.
     /// Takes no params.
     pub const NOTIFY_TEST: &str = "notify_test";
@@ -118,6 +124,58 @@ pub struct ReportParams {
     /// End of the period; now when missing.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub until: Option<Timestamp>,
+}
+
+/// The user's choices for warnings: the ones turned off, and limits changed from their default.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct WarningSettings {
+    /// Rule IDs, such as `hardware.cpu_hot`.
+    pub off: std::collections::BTreeSet<String>,
+    /// Per rule ID, limit name to value.
+    pub limits: std::collections::BTreeMap<String, std::collections::BTreeMap<String, f64>>,
+}
+
+/// One limit of a warning, for Settings.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct WarningLimit {
+    /// Its name in the rule, such as `minutes`.
+    pub name: String,
+    /// Such as "Minutes near the limit".
+    pub label: String,
+    /// Such as `°C`.
+    pub unit: String,
+    /// DeeCure's value.
+    pub default: f64,
+    /// The value in use: the user's, or the default.
+    pub value: f64,
+    /// The range the user can choose from.
+    pub min: f64,
+    /// The range the user can choose from.
+    pub max: f64,
+}
+
+/// One warning, for Settings.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct WarningRule {
+    /// Such as `hardware.cpu_hot`.
+    pub id: String,
+    /// Such as "CPU too hot".
+    pub name: String,
+    /// Its area, such as `hardware`.
+    pub category: String,
+    /// Turned off by the user.
+    pub off: bool,
+    /// Its limits, in rule order.
+    pub limits: Vec<WarningLimit>,
+}
+
+/// Params of the `set_warning_settings` method.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SetWarningSettingsParams {
+    /// The new choices; they replace the old ones.
+    pub settings: WarningSettings,
 }
 
 /// Params of the `set_notify_settings` method.

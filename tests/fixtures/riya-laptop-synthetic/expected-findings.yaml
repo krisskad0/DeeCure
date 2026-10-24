@@ -1,7 +1,8 @@
 # The exact findings DeeCure must report for this machine.
-# Same problems as the UI prototype's Overview page.
+# Same problems as the UI prototype's Overview page. The main disk has 13.8 GB (5.8%)
+# free: a warning (under 10% and 20 GB), not yet critical (under 5% or 5 GB).
 - rule: storage.root_almost_full
-  severity: critical
+  severity: warning
 - rule: services.unit_failed
   subject: bluetooth.service
   severity: warning

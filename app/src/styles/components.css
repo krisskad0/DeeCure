@@ -227,6 +227,15 @@ a.btn { text-decoration: none; }
 .tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: var(--hover); border: 1px solid var(--line); font-size: 12px; color: var(--ink-2); }
 .plain-list { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+/* Warnings and limits (Settings › Notifications). */
+.warning-area + .warning-area { margin-top: 16px; }
+.warning-area-title { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.warning-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 8px 0; border-top: 1px solid var(--line); }
+.warning-name { display: flex; align-items: center; gap: 10px; min-width: 200px; }
+.warning-limits { display: grid; gap: 6px; justify-items: end; }
+.warning-limit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 640px) { .warning-row { flex-direction: column; } .warning-limits { justify-items: start; } .warning-limit { justify-content: flex-start; } }
+
 /* Optimize: one row per improvement, text left, badges and button right; stacked when narrow. */
 .optimize-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
 .optimize-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
