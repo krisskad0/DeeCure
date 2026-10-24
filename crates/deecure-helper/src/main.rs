@@ -12,6 +12,7 @@
 //! The helper exits after 2 minutes without calls.
 
 mod actions;
+mod lid;
 mod power;
 mod reads;
 mod saved;
@@ -272,6 +273,11 @@ impl Helper {
         let task = parsed.clone();
         let result =
             tokio::task::spawn_blocking(move || -> Result<(String, Option<Call>), String> {
+                // The lid action is one logind drop-in; logind is never restarted.
+                if let Some(plan) = lid::plan(&task, Path::new("/")) {
+                    let (text, undo) = plan?;
+                    return lid::apply(Path::new("/"), text.as_deref()).map(|m| (m, Some(undo)));
+                }
                 // Power settings are single writes to checked files in /sys, not programs.
                 // They are also saved, so they come back after a restart (saved.rs).
                 if let Some(plan) = power::plan(&task, Path::new("/")) {
@@ -631,6 +637,10 @@ mod tests {
                 on: true,
             },
             Call::SetBatteryCpuLimit { percent: Some(60) },
+            Call::SetLidAction {
+                on_battery: "suspend".into(),
+                on_power: "lock".into(),
+            },
             Call::SetAspmPolicy {
                 policy: "powersave".into(),
                 keep: false,

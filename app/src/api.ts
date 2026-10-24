@@ -344,6 +344,21 @@ export interface PowerDetail {
   keyboard_backlight?: { level: number; max: number };
   /** Settings DeeCure sets again at each start. Older agents do not send it. */
   kept?: KeptSetting[];
+  /** What closing the lid does. Older agents do not send it. */
+  lid?: LidSettings;
+}
+
+/** What closing the lid does: from logind's files, and what logind runs with now. */
+export interface LidSettings {
+  on_battery: string;
+  on_power: string;
+  /** The file each value comes from; missing means logind's own default. */
+  on_battery_from?: string;
+  on_power_from?: string;
+  /** DeeCure's own setting file exists. */
+  ours: boolean;
+  running_battery?: string;
+  running_power?: string;
 }
 
 /** A power setting kept after restart, and what happened to it at this start. */

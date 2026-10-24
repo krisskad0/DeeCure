@@ -92,6 +92,7 @@ flowchart TB
 | `/usr/lib/systemd/system/deecure-helper.service` | Helper unit (D-Bus activated) |
 | `/usr/lib/systemd/system/deecure-power.service` | Sets kept power settings again at boot; does nothing until one is kept |
 | `/usr/lib/udev/rules.d/90-deecure-power.rules` | Sets the kept CPU limit again when a charger is plugged in or out |
+| `/etc/systemd/logind.conf.d/50-deecure-lid.conf` | What closing the lid does, when changed in the app (written by the helper) |
 | `/etc/deecure/power.json` | Power settings kept after restart (written by the helper) ([Helper](helper.md#kept-after-restart)) |
 | `/usr/share/dbus-1/system-services/io.github.krisskad0.DeeCure.Helper.service` | D-Bus activation file |
 | `/usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf` | D-Bus policy: who may call the helper |

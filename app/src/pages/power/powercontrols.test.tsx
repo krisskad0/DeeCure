@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PowerDetail } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
-import { PowerControls, describeKept, limitsSubject, pciPowerSavingSafe, radioKinds } from "./PowerControls";
+import { PowerControls, describeKept, lidSummary, limitsSubject, pciPowerSavingSafe, radioKinds } from "./PowerControls";
 import { WakeExpertSections, mustKeepWaking } from "./PowerExpert";
 
 const power: PowerDetail = {
@@ -25,6 +25,7 @@ const power: PowerDetail = {
     { name: "dell-bluetooth", kind: "bluetooth", soft_blocked: true, hard_blocked: false },
   ],
   keyboard_backlight: { level: 0, max: 2 },
+  lid: { on_battery: "suspend", on_power: "suspend", ours: true, on_battery_from: "/etc/systemd/logind.conf.d/50-deecure-lid.conf", running_battery: "suspend", running_power: "suspend" },
   kept: [
     { setting: "charge_limits:BAT0", call: { op: "set_charge_limits", battery: "BAT0", start: 50, stop: 80 }, boot_ok: true, boot_message: "charge_control_start_threshold = 50" },
     { setting: "power_saving:pci0000:00/0000:00:14.0/usb3/3-1", call: { op: "set_device_power_saving", device: "pci0000:00/0000:00:14.0/usb3/3-1", on: false }, boot_ok: false, boot_message: "a different device is there now, so nothing was changed" },
@@ -116,6 +117,26 @@ describe("Power controls", () => {
       ["power.set_aspm_policy", "default|try"],
       ["power.set_suspend_mode", "s2idle|try"],
     ]);
+  });
+
+  it("the lid action is chosen per power source and says when it applies", async () => {
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("Closing the lid")).toBeTruthy());
+    const lidChange = screen.getByRole("button", { name: "Set lid action" }) as HTMLButtonElement;
+    expect(lidChange.disabled).toBe(true);
+    fireEvent.change(screen.getByRole("combobox", { name: "Closing the lid plugged in" }), { target: { value: "lock" } });
+    fireEvent.click(lidChange);
+    fireEvent.click(screen.getByText("Use the system setting"));
+    expect(opened).toEqual([
+      ["power.set_lid_action", "suspend|lock"],
+      ["power.set_lid_action", "default|default"],
+    ]);
+    const lid = { on_battery: "lock", on_power: "ignore", ours: true, on_battery_from: "/etc/systemd/logind.conf.d/50-deecure-lid.conf", on_power_from: "/etc/systemd/logind.conf.d/90-vendor.conf", running_battery: "suspend", running_power: "ignore" };
+    const text = lidSummary(lid);
+    expect(text).toContain("On battery: lock the screen. Plugged in: do nothing.");
+    expect(text).toContain("Applies after the next restart (now: suspend on battery, do nothing plugged in).");
+    expect(text).toContain("/etc/systemd/logind.conf.d/90-vendor.conf comes later and decides part of this.");
+    expect(lidSummary({ ...lid, running_battery: "lock" })).not.toContain("after the next restart");
   });
 
   it("an invalid custom limit cannot be sent", async () => {

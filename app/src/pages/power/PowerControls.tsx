@@ -5,7 +5,7 @@
 // offers them.
 
 import { useState } from "react";
-import { type CpuDetail, type KeptSetting, type NetDeep, type PciDevice, type PowerDetail, getInventory } from "../../api";
+import { type CpuDetail, type KeptSetting, type LidSettings, type NetDeep, type PciDevice, type PowerDetail, getInventory } from "../../api";
 import { Button } from "../../components/Button";
 import { FieldRow } from "../../components/FormControls";
 import { Panel } from "../../components/Panel";
@@ -105,6 +105,59 @@ function TryThenKeep(props: { label: string; about: string; action: string; choi
           </Button>
         )}
         {kept && <StatusBadge variant="ok" label="Kept" />}
+      </span>
+    </FieldRow>
+  );
+}
+
+const LID_NAMES: Record<string, string> = { suspend: "Suspend", lock: "Lock the screen", ignore: "Do nothing", poweroff: "Power off", hibernate: "Hibernate", "suspend-then-hibernate": "Suspend, then hibernate", "hybrid-sleep": "Hybrid sleep", halt: "Halt" };
+/** The lid actions DeeCure offers (hibernation needs swap and firmware support it cannot check). */
+export const LID_CHOICES = ["suspend", "lock", "ignore", "poweroff"] as const;
+const OURS = "/etc/systemd/logind.conf.d/50-deecure-lid.conf";
+
+/** The sentence under the lid control: values now, a pending restart, and a file that overrides DeeCure's. */
+export function lidSummary(l: LidSettings): string {
+  const name = (v: string) => (LID_NAMES[v] ?? v).toLowerCase();
+  const parts = [`On battery: ${name(l.on_battery)}. Plugged in: ${name(l.on_power)}.`];
+  const pending = (l.running_battery !== undefined && l.running_battery !== l.on_battery) || (l.running_power !== undefined && l.running_power !== l.on_power);
+  if (pending) parts.push(`Applies after the next restart (now: ${name(l.running_battery ?? l.on_battery)} on battery, ${name(l.running_power ?? l.on_power)} plugged in).`);
+  const other = [l.on_battery_from, l.on_power_from].find((f) => l.ours && f && f !== OURS);
+  if (other) parts.push(`${other} comes later and decides part of this.`);
+  parts.push("With an external screen connected, the desktop decides instead.");
+  return parts.join(" ");
+}
+
+function LidControls({ lid }: { lid: LidSettings }) {
+  const openFix = useFix();
+  const pick = (v: string) => ((LID_CHOICES as readonly string[]).includes(v) ? v : "suspend");
+  const [battery, setBattery] = useState(pick(lid.on_battery));
+  const [power, setPower] = useState(pick(lid.on_power));
+  const same = battery === lid.on_battery && power === lid.on_power;
+  const select = (label: string, value: string, set: (v: string) => void) => (
+    <label>
+      {label}{" "}
+      <select className="select" value={value} onChange={(e) => set(e.target.value)} aria-label={`Closing the lid ${label.toLowerCase()}`}>
+        {LID_CHOICES.map((c) => (
+          <option key={c} value={c}>
+            {LID_NAMES[c]}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+  return (
+    <FieldRow label="Closing the lid" description={lidSummary(lid)}>
+      <span className="btn-row">
+        {select("On battery", battery, setBattery)}
+        {select("Plugged in", power, setPower)}
+        <Button small disabled={same} onClick={() => openFix("power.set_lid_action", `${battery}|${power}`)}>
+          Set lid action
+        </Button>
+        {lid.ours && (
+          <Button small onClick={() => openFix("power.set_lid_action", "default|default")}>
+            Use the system setting
+          </Button>
+        )}
       </span>
     </FieldRow>
   );
@@ -264,6 +317,7 @@ export function PowerControls() {
           base="s2idle"
         />
       )}
+      {p.lid && p.batteries.length > 0 && <LidControls lid={p.lid} />}
       {p.keyboard_backlight && p.keyboard_backlight.max > 0 && (
         <FieldRow label="Keyboard backlight" description={`Level ${p.keyboard_backlight.level} of ${p.keyboard_backlight.max}`}>
           <span className="btn-row">

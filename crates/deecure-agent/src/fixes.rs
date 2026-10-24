@@ -661,6 +661,50 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 },
             )]
         }
+        "power.set_lid_action" => {
+            let raw = need(subject, "battery|power")?;
+            let (battery, power) = raw.split_once('|').ok_or("the subject is battery|power")?;
+            let name = |v: &str| match v {
+                "suspend" => Ok("suspend"),
+                "lock" => Ok("lock the screen"),
+                "ignore" => Ok("do nothing"),
+                "poweroff" => Ok("power off"),
+                "default" => Ok("use the system's own setting"),
+                _ => Err(format!("unknown lid action '{v}'")),
+            };
+            let (b, p) = (name(battery)?, name(power)?);
+            subtitle = "Applies after the next restart".into();
+            let file = "/etc/systemd/logind.conf.d/50-deecure-lid.conf";
+            let command = if battery == "default" && power == "default" {
+                format!("sudo rm {file}")
+            } else {
+                let mut lines = String::from("[Login]\\n");
+                if battery != "default" {
+                    lines += &format!("HandleLidSwitch={battery}\\n");
+                }
+                if power != "default" {
+                    lines += &format!("HandleLidSwitchExternalPower={power}\\n");
+                }
+                format!(
+                    "sudo mkdir -p /etc/systemd/logind.conf.d && printf '{lines}' | sudo tee {file}"
+                )
+            };
+            vec![step(
+                "lid",
+                &format!("Closing the lid: on battery {b}, plugged in {p}"),
+                "logind reads this when it starts, so it applies after the next restart. \
+                 With an external screen connected, the desktop decides instead."
+                    .into(),
+                None,
+                Undo::Full,
+                true,
+                command,
+                Call::SetLidAction {
+                    on_battery: battery.to_owned(),
+                    on_power: power.to_owned(),
+                },
+            )]
+        }
         "power.set_radio" => {
             let raw = need(subject, "kind|on|off")?;
             let (kind, state) = raw.split_once('|').ok_or("the subject is kind|on|off")?;
@@ -852,7 +896,32 @@ mod tests {
                 keep: true
             }
         );
+        let lid = plan(&a, "power.set_lid_action", Some("suspend|lock"))
+            .await
+            .unwrap();
+        assert!(
+            lid.steps[0]
+                .command
+                .contains("HandleLidSwitch=suspend\\nHandleLidSwitchExternalPower=lock")
+        );
+        assert_eq!(
+            call(lid),
+            Call::SetLidAction {
+                on_battery: "suspend".into(),
+                on_power: "lock".into()
+            }
+        );
+        assert!(
+            plan(&a, "power.set_lid_action", Some("default|default"))
+                .await
+                .unwrap()
+                .steps[0]
+                .command
+                .starts_with("sudo rm ")
+        );
         for (action, subject) in [
+            ("power.set_lid_action", "hibernate|lock"),
+            ("power.set_lid_action", "suspend"),
             ("power.set_battery_cpu_limit", "20"),
             ("power.set_battery_cpu_limit", "100"),
             ("power.set_suspend_mode", "deep"),

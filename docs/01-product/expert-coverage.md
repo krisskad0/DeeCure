@@ -141,24 +141,24 @@ Two different things, shown apart:
 
 ### 7c. Power controls
 
-Direct controls, not only suggestions. Each shows its current value, applies at once, and has undo. "Survives restart" says what DeeCure does so a setting is not lost at the next boot: some laptops keep a setting in firmware, others forget it, so DeeCure checks after the next boot and sets it again with a small boot task if needed.
+Direct controls, not only suggestions. Each shows its current value, applies at once, and has undo. "Survives restart" says what DeeCure does so a setting is not lost at the next boot: some laptops keep a setting in firmware, others forget it, so DeeCure saves each change and sets it again at every start with a small boot task (`deecure-power.service`), and shows in the app whether that worked at this start.
 
 | Control | Changes | Shown only when | Survives restart | Access | Today |
 | --- | --- | --- | --- | --- | --- |
-| Battery charge limits: presets (Full 100%, Balanced 90%, Long life 80%) or your own start and stop values | `charge_control_start_threshold`, `charge_control_end_threshold` | The battery offers them (this test laptop offers both) | Yes (checked after the next boot) | Admin | ✅ Built (restart check: step 4b) |
+| Battery charge limits: presets (Full 100%, Balanced 90%, Long life 80%) or your own start and stop values | `charge_control_start_threshold`, `charge_control_end_threshold` | The battery offers them (this test laptop offers both) | Yes (set again at each start) | Admin | ✅ Built |
 | Charge mode: Standard, Adaptive, Fast, Trickle, or Custom (with the limits above) | `charge_types` | The laptop offers it (this test laptop does) | Yes (kept by the firmware) | Admin | ✅ Built |
 | Keyboard backlight brightness | UPower `KbdBacklight` (D-Bus) | The keyboard has a backlight (this test laptop does, 2 levels) | Yes | You | ✅ Built |
 | Radios on or off: Wi-Fi, Bluetooth, mobile | rfkill | Always; a radio turned off by a hardware switch says so and cannot be turned on from software | Yes | You | ✅ Built |
 | Charge behaviour: normal, hold the charge, or discharge on mains | `charge_behaviour` | The laptop offers it | No: back to normal at restart, on purpose | Admin | New |
 | Firmware power profile (for example cool, quiet, balanced, performance) | `/sys/firmware/acpi/platform_profile` | The firmware offers it (this test laptop offers 4). Changing the power mode also changes it; DeeCure says so | Set by the power mode | Admin | New |
-| Turbo boost on or off, separately on battery and on mains | `intel_pstate/no_turbo` or `cpufreq/boost` | The CPU has turbo | Yes | Admin | ✅ Built (one setting; per power source: step 4b) |
-| Highest CPU speed on battery | `scaling_max_freq`, applied when the power cable is pulled and lifted when it is plugged in | Always (cpufreq present) | Yes | Admin | New |
-| Stop a device from waking the computer from suspend | `power/wakeup`, `/proc/acpi/wakeup` | The device can wake the computer. Keyboard, lid, and power button stay on and are not offered | Yes | Admin | ✅ Built (until restart; kept after restart: step 4b) |
-| Power saving per device (PCI and USB) | `power/control` = `auto` | The device supports it and it is off. Keyboards, mice, and sound cards are not offered | Yes | Admin | ✅ Built (until restart; kept after restart: step 4b) |
+| Turbo boost on or off, separately on battery and on mains | `intel_pstate/no_turbo` or `cpufreq/boost` | The CPU has turbo | Yes | Admin | ✅ Built (one setting for both; the highest speed on battery below does the per-source part) |
+| Highest CPU speed on battery | `scaling_max_freq`, applied when the power cable is pulled and lifted when it is plugged in (a udev rule) | A battery and cpufreq are present | Yes | Admin | ✅ Built |
+| Stop a device from waking the computer from suspend | `power/wakeup`, `/proc/acpi/wakeup` | The device can wake the computer. Keyboard, lid, and power button stay on and are not offered | Yes (skipped when a different device is there) | Admin | ✅ Built |
+| Power saving per device (PCI and USB) | `power/control` = `auto` | The device supports it and it is off. Keyboards, mice, and sound cards are not offered | Yes (skipped when a different device is there) | Admin | ✅ Built |
 | Wi-Fi power saving | NetworkManager `wifi.powersave` for the current network | Wi-Fi is in use | Yes | You | ✅ Built |
-| PCIe power saving policy | `pcie_aspm` policy | The kernel allows it. Some hardware freezes with it, so it is applied for this session only until you choose **Keep** | Only after **Keep** | Admin | New |
-| Suspend type: light or deep | `/sys/power/mem_sleep`, and the boot option `mem_sleep_default` to keep it | The laptop offers `deep` (this test laptop offers only `s2idle`, so it is hidden here). Test one suspend before keeping | Only after **Keep** | Admin | New |
-| What closing the lid does, on battery and on mains | logind `HandleLidSwitch`, `HandleLidSwitchExternalPower` | Always | Yes | Admin | Partly: shown only |
+| PCIe power saving policy | `pcie_aspm` policy | The kernel allows it. Some hardware freezes with it, so it is applied for this session only until you choose **Keep** | Only after **Keep** | Admin | ✅ Built |
+| Suspend type: light or deep | `/sys/power/mem_sleep`, set again at each start once kept | The laptop offers more than one type (this test laptop offers only `s2idle`, so it is hidden here). Test one suspend before keeping | Only after **Keep** | Admin | ✅ Built |
+| What closing the lid does, on battery and on mains | logind `HandleLidSwitch`, `HandleLidSwitchExternalPower` in one drop-in (`50-deecure-lid.conf`); suspend, lock, do nothing, or power off | A battery is present | Yes (applies after the next restart; logind is never restarted, because that ends the desktop session) | Admin | ✅ Built |
 | Power mode | power-profiles-daemon | Always | Yes | You | Exists |
 | Power off cleanly at a low battery level | UPower | Always | Yes | Admin | Exists |
 

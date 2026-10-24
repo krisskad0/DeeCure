@@ -115,6 +115,11 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         Some("mode|try|keep"),
     ),
     (
+        "power.set_lid_action",
+        "Change what closing the lid does",
+        Some("battery|power"),
+    ),
+    (
         "power.set_keyboard_backlight",
         "Change the keyboard backlight",
         Some("level"),
@@ -298,6 +303,15 @@ pub enum Call {
         mode: String,
         /// Kept after restart; `false` is for this session only (and stops keeping it).
         keep: bool,
+    },
+    /// Set what closing the lid does (a logind drop-in; it applies when logind next starts,
+    /// which is the next restart: restarting logind would end the desktop session).
+    SetLidAction {
+        /// On battery: `suspend`, `lock`, `ignore`, or `poweroff`; `default` with `on_power`
+        /// also `default` removes the drop-in.
+        on_battery: String,
+        /// Plugged in, with the same choices.
+        on_power: String,
     },
     /// Set UPower's critical battery action.
     SetBatteryAction {

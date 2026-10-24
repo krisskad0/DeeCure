@@ -255,6 +255,8 @@ pub struct PowerDetail {
     pub keyboard_backlight: Option<KbdBacklight>,
     /// Power settings DeeCure sets again at each start.
     pub kept: Vec<KeptSetting>,
+    /// What closing the lid does, from the files and from logind now.
+    pub lid: super::logind::Lid,
 }
 
 /// A device's path under `/sys/devices`, from a link such as `/sys/bus/usb/devices/3-6`.
@@ -493,6 +495,7 @@ pub fn read(root: &SystemRoot) -> PowerDetail {
         });
     PowerDetail {
         kept: kept(root),
+        lid: super::logind::lid(root),
         radios,
         keyboard_backlight,
         last_wake_irq,

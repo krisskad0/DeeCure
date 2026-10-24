@@ -23,6 +23,7 @@ mod hw_errors;
 mod jobs;
 pub(crate) mod kernel;
 mod kernel_detail;
+mod logind;
 pub(crate) mod logs;
 mod memory_detail;
 pub(crate) mod net;
@@ -172,7 +173,11 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "graphics_stack" => serde_json::to_value(gpu_detail::read_stack(&agent.root).await),
         "net_deep" => serde_json::to_value(net_deep::read(&agent.root).await),
         "tcp_traffic" => serde_json::to_value(net_deep::read_tcp().await),
-        "power_detail" => serde_json::to_value(power_detail::read(&agent.root)),
+        "power_detail" => {
+            let mut detail = power_detail::read(&agent.root);
+            (detail.lid.running_battery, detail.lid.running_power) = logind::running(agent).await;
+            serde_json::to_value(detail)
+        }
         "thermal" => serde_json::to_value(thermal::read(&agent.root)),
         "boot_detail" => serde_json::to_value(services_detail::read_boot().await),
         "unit_files" => serde_json::to_value(services_detail::read_units().await),

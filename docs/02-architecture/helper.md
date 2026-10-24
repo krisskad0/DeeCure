@@ -42,6 +42,7 @@ The code is `crates/deecure-helper`. It is installed as `/usr/libexec/deecure/de
 | `set_device_power_saving` | Writes `/sys/devices/<device>/power/control` (`auto` or `on`) | As above; keyboards, mice and other input (USB class 03), sound devices (USB class 01, PCI class 04) never get power saving. Returns the old value. |
 | `set_battery_cpu_limit` | Writes `/sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq` | 30-99% of each policy's `cpuinfo_max_freq`, never below `cpuinfo_min_freq`, and only on battery: on mains, or with no limit, it writes the full speed. On battery means a system battery is there and no mains or USB charger is online (a mouse's own battery does not count); a computer without a battery or charger listed is never slowed down. Returns the limit kept before. |
 | `set_aspm_policy` | Writes `/sys/module/pcie_aspm/parameters/policy` | The policy must be one the kernel lists. `keep: false` is for this session only. Returns the old policy. |
+| `set_lid_action` | Writes `/etc/systemd/logind.conf.d/50-deecure-lid.conf` (`HandleLidSwitch`, `HandleLidSwitchExternalPower`), or removes it when both are `default` | Each value is `suspend`, `lock`, `ignore`, `poweroff`, or `default`; nothing else can reach the file. logind reads it when it starts, so it applies after the next restart: the helper never restarts logind, which would end the desktop session. Returns the values the file had. |
 | `set_suspend_mode` | Writes `/sys/power/mem_sleep` | The type must be one the computer lists. `keep: false` is for this session only. Returns the old type. |
 
 The power calls write one value to each checked file; they run no program. All of them go through a test root in the unit tests (`crates/deecure-helper/src/power.rs`), never the real `/sys`: a container shares the host's kernel, so a container test could change the real computer.
@@ -56,7 +57,7 @@ Linux forgets charge limits, turbo, and device power settings at every start. Th
 - The CPU limit depends on the power source, so `90-deecure-power.rules` (udev) runs `deecure-helper --power-source-changed` when a mains or USB charger changes. It returns at once when no limit is kept, uses the file only under the same root-only rule, and writes an audit line.
 - At boot, `deecure-power.service` (enabled by the package, skipped while the file does not exist) runs `deecure-helper --apply-saved`. It uses the file only when it is a plain file owned by root that no one else can write. Every entry goes through the same checks as a change from the app; a device setting is skipped when a different device is in that place. Batteries and devices that are not there yet are waited for up to 20 seconds. The unit is `Type=exec`, so this never holds up the boot, and it runs with no extra powers, no network, and a read-only system except `/sys`, `/run/deecure`, and `/var/log/deecure`.
 - Each result (setting, change tried, done or why not) goes to `/run/deecure/power-boot.json` and the audit log. The app shows the list with this start's result in Power › Power Profile.
-- Purging the package removes `/etc/deecure/power.json`, `/run/deecure`, and `/var/log/deecure`.
+- Purging the package removes `/etc/deecure/power.json`, the lid drop-in, `/run/deecure`, and `/var/log/deecure`.
 
 How every call is handled:
 

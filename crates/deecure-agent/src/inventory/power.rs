@@ -230,24 +230,6 @@ pub async fn read(agent: &Agent) -> PowerInfo {
         Some("nothing") => Some(0),
         _ => timeout.and_then(|t| t.parse().ok()),
     };
-    // logind.conf, then its drop-in files in name order; later values win.
-    let mut dropins: Vec<_> = std::fs::read_dir(root.path("/etc/systemd/logind.conf.d"))
-        .map(|d| {
-            d.flatten()
-                .map(|e| e.path())
-                .filter(|p| p.extension().is_some_and(|x| x == "conf"))
-                .collect()
-        })
-        .unwrap_or_default();
-    dropins.sort();
-    let logind: String = std::iter::once(root.read("/etc/systemd/logind.conf").unwrap_or_default())
-        .chain(
-            dropins
-                .iter()
-                .filter_map(|p| std::fs::read_to_string(p).ok()),
-        )
-        .collect::<Vec<_>>()
-        .join("\n");
     PowerInfo {
         batteries,
         on_ac,
@@ -269,7 +251,7 @@ pub async fn read(agent: &Agent) -> PowerInfo {
             gsetting(power, "sleep-inactive-ac-timeout").await,
             gsetting(power, "sleep-inactive-ac-type").await,
         ),
-        lid_action: value(&logind, "HandleLidSwitch").unwrap_or_else(|| "suspend".into()),
+        lid_action: super::logind::lid(root).on_battery,
         sleep_mode: root
             .read("/sys/power/mem_sleep")
             .ok()

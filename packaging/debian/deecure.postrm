@@ -1,12 +1,14 @@
 #!/bin/sh
 # On purge, removes what the admin helper wrote: kept power settings, this boot's results,
-# and the audit log. A plain removal keeps them, so reinstalling keeps the settings.
+# the lid setting, and the audit log. A plain removal keeps them, so reinstalling keeps the settings.
 set -e
 
 case "$1" in
   purge)
     rm -f /etc/deecure/power.json /etc/deecure/power.deecure-tmp
     rmdir /etc/deecure 2>/dev/null || true
+    rm -f /etc/systemd/logind.conf.d/50-deecure-lid.conf /etc/systemd/logind.conf.d/50-deecure-lid.deecure-tmp
+    rmdir /etc/systemd/logind.conf.d 2>/dev/null || true
     rm -rf /run/deecure /var/log/deecure
     ;;
 esac

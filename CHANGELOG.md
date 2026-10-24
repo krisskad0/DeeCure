@@ -26,6 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Expert power controls, each with a preview and undo: battery charge limits (presets or your own start and stop), charge mode, CPU turbo, keyboard backlight, radios, and Wi-Fi power saving (Power › Power Profile); stop a device waking the computer, and try power saving for devices that have it off (Power › Sleep). The admin helper writes only to the exact battery, turbo, and device power files, checks each against the live system, and never stops the lid, power buttons, or keyboards from waking the computer or gives power saving to keyboards, mice, or sound devices.
 - Power settings are kept after restart: charge limits, charge mode, turbo, and device wake-up and power saving are set again at each start by a small boot service, after the same checks, and skipped for a device that is not the same one. Power › Power Profile lists what is kept and whether it was set at this start. Setting a value back to what it was stops keeping it.
 - More power controls (Power › Power Profile): the highest CPU speed on battery (80, 60, or 40% of the top speed; full speed on mains, set again at each plug in and unplug), the PCIe power saving policy, and the suspend type. PCIe saving and deep suspend can misbehave on some hardware, so they are tried for this session first and kept after restart only when you press **Keep**.
+- What closing the lid does, separately on battery and plugged in (suspend, lock, do nothing, or power off). It applies after the next restart, and the app says so until then; it also names another settings file that overrides it.
 - Fewer tabs: Logs, Activity, Scheduled Jobs, Containers, Backups, and Accounts merge tabs that showed the same kind of list (89 tabs become 77). Old links open the merged tab at the right part.
 - Performance › Disk I/O shows each drive's type (SSD, hard disk, USB drive) and size, so you can tell the drives apart.
 
@@ -41,6 +42,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- Power › Power Profile "Closing the lid" read only `/etc`; it now reads every logind settings file the way logind does, so a vendor or `/run` setting is no longer missed.
 - One part of a page that fails to draw no longer blanks the page: it shows the reason and "Try again", and the rest keeps working.
 - Rows were dropped or doubled where two had the same name: two untagged Docker images, two wake sources, two jobs with one name, and the "System › System" breadcrumb.
 - Stopping the agent while a folder-size scan ran waited for the scan; it now stops within 5 seconds.
