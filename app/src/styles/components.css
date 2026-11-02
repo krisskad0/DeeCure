@@ -62,6 +62,8 @@ a.btn { text-decoration: none; }
 
 /* Issues list (Overview) */
 .issue { display: grid; grid-template-columns: 104px 1fr; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+/* The level badge keeps its own size at the top, instead of filling the whole row. */
+.issue > .badge { align-self: start; justify-self: start; }
 .issue:last-child { border-bottom: 0; }
 .issue-title { font-weight: 600; }
 .issue-explain { margin: 3px 0 6px; color: var(--ink-2); max-width: 72ch; }

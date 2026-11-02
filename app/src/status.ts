@@ -5,8 +5,12 @@
 import type { AppError, Finding, StatusReport } from "./api";
 import type { StatusVariant } from "./components/StatusBadge";
 
-/** Tools and Settings never show a status badge. */
-const NO_BADGE = new Set(["optimize", "diagnostics", "assistant", "settings"]);
+/**
+ * Pages that are not a health area never show a status badge: tools, Settings, and pages that
+ * show records or live views (Logs, Activity, Processes, Display & Audio). No warning covers
+ * them, so a badge could only ever say "Unknown".
+ */
+const NO_BADGE = new Set(["optimize", "diagnostics", "assistant", "settings", "logs", "activity", "processes", "display"]);
 const RANK: Record<Finding["severity"], number> = { info: 1, warning: 2, critical: 3 };
 const VARIANT: Record<Finding["severity"], StatusVariant> = { info: "info", warning: "warn", critical: "crit" };
 

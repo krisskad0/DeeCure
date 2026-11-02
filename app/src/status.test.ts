@@ -36,13 +36,14 @@ describe("pageStatus", () => {
   it("says Healthy only for areas that have rules", () => {
     const r = report([]);
     expect(pageStatus("services", r, null)).toBe("ok");
-    expect(pageStatus("logs", r, null)).toBe("off");
+    expect(pageStatus("backups", r, null)).toBe("off");
     expect(pageStatus("overview", r, null)).toBe("ok");
     expect(pageStatus("overview", report([], []), null)).toBe("off");
   });
 
-  it("shows no badge on tools and settings", () => {
-    expect(pageStatus("diagnostics", report([]), null)).toBeNull();
-    expect(pageStatus("settings", report([]), null)).toBeNull();
+  it("shows no badge on tools, settings, and pages that are not a health area", () => {
+    for (const page of ["diagnostics", "settings", "logs", "activity", "processes", "display"]) {
+      expect(pageStatus(page, report([]), null)).toBeNull();
+    }
   });
 });
