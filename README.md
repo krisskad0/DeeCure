@@ -145,6 +145,10 @@ Switch at any time from the top bar. [View levels](docs/01-product/view-levels.m
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png"><img src="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png" alt="DeeCure Linux kernel page: running kernel, command line, installed kernels with the fallback, loaded kernel modules, file watches, open files, kernel lockdown, and clock offset"></a><br><b>Kernel:</b> installed kernels, loaded modules, limits, and settings with the file that set them.</td>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: device power saving, Docker and snap cleanup, emptying the trash, and the APT cache, each with the measured space or reason and a Preview button"></a><br><b>Optimize:</b> only the improvements this computer measurably needs.</td>
   </tr>
+  <tr>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-memory-map.png"><img src="docs/07-user-guide/images/deecure-expert-memory-map.png" alt="DeeCure memory page on Linux: what fills RAM as one bar with cache striped, a plain-language verdict, memory usage over 24 hours, where memory goes in detail, and the apps, services, and processes using the most memory"></a><br><b>Memory:</b> what really fills RAM, what can be freed, and who uses it.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-health-score-breakdown.png"><img src="docs/07-user-guide/images/deecure-expert-health-score-breakdown.png" alt="DeeCure health score breakdown: 100 minus the points each area loses equals 85, and a card per area with its points kept, status, and open problems"></a><br><b>Health score:</b> how the score is reached, area by area.</td>
+  </tr>
 </table>
 
 ## Private and safe by design
