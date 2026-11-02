@@ -16,6 +16,21 @@ app="${3:+$(realpath "$3")}"
 export DEBIAN_FRONTEND=noninteractive
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
+echo "== an upgrade never stops the service running it"
+# The in-app update runs apt inside deecure-helper.service, an automatic one inside
+# deecure-update.service. A maintainer script that stops either kills apt half way. Containers
+# have no systemd, so the scripts are read instead of run.
+scripts="$(mktemp -d)"
+dpkg-deb -e "$deb" "$scripts"
+for unit in deecure-helper.service deecure-update.service deecure-power.service deecure-health.service; do
+  for f in preinst prerm postinst; do
+    [ -f "$scripts/$f" ] || continue
+    ! grep -Eq "(stop|restart|try-restart).*'?$unit" "$scripts/$f" || fail "$f stops or restarts $unit on upgrade"
+  done
+done
+rm -rf "$scripts"
+echo "ok: no maintainer script stops or restarts the helper or update services"
+
 echo "== install"
 apt-get update -qq >/dev/null
 apt-get install -y -qq "$deb" >/dev/null

@@ -37,7 +37,7 @@ Requests: `update_status`, `set_update_settings`, `check_updates` ([protocol](ip
 
 The checksums come from the same release as the packages, so they prove a download is whole, not who made it. That is the same trust as the one-command install; signed releases (decision #12) will add the signature check.
 
-The upgrade's maintainer scripts restart the agent for everyone signed in; the helper itself and the update timer are not restarted, so the running update is never cut off. The open app keeps working and says to open it again.
+The upgrade's maintainer scripts restart the agent for everyone signed in; no system service of DeeCure is stopped or restarted on upgrade (`--no-stop-on-upgrade --no-restart-after-upgrade` for every unit in `packaging/debian/rules`), so the running update is never cut off. An update from the app runs apt inside `deecure-helper.service` and an automatic one inside `deecure-update.service`: stopping either kills apt half way, which the 0.1.0-alpha.6 and 0.1.0-alpha.7 packages did (their `preinst` stopped both). `make deb-test` reads the maintainer scripts and fails if one stops or restarts these services, since containers have no systemd to show it. The open app keeps working and says to open it again.
 
 ## Automatic updates
 

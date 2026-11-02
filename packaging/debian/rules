@@ -26,13 +26,17 @@ override_dh_auto_build:
 # deecure-update.timer runs daily but does nothing until automatic updates are turned on
 # (/etc/deecure/update.json); an upgrade it starts must not stop or restart it.
 # deecure-health.timer reads drive wear and SSH root login once a day, for two warnings.
+# No service is stopped on upgrade: an update installed from the app runs apt inside
+# deecure-helper.service, and an automatic one inside deecure-update.service. Stopping that
+# service kills apt half way (the 0.1.0-alpha.7 in-app update did). A running helper keeps
+# the old program until it exits; the next call starts the new one.
 override_dh_installsystemd:
-	dh_installsystemd -pdeecure --no-enable --no-start deecure-helper.service
-	dh_installsystemd -pdeecure --no-start deecure-power.service
+	dh_installsystemd -pdeecure --no-enable --no-start --no-stop-on-upgrade --no-restart-after-upgrade deecure-helper.service
+	dh_installsystemd -pdeecure --no-start --no-stop-on-upgrade --no-restart-after-upgrade deecure-power.service
 	dh_installsystemd -pdeecure --no-stop-on-upgrade --no-restart-after-upgrade deecure-update.timer
-	dh_installsystemd -pdeecure --no-enable --no-start deecure-update.service
+	dh_installsystemd -pdeecure --no-enable --no-start --no-stop-on-upgrade --no-restart-after-upgrade deecure-update.service
 	dh_installsystemd -pdeecure deecure-health.timer
-	dh_installsystemd -pdeecure --no-enable --no-start deecure-health.service
+	dh_installsystemd -pdeecure --no-enable --no-start --no-stop-on-upgrade --no-restart-after-upgrade deecure-health.service
 
 # Tests run in CI with `make test`, not while packaging.
 override_dh_auto_test:

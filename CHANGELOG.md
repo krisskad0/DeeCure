@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.8] - 2026-11-02
+
+### Fixed
+
+- Updating DeeCure from the app (or automatically) stopped half way with "Message recipient disconnected from message bus without replying": the new package stopped the very service that was installing it. No DeeCure service is stopped during an upgrade any more. If it happened to you, run `curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh` once in a Terminal.
+
 ## [0.1.0-alpha.7] - 2026-11-02
 
 ### Fixed
