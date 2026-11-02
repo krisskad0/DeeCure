@@ -1357,6 +1357,9 @@ export function getHelperStatus(): Promise<boolean> {
   return invoke<boolean>("helper_status");
 }
 
-export function helperRead(what: "smart" | "firewall_rules" | "crontabs" | "accounts" | "memory_modules" | "serial", arg = ""): Promise<string> {
+/** The admin read-outs the helper offers (docs/02-architecture/helper.md). */
+export type HelperRead = "smart" | "self_tests" | "nvme" | "firewall_rules" | "crontabs" | "accounts" | "memory_slots" | "bios_settings" | "serial";
+
+export function helperRead(what: HelperRead, arg = ""): Promise<string> {
   return invoke<string>("helper_read", { what, arg });
 }

@@ -42,10 +42,10 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 | Which processes the system would stop first when memory runs out | Shows who is at risk | `/proc/<pid>/oom_score` | You | ✅ Built |
 | Memory error counts (corrected and uncorrected), when the memory controller reports them | Uncorrected errors mean failing RAM | `/sys/devices/system/edac/mc*` | You | ✅ Built |
 | Huge pages: setting and use | Matters for databases and virtual machines | `/sys/kernel/mm/transparent_hugepage`, `/proc/meminfo` | You | ✅ Built |
-| Each memory module: slot, size, type, rated speed against the speed it really runs at | Finds RAM running slower than it can | `dmidecode -t 17` through the helper | Admin | Partly: type, speed, and slots |
-| Free slots, and the maximum memory the board supports | Know before you buy more | `dmidecode -t 16` through the helper | Admin | New |
-| Dual-channel or single-channel, from the slots in use | Single-channel halves memory speed, and slows built-in graphics | module bank locations from `dmidecode` | Admin | New |
-| Soldered or removable memory | Know if it can be upgraded at all | `dmidecode` form factor | Admin | New |
+| Each memory module: slot, size, type, rated speed against the speed it really runs at | Finds RAM running slower than it can | `dmidecode -t 17` through the helper | Admin | ✅ Built (Hardware › Memory › Memory slots) |
+| Free slots, and the maximum memory the board supports | Know before you buy more | `dmidecode -t 16` through the helper | Admin | ✅ Built |
+| Dual-channel or single-channel, from the slots in use | Single-channel halves memory speed, and slows built-in graphics | module bank locations from `dmidecode` | Admin | ✅ Built (warns about one channel, except soldered memory) |
+| Soldered or removable memory | Know if it can be upgraded at all | `dmidecode` form factor | Admin | ✅ Built |
 
 ## 3. Drives (Performance › Disk I/O, Hardware › Storage Devices)
 
@@ -62,8 +62,8 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 | TRIM: automatic or not, last run, `discard` mount option | SSDs slow down without TRIM | `fstrim.timer`, journal, `/proc/mounts` | You | ✅ Built |
 | Response time per disk over time | Slow answers show before a failure | `/proc/diskstats` | You | Partly: one average |
 | SATA link speed now against the most the drive supports | Finds a SATA SSD on a slow port or cable | `/sys/class/ata_link/*/sata_spd`, `sata_spd_limit` | You | ✅ Built |
-| NVMe details: controller and namespace, block size (512 or 4096 bytes), firmware slots, warning and critical temperatures | Real facts from the drive, not a model lookup | `/sys/class/nvme/*`, `nvme id-ctrl` through the helper | You / Admin | ✅ Built (firmware slots and namespaces: Admin, later) |
-| Drive self-test results, and starting a short or long self-test | The drive checks itself | `smartctl -l selftest`, `smartctl -t` | Admin | New |
+| NVMe details: controller and namespace, block size (512 or 4096 bytes), firmware slots, warning and critical temperatures | Real facts from the drive, not a model lookup | `/sys/class/nvme/*`, `nvme id-ctrl` through the helper | You / Admin | ✅ Built (firmware slots, namespaces, and block formats: Admin, `nvme-cli`, Expert) |
+| Drive self-test results, and starting a short or long self-test | The drive checks itself | `smartctl -l selftest`, `smartctl -t` | Admin | Partly: results and the test running now (Expert); starting a test: later |
 
 ## 4. Filesystems and space (Storage)
 
@@ -217,8 +217,8 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | Secure Boot keys you added (MOK) | Needed for NVIDIA and DKMS drivers | `mokutil --list-enrolled` | You | ✅ Built |
 | USB devices: speed (USB 2 or 3), power drawn, driver | Finds a fast device on a slow port | `/sys/bus/usb/devices/*/{speed,bMaxPower}` | You | ✅ Built (Hardware › Peripherals) |
 | Virtualization: CPU support, turned on in firmware, KVM ready | Why virtual machines are slow or do not start | `/proc/cpuinfo` (`vmx`, `svm`), `/dev/kvm` | You | ✅ Built |
-| Every BIOS setting with its current value and allowed values (122 on this test laptop: battery charge, sleep, camera, virtualization, boot, and more) | See firmware settings without restarting into the BIOS | `/sys/class/firmware-attributes/*` (Dell, Lenovo, HP) through the helper | Admin | New |
-| Whether a BIOS admin password is set | Changing BIOS settings from Linux needs it | `/sys/class/firmware-attributes/*/authentication` | Admin | New |
+| Every BIOS setting with its current value and allowed values (122 on this test laptop: battery charge, sleep, camera, virtualization, boot, and more) | See firmware settings without restarting into the BIOS | `/sys/class/firmware-attributes/*` (Dell, Lenovo, HP) through the helper | Admin | ✅ Built (Hardware › Firmware, Expert; read only) |
+| Whether a BIOS admin password is set | Changing BIOS settings from Linux needs it | `/sys/class/firmware-attributes/*/authentication` | Admin | ✅ Built (also the power-on password; the passwords themselves are never read) |
 | Management engine firmware version (Intel ME or AMD PSP) | Known security flaws depend on this version | `/sys/class/mei/mei*/fw_ver` | You | ✅ Built |
 | TPM: version, maker, firmware version, and whether disk encryption uses it | Know if the TPM is in use and up to date | `/sys/class/tpm/tpm*`, `systemd-cryptenroll` | You / Admin | ✅ Built (version, driver, and disk unlock; maker and firmware: Admin, later) |
 | Protection against attacks through ports (DMA protection, IOMMU) | Thunderbolt and USB4 ports can reach memory without it | `/sys/bus/thunderbolt/devices/domain*/iommu_dma_protection`, `/sys/class/iommu` | You | ✅ Built |

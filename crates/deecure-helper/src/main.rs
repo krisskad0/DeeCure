@@ -42,6 +42,18 @@ const UPOWER_CONF: &str = "/etc/UPower/UPower.conf";
 const IDLE: Duration = Duration::from_secs(120);
 /// Programs see only this PATH, so a changed environment cannot swap them.
 const PATH: &str = "/usr/sbin:/usr/bin:/sbin:/bin";
+/// The admin read-outs `Read` offers (docs/02-architecture/helper.md).
+const READS: &[&str] = &[
+    "smart",
+    "self_tests",
+    "nvme",
+    "firewall_rules",
+    "crontabs",
+    "accounts",
+    "memory_slots",
+    "bios_settings",
+    "serial",
+];
 
 /// The polkit action for a call: `io.github.krisskad0.deecure.<operation>`.
 fn polkit_action(call: &Call) -> String {
@@ -77,6 +89,63 @@ fn output(program: &str, args: &[&str]) -> Option<String> {
     out.status
         .success()
         .then(|| String::from_utf8_lossy(&out.stdout).into_owned())
+}
+
+/// Like [`output`], for programs that print binary data.
+fn output_bytes(program: &str, args: &[&str]) -> Option<Vec<u8>> {
+    let out = std::process::Command::new(program)
+        .args(args)
+        .env_clear()
+        .env("PATH", PATH)
+        .env("LC_ALL", "C")
+        .stdin(Stdio::null())
+        .output()
+        .ok()?;
+    out.status.success().then_some(out.stdout)
+}
+
+/// `smartctl -j <args> /dev/<disk>`. It exits non-zero for some drive warnings but still
+/// prints JSON, so any JSON answer counts.
+fn smartctl(args: &[&str], disk: &str) -> Result<String, String> {
+    let dev = format!("/dev/{disk}");
+    let out = std::process::Command::new("/usr/sbin/smartctl")
+        .args(args)
+        .arg(&dev)
+        .env_clear()
+        .env("PATH", PATH)
+        .env("LC_ALL", "C")
+        .stdin(Stdio::null())
+        .output()
+        .map_err(|_| "smartctl is not installed (package smartmontools)".to_owned())?;
+    let text = String::from_utf8_lossy(&out.stdout).into_owned();
+    if text.trim_start().starts_with('{') {
+        Ok(text)
+    } else {
+        Err("smartctl gave no answer for this drive".into())
+    }
+}
+
+/// The NVMe details for one disk: controller, namespace, and firmware slots (`nvme-cli`).
+fn nvme_details(disk: &str) -> Result<String, String> {
+    let ctrl = reads::nvme_controller(disk).ok_or("not an NVMe drive")?;
+    let nvme = |args: &[&str]| output_bytes("/usr/sbin/nvme", args);
+    if !Path::new("/usr/sbin/nvme").exists() {
+        return Err("nvme-cli is not installed (package nvme-cli)".into());
+    }
+    let (c, n) = (format!("/dev/{ctrl}"), format!("/dev/{disk}"));
+    let controller = nvme(&["id-ctrl", &c, "--output-format=binary"])
+        .and_then(|b| reads::nvme_identify_controller(&b));
+    let namespace = nvme(&["id-ns", &n, "--output-format=binary"])
+        .and_then(|b| reads::nvme_identify_namespace(&b));
+    let firmware =
+        nvme(&["fw-log", &c, "--output-format=binary"]).and_then(|b| reads::nvme_firmware_log(&b));
+    if controller.is_none() && namespace.is_none() && firmware.is_none() {
+        return Err("the drive gave no NVMe details".into());
+    }
+    Ok(
+        json!({ "controller": controller, "namespace": namespace, "firmware": firmware })
+            .to_string(),
+    )
 }
 
 impl Probe for Live {
@@ -387,8 +456,8 @@ impl Helper {
         }
     }
 
-    /// An admin read-out: `smart` (arg: disk such as `nvme0n1`), `firewall_rules`,
-    /// `crontabs`, `accounts`, `memory_modules`, or `serial`.
+    /// An admin read-out: one of [`READS`]. `smart`, `self_tests`, and `nvme` take a disk
+    /// such as `nvme0n1`; the others take no argument.
     async fn read(
         &self,
         what: String,
@@ -403,16 +472,11 @@ impl Helper {
             .ok_or_else(|| fdo::Error::AccessDenied("no sender".into()))?;
         let uid = caller_uid(conn, &sender).await?;
         let input = json!({"what": what, "arg": arg});
-        if ![
-            "smart",
-            "firewall_rules",
-            "crontabs",
-            "accounts",
-            "memory_modules",
-            "serial",
-        ]
-        .contains(&what.as_str())
-            || (what == "smart" && !reads::is_disk(&arg))
+        let disk = ["smart", "self_tests", "nvme"].contains(&what.as_str());
+        if !READS.contains(&what.as_str())
+            || (disk && !reads::is_disk(&arg))
+            || (!disk && !arg.is_empty())
+            || (what == "nvme" && reads::nvme_controller(&arg).is_none())
         {
             audit(uid, "Read", &input, false, "unknown read-out");
             return Err(fdo::Error::InvalidArgs("unknown read-out".into()));
@@ -422,19 +486,15 @@ impl Helper {
             .inspect_err(|_| audit(uid, "Read", &input, false, "not authorized"))?;
         let result = tokio::task::spawn_blocking(move || -> Result<String, String> {
             match what.as_str() {
-                "smart" => output("/usr/sbin/smartctl", &["-j", "-a", &format!("/dev/{arg}")])
-                    .or_else(|| {
-                        // smartctl exits non-zero for some warnings but still prints JSON.
-                        std::process::Command::new("/usr/sbin/smartctl")
-                            .args(["-j", "-a", &format!("/dev/{arg}")])
-                            .env_clear()
-                            .env("PATH", PATH)
-                            .output()
-                            .ok()
-                            .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
-                            .filter(|s| s.trim_start().starts_with('{'))
-                    })
-                    .ok_or_else(|| "smartctl is not installed (package smartmontools)".into()),
+                "smart" => smartctl(&["-j", "-a"], &arg),
+                "self_tests" => smartctl(&["-j", "-l", "selftest"], &arg)
+                    .map(|j| reads::self_tests(&j).to_string()),
+                "nvme" => nvme_details(&arg),
+                "memory_slots" => output("/usr/sbin/dmidecode", &["-t", "16", "-t", "17"])
+                    .map(|t| reads::memory_slots(&t).to_string())
+                    .ok_or_else(|| "dmidecode gave no answer".into()),
+                "bios_settings" => serde_json::to_string(&reads::bios_settings(Path::new("/")))
+                    .map_err(|e| e.to_string()),
                 "firewall_rules" => output("/usr/sbin/ufw", &["status", "verbose"])
                     .ok_or_else(|| "ufw is not installed".into()),
                 "crontabs" => serde_json::to_string(&reads::all_crontabs(Path::new(
@@ -451,10 +511,6 @@ impl Helper {
                     ))
                     .map_err(|e| e.to_string())
                 }
-                "memory_modules" => serde_json::to_string(&reads::memory_modules(
-                    &output("/usr/sbin/dmidecode", &["-t", "memory"]).unwrap_or_default(),
-                ))
-                .map_err(|e| e.to_string()),
                 _ => Ok(std::fs::read_to_string("/sys/class/dmi/id/product_serial")
                     .unwrap_or_default()
                     .trim()

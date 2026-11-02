@@ -16,6 +16,7 @@ import { NoData } from "../NoData";
 import { AdminRead } from "../../components/AdminRead";
 import { KpiRow } from "../../components/KpiTile";
 import { useHardware } from "./shared";
+import { DriveAdminSections } from "./AdminDetails";
 
 type DiskRow = HardwareInfo["disks"][number] & { temp?: number };
 
@@ -62,6 +63,7 @@ export function HardwareStorage() {
         </Panel>
       )}
       {atLeast(mode, "expert") && <Guard><DriveExpertSections /></Guard>}
+      {atLeast(mode, "expert") && <Guard><DriveAdminSections disks={hw.disks} /></Guard>}
     </>
   );
 }

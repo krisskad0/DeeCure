@@ -73,7 +73,10 @@ out="$(su deecure-test -s /bin/sh -c "dbus-send --system --print-reply --dest=io
 echo "$out" | grep -q "deecure-test" || fail "accounts read-out lacks the user: $out"
 echo "$out" | grep -q '\$y\$\|\$6\$' && fail "a password hash left the helper"
 out="$(su deecure-test -s /bin/sh -c "dbus-send --system --print-reply --dest=io.github.krisskad0.DeeCure.Helper /io/github/krisskad0/DeeCure/Helper io.github.krisskad0.DeeCure.Helper1.Read string:smart string:../../etc/shadow" 2>&1)" && fail "a path was accepted as a disk"
-echo "ok: account status without hashes; paths refused as disks"
+out="$(su deecure-test -s /bin/sh -c "dbus-send --system --print-reply --dest=io.github.krisskad0.DeeCure.Helper /io/github/krisskad0/DeeCure/Helper io.github.krisskad0.DeeCure.Helper1.Read string:nvme string:sda" 2>&1)" && fail "a SATA disk was accepted for NVMe details"
+out="$(su deecure-test -s /bin/sh -c "dbus-send --system --print-reply --dest=io.github.krisskad0.DeeCure.Helper /io/github/krisskad0/DeeCure/Helper io.github.krisskad0.DeeCure.Helper1.Read string:bios_settings string:x" 2>&1)" && fail "an argument was accepted by a read-out that takes none"
+out="$(su deecure-test -s /bin/sh -c "dbus-send --system --print-reply --dest=io.github.krisskad0.DeeCure.Helper /io/github/krisskad0/DeeCure/Helper io.github.krisskad0.DeeCure.Helper1.Read string:bios_settings string:" 2>&1)" || fail "BIOS settings read-out: $out"
+echo "ok: account status without hashes; paths refused as disks; arguments checked per read-out"
 
 echo "== kept power settings at boot (deecure-power.service)"
 mkdir -p /etc/deecure

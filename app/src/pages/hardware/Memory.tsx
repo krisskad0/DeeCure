@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Memory (docs/03-ui-design/05-pages/06-hardware.md), with real data.
-// Module type, speed, and slots come from dmidecode through the admin helper (Full access).
+// Slots, module type and speed, and the board's limits come from dmidecode through the admin
+// helper (Full access).
 
 import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
@@ -15,7 +16,7 @@ import { useHistory, useLatest } from "../performance/shared";
 import { useEventCount } from "../../useEventCount";
 import { NoData } from "../NoData";
 import { useHardware } from "./shared";
-import { AdminRead } from "../../components/AdminRead";
+import { MemorySlotsPanel } from "./AdminDetails";
 
 const FULL = <span className="muted">With Full access (below)</span>;
 
@@ -64,22 +65,7 @@ export function HardwareMemory() {
       <Panel title="Health" span={6} flush>
         <Checklist checks={checks} />
       </Panel>
-      <Panel title="Memory modules" source="dmidecode -t memory" span={12}>
-        <AdminRead what="memory_modules" label="Read the memory modules (asks for your password)">
-          {(text) => {
-            const mods = JSON.parse(text) as Record<string, string>[];
-            const filled = mods.filter((m) => m.Filled === "true");
-            return (
-              <KeyValueList
-                rows={[
-                  ["Slots", `${mods.length} (${mods.length - filled.length} free)`],
-                  ...filled.map((m, i): [string, string] => [m.Locator || `Module ${i + 1}`, [m.Size, m.Type, m["Configured Memory Speed"] || m.Speed, m["Form Factor"], m.Manufacturer].filter((x) => x && x !== "Unknown").join(" · ")]),
-                ]}
-              />
-            );
-          }}
-        </AdminRead>
-      </Panel>
+      <MemorySlotsPanel />
       {atLeast(mode, "expert") && <Guard><MemoryErrors /></Guard>}
     </>
   );

@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- Admin reads (with your password, through the helper): every memory slot with the board's most memory, free slots, channels in use (a warning for single-channel memory), soldered or removable, and rated against running speed (Hardware › Memory); every BIOS setting with its default and allowed values, and whether BIOS passwords are set (Hardware › Firmware, Expert); NVMe firmware slots, block formats, and power states, and each drive's self-test log (Hardware › Storage Devices, Expert).
+
 ### Fixed
 
 - Temperatures on Hardware › Summary, Processor, and Sensors are judged against each part's own limits, as the warnings do, instead of a fixed 80 and 90 °C; a sensor without limits gets no colour instead of a guess.

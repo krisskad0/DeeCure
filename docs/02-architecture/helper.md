@@ -19,8 +19,22 @@ The code is `crates/deecure-helper`. It is installed as `/usr/libexec/deecure/de
 | Method | What it does |
 | --- | --- |
 | `Run(call)` | One admin fix step: a JSON fix call (`deecure_core::fix::Call`). Unknown operations cannot be read; user-level operations are refused. |
-| `Read(what, arg)` | An admin read-out: `smart` (arg: a disk name such as `nvme0n1`), `firewall_rules`, `crontabs`, `accounts` (password status, never hashes), `memory_modules`, `serial` |
+| `Read(what, arg)` | An admin read-out from a fixed list (below). Unknown names, and an argument where none is taken, are refused. |
 | `Version` (property) | The helper's version, no approval needed |
+
+All read-outs share one polkit action, `io.github.krisskad0.deecure.read` (approval kept for a few minutes). They change nothing.
+
+| Read-out | Reads | Checks and limits |
+| --- | --- | --- |
+| `smart` | `smartctl -j -a /dev/<disk>` | Disk name: `sd` plus 1-3 letters, `nvmeXnY`, or `mmcblkX`; nothing else |
+| `self_tests` | `smartctl -j -l selftest /dev/<disk>`, summed up: each test's kind, result, and drive hour, and the test running now | As `smart` |
+| `nvme` | `nvme id-ctrl`, `id-ns`, `fw-log` with `--output-format=binary`, decoded by the NVMe specification's offsets: firmware slots and versions, block formats, power states, temperature limits, write cache. The serial number is left out. | An NVMe disk name; its controller (`nvme0` from `nvme0n1`) comes from the checked name. Needs `nvme-cli`. |
+| `memory_slots` | `dmidecode -t 16 -t 17`: the board's most memory, slot count, error correction, and each slot (size, type, form factor, rated and running speed, bank, part) | Arrays for video memory are left out |
+| `bios_settings` | Every `/sys/class/firmware-attributes/<interface>/attributes/<setting>`: value, default, allowed values or range; and `authentication/{Admin,System}/is_enabled` | Folder names must be plain (letters, digits, `_.-`); one line of at most 512 bytes per file. Password files are never opened. |
+| `firewall_rules` | `ufw status verbose` | - |
+| `crontabs` | Each file in `/var/spool/cron/crontabs` | - |
+| `accounts` | Password status from `/etc/shadow` for human accounts | Hashes never leave the helper |
+| `serial` | `/sys/class/dmi/id/product_serial` | - |
 
 | Admin operation | Runs | Checks |
 | --- | --- | --- |

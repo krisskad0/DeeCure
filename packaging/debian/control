@@ -12,6 +12,7 @@ Rules-Requires-Root: no
 Package: deecure
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: smartmontools, nvme-cli
 Description: deep insight into every layer of a Linux computer, with safe fixes
  DeeCure reads every layer of your computer and explains it in plain
  English: sensors and their limits, PCIe links, firmware, the kernel,

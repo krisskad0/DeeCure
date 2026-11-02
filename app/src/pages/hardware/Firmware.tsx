@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Hardware › Firmware (docs/03-ui-design/05-pages/06-hardware.md), with real data.
-// Installing firmware needs the helper (Phase 2).
+// Installing firmware needs the helper (Phase 2); BIOS settings are read through it (Expert).
 
 import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
@@ -12,6 +12,7 @@ import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { NoData } from "../NoData";
 import { biosDate, useFirmware, useHardware } from "./shared";
+import { BiosSettingsPanel } from "./AdminDetails";
 
 type Device = FirmwareInfo["devices"][number];
 
@@ -64,6 +65,7 @@ export function HardwareFirmware() {
         )}
       </Panel>
       {atLeast(mode, "expert") && <Guard><FirmwareExpertSections /></Guard>}
+      {atLeast(mode, "expert") && <Guard><BiosSettingsPanel /></Guard>}
     </>
   );
 }
