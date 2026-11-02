@@ -161,8 +161,9 @@ mod tests {
 
     #[test]
     fn reads_cards_but_not_connectors() {
+        // Its own folder: the gpu collector's test uses "gpu", and tests run at the same time.
         let root = crate::collect::test_support::fixture_root(
-            "gpu",
+            "inventory-gpu",
             &[
                 ("/sys/class/drm/card1/device/vendor", "0x1002\n"),
                 ("/sys/class/drm/card1/device/device", "0x1638\n"),
