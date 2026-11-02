@@ -7,7 +7,7 @@ import type { AppError, Finding, StatusReport } from "../api";
 import { Panel, type Span } from "../components/Panel";
 import { StatusBadge } from "../components/StatusBadge";
 import { NoData } from "./NoData";
-import { severityVariant } from "../status";
+import { severityVariant, tabOf } from "../status";
 import { ago } from "../time";
 import { kbTopic, useKb } from "../kb";
 import { HowTo } from "../components/HowTo";
@@ -60,7 +60,7 @@ function Body({ findings, report, error, now, compact }: { findings: Finding[]; 
           return (
             <li key={`${f.rule}|${f.subject ?? ""}`}>
               <StatusBadge variant={severityVariant(f.severity)} />
-              <a className="issue-compact-body" href={href(area, page?.tabs[0]?.id ?? "")}>
+              <a className="issue-compact-body" href={href(area, page?.tabs.find((t) => t.id === tabOf(f))?.id ?? page?.tabs[0]?.id ?? "")}>
                 <span className="issue-title">{f.title}</span>
                 <span className="issue-meta">
                   {page?.label ?? area} · first seen {ago(f.first_seen, now)}

@@ -31,4 +31,6 @@ The table above describes the prototype's sample data. The app works it out from
 
 The sidebar shows a dot only for Warning (yellow) and Critical (red). Overview shows the number of open findings. The sub-page that shows a finding gets the same dot in the page's sub-page list, so it is clear where to look (for example Hardware › Sensors for a hot part). Each rule names its sub-page in the app (`RULE_TAB` in `app/src/status.ts`); a test fails when a rule has none. A notification opens that sub-page too.
 
+On that sub-page, each open finding is an alert box at the top, most serious first: its title, its explanation, "Show where" (scrolls to the panel that shows it), and Fix when the rule has a fix. That panel gets a warning (or red) outline and a "Warning here" ("Problem here") badge next to its title. Each rule names its panels (`RULE_PANELS` in `app/src/status.ts`); a panel whose title goes on after " ·" (such as "Battery details · BAT0") counts too. A rule without panels is only explained at the top.
+
 Areas with rules (October 2026): all 13 in Overview › Subsystems: System, Hardware, Power, Services, Scheduled Jobs, Packages, Containers, Storage, Backups, Network, Accounts, Security, Privacy.

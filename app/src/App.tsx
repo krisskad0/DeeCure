@@ -58,7 +58,10 @@ import { PageHeader } from "./shell/PageHeader";
 import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
 import { Sidebar } from "./shell/Sidebar";
 import { type Range, TopBar } from "./shell/TopBar";
-import { findingsFor, pageStatus, tabStatus } from "./status";
+import { RULE_PANELS, findingsFor, findingsHere, pageStatus, severityVariant, tabStatus } from "./status";
+import { HereFindings } from "./shell/HereFindings";
+import { FlaggedPanels } from "./components/Panel";
+import type { StatusVariant } from "./components/StatusBadge";
 import { type Mode, UiContext, atLeast } from "./ui";
 import { stack } from "./shell/Stack";
 import { inBeginner } from "./visible";
@@ -218,6 +221,9 @@ export default function App() {
   }
 
   // A link can open a page that the Beginner menus leave out: say so, with a way out.
+  // What is wrong on this sub-page: explained at the top, and its panels marked.
+  const here = findingsHere(route.page.id, route.tab.id, report);
+  const flagged = here.flatMap((f) => (RULE_PANELS[f.rule] ?? []).map((t): [string, StatusVariant] => [t, severityVariant(f.severity)]));
   const levelNote = !atLeast(mode, "advanced") && !route.gallery && !inBeginner(route.page.id, route.tab.id) && (
     <AlertBanner
       tone="info"
@@ -299,9 +305,12 @@ export default function App() {
         )}
         <div className="grid">
           {levelNote}
-          <ErrorBoundary what={route.page.label} resetKey={`${route.page.id}/${route.tab.id}/${mode}`}>
-            {content}
-          </ErrorBoundary>
+          {!route.gallery && <HereFindings findings={here} />}
+          <FlaggedPanels.Provider value={flagged}>
+            <ErrorBoundary what={route.page.label} resetKey={`${route.page.id}/${route.tab.id}/${mode}`}>
+              {content}
+            </ErrorBoundary>
+          </FlaggedPanels.Provider>
         </div>
       </main>
     </div>

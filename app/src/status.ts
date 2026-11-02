@@ -90,6 +90,80 @@ export const RULE_TAB: Record<string, string> = {
   "system.time_sync_off": "time",
 };
 
+/**
+ * The panels on that sub-page that show what a rule is about, so they can be marked. A panel
+ * whose title starts with one of these and " ·" (such as "Battery details · BAT0") counts too.
+ * A rule with no entry is only explained at the top of the sub-page.
+ */
+export const RULE_PANELS: Record<string, string[]> = {
+  "accounts.extra_root": ["Users"],
+  "backups.none": ["Backups"],
+  "backups.overdue": ["Backups"],
+  "containers.port_exposed": ["Docker containers"],
+  "hardware.cooling_weak": ["Temperatures", "Fans"],
+  "hardware.cpu_hot": ["Temperatures"],
+  "hardware.fan_stopped": ["Fans"],
+  "hardware.firmware_crash": ["Hardware errors"],
+  "hardware.gpu_hang": ["Driver checks"],
+  "hardware.machine_check": ["Hardware errors", "Components"],
+  "hardware.memory_errors": ["Health"],
+  "hardware.no_acceleration": ["Driver checks"],
+  "hardware.part_hot": ["Temperatures"],
+  "hardware.pcie_errors": ["PCIe links"],
+  "hardware.thermal_shutdown": ["Temperature history"],
+  "hardware.usb_overcurrent": ["Devices"],
+  "jobs.job_failed": ["Timers"],
+  "network.errors": ["Errors and drops per interface"],
+  "network.no_internet": ["Connectivity"],
+  "network.offline": ["Connectivity"],
+  "network.weak_wifi": ["Wi-Fi"],
+  "packages.broken": ["Packages"],
+  "packages.updates_available": ["Packages"],
+  "performance.disk_stall": ["Devices"],
+  "performance.memory_short": ["Memory usage"],
+  "performance.oom_kill": ["Out-of-memory guard", "Memory usage"],
+  "performance.swap_full": ["Swap and compression", "Memory usage"],
+  "power.battery_empty": ["Battery"],
+  "power.battery_fault": ["Battery details", "Battery"],
+  "power.battery_hot": ["Battery details", "Battery"],
+  "power.battery_worn": ["Battery health"],
+  "power.charger_weak": ["Chargers"],
+  "privacy.popcon": ["Settings"],
+  "security.apparmor_off": ["Security posture"],
+  "security.auto_updates_stopped": ["Security posture"],
+  "security.cpu_flaws": ["Security posture"],
+  "security.firewall_off": ["Security posture"],
+  "security.secure_boot_off": ["Security posture"],
+  "security.ssh_root_password": ["Security posture"],
+  "security.updates_pending": ["Security posture"],
+  "services.restart_loop": ["Units"],
+  "services.unit_failed": ["Units"],
+  "storage.boot_low": ["Mount points"],
+  "storage.disk_errors": ["Filesystem checks"],
+  "storage.disk_low": ["Mount points"],
+  "storage.filling_up": ["Usage trend and forecast"],
+  "storage.fs_errors": ["Filesystem checks"],
+  "storage.inodes_full": ["Space allocation"],
+  "storage.read_only": ["Filesystems"],
+  "storage.root_almost_full": ["Space allocation"],
+  "system.clock_unsynced": ["Date and time"],
+  "system.reboot_required": ["Pending updates"],
+  "system.time_sync_off": ["Date and time"],
+};
+
+/** Whether a panel title is one of the given titles, or one of them with " · something" after it. */
+export function panelMatches(title: string, wanted: string): boolean {
+  return title === wanted || title.startsWith(`${wanted} ·`);
+}
+
+/** Open findings shown on one sub-page, most serious first. */
+export function findingsHere(pageId: string, tabId: string, report: StatusReport | null): Finding[] {
+  if (pageId === "overview") return [];
+  return findingsFor(pageId, report)
+    .filter((f) => tabOf(f) === tabId)
+    .sort((a, b) => RANK[b.severity] - RANK[a.severity]);
+}
+
 /** The tab a finding belongs to, or undefined when no rule says. */
 export function tabOf(finding: Finding): string | undefined {
   return RULE_TAB[finding.rule];
@@ -97,9 +171,8 @@ export function tabOf(finding: Finding): string | undefined {
 
 /** A warning or critical dot for one sub-page; `null` when it has nothing open. */
 export function tabStatus(pageId: string, tabId: string, report: StatusReport | null): StatusVariant | null {
-  const findings = findingsFor(pageId, report).filter((f) => tabOf(f) === tabId);
-  if (findings.length === 0) return null;
-  return VARIANT[findings.reduce((a, b) => (RANK[b.severity] > RANK[a.severity] ? b : a)).severity];
+  const worst = findingsHere(pageId, tabId, report)[0];
+  return worst ? VARIANT[worst.severity] : null;
 }
 
 /** `null` means "show no badge". */
