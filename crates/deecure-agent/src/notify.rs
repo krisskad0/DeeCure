@@ -263,9 +263,11 @@ async fn weekly(agent: &Agent, now: Timestamp, minute: u16) -> Result<(), String
     // Show a waiting weekly summary, outside quiet hours, for up to a day.
     let pending = {
         let s = store::lock(&agent.store);
+        // Stored as `null` once shown, so it is read as "a time or nothing".
         let pending = s
-            .setting::<Timestamp>(WEEKLY_PENDING)
-            .map_err(|e| e.to_string())?;
+            .setting::<Option<Timestamp>>(WEEKLY_PENDING)
+            .map_err(|e| e.to_string())?
+            .flatten();
         match pending {
             Some(_) => s.reports(1).map_err(|e| e.to_string())?.into_iter().next(),
             None => None,
@@ -480,6 +482,20 @@ mod tests {
                 .body
                 .ends_with("and 2 more. Open DeeCure to see them.")
         );
+    }
+
+    #[tokio::test]
+    async fn a_shown_weekly_summary_does_not_break_the_next_check() {
+        // Once shown, the pending summary is stored as `null`; reading it must still work.
+        let store = Store::open_in_memory().unwrap();
+        store
+            .set_setting(WEEKLY_PENDING, &Option::<Timestamp>::None)
+            .unwrap();
+        let agent = Agent::new(
+            std::sync::Arc::new(std::sync::Mutex::new(store)),
+            crate::collect::SystemRoot::at("/nonexistent"),
+        );
+        assert_eq!(weekly(&agent, Timestamp::now(), 0).await, Ok(()));
     }
 
     #[test]
