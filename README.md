@@ -1,6 +1,6 @@
-# DeeCure: deep insight into every layer of your Linux computer
+# DeeCure: Linux system monitor, health check, and optimizer for Ubuntu
 
-**Deep insight into every layer of a Linux computer: sensor limits, PCIe links, firmware, kernel settings, and services. Warns on the hardware's own limits and fixes problems safely.** Free, open source, and private: everything stays on your computer.
+**DeeCure is a free, open-source app that checks the health of your Linux computer, explains what it finds in plain English, warns you before something breaks, and fixes problems safely with undo.** It covers your CPU, graphics, memory, disks and SSDs, battery, temperatures, firmware, services, updates, and security, in one desktop app and one terminal command. Everything stays on your computer: no account, no cloud, no telemetry.
 
 [![CI](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml/badge.svg)](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -9,217 +9,206 @@
 [![Release](https://img.shields.io/github/v/release/krisskad0/DeeCure?include_prereleases&label=pre-release)](https://github.com/krisskad0/DeeCure/releases)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/krisskad0/DeeCure/badge)](https://securityscorecards.dev/viewer/?uri=github.com/krisskad0/DeeCure)
 
-> **In one sentence:** DeeCure reads what your computer knows about itself, from each sensor's own limit to the file that set each kernel setting, explains it, warns when something can harm the machine, and fixes it with a preview and undo.
+## Install in one step
 
-**Install on Ubuntu 24.04 or 26.04** (open the Terminal with `Ctrl` + `Alt` + `T`):
+On **Ubuntu 24.04 LTS or 26.04 LTS**, open the Terminal (`Ctrl` + `Alt` + `T`) and paste:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh
 ```
 
-Then open **DeeCure** from the app menu. [All install options](docs/07-user-guide/install.md)
+Then open **DeeCure** from the app menu. It updates itself after that: it tells you when a new version is out and installs it after your OK. [All install options](docs/07-user-guide/install.md)
 
 ---
 
-## What DeeCure shows you
-
-Things that normally take many commands, or are not shown anywhere at all:
-
-- A drive running on a **slower PCIe link** than both the drive and its slot support.
-- The **temperature limits your CPU and NVMe drive report themselves**, and how long they stayed near them.
-- **Which app keeps the second graphics card awake**, draining the battery.
-- **Which device woke the laptop** from sleep, and every device allowed to.
-- **Which config file set each kernel setting**, and whether a later file overrides it.
-- Whether **automatic security updates really installed**, and why not ("stopped: metered connection").
-- What a **USB-C charger offers** against what the laptop accepts.
-- What really **delayed the boot**: the critical chain, step by step.
-- **Real memory per app** (PSS and USS), not the misleading total.
-- How locked down **each service** is (systemd's exposure score), and what it costs in CPU, memory, and disk.
-- A **USB 3 device stuck at USB 2 speed**, and the firmware security level (HSI) with every check behind it.
-- **Every installed file checked** against its package, every screen read from its own EDID, every CPU security flaw with its state.
-
-62 kinds of live data, 22 pages and 78 tabs, each with real data from your computer.
-
 ## Contents
 
-- [What DeeCure shows you](#what-deecure-shows-you)
-- [What is DeeCure?](#what-is-deecure)
-- [Why one app instead of ten tools](#why-one-app-instead-of-ten-tools)
+- [What DeeCure does for you](#what-deecure-does-for-you)
+- [Common problems it solves](#common-problems-it-solves)
+- [Who it is for](#who-it-is-for)
 - [Features](#features)
-- [Three view levels: Beginner, Advanced, Expert](#three-view-levels-beginner-advanced-expert)
+- [Beginner, Advanced, and Expert views](#beginner-advanced-and-expert-views)
+- [Private and safe by design](#private-and-safe-by-design)
+- [Use it from the terminal](#use-it-from-the-terminal)
 - [How it works](#how-it-works)
-- [Safety and privacy](#safety-and-privacy)
-- [Command line](#command-line)
 - [FAQ](#faq)
 - [Roadmap](#roadmap)
 - [Build from source](#build-from-source)
-- [Documentation](#documentation)
-- [Contributing, security, license](#contributing)
+- [Documentation, contributing, security, license](#documentation)
 
-## What is DeeCure?
+## What DeeCure does for you
 
-Your Linux computer knows a great deal about itself: every sensor's limit, every battery cell, every drive's link, every wake-up source, every service's sandbox, every change. That knowledge is spread over `/proc`, `/sys`, systemd, the journal, apt, snap, D-Bus, firmware, and dozens of commands. DeeCure reads all of it, connects it, and turns it into answers:
+1. **Shows how healthy your computer is**: a health score, the problems behind it, and how busy your CPU, graphics (GPU), memory, disk, and network are, all on one screen.
+2. **Warns you early**: about overheating, a disk that will be full soon, a wearing SSD, a failing battery, memory errors, or security updates that silently stopped. It judges each part against **its own limits**, not one number for every computer.
+3. **Explains everything in plain English**: what a service does, what a log error means, why the computer is slow. Over 130 built-in explanations, right where you need them.
+4. **Fixes problems safely**: 47 fixes, each showing its exact steps before it runs, with your password only for admin steps, a check afterwards, and undo.
+5. **Gives you control**: battery charge limits, CPU turbo, power saving, sleep and wake-up, and what closing the lid does, all kept after a restart.
 
-1. **Understand:** a deep view of the whole machine: CPU, memory, disks, graphics, battery, sensors, firmware, USB and PCIe, network, services, packages, containers, security, and what changed.
-2. **Keep it healthy:** 55 health warnings that use each part's **own** limits (the CPU's own critical temperature, the drive's own warning temperature) and fire only when a problem lasts.
-3. **Warn early:** a disk that keeps filling, a battery that gets too hot while charging, cooling that cannot keep up, memory errors, disk read errors, automatic security updates that silently stopped.
-4. **Fix safely:** 47 fixes with a preview of every step, your password only for admin steps, a check afterwards, and undo.
-5. **Control:** battery charge limits, CPU turbo and speed on battery, sleep and wake-up, lid action, device power saving, all kept after restart.
+It works without a password for looking around. It never changes anything unless you ask.
 
-It is for anyone who wants **full control of their own computer**: experts who want every detail, and beginners who want it explained (the Beginner view keeps it short).
+## Common problems it solves
 
-## Why one app instead of ten tools
-
-Getting this picture today means a dozen tools and commands (`lspci -vv`, `sensors`, `smartctl`, `systemd-analyze`, `journalctl`, `upower`, `powertop`, `sysctl`, `debsums`, and forum searching), and none of them connects one finding to another. DeeCure does:
-
-| You want to… | DeeCure |
+| Your question | What DeeCure shows or does |
 | --- | --- |
-| Know why the PC is slow | Names the cause in 10 seconds (CPU, memory, disk, or heat) and the app behind it, with memory and disk stall readings |
-| Free disk space | Shows what uses it, predicts **when the disk is full** (only from real, lasting growth), and cleans each part with one click |
-| Protect the battery | Charge limits (such as 80%), charge mode, battery health and temperature, and a warning when the charger is too weak |
-| Stop overheating | Each part's own temperature limits, heat slowdowns, fan checks, and what to do |
-| Save power | Turbo, highest CPU speed on battery, PCIe power saving, device power saving, Wi-Fi power saving, deep sleep, wake-up sources |
-| Find out what broke | A timeline of every package, kernel, config file, device, crash, and hardware error, with line-by-line config diffs |
-| Stay secure | Updates (and whether automatic updates really install), firewall, open ports, AppArmor, Secure Boot, CPU security flaws |
-| Understand a name | 136 plain-English explanations of services, ports, log errors, and how-tos, right where they appear |
+| **Why is my Ubuntu computer slow?** | Names the cause (CPU, memory, disk, or heat) and the app behind it, using real stall measurements, not guesses |
+| **Why is my laptop overheating?** | Each part's own temperature limit, how long it stayed near it, heat slowdowns, and fan checks, with what to do |
+| **How do I free up disk space?** | What fills the disk, when it will be full (only from real, lasting growth), and one-click cleanup of caches, old kernels, old snaps, and logs |
+| **How do I make my battery last longer?** | Battery health and temperature, charge limits such as 80%, power saving that is offered only when it helps on your laptop |
+| **Is my SSD or hard drive failing?** | Drive health (SMART and NVMe): life used, bad sectors, errors, and self-test results, plus a daily check that warns before it fails |
+| **What changed after an update?** | A timeline of every package, kernel, config file, device, and crash, with line-by-line config differences |
+| **Is my Linux computer secure?** | Updates and whether automatic updates really install, firewall, open ports, AppArmor, Secure Boot, CPU security flaws, SSH and sudo settings |
+| **Why does my laptop wake up or drain in sleep?** | Every device allowed to wake it, which one did, and whether the chip reaches its deepest sleep |
+
+## Who it is for
+
+- **New Linux users** who want their computer explained without learning a dozen commands. The **Beginner** view is short and calm.
+- **Laptop owners** who care about battery life, heat, and noise.
+- **Power users and developers** who want every detail: PCIe link speeds, kernel settings and the file that set them, real memory per app, service sandboxing.
+- **People who look after a family or office PC** and want early warnings instead of surprises.
 
 ## Features
 
 ### Health warnings that respect how you use your computer
 
-- **Harm, not use:** a CPU at 100%, RAM full of cache, swap in use, or a busy disk never warns. Stalls, errors, heat, wear, and risk do.
-- **The hardware's own limits:** temperatures are judged against the limit each CPU, drive, graphics card, and Wi-Fi chip reports, not one number for every computer.
-- **No false alarms from spikes:** most warnings need the problem to last (for example 5 minutes near the limit).
-- **Your limits:** turn any warning off, or change when it fires, in Settings. DeeCure's default is shown next to your value, and every value stays inside a safe range.
-- **55 warnings** across CPU, memory, disks and filesystems, battery, temperatures and fans, graphics, hardware errors, the kernel, services, the clock, packages, network, and security. Full list: [Health warnings](docs/01-product/health-warnings.md).
+- **Harm, not use:** a CPU at 100%, memory full of cache, or a busy disk never warns. Stalls, errors, heat, wear, and risk do.
+- **Each part's own limits:** temperatures are checked against the limit each CPU, drive, graphics card, and Wi-Fi chip reports about itself.
+- **No false alarms from spikes:** most warnings need the problem to last, for example 5 minutes near the limit.
+- **Your rules:** turn any warning off or change when it fires. The safe default is shown next to your value.
+- **55 warnings** across CPU, memory, disks, battery, temperatures, fans, graphics, hardware errors, services, packages, network, and security. [Full list](docs/01-product/health-warnings.md)
 
-### Deep view of the whole computer (Expert)
+### A complete, honest view of your hardware
 
-- **CPU:** speed per core, power limits, caches, microcode, CPU security flaws, sleep states, heat slowdowns, interrupts.
-- **Memory:** where every byte goes, real memory per app and service (PSS, USS), swap and compressed swap, out-of-memory scores, memory error counters per module.
-- **Drives:** NVMe and SATA details, PCIe link speed against what the drive and slot support, TRIM, scheduler, partition alignment, filesystem errors, disk use per app and service.
-- **Graphics:** clocks, power, which app keeps a second card awake, video decoding in hardware, the driver stack.
-- **Battery and power:** voltage, current, temperature, health, charge limits and modes, USB-C Power Delivery offers, chargers, every wake-up source.
-- **Firmware and ports:** firmware security level (HSI), Secure Boot, TPM, Thunderbolt, UEFI boot entries, the USB tree with real speeds, USB-C ports.
-- **Devices:** cameras, fingerprint readers, screens read from their own EDID (size, refresh, HDR), sound cards, network chips.
-- **System:** boot critical chain, every service's cost and sandboxing score, kernel settings and who set them, loaded modules, DKMS drivers, time sync.
-- **Software:** packages, snaps (with old versions), Flatpak runtimes, package health, and a full check of every installed file against its package.
+- **CPU and graphics:** speed per core, temperatures and limits, heat slowdowns, power use, how busy the GPU is, which app keeps a second graphics card awake.
+- **Memory:** where every byte goes, real memory per app, swap, memory slots and their speed, memory errors.
+- **Disks and SSDs:** health and wear, NVMe details, whether the drive runs at full PCIe or SATA speed, TRIM, filesystem errors.
+- **Battery and power:** health, temperature, charge limits, USB-C chargers, every wake-up source.
+- **Firmware and devices:** firmware updates, the firmware security level, Secure Boot, TPM, BIOS settings, USB speeds, screens, cameras, sound.
 
-### Optimize: only what your computer measurably needs
+A value DeeCure cannot read is shown as unknown, never guessed.
 
-A page of improvements, each offered **only when a measurement on this computer shows it is needed**, with its numbers. Examples: free space parts over their limit, unused packages, a log size cap, the file-watch limit, a better hard disk scheduler, compressed swap when swapping stays high, a charge limit when the laptop is on mains most of 14 days, turbo off on battery when heat slows it, the hardware video driver, a second graphics card that stays awake, firmware updates, missing DKMS builds. Common "speed-up tips" that do not help on Ubuntu are never offered, and the page says why. [Optimize catalog](docs/01-product/optimize-catalog.md)
+### Optimize: only what your computer actually needs
 
-### Power and battery controls
+Improvements are offered **only when a measurement on this computer shows they help**, with the numbers behind each one: unused packages, a log size cap, compressed swap when swapping stays high, a charge limit when the laptop is mostly plugged in, the right hardware video driver, firmware updates. Popular "speed-up tips" that do not help on Ubuntu are never offered. [Optimize catalog](docs/01-product/optimize-catalog.md)
 
-Battery charge limits (presets or your own), charge mode, CPU turbo, highest CPU speed on battery (set again each time you plug in or unplug), PCIe power saving, suspend type, what closing the lid does, device wake-up and power saving, keyboard backlight, radios, Wi-Fi power saving. Risky ones (PCIe power saving, deep suspend) are tried for this session first and kept only when you press **Keep**. Kept settings are set again at every start, and skipped when a different device is in that place.
+### Battery and power controls
+
+Battery charge limits (presets or your own), charge mode, CPU turbo, the highest CPU speed on battery, PCIe and device power saving, sleep type, lid action, keyboard backlight, and radios. Risky settings are tried for one session first and kept only when you choose **Keep**.
 
 ### Safe fixes with undo
 
-47 fixes. Each shows its exact steps and commands first; untick any step; admin steps ask for your password through the normal Ubuntu dialog; DeeCure checks that it worked and keeps an undo for every step that can be undone. Steps that cannot be undone say so before you apply them.
+Every fix shows its steps and commands first. Untick any step. Admin steps ask for your password through the normal Ubuntu dialog. DeeCure checks the result and keeps an undo, and tells you before running a step that cannot be undone.
 
-### What changed, predictions, notifications
+### What changed, forecasts, and notifications
 
-- **Timeline:** package installs and upgrades (apt, dpkg, snap, Flatpak), config changes with diffs, USB devices, boots, unclean shutdowns, crashes, apps stopped for memory, and hardware errors from the kernel log.
-- **Disk forecast:** "full in about N days", only when the disk keeps filling over both the last day and the last 3 days, so one big install never causes a false alarm.
-- **Notifications:** critical problems right away, quiet hours, never the same alert twice in 24 hours, and a weekly summary with your health trend.
+- **Timeline** of package installs and upgrades (apt, snap, Flatpak), config changes, USB devices, boots, crashes, and hardware errors, for the last 7, 30, or 90 days.
+- **Disk forecast:** "full in about N days", only when the disk keeps filling, so one big install never causes a false alarm.
+- **Notifications** for critical problems, with quiet hours, and a weekly summary of your computer's health.
 
-### Updates that check themselves
+## Beginner, Advanced, and Expert views
 
-DeeCure looks for a new release daily (or weekly, or never), tells you once, and installs it after your OK, or automatically if you choose. Before apt installs anything, every package is checked against the release's checksums and its own name, version, and architecture, and only a newer version is accepted. [How updates work](docs/02-architecture/updates.md)
-
-## Three view levels: Beginner, Advanced, Expert
-
-- **Beginner** (default): a short menu of 8 pages in plain words. Light and calm.
+- **Beginner** (default): 8 pages in plain words. Ideal if you are new to Linux.
 - **Advanced:** every page: logs, services, scheduled jobs, containers, network, accounts, and more.
-- **Expert:** every page, plus the deep data above, data sources, exact commands, raw columns, and the Optimize page.
+- **Expert:** everything above, plus deep hardware data, exact commands, data sources, and the Optimize page.
 
-22 pages and 78 tabs in all, every one with real data from your computer. [View levels](docs/01-product/view-levels.md)
+Switch at any time from the top bar. [View levels](docs/01-product/view-levels.md)
 
-## How it works
+## Private and safe by design
 
-```mermaid
-flowchart LR
-  App["Desktop app (Tauri and React)"]
-  CLI["deecure command"]
-  Agent["deecure-agent (runs as you)"]
-  DB[("SQLite history")]
-  Linux[("Linux: proc, sys, systemd, journal, apt, snap, D-Bus")]
-  Helper["deecure-helper (root, fixed list of actions)"]
-  Boot["deecure-power.service (boot)"]
-  App <-->|private socket| Agent
-  CLI <-->|private socket| Agent
-  Agent --> DB
-  Agent -->|reads only| Linux
-  App -->|admin step, with your password| Helper
-  Helper --> Linux
-  Boot -->|kept power settings| Helper
-```
+- **Your data stays on your computer.** No account, no telemetry, no cloud. The only connection is the update check, which asks GitHub for DeeCure's release list and sends nothing about your computer. You can turn it off.
+- **Read-only by default.** About 80% of DeeCure works without a password.
+- **A small, strict admin helper.** Admin steps go through a tiny root helper with a fixed list of actions, each with its own password prompt, input checks against the live system, no shell, and an audit log.
+- **Light on resources.** About 0.1% CPU when idle and about 21 MB of memory.
+- **Checked releases.** Every update is verified against the release checksums before it installs. Releases come with signed build provenance and a software bill of materials. [Security policy](SECURITY.md)
 
-1. **The agent** runs in the background as your normal user. Every minute it reads the system, keeps a compact history (2 years in under 200 MB), and checks 55 rules that turn readings into findings (two of them use a daily admin read by the helper: drive wear and SSH root login). Deep data is read only while its page is open.
-2. **The desktop app and the `deecure` command** ask the agent over a private Unix socket only your user can open.
-3. **Admin steps** go to a small **root helper** that knows a fixed list of actions (32, each with its own polkit prompt), checks every input against the live system, runs no shell, and writes an audit log. It starts only when needed and exits after 2 idle minutes.
-4. **Kept power settings** are set again at boot by a small service, with the same checks.
+## Use it from the terminal
 
-Measured on a real laptop: about **0.1% CPU** when idle, about **21 MB** of memory, first results in under a second. [Architecture](docs/02-architecture/overview.md)
-
-## Safety and privacy
-
-- **Private by design:** no account, no telemetry, no cloud. Nothing about your computer leaves it. The one connection is the update check (daily by default, or weekly, or never), which only asks GitHub for DeeCure's release list.
-- **Read-only by default:** about 80% of everything works without a password.
-- **Honest data:** a value DeeCure cannot read is shown as unknown, never guessed. Warnings never act on stale or missing data.
-- **No surprises:** DeeCure never restarts services it does not have to (for example, the lid setting waits for the next restart instead of ending your session).
-- **Supply-chain safety:** signed build provenance and an SBOM on releases, CI actions pinned to exact commits, dependency and license checks, CodeQL scanning ([SECURITY.md](SECURITY.md)).
-- **Well tested:** 375 Rust tests and 198 UI tests, randomized hostile input against the root helper, replays of real machines' `/proc` and `/sys`, every page rendered with real data, container tests of the `.deb` packages, an end-to-end helper test with real D-Bus and polkit, and a performance budget checked on every push.
-
-## Command line
-
-Everything works in the terminal too, also on servers without a desktop:
+Everything also works on servers without a desktop:
 
 ```bash
 deecure status                    # health score and problems, in plain English
 deecure history --since 2d        # what changed in the last 2 days
 deecure report --html report.html # a 7-day report to share
-deecure fix --list                # every fix
+deecure fix --list                # every available fix
 deecure fix storage.free_space    # preview a fix, then run it after you say yes
 deecure undo 12                   # take a fix back
 ```
 
 Add `--json` for scripts. [User guide](docs/07-user-guide/using-deecure.md)
 
+## How it works
+
+```mermaid
+flowchart LR
+  App["Desktop app"]
+  CLI["deecure command"]
+  Agent["Background agent (runs as you)"]
+  DB[("Local history")]
+  Linux[("Your Linux system")]
+  Helper["Admin helper (fixed list of actions)"]
+  App <-->|private socket| Agent
+  CLI <-->|private socket| Agent
+  Agent --> DB
+  Agent -->|reads only| Linux
+  App -->|admin step, with your password| Helper
+  Helper --> Linux
+```
+
+1. A small **background agent** runs as your normal user. Every minute it reads the system, keeps a compact history (two years in under 200 MB), and checks it for problems.
+2. The **desktop app** and the **`deecure` command** ask the agent over a private connection only your user can open.
+3. **Admin steps** go to the **admin helper**, which starts only when needed and stops after two idle minutes.
+
+Built with Rust, Tauri, React, TypeScript, and SQLite. [Architecture](docs/02-architecture/overview.md)
+
 ## FAQ
 
-**What is DeeCure?** Free, open-source software that gives deep insight into every layer of a Linux computer (sensors and their own limits, PCIe links, firmware, the kernel, services, packages), warns on the hardware's own limits, controls battery and power settings, and fixes problems safely with undo, in one desktop app and one command.
+**What is DeeCure?**
+A free, open-source system monitor, health checker, and optimizer for Linux. It shows how your computer is doing, explains it in plain English, warns about real problems early, and fixes them safely with undo.
 
-**Is it a replacement for GNOME System Monitor or htop?** It shows what they show (processes, CPU, memory, disks, network), and goes much deeper: each part's own limits, PCIe and USB link speeds, firmware security, kernel settings and their source files, service sandboxing, real memory per app, what changed, and warnings and fixes built on all of that.
+**Is DeeCure free?**
+Yes. It is free and open source under the Apache 2.0 license, with no paid version, ads, or account.
 
-**Does it send my data anywhere?** No. There is no account, no telemetry, and no cloud. The only connection is the update check, which asks GitHub for DeeCure's release list and sends nothing about your computer; set it to Never in Settings › About to stay fully offline.
+**Is it an alternative to GNOME System Monitor, htop, or TLP?**
+It shows what a system monitor shows (processes, CPU, memory, disk, network) and goes further: each part's own limits, drive health, firmware, what changed, warnings, and fixes. It also has battery and power controls, so many laptop users will not need a separate power tool.
 
-**How does DeeCure update itself?** It checks GitHub daily (or weekly, or never) and tells you when a new version is out. Install it from Settings › About with your password, or let it install automatically. Either way, every package is checked against the release's checksums and its own name and version before apt installs it.
+**Does it send my data anywhere?**
+No. Only the update check connects to the internet, and it sends nothing about your computer. Set it to Never in Settings to stay fully offline.
 
-**Does it need root?** No, not to look. Your password is asked only for admin fixes and admin read-outs, each time, through the standard Ubuntu dialog.
+**Will it slow my computer down?**
+No. The agent uses about 0.1% CPU when idle and about 21 MB of memory. Deep details are read only while you look at them.
 
-**Will it slow my computer down?** No. The agent uses about 0.1% CPU when idle and about 21 MB of memory, and deep data is read only while you look at it.
+**Does it need root or my password?**
+Not to look around. Your password is asked only for admin fixes and admin details, through the standard Ubuntu dialog.
 
-**Can a fix break my system?** Every fix shows its exact steps first, lets you untick any step, checks the result, and keeps an undo when the step can be undone. Risky power settings are tried for one session before they are kept.
+**Can a fix break my system?**
+Every fix shows its exact steps first, lets you skip any step, checks the result, and keeps an undo where possible. Risky power settings are tried for one session before they are kept.
 
-**Will it warn me all the time?** No. Normal use (a busy CPU, full RAM cache) never warns, short spikes never warn, and you can turn any warning off or change its limit.
+**Will it warn me all the time?**
+No. Normal use never warns, short spikes never warn, and you can turn off or change any warning.
 
-**Can I set a battery charge limit on Linux with it?** Yes, when the laptop supports it (many Dell, Lenovo, ASUS, and others): presets such as 80%, or your own start and stop values, kept after restart.
+**Can I set a battery charge limit on Ubuntu with it?**
+Yes, when your laptop supports it (many Dell, Lenovo, ASUS, and other laptops do): presets such as 80%, or your own values, kept after restart.
 
-**Which Linux versions are supported?** Ubuntu 24.04 LTS and 26.04 LTS first. Debian, Fedora, Arch, and KDE are planned.
+**Can it check my SSD health?**
+Yes. It shows SSD and hard drive health (life used, bad sectors, errors, self-tests) and warns before a drive wears out. Install `smartmontools` for the full drive check.
+
+**How does it update?**
+It checks for a new version daily (or weekly, or never), tells you once, and installs it after your OK, or automatically if you choose. Every package is verified before it installs.
+
+**Which Linux versions are supported?**
+Ubuntu 24.04 LTS and 26.04 LTS on 64-bit PCs (amd64). Debian, Fedora, Arch, and KDE Plasma are planned.
 
 ## Roadmap
 
-| Phase | What | State |
+| Stage | What | State |
 | --- | --- | --- |
-| 0-1 | Agent, history, rules, desktop app with real data on every page | Built |
-| 2 | Safe fixes, root helper, undo, signed APT repository | Built; real-machine test matrix and security review pending |
-| 3 | What-changed timeline, predictions, notifications, weekly report, tray icon | Built |
-| Expert build | Three view levels, deep hardware and system data, power controls kept after restart, Optimize, 55 health warnings with your own limits, admin read-outs (BIOS settings, memory slots, NVMe, self-tests, power meters, low power, wake-ups, sudo, SSH) | Built; eBPF traffic per app next |
-| 4 | "Ask DeeCure": a private, local AI that answers questions with sources | Planned |
-| 5 | More distros, KDE, server mode, many PCs | Planned |
+| Foundation | Background agent, history, warnings, desktop app with real data on every page | Built |
+| Fixes | Safe fixes with undo, admin helper, Ubuntu packages | Built; wider real-machine testing and a security review in progress |
+| Insight | What-changed timeline, forecasts, notifications, weekly report, tray icon | Built |
+| Expert | Three view levels, deep hardware data, power controls, Optimize, admin details | Built |
+| Ask DeeCure | A private, local assistant that answers questions about your computer, with sources | Planned |
+| More platforms | More distributions, KDE Plasma, server mode, several computers | Planned |
 
-The newest pre-release is [v0.1.0-alpha.4](https://github.com/krisskad0/DeeCure/releases). Details: [roadmap](docs/05-roadmap/README.md) and [what is left](docs/05-roadmap/pending.md).
+DeeCure is in **pre-release**: it is used daily, but expect changes before version 1.0. See the [latest release](https://github.com/krisskad0/DeeCure/releases), the [roadmap](docs/05-roadmap/README.md), and the [changelog](CHANGELOG.md).
 
 ## Build from source
 
@@ -238,20 +227,18 @@ Start at [docs/README.md](docs/README.md).
 
 | Folder | What's inside |
 | --- | --- |
-| [01-product](docs/01-product/README.md) | Vision, view levels, Expert coverage, health warnings, Optimize, user journey |
-| [02-architecture](docs/02-architecture/README.md) | Agent, collectors, rules, fixes, root helper, storage, security |
-| [03-ui-design](docs/03-ui-design/README.md) | Design tokens, shell, components, pages |
-| [04-development](docs/04-development/README.md) | Setup, repo layout, writing rules, testing |
-| [05-roadmap](docs/05-roadmap/README.md) | Phase-by-phase plan and the pending list |
-| [06-packaging](docs/06-packaging/README.md) | `.deb` packages, APT repository, releases |
-| [07-user-guide](docs/07-user-guide/README.md) | Install and everyday use |
-| [08-contributing](docs/08-contributing/README.md) | Issues, pull requests, reviews |
-
-Built with Rust (agent, root helper, CLI, fix runner), Tauri v2 + React + TypeScript (desktop app), SQLite, zbus (D-Bus), polkit, and YAML rules and knowledge base. Repository layout: [project structure](docs/04-development/project-structure.md).
+| [User guide](docs/07-user-guide/README.md) | Install and everyday use |
+| [Product](docs/01-product/README.md) | Vision, view levels, health warnings, Optimize |
+| [Architecture](docs/02-architecture/README.md) | Agent, collectors, warnings, fixes, admin helper, storage, security |
+| [UI design](docs/03-ui-design/README.md) | Design tokens, layout, components, pages |
+| [Development](docs/04-development/README.md) | Setup, project structure, writing rules, testing |
+| [Roadmap](docs/05-roadmap/README.md) | Plan and what is left |
+| [Packaging](docs/06-packaging/README.md) | Packages, APT repository, releases |
+| [Contributing](docs/08-contributing/README.md) | Issues, pull requests, reviews |
 
 ## Contributing
 
-You can help without writing Rust: add checks and plain-English explanations in YAML, share test data from your laptop, or improve the docs. See [CONTRIBUTING.md](CONTRIBUTING.md).
+You can help without writing Rust: add checks and plain-English explanations in simple YAML files, share test data from your laptop, report a bug, or improve the docs. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 
@@ -260,7 +247,3 @@ Please report security problems privately. See [SECURITY.md](SECURITY.md).
 ## License
 
 [Apache License 2.0](LICENSE). Free to use, change, and share.
-
----
-
-*Keywords: Linux control center, Linux system monitor, Ubuntu health check, hardware monitor for Linux, CPU temperature monitor Linux, battery health Linux, battery charge limit Ubuntu, laptop power management Linux, Linux optimizer, disk space cleanup Ubuntu, why is my Linux PC slow, Linux overheating, SSD health Linux, failed systemd services, Linux security check, what changed after update, Ubuntu maintenance tool, PC doctor for Linux, TLP alternative, GNOME System Monitor alternative.*
