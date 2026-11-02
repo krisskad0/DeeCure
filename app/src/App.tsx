@@ -58,7 +58,7 @@ import { PageHeader } from "./shell/PageHeader";
 import { MachinesPopover, NotificationsPopover } from "./shell/Popovers";
 import { Sidebar } from "./shell/Sidebar";
 import { type Range, TopBar } from "./shell/TopBar";
-import { findingsFor, pageStatus } from "./status";
+import { findingsFor, pageStatus, tabStatus } from "./status";
 import { type Mode, UiContext, atLeast } from "./ui";
 import { stack } from "./shell/Stack";
 import { inBeginner } from "./visible";
@@ -267,6 +267,7 @@ export default function App() {
       <Sidebar
         route={route}
         statusOf={(id) => pageStatus(id, report, error)}
+        tabStatusOf={(id, tab) => tabStatus(id, tab, report)}
         issueCount={all.length}
         rail={rail}
         onRail={setRail}

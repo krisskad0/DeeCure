@@ -4,7 +4,7 @@
 import type { Finding, Machine } from "../api";
 import { href } from "../route";
 import { PAGES } from "../spec/pages";
-import { pageOf } from "../status";
+import { pageOf, tabOf } from "../status";
 import { ago } from "../time";
 import { Popover } from "./Popover";
 
@@ -26,7 +26,7 @@ export function NotificationsPopover(props: { anchor: HTMLElement; findings: Fin
             const page = PAGES.find((p) => p.id === pageOf(f));
             return (
               <li key={`${f.rule}|${f.subject ?? ""}`}>
-                <a className="pop-item" href={page ? href(page.id, page.tabs[0].id) : href("overview", "issues")} onClick={onClose}>
+                <a className="pop-item" href={page ? href(page.id, page.tabs.find((t) => t.id === tabOf(f))?.id ?? page.tabs[0].id) : href("overview", "issues")} onClick={onClose}>
                   <span className={`sev-dot sev-${DOT[f.severity]}`} aria-label={f.severity} />
                   <span>
                     <span className="pop-title">{f.title}</span>

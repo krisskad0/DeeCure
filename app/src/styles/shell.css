@@ -71,9 +71,11 @@ kbd { font-size: 11px; padding: 1px 5px; border: 1px solid var(--line-2); border
 .chev { display: grid; color: var(--muted); transition: transform 0.15s; }
 .chev.open { transform: rotate(90deg); }
 .subtree { margin: 2px 0 4px 18px; padding-left: 10px; border-left: 1px solid var(--line); }
-.sub-item { display: block; padding: 4px 8px; border-radius: 5px; font-size: 13px; color: var(--ink-2); }
+.sub-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; border-radius: 5px; font-size: 13px; color: var(--ink-2); }
 .sub-item:hover { background: var(--hover); }
 .sub-item.active { color: var(--accent); font-weight: 600; }
+/* In line with the page dot above, which sits left of the chevron. */
+.sub-item .nav-dot { margin-right: 24px; }
 .nav-footer { border-top: 1px solid var(--line); padding: 6px 8px; }
 .collapse { color: var(--muted); }
 

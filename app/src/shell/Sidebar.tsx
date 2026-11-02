@@ -13,6 +13,8 @@ import { menuPages } from "../visible";
 export function Sidebar(props: {
   route: Route;
   statusOf: (pageId: string) => StatusVariant | null;
+  /** The same dot for a sub-page, so it is clear which one to open. */
+  tabStatusOf?: (pageId: string, tabId: string) => StatusVariant | null;
   issueCount: number;
   rail: boolean;
   onRail: (rail: boolean) => void;
@@ -61,17 +63,21 @@ export function Sidebar(props: {
         </a>
         {treeOpen && (
           <ul className="subtree">
-            {page.tabs.map((tab) => (
-              <li key={tab.id}>
-                <a
-                  className={`sub-item ${active && tab.id === route.tab.id ? "active" : ""}`}
-                  href={href(page.id, tab.id)}
-                  onClick={props.onNavigate}
-                >
-                  {tab.label}
-                </a>
-              </li>
-            ))}
+            {page.tabs.map((tab) => {
+              const tabStatus = props.tabStatusOf?.(page.id, tab.id);
+              return (
+                <li key={tab.id}>
+                  <a
+                    className={`sub-item ${active && tab.id === route.tab.id ? "active" : ""}`}
+                    href={href(page.id, tab.id)}
+                    onClick={props.onNavigate}
+                  >
+                    <span>{tab.label}</span>
+                    {(tabStatus === "warn" || tabStatus === "crit") && <span className={`nav-dot nav-dot-${tabStatus}`} aria-label={tabStatus === "crit" ? "Critical" : "Warning"} />}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         )}
       </li>
