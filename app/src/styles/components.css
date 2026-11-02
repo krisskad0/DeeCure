@@ -346,3 +346,26 @@ a.btn { text-decoration: none; }
 .sc-points-warn { color: var(--warn-ink); } .sc-points-crit { color: var(--crit-ink); }
 .sc-hint { margin: 0; font-size: 12.5px; }
 
+/* System › Kernel */
+.kn-now { display: flex; flex-direction: column; gap: 10px; }
+.kn-version { font-size: 20px; font-weight: 700; }
+.kn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.kn-chip { padding: 2px 9px; border-radius: 999px; background: var(--track); font-size: 12px; color: var(--ink-2); }
+.kn-chip b { margin-left: 4px; color: var(--ink); }
+.kn-label, .kn-head { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.kn-head { margin: 4px 0 6px; }
+.kn-cmdline { display: flex; flex-wrap: wrap; gap: 6px; }
+.kn-cmdline code { padding: 2px 7px; border: 1px solid var(--line); border-radius: 6px; font-size: 12px; overflow-wrap: anywhere; }
+.kn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.kn-item { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 12px; border: 1px solid var(--line); border-left-width: 3px; border-radius: 10px; }
+.kn-item.kn-running { border-left-color: var(--good); }
+.kn-item.kn-fallback { border-left-color: var(--s1); }
+.kn-item.kn-old { border-left-color: var(--line-2); }
+.kn-item-version { font-size: 15px; font-weight: 600; }
+.kn-item-meta { grid-column: 1 / -1; font-size: 12.5px; }
+.kn-verdict { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--good-soft); color: var(--good-ink); font-size: 13px; }
+.kn-notable { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+.kn-notable li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 13px; }
+.kn-notable li .muted { font-size: 12px; }
+.kn-packages { margin-top: 10px; }
+

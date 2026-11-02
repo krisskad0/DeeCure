@@ -9,6 +9,7 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { InlineMeter } from "../../components/InlineMeter";
 import { KpiRow } from "../../components/KpiTile";
+import { ShowAll } from "../../components/ShowAll";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { BarList } from "../../components/charts/BarList";
@@ -53,16 +54,6 @@ function Loading({ title, error }: { title: string; error: AppError | null }) {
     <Panel title={title} span={12}>
       <NoData error={error} waiting="Loading…" />
     </Panel>
-  );
-}
-
-/** The full table behind a top-10 view, folded away until asked for. */
-function ShowAll({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <details className="show-all">
-      <summary>{label}</summary>
-      {children}
-    </details>
   );
 }
 

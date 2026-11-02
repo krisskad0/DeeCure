@@ -113,42 +113,25 @@ Tab count pill: 12.
 
 ## System › Kernel: `system/kernel`
 
-1. **Key-value list**: "Running kernel" · span 5
-- Source chip (Expert): `uname -r · /proc/cmdline`
+1. **Running kernel** · span 5
+- The version, large; chips: "Not tainted" (or "Tainted (N)", warn), "245 modules loaded", "installed 7 Oct 2026".
+- "Started with these options": the boot command line split into one code chip per option.
 
-| Key | Value |
-| --- | --- |
-| Version | `6.8.0-47-generic` |
-| Tainted | {ok:No (0)} |
-| Modules loaded | 187 |
-| Command line | `BOOT_IMAGE=/vmlinuz-6.8.0-47-generic root=UUID=… ro quiet splash` |
+2. **Kernel list**: "Installed kernels" · span 7
+- Subtitle: "2 · 522 MB in /boot". Header action: **Remove old…** when there are old kernels.
+- One row per kernel: version, status badge (Running ok, Fallback info, Old off), and "261 MB · installed 7 Oct 2026"; a left edge in the status colour.
 
-2. **Data table**: "Installed kernels" · span 7
+3. **Ranked bars**: "Kernel modules" · span 12 (Beginner and Advanced; Expert shows "Loaded modules" instead, so modules show once)
+- Subtitle: "245 loaded · the 10 biggest". Each bar: module name, a second line on who uses it ("used by rfcomm, bnep, btusb +1", "in use 55 times", or "not in use"), and its size.
+- **Show all 245 modules** opens the full searchable table.
 
-| Version | Status | Size [n] | Installed | (action) |
-| --- | --- | --- | --- | --- |
-| `6.8.0-47-generic` | {ok:Running} | 312 MB | Tue 18:40 |   |
-| `6.8.0-45-generic` | {info:Fallback} | 310 MB | 12 Sep |   |
-| `6.8.0-41-generic` | {off:Old} | 320 MB | 14 Aug | [Remove](act:toast:Old kernel queued for removal.) |
-
-3. **Data table**: "Kernel modules" · span 12
-- Source chip (Expert): `lsmod`
-- Search: "Search modules"
-- Page size 8
-- Total count shown: 187
-
-| Module | Size [n] | Used by |
-| --- | --- | --- |
-| `i915` | 4.2 MB | 34 |
-| `iwlmvm` | 704 KB | 1 |
-| `iwlwifi` | 598 KB | iwlmvm |
-| `btusb` | 77 KB | 0 |
-| `bluetooth` | 1.0 MB | btusb, btrtl, btintel |
-| `nvme` | 61 KB | 2 |
-| `snd_hda_intel` | 61 KB | 3 |
-| `kvm_intel` | 487 KB | 0 |
-| `overlay` | 212 KB | 2 |
-| `xt_conntrack` | 12 KB | 2 |
+Expert adds:
+- **KPI row:** file watches (with a bar), open files, kernel lockdown, clock offset.
+- **Kernel settings from files** · span 12: a green "As shipped" line when every setting comes from Ubuntu's packages unchanged and in effect; otherwise "Worth a look" lists each setting set on this computer, from a changed package file, changed while running, or replaced by a later file, with why and the file. Then a chip per package with how many it sets, and **Show all N settings** for the full table.
+- **File watches by program** · span 6: the top 8 as ranked bars with PID; **Show all** when there are more.
+- **Time sync** · span 6.
+- **Loaded modules** · span 6: a green "All signed" line, or a warning list of modules from outside the kernel or unsigned (taint letters); then "Drive the most devices" as ranked bars; **Show all** for the full table.
+- **Extra drivers (DKMS)** · span 6.
 
 ## System › Time & Locale: `system/time`
 

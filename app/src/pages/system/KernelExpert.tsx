@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // Expert sections for the kernel and system limits (docs/01-product/expert-coverage.md, section
-// 11): kernel settings from files with who set each, file watches and open files against their
-// limits, loaded modules, extra drivers (DKMS), lockdown, and time sync.
+// 11): kernel settings from files (a summary, what is worth a look, and the full table under
+// "Show all"), file watches and open files against their limits, the modules that drive the
+// most devices, extra drivers (DKMS), lockdown, and time sync.
 
 import { type KernelDetail, getInventory } from "../../api";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
+import { BarList } from "../../components/charts/BarList";
 import { bytes } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
@@ -25,6 +28,30 @@ export function missingKernels(d: KernelDetail, module: { kernels: string[] }): 
 
 type Setting = KernelDetail["settings"][number];
 
+/** Settings worth a look: set on this computer, a package file changed here, changed while
+ * running, or replaced by a later file. The rest are Ubuntu's defaults, in effect as shipped. */
+export function notableSettings(settings: Setting[]): { setting: Setting; why: string }[] {
+  return settings.flatMap((s) => {
+    const why = !s.package
+      ? "set on this computer"
+      : s.file_changed
+        ? `${s.package}'s file was changed here`
+        : s.overridden
+          ? "not in effect: a later file sets it"
+          : s.now !== undefined && s.now !== s.value
+            ? `changed while running: now ${s.now}`
+            : "";
+    return why ? [{ setting: s, why }] : [];
+  });
+}
+
+/** How many settings each package sets, most first. */
+export function settingsByPackage(settings: Setting[]): [string, number][] {
+  const counts = new Map<string, number>();
+  for (const s of settings) counts.set(s.package ?? "this computer", (counts.get(s.package ?? "this computer") ?? 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
 export function KernelExpertSections() {
   const { data: d, error } = useLive(loadDetail, 60_000);
   if (!d) {
@@ -36,8 +63,9 @@ export function KernelExpertSections() {
   }
   const watchShare = d.watch_limit ? (d.watches_used / d.watch_limit) * 100 : undefined;
   const tainted = d.modules.filter((m) => m.taint);
-  const byYou = d.settings.filter((s) => !s.package || s.file_changed);
+  const notable = notableSettings(d.settings);
   const offset = d.time_sync.Offset;
+  const byDevices = [...d.modules].sort((a, b) => b.devices - a.devices || b.size - a.size).filter((m) => m.devices > 0).slice(0, 10);
   return (
     <>
       <KpiRow
@@ -48,6 +76,7 @@ export function KernelExpertSections() {
             unit: watchShare === undefined ? undefined : "%",
             subtext: d.watch_limit ? `${d.watches_used.toLocaleString()} of ${d.watch_limit.toLocaleString()}${d.watch_users[0] ? ` · most: ${d.watch_users[0].name}` : ""}` : "",
             status: (watchShare ?? 0) > 80 ? "warn" : undefined,
+            visual: watchShare === undefined ? undefined : { kind: "bar", percent: watchShare },
           },
           { label: "Open files", value: d.open_files === undefined ? "-" : d.open_files.toLocaleString(), subtext: d.open_files_limit === undefined ? "" : d.open_files_limit > NO_LIMIT ? "no system-wide limit" : `of ${d.open_files_limit.toLocaleString()}` },
           { label: "Kernel lockdown", value: d.lockdown ? d.lockdown[0].toUpperCase() + d.lockdown.slice(1) : "-", subtext: d.lockdown === "none" ? "unsigned changes allowed" : d.lockdown ? "blocks unsigned kernel changes" : "" },
@@ -56,38 +85,76 @@ export function KernelExpertSections() {
       />
       <Panel
         title="Kernel settings from files"
-        subtitle={`${d.settings.length} settings · ${byYou.length} set or changed on this computer`}
-        info="Settings applied at every start from the sysctl.d files. Most come from Ubuntu's packages. A later file replaces an earlier one for the same setting. Now shows the value the kernel uses at this moment."
+        subtitle={`${d.settings.length} settings`}
+        info="Settings applied at every start from the sysctl.d files. Most come from Ubuntu's packages. A later file replaces an earlier one for the same setting."
         source="/etc/sysctl.d · /usr/lib/sysctl.d · /proc/sys · dpkg"
         span={12}
-        flush
       >
-        <DataTable
-          rows={d.settings}
-          columns={[
-            { key: "key", label: "Setting", text: (s) => s.key, wrap: true },
-            { key: "value", label: "File sets", text: (s) => s.value },
-            { key: "now", label: "Now", text: (s) => s.now ?? "-", render: (s: Setting) => (s.now !== undefined && s.now !== s.value && !s.overridden ? <StatusBadge variant="info" label={`${s.now} (changed while running)`} /> : (s.now ?? "-")) },
-            { key: "from", label: "From", text: (s) => s.package ?? "This computer", render: (s: Setting) => (s.package ? (s.file_changed ? <StatusBadge variant="info" label={`${s.package}, file changed here`} /> : s.package) : <StatusBadge variant="info" label="This computer" />) },
-            { key: "state", label: "In effect", text: (s) => (s.overridden ? "No: a later file sets it" : "Yes") },
-            { key: "file", label: "File", text: (s) => `${s.file}:${s.line}`, wrap: true, expert: true },
-          ]}
-          rowKey={(s) => `${s.file}|${s.line}`}
-          pageSize={15}
-          search={{ placeholder: "Filter settings" }}
-        />
+        {notable.length === 0 ? (
+          <div className="kn-verdict">
+            <StatusBadge variant="ok" label="As shipped" />
+            <span>All {d.settings.length} come from Ubuntu's packages, unchanged, and are in effect. Nothing was set or changed on this computer.</span>
+          </div>
+        ) : (
+          <>
+            <div className="kn-head">Worth a look</div>
+            <ul className="kn-notable">
+              {notable.map(({ setting, why }) => (
+                <li key={`${setting.file}|${setting.line}`}>
+                  <code>{setting.key}</code> = <code>{setting.value}</code>
+                  <span className="muted">
+                    {why} · {setting.file}:{setting.line}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <div className="kn-chips kn-packages">
+          {settingsByPackage(d.settings).map(([pkg, n]) => (
+            <span key={pkg} className="kn-chip">
+              {pkg} <b>{n}</b>
+            </span>
+          ))}
+        </div>
+        <ShowAll label={`Show all ${d.settings.length} settings`}>
+          <DataTable
+            rows={d.settings}
+            columns={[
+              { key: "key", label: "Setting", text: (s) => s.key, wrap: true },
+              { key: "value", label: "File sets", text: (s) => s.value },
+              { key: "now", label: "Now", text: (s) => s.now ?? "-", render: (s: Setting) => (s.now !== undefined && s.now !== s.value && !s.overridden ? <StatusBadge variant="info" label={`${s.now} (changed while running)`} /> : (s.now ?? "-")) },
+              { key: "from", label: "From", text: (s) => s.package ?? "This computer", render: (s: Setting) => (s.package ? (s.file_changed ? <StatusBadge variant="info" label={`${s.package}, file changed here`} /> : s.package) : <StatusBadge variant="info" label="This computer" />) },
+              { key: "state", label: "In effect", text: (s) => (s.overridden ? "No: a later file sets it" : "Yes") },
+              { key: "file", label: "File", text: (s) => `${s.file}:${s.line}`, wrap: true },
+            ]}
+            rowKey={(s) => `${s.file}|${s.line}`}
+            pageSize={15}
+            search={{ placeholder: "Filter settings" }}
+          />
+        </ShowAll>
       </Panel>
-      <Panel title="File watches by program" info="Editors, sync apps, and file indexers watch folders for changes. When all watches are used, they stop seeing changes." source="/proc/[pid]/fdinfo (inotify)" span={6} flush>
-        <DataTable
-          rows={d.watch_users}
-          columns={[
-            { key: "name", label: "Program", text: (u) => u.name },
-            { key: "pid", label: "PID", text: (u) => String(u.pid), numeric: true },
-            { key: "w", label: "Watches", text: (u) => u.watches.toLocaleString(), numeric: true },
-          ]}
-          rowKey={(u) => String(u.pid)}
-          empty="None of your programs watches files"
-        />
+      <Panel title="File watches by program" subtitle={d.watch_limit ? `${d.watches_used.toLocaleString()} of ${d.watch_limit.toLocaleString()} used` : undefined} info="Editors, sync apps, and file indexers watch folders for changes. When all watches are used, they stop seeing changes." source="/proc/[pid]/fdinfo (inotify)" span={6}>
+        {d.watch_users.length === 0 ? (
+          <div className="empty muted">None of your programs watches files.</div>
+        ) : (
+          <>
+            <BarList rows={d.watch_users.slice(0, 8).map((u) => ({ id: String(u.pid), label: u.name, hint: `PID ${u.pid}`, value: u.watches, display: u.watches.toLocaleString() }))} />
+            {d.watch_users.length > 8 && (
+              <ShowAll label={`Show all ${d.watch_users.length} programs`}>
+                <DataTable
+                  rows={d.watch_users}
+                  columns={[
+                    { key: "name", label: "Program", text: (u) => u.name },
+                    { key: "pid", label: "PID", text: (u) => String(u.pid), numeric: true },
+                    { key: "w", label: "Watches", text: (u) => u.watches.toLocaleString(), numeric: true },
+                  ]}
+                  rowKey={(u) => String(u.pid)}
+                />
+              </ShowAll>
+            )}
+          </>
+        )}
       </Panel>
       <Panel title="Time sync" source="timedatectl timesync-status" span={6} flush>
         {Object.keys(d.time_sync).length ? (
@@ -96,20 +163,39 @@ export function KernelExpertSections() {
           <div className="empty muted">systemd-timesyncd is not running (another time service may be in use).</div>
         )}
       </Panel>
-      <Panel title="Loaded modules" subtitle={`${d.modules.length} loaded · ${tainted.length} from outside the kernel or unsigned`} info="Taint letters: O built outside the kernel, E not signed, P proprietary. Devices counts the hardware each module drives." source="/proc/modules · /sys/module" span={6} flush>
-        <DataTable
-          rows={[...d.modules].sort((a, b) => (b.taint ? 1 : 0) - (a.taint ? 1 : 0) || b.devices - a.devices)}
-          columns={[
-            { key: "name", label: "Module", text: (m) => m.name },
-            { key: "devices", label: "Devices", text: (m) => String(m.devices), numeric: true },
-            { key: "used", label: "Used by", text: (m) => m.used_by.join(", ") || "-", wrap: true },
-            { key: "taint", label: "Taint", text: (m) => m.taint ?? "-", render: (m) => (m.taint ? <StatusBadge variant="warn" label={m.taint} /> : "-") },
-            { key: "size", label: "Size", text: (m) => bytes(m.size, 0), numeric: true, expert: true },
-          ]}
-          rowKey={(m) => m.name}
-          pageSize={12}
-          search={{ placeholder: "Filter modules" }}
-        />
+      <Panel title="Loaded modules" subtitle={`${d.modules.length} loaded`} info="Taint letters: O built outside the kernel, E not signed, P proprietary. Devices counts the hardware each module drives." source="/proc/modules · /sys/module" span={6}>
+        {tainted.length === 0 ? (
+          <div className="kn-verdict">
+            <StatusBadge variant="ok" label="All signed" />
+            <span>Every module comes with the kernel and is signed.</span>
+          </div>
+        ) : (
+          <ul className="kn-notable kn-tainted">
+            {tainted.map((m) => (
+              <li key={m.name}>
+                <code>{m.name}</code> <StatusBadge variant="warn" label={m.taint ?? ""} />
+                <span className="muted">from outside the kernel or not signed</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="kn-head">Drive the most devices</div>
+        <BarList rows={byDevices.map((m) => ({ id: m.name, label: m.name, hint: m.used_by.length ? `used by ${m.used_by.slice(0, 3).join(", ")}${m.used_by.length > 3 ? ` +${m.used_by.length - 3}` : ""}` : bytes(m.size, 0), value: m.devices, display: `${m.devices} ${m.devices === 1 ? "device" : "devices"}`, mono: true }))} />
+        <ShowAll label={`Show all ${d.modules.length} modules`}>
+          <DataTable
+            rows={[...d.modules].sort((a, b) => (b.taint ? 1 : 0) - (a.taint ? 1 : 0) || b.devices - a.devices)}
+            columns={[
+              { key: "name", label: "Module", text: (m) => m.name },
+              { key: "devices", label: "Devices", text: (m) => String(m.devices), numeric: true },
+              { key: "used", label: "Used by", text: (m) => m.used_by.join(", ") || "-", wrap: true },
+              { key: "taint", label: "Taint", text: (m) => m.taint ?? "-", render: (m) => (m.taint ? <StatusBadge variant="warn" label={m.taint} /> : "-") },
+              { key: "size", label: "Size", text: (m) => bytes(m.size, 0), numeric: true },
+            ]}
+            rowKey={(m) => m.name}
+            pageSize={12}
+            search={{ placeholder: "Filter modules" }}
+          />
+        </ShowAll>
       </Panel>
       <Panel title="Extra drivers (DKMS)" info="Drivers built on this computer, such as NVIDIA or VirtualBox. Each must be built for every installed kernel, or the device stops working after starting that kernel." source="dkms status · /lib/modules" span={6} flush>
         {!d.dkms ? (

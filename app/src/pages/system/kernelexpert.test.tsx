@@ -4,7 +4,8 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { KernelDetail } from "../../api";
-import { KernelExpertSections, missingKernels } from "./KernelExpert";
+import { KernelExpertSections, missingKernels, notableSettings, settingsByPackage } from "./KernelExpert";
+import { commandLineParts, moduleUse } from "./Kernel";
 
 const d: KernelDetail = {
   settings: [
@@ -35,7 +36,12 @@ afterEach(cleanup);
 describe("Expert kernel sections", () => {
   it("settings say who set them and what is in effect", async () => {
     render(<KernelExpertSections />);
-    await waitFor(() => expect(screen.getByText("4 settings · 2 set or changed on this computer")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("4 settings")).toBeTruthy());
+    // The summary lists only what is worth a look, with why.
+    expect(screen.getByText(/not in effect: a later file sets it/)).toBeTruthy();
+    expect(screen.getByText(/set on this computer/)).toBeTruthy();
+    expect(screen.getByText(/procps's file was changed here/)).toBeTruthy();
+    expect(screen.queryByText(/kernel.yama.ptrace_scope.*worth/)).toBeNull();
     expect(screen.getByText("No: a later file sets it")).toBeTruthy();
     expect(screen.getByText("procps, file changed here")).toBeTruthy();
     expect(screen.getByText("3 4 1 7 (changed while running)")).toBeTruthy();
@@ -46,9 +52,22 @@ describe("Expert kernel sections", () => {
     render(<KernelExpertSections />);
     await waitFor(() => expect(screen.getByText("92")).toBeTruthy());
     expect(screen.getByText("no system-wide limit")).toBeTruthy();
-    expect(screen.getByText("POE")).toBeTruthy();
+    expect(screen.getAllByText("POE").length).toBeGreaterThan(0);
     expect(screen.getByText("6.8.0-49-generic")).toBeTruthy();
     expect(screen.getAllByText("+7.740ms")).toHaveLength(2);
     expect(missingKernels(d, { kernels: ["6.8.0-45-generic", "6.8.0-49-generic"] })).toEqual([]);
+  });
+
+  it("summarizes settings: notable ones, and how many each package sets", () => {
+    expect(notableSettings(d.settings).map((n) => n.setting.key)).toEqual(["vm.swappiness", "vm.swappiness", "kernel.printk"]);
+    expect(notableSettings([d.settings[0]])).toEqual([]);
+    expect(settingsByPackage(d.settings)).toEqual([["procps", 2], ["systemd", 1], ["this computer", 1]]);
+  });
+
+  it("splits the command line and says who uses a module", () => {
+    expect(commandLineParts("BOOT_IMAGE=/vmlinuz  root=/dev/sda1 ro quiet splash")).toEqual(["BOOT_IMAGE=/vmlinuz", "root=/dev/sda1", "ro", "quiet", "splash"]);
+    expect(moduleUse({ name: "bluetooth", size: 1, used: 7, used_by: ["rfcomm", "bnep", "btusb", "btintel"] })).toBe("used by rfcomm, bnep, btusb +1");
+    expect(moduleUse({ name: "i915", size: 1, used: 56, used_by: [] })).toBe("in use 56 times");
+    expect(moduleUse({ name: "xe", size: 1, used: 0, used_by: [] })).toBe("not in use");
   });
 });
