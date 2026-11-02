@@ -11,12 +11,10 @@ import { type Kpi, KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { type StatusRow, StatusList } from "../../components/StatusList";
-import { BarList } from "../../components/charts/BarList";
 import { Donut } from "../../components/charts/Donut";
-import { Gauge } from "../../components/charts/Gauge";
 import { Heatmap } from "../../components/charts/Heatmap";
 import { LineChart } from "../../components/charts/LineChart";
-import { RANGE_MS, align, bytes, duration, heatRows, pick, rate, scoreTone, when } from "../../metrics";
+import { RANGE_MS, align, bytes, duration, heatRows, pick, rate, when } from "../../metrics";
 import { useChanges } from "../activity/Activity";
 import { href } from "../../route";
 import { pageStatus } from "../../status";
@@ -24,6 +22,7 @@ import { type Range, useUi } from "../../ui";
 import { useLive } from "../../useLive";
 import { IssuesPanel } from "../IssuesPanel";
 import { NoData } from "../NoData";
+import { ScoreCard } from "./ScoreCard";
 import { type PageProps, areaLabel, plural, worst } from "./shared";
 
 interface FsEntry {
@@ -97,7 +96,7 @@ export function OverviewSummary({ report, error, now }: PageProps) {
       >
         <UsageChart history={history} range={range} gpus={gpus} />
       </Panel>
-      <ScorePanel report={report} />
+      <ScoreCard report={report} />
       <IssuesPanel
         title="Active issues"
         subtitle={`${findings.length} open`}
@@ -232,7 +231,7 @@ function UsageChart({ history, range, gpus }: { history: History; range: Range; 
     <LineChart
       series={[{ name: "CPU", data: data[0] ?? [], slot: 1 }, ...gpu, { name: "Memory", data: data[1] ?? [], slot: 2 }]}
       x={{ kind: "time", times, range }}
-      height={300}
+      height={420}
       max={100}
       unit="%"
     />
@@ -281,31 +280,6 @@ function subsystems(report: PageProps["report"], latest: Metric[] | undefined, s
     row("security", "shield", security ? plural(security, "security update") : firewall === 0 ? "Firewall off" : security === 0 ? "Up to date" : undefined, "overview"),
     row("privacy", "eye", popcon === undefined ? undefined : popcon ? "Sends package list" : "Nothing sent", "access"),
   ];
-}
-
-function ScorePanel({ report }: { report: PageProps["report"] }) {
-  const score = report?.score;
-  return (
-    <Panel
-      title="Health score"
-      info="Starts at 100. Each open issue removes points from its area."
-      actions={<LinkButton to={href("overview", "score")}>Details</LinkButton>}
-      span={4}
-    >
-      {score === undefined ? (
-        <div className="empty muted">The score appears after DeeCure's first check.</div>
-      ) : (
-        <>
-          <Gauge value={score} subtitle="out of 100" status={scoreTone(score)} />
-          {report?.deductions?.length ? (
-            <BarList rows={report.deductions.map((d) => ({ label: areaLabel(d.category), value: d.points, display: `−${d.points}`, tone: "warn" }))} />
-          ) : (
-            <p className="muted center">Nothing is taking points off.</p>
-          )}
-        </>
-      )}
-    </Panel>
-  );
 }
 
 function DiskPanel({ latest, disks }: { latest: Metric[] | undefined; disks: FsEntry[] | undefined }) {

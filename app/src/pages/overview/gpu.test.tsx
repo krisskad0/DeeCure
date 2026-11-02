@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // The GPU tile and chart line on Overview › Summary: no graphics card, a driver without busy
-// time, two cards, and GPU history that starts later than CPU and memory.
+// time, two cards, and GPU history that starts later than CPU and memory; and the score card's
+// level and weekly change.
 
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { Gpu, Metric } from "../../api";
 import { LineChart } from "../../components/charts/LineChart";
 import { gpuName, gpuSeries, gpuTile } from "./Summary";
+import { scoreLevel, weekChange } from "./ScoreCard";
 
 afterEach(cleanup);
 
@@ -68,5 +70,13 @@ describe("chart gaps", () => {
     expect(label).toContain("GPU");
     const paths = [...document.querySelectorAll("path")].map((p) => p.getAttribute("d") ?? "");
     expect(paths.some((d) => d.includes("NaN"))).toBe(false);
+  });
+});
+
+describe("score card helpers", () => {
+  it("names the level and the change over the week", () => {
+    expect([scoreLevel(95), scoreLevel(80), scoreLevel(60)]).toEqual(["Healthy", "Fair", "At risk"]);
+    expect(weekChange([{ value: 82 }, { value: 90 }], 85)).toBe(3);
+    expect(weekChange([{ value: 90 }], 85)).toBeUndefined();
   });
 });

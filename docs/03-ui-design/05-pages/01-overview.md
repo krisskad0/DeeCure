@@ -25,7 +25,7 @@ The GPU tile shows only when the computer has a graphics card. Without a reading
 2. **Line chart**: "CPU, GPU, and memory utilization" ("CPU and memory utilization" without GPU readings) · span 8
 - Info tooltip: "How busy the processor and memory were. Change the time range at the top to zoom out."
 - Source chip (Expert): `/proc/stat · /proc/meminfo · /sys/class/drm`
-- Height 300px · Y axis 0 to 100 · unit "%"
+- Height 420px (so it lines up with the score card) · Y axis 0 to 100 · unit "%"
 - Series: CPU (slot 1, gen[3, 14, 8, 6, 2, 60, 12]); GPU (slot 4; with two cards, "GPU <name>" in slots 4 and 5); Memory (slot 2, gen[5, 70, 8, 3, 40, 95, 78]). GPU history may start later or have holes: those are gaps in its line, never guessed values.
 - Order of panels: chart (8) and Health score (4); Active issues (8) and Subsystems (4).
 - X axis: time (current range)
@@ -62,11 +62,16 @@ The GPU tile shows only when the computer has a graphics card. Without a reading
 | {warn:Warning} | **Backup overdue** · Last successful backup 21 days ago | Backups | 07 Oct | [View](go:backups/jobs) |
 | {warn:Warning} | **Out-of-memory kill** · chrome renderer · Mon 16:12 | Logs | Mon 16:12 | [View](go:logs/kernel) |
 
-5. **Gauge + horizontal bars**: "Health score" · span 4
-- Info tooltip: "Starts at 100. Each open issue removes points from its area."
+5. **Score card**: "Health score" · span 4 (next to the chart)
+- Info tooltip: "Starts at 100. Each open problem takes points off its area: critical 15, warning 5, info 0, at most 15 per area."
 - Header actions: [Details](go:overview/score) (link style)
 
-Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok, ≥75 warn, else crit). Below it, horizontal bars (max 10, warn color): Storage −8, Services −5, Security −3, Power −1, Backups −1 (only categories with a deduction).
+From top to bottom:
+- Gauge: value **82**, subtitle "out of 100", arc color by score (≥90 ok, ≥75 warn, else crit).
+- The level in that color: **Healthy** (90+), **Fair** (75-89), or **At risk** (below 75), and "▲ 3 since last week" (green), "▼ 3 since last week" (red), or "No change since last week", against the oldest reading of the last 7 days. Hidden without a week of readings.
+- A 7-day sparkline of the score on a fixed 70 to 100 scale, so small changes stay small.
+- Three counters: critical, warnings, info (tinted when above 0).
+- "What takes points off": one row per area with a deduction, most first: area icon and name, its worst problem's title (one line), and "−5" in the problem's color. Each row opens the area. Then "Fix these to get back N points." Without deductions: "Nothing takes points off. DeeCure keeps checking every minute."
 
 6. **Donut chart**: "Disk usage ( / )" · span 4
 - Subtitle: "238 GB"

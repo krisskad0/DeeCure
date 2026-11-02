@@ -73,7 +73,11 @@ describe("Overview pages", () => {
     expect(screen.getAllByText("Not checked").length).toBeGreaterThan(0);
     expect(screen.getByText("firefox")).toBeTruthy();
     expect(screen.getByText("−15")).toBeTruthy();
-    expect(screen.getByText("Main disk is almost full")).toBeTruthy();
+    // The issue list and the score card both name the worst problem.
+    expect(screen.getAllByText("Main disk is almost full").length).toBe(2);
+    // The score card: level, counts by level, and what to fix.
+    expect(screen.getByText("Fair")).toBeTruthy();
+    expect(screen.getByText("Fix these to get back 20 points.")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Computer started")).toBeTruthy());
   });
 

@@ -320,3 +320,29 @@ a.btn { text-decoration: none; }
 .sev-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; transform: translateY(-1px); }
 .sev-dot-critical { background: var(--crit); } .sev-dot-warning { background: var(--warn); } .sev-dot-info { background: var(--s1); }
 .area-card-none { margin: 0; font-size: 12.5px; }
+
+/* Overview › Summary: the health score card */
+.sc { display: flex; flex-direction: column; gap: 10px; }
+.sc .gauge { max-width: 190px; margin: 0 auto; }
+.sc-level { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: -6px; }
+.sc-word { font-size: 16px; font-weight: 700; }
+.sc-ok { color: var(--good-ink); } .sc-warn { color: var(--warn-ink); } .sc-crit { color: var(--crit-ink); }
+.sc-change { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sc-up { color: var(--good-ink); } .sc-down { color: var(--crit-ink); }
+.sc-trend { padding: 0 8px; }
+.sc-counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.sc-count { padding: 6px 4px; border-radius: 8px; background: var(--track); text-align: center; font-size: 12px; color: var(--ink-2); }
+.sc-count b { display: block; font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.sc-count-crit { background: var(--crit-soft); color: var(--crit-ink); } .sc-count-crit b { color: var(--crit-ink); }
+.sc-count-warn { background: var(--warn-soft); color: var(--warn-ink); } .sc-count-warn b { color: var(--warn-ink); }
+.sc-head { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.sc-list a { display: flex; align-items: center; gap: 8px; padding: 4px 8px; margin: 0 -8px; border-radius: 8px; color: inherit; text-decoration: none; }
+.sc-list a:hover { background: var(--track); }
+.sc-area { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.sc-area > span:first-child { font-weight: 600; }
+.sc-why { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-points { font-weight: 700; font-variant-numeric: tabular-nums; }
+.sc-points-warn { color: var(--warn-ink); } .sc-points-crit { color: var(--crit-ink); }
+.sc-hint { margin: 0; font-size: 12.5px; }
+
