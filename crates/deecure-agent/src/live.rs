@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-//! Readings taken now, for the app's Refresh button: CPU, memory, temperatures, disks,
+//! Readings taken now, for the app's Refresh button: CPU, graphics, memory, temperatures, disks,
 //! network, pressure, and battery. They use collectors of their own, so a refresh never
 //! adds to the history or to the "minutes in a row" counters that warnings use; the
 //! background collection stays once a minute. `latest` shows these readings until the next
@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 use deecure_core::{Metric, Timestamp};
 
 use crate::collect::{
-    Battery, Collector, Cpu, DiskIo, Memory, Network, Pressure, Sensors, SystemRoot,
+    Battery, Collector, Cpu, DiskIo, GpuBusy, Memory, Network, Pressure, Sensors, SystemRoot,
 };
 
 /// Rates (CPU use, disk and network speed) need two readings; when the last one is older
@@ -40,6 +40,7 @@ impl Default for Live {
                 Box::new(DiskIo::default()),
                 Box::new(Pressure::default()),
                 Box::new(Sensors::default()),
+                Box::new(GpuBusy::default()),
             ],
             last: None,
             latest: Vec::new(),

@@ -2,7 +2,7 @@
 // Overview › Summary (docs/03-ui-design/05-pages/01-overview.md), with real data.
 
 import { temp as tempText } from "../../units";
-import { type Finding, type Metric, type Process, type SystemInfo, getInventory, getLatest, getMetrics, getSnapshot } from "../../api";
+import { type Finding, type Gpu, type Metric, type Process, type SystemInfo, getInventory, getLatest, getMetrics, getSnapshot } from "../../api";
 import { ActivityTimeline } from "../../components/ActivityTimeline";
 import { LinkButton } from "../../components/Button";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -38,14 +38,27 @@ const loadSystem = () => getInventory("system");
 const loadProcesses = () => getInventory("processes");
 const loadDisks = () => getSnapshot<FsEntry[]>("filesystems");
 const loadErrors = () => getInventory("errors");
+const loadGpus = () => getInventory("gpu");
 
-async function loadHistory(range: Range) {
+/** Graphics cards whose driver can report busy time (AMD, Intel). */
+const BUSY_DRIVERS = ["amdgpu", "i915", "xe"];
+
+async function loadHistory(range: Range, cards: string[]) {
   const until = Date.now();
   const since = until - RANGE_MS[range];
   const [cpu, memory, rx, tx] = await Promise.all(
     ["cpu.usage", "memory.used_percent", "net.rx", "net.tx"].map((name) => getMetrics(name, since, until)),
   );
-  return { cpu, memory, rx, tx };
+  // One series per graphics card; a card without readings has an empty one.
+  const gpu = Object.fromEntries(
+    await Promise.all(cards.map(async (card) => [card, await getMetrics("gpu.busy", since, until, { subject: card }).catch(() => [])] as const)),
+  );
+  return { cpu, memory, rx, tx, gpu };
+}
+
+/** "Raptor Lake-P [Iris Xe Graphics]" → "Iris Xe Graphics". */
+export function gpuName(g: Gpu): string {
+  return g.model?.match(/\[(.+)\]/)?.[1] ?? g.model ?? g.vendor ?? g.card;
 }
 
 /** "8.6 GB" → value "8.6", unit "GB", for KPI tiles. */
@@ -60,7 +73,9 @@ export function OverviewSummary({ report, error, now }: PageProps) {
   const system = useLive(loadSystem, 60_000).data;
   const processes = useLive(loadProcesses, 10_000).data;
   const disks = useLive(loadDisks, 60_000).data;
-  const history = useLive(() => loadHistory(range), 60_000, range).data;
+  const gpus = useLive(loadGpus, 300_000).data;
+  const cards = (gpus ?? []).map((g) => g.card);
+  const history = useLive(() => loadHistory(range, cards), 60_000, `${range}|${cards.join(",")}`).data;
   const findings = report?.findings ?? [];
 
   if (error) {
@@ -73,18 +88,16 @@ export function OverviewSummary({ report, error, now }: PageProps) {
 
   return (
     <>
-      <KpiRow tiles={kpis(report?.score, findings.length, latest, system, history, findings)} />
+      <KpiRow tiles={kpis(latest, system, history, findings, gpus)} />
       <Panel
-        title="CPU and memory utilization"
-        info="How busy the processor and memory were. Change the time range at the top to zoom out."
-        source="/proc/stat · /proc/meminfo"
+        title={gpuSeries(history, gpus).length ? "CPU, GPU, and memory utilization" : "CPU and memory utilization"}
+        info="How busy the processor, the graphics, and memory were. Change the time range at the top to zoom out."
+        source="/proc/stat · /proc/meminfo · /sys/class/drm"
         span={8}
       >
-        <UsageChart history={history} range={range} />
+        <UsageChart history={history} range={range} gpus={gpus} />
       </Panel>
-      <Panel title="Subsystems" info="Status of every area DeeCure checks. Select a row to open it." span={4} flush>
-        <StatusList rows={subsystems(report, latest, system)} />
-      </Panel>
+      <ScorePanel report={report} />
       <IssuesPanel
         title="Active issues"
         subtitle={`${findings.length} open`}
@@ -95,7 +108,9 @@ export function OverviewSummary({ report, error, now }: PageProps) {
         span={8}
         actions={<LinkButton to={href("overview", "issues")}>View all</LinkButton>}
       />
-      <ScorePanel report={report} />
+      <Panel title="Subsystems" info="Status of every area DeeCure checks. Select a row to open it." span={4} flush>
+        <StatusList rows={subsystems(report, latest, system)} />
+      </Panel>
       <DiskPanel latest={latest} disks={disks?.data} />
       <TopProcesses processes={processes} />
       <SystemPanel system={system} now={now} />
@@ -107,18 +122,26 @@ export function OverviewSummary({ report, error, now }: PageProps) {
 
 type History = Awaited<ReturnType<typeof loadHistory>> | undefined;
 
-function kpis(score: number | undefined, open: number, latest: Metric[] | undefined, system: SystemInfo | undefined, history: History, findings: Finding[]): Kpi[] {
-  const tiles: Kpi[] = [
-    {
-      label: "Health score",
-      value: score === undefined ? "-" : String(score),
-      unit: score === undefined ? undefined : "/100",
-      status: score === undefined ? "off" : scoreTone(score),
-      subtext: score === undefined ? "Waiting for the first check" : plural(open, "open issue"),
-      visual: score === undefined ? undefined : { kind: "bar", percent: score },
-      href: href("overview", "score"),
-    },
-  ];
+/** The GPU tile: the busiest card, or why there is no reading. No graphics card, no tile. */
+export function gpuTile(gpus: Gpu[] | undefined, latest: Metric[] | undefined, history: History): Kpi | null {
+  if (!gpus?.length) return null;
+  const readings = gpus.map((g) => ({ g, busy: pick(latest, "gpu.busy", g.card) }));
+  const shown = readings.filter((r) => r.busy !== undefined).sort((a, b) => (b.busy ?? 0) - (a.busy ?? 0))[0] ?? readings[0];
+  const { g, busy } = shown;
+  const why = BUSY_DRIVERS.includes(g.driver ?? "") ? "Measuring…" : g.driver === "nvidia" ? "The NVIDIA driver does not report busy time" : "Its driver does not report busy time";
+  const spark = history?.gpu[g.card];
+  return {
+    label: "GPU",
+    value: busy === undefined ? "-" : String(Math.round(busy)),
+    unit: busy === undefined ? undefined : "%",
+    subtext: busy === undefined ? why : gpus.length > 1 ? `${gpuName(g)} · busiest of ${gpus.length}` : gpuName(g),
+    visual: spark && spark.length ? { kind: "spark", data: spark.map((p) => p.value), slot: 4 } : undefined,
+    href: href("performance", "gpu"),
+  };
+}
+
+function kpis(latest: Metric[] | undefined, system: SystemInfo | undefined, history: History, findings: Finding[], gpus: Gpu[] | undefined): Kpi[] {
+  const tiles: Kpi[] = [];
 
   const cpu = pick(latest, "cpu.usage");
   const load = pick(latest, "cpu.load_1m");
@@ -130,6 +153,9 @@ function kpis(score: number | undefined, open: number, latest: Metric[] | undefi
     visual: history?.cpu.length ? { kind: "spark", data: history.cpu.map((p) => p.value), slot: 1 } : undefined,
     href: href("performance", "cpu"),
   });
+
+  const gpu = gpuTile(gpus, latest, history);
+  if (gpu) tiles.push(gpu);
 
   const used = pick(latest, "memory.used");
   const total = pick(latest, "memory.total");
@@ -187,15 +213,24 @@ function kpis(score: number | undefined, open: number, latest: Metric[] | undefi
   return tiles;
 }
 
-function UsageChart({ history, range }: { history: History; range: Range }) {
+/** The graphics cards with readings in this range, at most two (slots 4 and 5). */
+export function gpuSeries(history: History, gpus: Gpu[] | undefined): Gpu[] {
+  return (gpus ?? []).filter((g) => history?.gpu[g.card]?.length).slice(0, 2);
+}
+
+function UsageChart({ history, range, gpus }: { history: History; range: Range; gpus: Gpu[] | undefined }) {
   if (!history) return <div className="chart-empty muted">Loading…</div>;
   const { times, data } = align([history.cpu, history.memory]);
+  // GPU readings may start later (or have gaps): a missing point is a gap, never a guess,
+  // and CPU and memory keep their whole history.
+  const cards = gpuSeries(history, gpus);
+  const gpu = cards.map((g, k) => {
+    const at = new Map(history.gpu[g.card].map((p) => [p.at, p.value]));
+    return { name: cards.length > 1 ? `GPU ${gpuName(g)}` : "GPU", data: times.map((t) => at.get(t) ?? Number.NaN), slot: (4 + k) as 4 | 5 };
+  });
   return (
     <LineChart
-      series={[
-        { name: "CPU", data: data[0] ?? [], slot: 1 },
-        { name: "Memory", data: data[1] ?? [], slot: 2 },
-      ]}
+      series={[{ name: "CPU", data: data[0] ?? [], slot: 1 }, ...gpu, { name: "Memory", data: data[1] ?? [], slot: 2 }]}
       x={{ kind: "time", times, range }}
       height={300}
       max={100}

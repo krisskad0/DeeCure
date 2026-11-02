@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- Overview shows the GPU: a tile (CPU, GPU, Memory, Disk, Network, Battery) with how busy the graphics card is, and a GPU line in the utilization chart. AMD and Intel graphics report it; for NVIDIA's own driver the tile says it does not report busy time. A computer without a graphics card shows no GPU tile or line. The busy time is kept in the history from now on.
+
+### Changed
+
+- Overview shows the health score once, as the gauge panel with what takes points off, now next to the chart. The duplicate tile is gone.
+
 ### Fixed
 
 - **Refresh** now reads the numbers again right away (CPU, memory, temperatures, disks, network, battery) instead of showing the last one-minute reading again. The icon spins while it works, then "Updated" shows the time. History and warnings are not affected.

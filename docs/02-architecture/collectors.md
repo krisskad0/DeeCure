@@ -32,6 +32,7 @@ The code is in `crates/deecure-agent/src/collect/`. Every file collector reads t
 | Network | `/proc/net/dev` | Every minute | Rates need two readings. The loopback interface (`lo`) is left out. |
 | Disk I/O | `/proc/diskstats` | Every minute | Whole disks only: partitions, loop devices, and RAM disks are left out. For all disks together, `disk.busy` is the busiest disk. |
 | Pressure | `/proc/pressure/{cpu,memory,io}` | Every minute | The "some" 10-second average. Missing on kernels without PSI. |
+| Graphics busy | `/sys/class/drm/card*/device/gpu_busy_percent` (AMD); Intel power-saving time `gt/gt0/rc6_residency_ms` (`i915`) or `device/tile0/gt0/gtidle/idle_residency_ms` (`xe`) | Every minute | `gpu.busy` per card. Intel: 100% minus the share of time in power saving since the last reading. NVIDIA's own driver reports neither, and `nvidia-smi` can wake a sleeping card, so it is not read. |
 | Boot | systemd over D-Bus (`Manager` and unit timestamps) | Once per boot, after it finished | Phase times and the 15 slowest units, like `systemd-analyze`. Saves `boot.time` at the moment of boot, so the history shows one point per boot. |
 | Updates | `apt list --upgradable` | Every hour; the last answer is repeated every minute | Read-only: no admin rights, no lock, changes nothing. Also reads `/etc/apt/apt.conf.d/20auto-upgrades` and `/run/reboot-required`. |
 | Backups | Déjà Dup settings (`gsettings`), `/etc/timeshift/timeshift.json`, Timeshift snapshot folders | Every hour; repeated every minute | Whether backups run on a schedule, and the age of the newest backup or snapshot |
@@ -182,6 +183,7 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 | `disk.await` | disk, or none | seconds | Average time one read or write took |
 | `pressure.cpu`, `pressure.memory`, `pressure.io` | - | percent | Share of time some work waited for CPU, memory, or disk ("some", 10-second average) |
 | `pressure.memory_full`, `pressure.io_full` | - | percent | Share of time all work waited at once ("full") |
+| `gpu.busy` | card, such as `card1` | percent | Share of time the graphics card was working |
 | `temp` | sensor, as `<chip>/<label>` | celsius | Every temperature sensor |
 | `temp.cpu` | - | celsius | The CPU temperature |
 | `cpu.throttle_total` | - | count | Times heat slowed the whole chip since start (Intel `package_throttle_count`); the app charts the change per interval |

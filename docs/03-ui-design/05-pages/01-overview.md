@@ -11,18 +11,23 @@
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Health score | 82 | /100 | {warn:Warning} | 9 open issues | Usage bar 82% | `overview/score` |
 | CPU | 12 | % | - | Load 0.84 · 12 threads | Sparkline slot 1, gen[3, 14, 8, 6, 2, 60, 12] | `performance/cpu` |
+| GPU | 15 | % | - | Iris Xe Graphics (with two cards: the busiest, "· busiest of 2") | Sparkline slot 4 | `performance/gpu` |
 | Memory | 5.9 | GB | - | 78% of 7.6 GB | Sparkline slot 2, gen[5, 70, 8, 3, 40, 95, 78] | `performance/memory` |
 | Disk ( / ) | 94 | % | {crit:Critical} | 13.8 GB free of 238 GB | Usage bar 94.2% | `storage/overview` |
 | Network | 1.2 | MB/s | - | ↑ 0.3 MB/s · Wi-Fi | Sparkline slot 3, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2] | `performance/network` |
 | Battery | 64 | % | {warn:Warning} | Health 71% · 3 h 10 m left | Usage bar 64% | `power/battery` |
 
-2. **Line chart**: "CPU and memory utilization" · span 8
+The health score is not a tile: the "Health score" panel (gauge and what takes points off) sits next to the chart instead, so it shows once.
+
+The GPU tile shows only when the computer has a graphics card. Without a reading it shows "-" and why: "Measuring…" (Intel needs two readings), "The NVIDIA driver does not report busy time", or "Its driver does not report busy time".
+
+2. **Line chart**: "CPU, GPU, and memory utilization" ("CPU and memory utilization" without GPU readings) · span 8
 - Info tooltip: "How busy the processor and memory were. Change the time range at the top to zoom out."
-- Source chip (Expert): `/proc/stat · /proc/meminfo`
+- Source chip (Expert): `/proc/stat · /proc/meminfo · /sys/class/drm`
 - Height 300px · Y axis 0 to 100 · unit "%"
-- Series: CPU (slot 1, gen[3, 14, 8, 6, 2, 60, 12]); Memory (slot 2, gen[5, 70, 8, 3, 40, 95, 78])
+- Series: CPU (slot 1, gen[3, 14, 8, 6, 2, 60, 12]); GPU (slot 4; with two cards, "GPU <name>" in slots 4 and 5); Memory (slot 2, gen[5, 70, 8, 3, 40, 95, 78]). GPU history may start later or have holes: those are gaps in its line, never guessed values.
+- Order of panels: chart (8) and Health score (4); Active issues (8) and Subsystems (4).
 - X axis: time (current range)
 
 3. **Status list**: "Subsystems" · span 4

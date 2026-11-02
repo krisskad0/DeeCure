@@ -14,6 +14,7 @@ mod containers;
 mod cpu;
 mod diskio;
 mod filesystems;
+mod gpu;
 mod health;
 mod memory;
 mod network;
@@ -40,6 +41,7 @@ pub use containers::Containers;
 pub use cpu::Cpu;
 pub use diskio::DiskIo;
 pub use filesystems::{Filesystems, FsUsage};
+pub use gpu::GpuBusy;
 pub use health::{Health, HealthSlow};
 pub use memory::Memory;
 pub use network::Network;
@@ -133,6 +135,7 @@ pub async fn run(
         Box::new(DiskIo::default()),
         Box::new(Pressure::default()),
         Box::new(Sensors::default()),
+        Box::new(GpuBusy::default()),
         Box::new(Accounts),
         Box::new(Health::default()),
     ];

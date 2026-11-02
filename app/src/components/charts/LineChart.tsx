@@ -45,12 +45,23 @@ export function LineChart(props: {
   // Stacked series add up; each area fills down to the series below it.
   const tops: number[][] = [];
   series.forEach((s, k) => tops.push(s.data.map((v, i) => v + (stacked && k > 0 ? tops[k - 1][i] : 0))));
-  const highest = Math.max(...tops.flat(), forecast?.value ?? -Infinity, threshold?.value ?? -Infinity);
+  // A missing point (NaN, such as before a reading existed) leaves a gap in its line.
+  const highest = Math.max(...tops.flat().filter(Number.isFinite), forecast?.value ?? -Infinity, threshold?.value ?? -Infinity);
   const max = typeof props.max === "number" ? props.max : niceCeil(highest * 1.15);
 
   const xOf = (i: number) => left + (i / domain) * plotW;
   const yOf = (v: number) => top + plotH - ((Math.min(max, Math.max(min, v)) - min) / (max - min || 1)) * plotH;
-  const path = (values: number[]) => values.map((v, i) => `${i ? "L" : "M"}${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)}`).join("");
+  const path = (values: number[]) => values.map((v, i) => `${i && Number.isFinite(values[i - 1]) ? "L" : "M"}${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)}`).filter((_, i) => Number.isFinite(values[i])).join("");
+  /** The filled area under a line, one piece per run of points without a gap. */
+  const area = (values: number[]) => {
+    const runs: number[][] = [];
+    values.forEach((v, i) => {
+      if (!Number.isFinite(v)) return;
+      if (i > 0 && Number.isFinite(values[i - 1])) runs[runs.length - 1].push(i);
+      else runs.push([i]);
+    });
+    return runs.map((r) => `${r.map((i, j) => `${j ? "L" : "M"}${xOf(i).toFixed(1)} ${yOf(values[i]).toFixed(1)}`).join("")}L${xOf(r[r.length - 1])} ${yOf(min)}L${xOf(r[0])} ${yOf(min)}Z`).join("");
+  };
 
   const grid = [0, 1, 2, 3, 4].map((k) => min + ((max - min) * k) / 4);
   const labelIdx = x.kind === "time" ? timeLabelIndices(n) : labelArrayIndices(n);
@@ -78,7 +89,7 @@ export function LineChart(props: {
         </div>
       )}
       <svg width={width} height={height} onPointerMove={onMove} onPointerLeave={() => setHover(null)} role="img"
-        aria-label={series.filter((s) => s.data.length).map((s) => `${s.name}: ${formatValue(s.data[s.data.length - 1], unit)}`).join(", ")}>
+        aria-label={series.filter((s) => Number.isFinite(s.data[s.data.length - 1])).map((s) => `${s.name}: ${formatValue(s.data[s.data.length - 1], unit)}`).join(", ")}>
         {grid.map((v, k) => (
           <g key={k}>
             <line x1={left} x2={left + plotW} y1={yOf(v)} y2={yOf(v)} stroke={k === 0 ? "var(--axis)" : "var(--grid)"} />
@@ -95,12 +106,12 @@ export function LineChart(props: {
         {/* Drawn last series first, so the first series sits on top. */}
         {[...series.keys()].reverse().map((k) => {
           const below = stacked && k > 0 ? tops[k - 1] : null;
-          const base = below
-            ? below.map((_, i) => `L${xOf(last - i).toFixed(1)} ${yOf(below[last - i]).toFixed(1)}`).join("")
-            : `L${xOf(last)} ${yOf(min)}L${xOf(0)} ${yOf(min)}`;
+          const fill = below
+            ? `${path(tops[k])}${below.map((_, i) => `L${xOf(last - i).toFixed(1)} ${yOf(below[last - i]).toFixed(1)}`).join("")}Z`
+            : area(tops[k]);
           return (
             <g key={series[k].name}>
-              <path d={`${path(tops[k])}${base}Z`} fill={color(series[k], k)} fillOpacity={stacked ? 0.2 : 0.1} />
+              <path d={fill} fill={color(series[k], k)} fillOpacity={stacked ? 0.2 : 0.1} />
               <path d={path(tops[k])} fill="none" stroke={color(series[k], k)} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
             </g>
           );
@@ -123,15 +134,15 @@ export function LineChart(props: {
             </text>
           </g>
         )}
-        {series.map((s, k) => (
-          <circle key={s.name} cx={xOf(last)} cy={yOf(tops[k][last])} r={4} fill={color(s, k)} stroke="var(--panel)" strokeWidth={2} />
-        ))}
+        {series.map((s, k) =>
+          Number.isFinite(tops[k][last]) ? <circle key={s.name} cx={xOf(last)} cy={yOf(tops[k][last])} r={4} fill={color(s, k)} stroke="var(--panel)" strokeWidth={2} /> : null,
+        )}
         {hover !== null && (
           <g>
             <line x1={xOf(hover)} x2={xOf(hover)} y1={top} y2={top + plotH} stroke="var(--line-2)" />
-            {series.map((s, k) => (
-              <circle key={s.name} cx={xOf(hover)} cy={yOf(tops[k][hover])} r={4} fill="var(--panel)" stroke={color(s, k)} strokeWidth={2} />
-            ))}
+            {series.map((s, k) =>
+              Number.isFinite(tops[k][hover]) ? <circle key={s.name} cx={xOf(hover)} cy={yOf(tops[k][hover])} r={4} fill="var(--panel)" stroke={color(s, k)} strokeWidth={2} /> : null,
+            )}
           </g>
         )}
       </svg>
@@ -140,7 +151,7 @@ export function LineChart(props: {
           className="chart-tip"
           style={{
             left: Math.max(70, Math.min(width - 70, xOf(hover))),
-            top: yOf(Math.max(...tops.map((t) => t[hover]))) + (series.length > 1 ? 26 : 0) - 10,
+            top: yOf(Math.max(min, ...tops.map((t) => t[hover]).filter(Number.isFinite))) + (series.length > 1 ? 26 : 0) - 10,
           }}
         >
           <div className="tip-head">{x.kind === "labels" ? x.labels[hover] : timeLabel(x.times[hover], x.range, true)}</div>
@@ -148,7 +159,7 @@ export function LineChart(props: {
             <div key={s.name} className="tip-row">
               <i style={{ background: color(s, k) }} />
               {series.length > 1 ? `${s.name}: ` : ""}
-              {s.data[hover] === undefined ? "-" : formatValue(s.data[hover], unit)}
+              {s.data[hover] === undefined || !Number.isFinite(s.data[hover]) ? "-" : formatValue(s.data[hover], unit)}
             </div>
           ))}
         </div>
