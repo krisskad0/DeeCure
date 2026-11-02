@@ -113,6 +113,7 @@ In **Power › Power Profile** (Expert):
 - **PCIe power saving** and **suspend type** (such as deep): press **Try** first; it lasts until the next restart. Press **Keep** only when everything works.
 - **Closing the lid:** on battery and plugged in; it applies after the next restart.
 - **Kept after restart:** the list shows what DeeCure sets again at each start, and whether it worked at this start.
+- **If the computer froze:** when a start ended without a normal shutdown (you had to hold the power button), DeeCure skips PCIe power saving, the suspend type, device power saving, and compressed swap once at the next start, and says so in that list. To skip every kept setting for one start, press `e` in the boot menu and add `deecure.nosaved` to the line that starts with `linux`.
 
 In **Power › Sleep**: stop a device waking the computer, and let devices save power when idle.
 

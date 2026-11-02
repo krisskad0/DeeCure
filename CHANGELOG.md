@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.7] - 2026-11-02
+
+### Fixed
+
+- Installing a kernel update (Install security updates, Install updates) or removing old kernels through DeeCure failed half way with "Read-only file system": the admin helper's service made `/lib/modules` read-only for apt. If it happened to you, run `sudo apt-get install -f` once in a Terminal to finish the update.
+- Updates of programs such as `sudo` and `passwd` would have failed the same way: the admin helper's service could not install programs that run with their owner's rights.
+- Admin actions are safer: an update or install never removes another package and keeps settings files you changed (instead of stopping half way at apt's question); "Remove packages no longer needed" refuses when it would remove the desktop, the network, sudo, or the running kernel; the login screen, D-Bus, and logind are never restarted (that ends your session), and more essential services can never be turned off (other login screens, AccountsService, DNS, Wi-Fi, SSH, UDisks); turning the firewall on lets SSH in first, so a remote session stays connected.
+- "End process" refuses GNOME Shell, the session manager, Xwayland, D-Bus, PipeWire, and the same parts of other desktops: ending one signs you out at once and unsaved work is lost.
+- Kept power settings that can make some computers freeze (PCIe power saving, suspend type, device power saving, compressed swap) are skipped once after a start that ended without a normal shutdown, with the reason shown. `deecure.nosaved` on the kernel command line skips every kept setting.
+
 ## [0.1.0-alpha.6] - 2026-11-02
 
 ### Added

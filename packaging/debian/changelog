@@ -1,3 +1,11 @@
+deecure (0.1.0~alpha.7-1) noble; urgency=medium
+
+  * Safety release: kernel and other updates through the admin helper no
+    longer stop half way, safer admin actions, and kept power settings
+    skipped after a start that froze.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Mon, 02 Nov 2026 20:55:10 +0530
+
 deecure (0.1.0~alpha.6-1) noble; urgency=medium
 
   * Readable pages with summaries first, warnings marked on their sub-

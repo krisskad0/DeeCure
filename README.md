@@ -119,6 +119,8 @@ Battery charge limits (presets or your own), charge mode, CPU turbo, the highest
 
 Every fix shows its steps and commands first. Untick any step. Admin steps ask for your password through the normal Ubuntu dialog. DeeCure checks the result and keeps an undo, and tells you before running a step that cannot be undone.
 
+Built-in guard rails: an update never removes other packages and keeps settings files you changed; a clean-up that would remove the desktop, the network, sudo, or the running kernel is refused; the login screen and your session are never restarted or ended; turning the firewall on keeps SSH connected; and a power setting that froze the computer is skipped at the next start.
+
 ### What changed, forecasts, and notifications
 
 - **Timeline** of package installs and upgrades (apt, snap, Flatpak), config changes, USB devices, boots, crashes, and hardware errors, for the last 7, 30, or 90 days.

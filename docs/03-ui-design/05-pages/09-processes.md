@@ -24,6 +24,7 @@
 - Page size 14
 - Total count shown: 312
 - Inspect: row click opens the row-inspect drawer with actions "End process", "Open Performance"
+- "End process" asks the program to quit (SIGTERM) and only for the user's own processes. It refuses the processes that hold the desktop session together (GNOME Shell, the session manager, Xwayland or Xorg, `systemd`, D-Bus, PipeWire, and the same for KDE, Xfce, Cinnamon, MATE, and LXQt), since ending one signs the user out at once and unsaved work in every app is lost.
 - Table ID: `procs`
 
 | Name | PID [n] | User | State | CPU [n] | Memory [n] | Threads [n, ,x] | Started [x] |

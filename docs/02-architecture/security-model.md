@@ -31,6 +31,8 @@ Use this list when reviewing any change to `deecure-helper`.
 - [ ] The action has its own polkit action ID with the right level (`auth_admin_keep` for reads, `auth_admin` for writes).
 - [ ] The call is written to the audit log with time, user, inputs, and result.
 - [ ] Errors return a clear message. They never leak file contents the caller could not read.
+- [ ] It cannot break the system or the session: apt changes keep changed settings files and use `--no-remove` where packages are installed or upgraded; a removal is checked against `PROTECTED_PACKAGES`; no unit in `ESSENTIAL_UNITS` is turned off and none in `NEVER_RESTART` is restarted; nothing is applied at every start without the "start that froze" guard ([helper](helper.md)).
+- [ ] The helper's systemd unit still lets apt write everywhere a package installs to (no `ProtectSystem`, `ProtectKernelModules`, `ProtectKernelLogs`, or `RestrictSUIDSGID`; `make helper-test` checks this).
 - [ ] The action has apply → verify → undo tests in a VM.
 - [ ] Two reviewers approved the pull request.
 

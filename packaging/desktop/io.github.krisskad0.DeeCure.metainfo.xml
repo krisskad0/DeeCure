@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.7" date="2026-11-02" type="development">
+      <description>
+        <p>Safety release. Kernel and other updates through DeeCure no longer stop half way, updates never remove other packages and keep settings files you changed, clean-ups that would remove the desktop are refused, the session and login screen are never restarted or ended, turning the firewall on keeps SSH connected, and power settings that can freeze some computers are skipped after a start that froze.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.6" date="2026-11-02" type="development">
       <description>
         <p>Every page is easier to read: a short summary first, then bars, tiles, and charts, with full tables under Show all. A warning now marks the exact sub-page and the panel that shows it, and open issues are cards with Open and Fix. Fewer false warnings: the disk forecast handles a laptop that sleeps, heat slowdowns count only while the CPU is hot, the firewall warning leaves out Docker's ports, and a warning that cannot be confirmed for a day closes.</p>

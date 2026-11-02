@@ -15,6 +15,13 @@ apt-get install -y -qq dbus polkitd "$(realpath "$2")" >/dev/null
 id deecure-test >/dev/null 2>&1 || useradd -m deecure-test
 id stranger >/dev/null 2>&1 || useradd -m stranger
 
+echo "== kernel packages can be installed and removed through the helper"
+# These two make /lib/modules read-only for apt (a kernel update once failed half way).
+unit=/usr/lib/systemd/system/deecure-helper.service
+[ -f "$unit" ] || unit=/lib/systemd/system/deecure-helper.service
+! grep -Eq '^(ProtectKernelModules|ProtectKernelLogs|ProtectSystem|RestrictSUIDSGID)=' "$unit" || fail "the helper's unit stops apt from installing some packages"
+echo "ok: nothing in the helper's unit blocks writing /lib/modules or installing setuid programs"
+
 echo "== start the system bus and polkit"
 mkdir -p /run/dbus
 dbus-daemon --system --fork

@@ -42,6 +42,10 @@ pub trait Probe {
     fn offered_drivers(&self) -> Vec<String> {
         Vec::new()
     }
+    /// The packages `apt-get autoremove` would remove now (a dry run).
+    fn autoremove_list(&self) -> Vec<String> {
+        Vec::new()
+    }
 }
 
 const APT: &str = "/usr/bin/apt-get";
@@ -105,11 +109,120 @@ fn is_kernel(s: &str) -> bool {
 
 const MAX_PACKAGES: usize = 500;
 
+/// apt options for every change: a package that asks "keep your settings file or take the new
+/// one?" keeps the user's file (nobody can answer the question here, so it would stop half way).
+const APT_KEEP_CONFIG: [&str; 4] = [
+    "-o",
+    "Dpkg::Options::=--force-confdef",
+    "-o",
+    "Dpkg::Options::=--force-confold",
+];
+
+/// Packages that sign-in, the desktop, the network, or admin rights need. A clean-up that would
+/// remove one of them is refused: `apt-get autoremove` removes the whole desktop after its
+/// meta package was removed by mistake.
+const PROTECTED_PACKAGES: &[&str] = &[
+    "ubuntu-desktop",
+    "ubuntu-desktop-minimal",
+    "ubuntu-minimal",
+    "ubuntu-standard",
+    "gnome-shell",
+    "gnome-session",
+    "gdm3",
+    "lightdm",
+    "sddm",
+    "xwayland",
+    "xserver-xorg-core",
+    "network-manager",
+    "wpasupplicant",
+    "systemd",
+    "systemd-resolved",
+    "sudo",
+    "polkitd",
+    "policykit-1",
+    "dbus",
+    "openssh-server",
+    "grub-efi-amd64-signed",
+    "grub-pc",
+    "shim-signed",
+];
+
+/// Units that must never be turned off from DeeCure: sign-in, the session, the network, DNS.
+const ESSENTIAL_UNITS: &[&str] = &[
+    "dbus.service",
+    "dbus-broker.service",
+    "systemd-logind.service",
+    "systemd-journald.service",
+    "systemd-udevd.service",
+    "systemd-resolved.service",
+    "systemd-networkd.service",
+    "display-manager.service",
+    "gdm.service",
+    "gdm3.service",
+    "lightdm.service",
+    "sddm.service",
+    "accounts-daemon.service",
+    "polkit.service",
+    "NetworkManager.service",
+    "wpa_supplicant.service",
+    "ssh.service",
+    "sshd.service",
+    "udisks2.service",
+];
+
+/// Units whose restart ends the user's session (unsaved work is lost) or the system's own
+/// plumbing. A failed one of them needs a restart of the computer, not of the unit.
+const NEVER_RESTART: &[&str] = &[
+    "dbus.service",
+    "dbus-broker.service",
+    "systemd-logind.service",
+    "display-manager.service",
+    "gdm.service",
+    "gdm3.service",
+    "lightdm.service",
+    "sddm.service",
+    "polkit.service",
+];
+
+/// Per-user and console units are never switched off or restarted from here.
+fn session_unit(unit: &str) -> bool {
+    unit.starts_with("user@") || unit.starts_with("user-runtime-dir@") || unit.starts_with("getty@")
+}
+
+/// `apt-get -y <keep config> <args>`.
+fn apt(args: &[&str], packages: &[String]) -> Command {
+    let mut all: Vec<String> = vec!["-y".to_owned()];
+    all.extend(APT_KEEP_CONFIG.iter().map(|a| (*a).to_owned()));
+    all.extend(args.iter().map(|a| (*a).to_owned()));
+    all.extend(packages.iter().cloned());
+    Command {
+        program: APT,
+        args: all,
+    }
+}
+
 /// Checks a call and returns the commands that carry it out, in order.
 pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
     match call {
         Call::CleanAptCache => Ok(vec![cmd(APT, &["clean"])]),
-        Call::Autoremove => Ok(vec![cmd(APT, &["-y", "autoremove"])]),
+        Call::Autoremove => {
+            let running = sys.running_kernel();
+            let kept: Vec<String> = sys
+                .autoremove_list()
+                .into_iter()
+                .filter(|p| {
+                    PROTECTED_PACKAGES.contains(&p.as_str())
+                        || (!running.is_empty() && p.ends_with(&running))
+                })
+                .collect();
+            if !kept.is_empty() {
+                return Err(format!(
+                    "this would remove {}, which the system needs; DeeCure does not run it. Reinstall the package that pulled them in (such as ubuntu-desktop) first",
+                    kept.join(", ")
+                ));
+            }
+            Ok(vec![apt(&["autoremove"], &[])])
+        }
         Call::VacuumJournal { keep_mb } => {
             if !(50..=10_000).contains(keep_mb) {
                 return Err("keep between 50 and 10000 MB of logs".into());
@@ -149,33 +262,40 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
         }
         Call::PurgeResidual { packages } => {
             check_packages(packages, sys, "rc", "has no leftover settings")?;
-            let mut args = vec!["-y".to_owned(), "purge".to_owned(), "--".to_owned()];
-            args.extend(packages.iter().cloned());
-            Ok(vec![Command { program: APT, args }])
+            Ok(vec![apt(&["purge", "--"], packages)])
         }
         Call::UpgradePackages { packages } => {
             check_packages(packages, sys, "ii", "is not installed")?;
-            let mut args = vec![
-                "-y".to_owned(),
-                "install".to_owned(),
-                "--only-upgrade".to_owned(),
-                "--".to_owned(),
-            ];
-            args.extend(packages.iter().cloned());
-            Ok(vec![Command { program: APT, args }])
+            // --no-remove: an upgrade that would remove another package stops instead.
+            Ok(vec![apt(
+                &["--no-remove", "install", "--only-upgrade", "--"],
+                packages,
+            )])
         }
         Call::SetFirewall { on } => {
             if !sys.has("/usr/sbin/ufw") {
                 return Err("ufw is not installed".into());
             }
-            Ok(vec![if *on {
-                cmd("/usr/sbin/ufw", &["--force", "enable"])
-            } else {
-                cmd("/usr/sbin/ufw", &["disable"])
-            }])
+            if !*on {
+                return Ok(vec![cmd("/usr/sbin/ufw", &["disable"])]);
+            }
+            // Someone signed in over SSH keeps the connection: the firewall lets SSH in first.
+            let mut steps = Vec::new();
+            if sys.has("/usr/sbin/sshd")
+                && (sys.unit_loaded("ssh.service") || sys.unit_loaded("ssh.socket"))
+            {
+                steps.push(cmd("/usr/sbin/ufw", &["allow", "OpenSSH"]));
+            }
+            steps.push(cmd("/usr/sbin/ufw", &["--force", "enable"]));
+            Ok(steps)
         }
         Call::RestartService { unit } => {
             check_unit(unit, sys)?;
+            if NEVER_RESTART.contains(&unit.as_str()) || session_unit(unit) {
+                return Err(format!(
+                    "restarting {unit} would end your session; restart the computer instead"
+                ));
+            }
             Ok(vec![Command {
                 program: SYSTEMCTL,
                 args: vec!["restart".into(), "--".into(), unit.clone()],
@@ -190,17 +310,8 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
             } else {
                 check_unit(unit, sys)?;
             }
-            // Never switch off what the system needs to start or to sign in.
-            const ESSENTIAL: &[&str] = &[
-                "dbus.service",
-                "systemd-logind.service",
-                "systemd-journald.service",
-                "systemd-udevd.service",
-                "gdm.service",
-                "polkit.service",
-                "NetworkManager.service",
-            ];
-            if !enabled && ESSENTIAL.contains(&unit.as_str()) {
+            // Never switch off what the system needs to start, to sign in, or to get online.
+            if !enabled && (ESSENTIAL_UNITS.contains(&unit.as_str()) || session_unit(unit)) {
                 return Err(format!(
                     "{unit} is essential and cannot be turned off from DeeCure"
                 ));
@@ -230,7 +341,9 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
             if installed.len().saturating_sub(versions.len()) < 2 {
                 return Err("at least two kernels are always kept".into());
             }
-            let mut args = vec!["-y".to_owned(), "purge".to_owned(), "--".to_owned()];
+            let mut args = vec!["-y".to_owned()];
+            args.extend(APT_KEEP_CONFIG.iter().map(|a| (*a).to_owned()));
+            args.extend(["purge".to_owned(), "--".to_owned()]);
             for v in versions {
                 for prefix in [
                     "linux-image",
@@ -306,9 +419,7 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
                     ));
                 }
             }
-            let mut args = vec!["-y".to_owned(), "install".to_owned(), "--".to_owned()];
-            args.extend(packages.iter().cloned());
-            Ok(vec![Command { program: APT, args }])
+            Ok(vec![apt(&["--no-remove", "install", "--"], packages)])
         }
         Call::RebuildDkms { kernel } => {
             if !is_kernel(kernel) || !sys.installed_kernels().contains(kernel) {
@@ -478,7 +589,17 @@ mod tests {
                 packages: vec!["oldapp".into()]
             })
             .unwrap(),
-            ["/usr/bin/apt-get", "-y", "purge", "--", "oldapp"]
+            [
+                "/usr/bin/apt-get",
+                "-y",
+                "-o",
+                "Dpkg::Options::=--force-confdef",
+                "-o",
+                "Dpkg::Options::=--force-confold",
+                "purge",
+                "--",
+                "oldapp"
+            ]
         );
         assert_eq!(
             args(Call::RemoveKernels {
@@ -488,11 +609,91 @@ mod tests {
             [
                 "/usr/bin/apt-get",
                 "-y",
+                "-o",
+                "Dpkg::Options::=--force-confdef",
+                "-o",
+                "Dpkg::Options::=--force-confold",
                 "purge",
                 "--",
                 "linux-image-6.8.0-41-generic",
                 "linux-modules-6.8.0-41-generic"
             ]
+        );
+    }
+
+    /// A system where autoremove would take the desktop with it, and SSH is set up.
+    struct Risky;
+    impl Probe for Risky {
+        fn unit_loaded(&self, unit: &str) -> bool {
+            ["ssh.service", "gdm.service", "cups.service"].contains(&unit)
+        }
+        fn package_state(&self, _: &str) -> Option<String> {
+            Some("ii".into())
+        }
+        fn disabled_snaps(&self) -> Vec<(String, String)> {
+            Vec::new()
+        }
+        fn running_kernel(&self) -> String {
+            "6.8.0-45-generic".into()
+        }
+        fn installed_kernels(&self) -> Vec<String> {
+            vec!["6.8.0-45-generic".into()]
+        }
+        fn has(&self, _: &str) -> bool {
+            true
+        }
+        fn autoremove_list(&self) -> Vec<String> {
+            vec!["gnome-shell".into(), "libfoo1".into()]
+        }
+    }
+
+    #[test]
+    fn nothing_breaks_the_session_the_desktop_or_remote_access() {
+        let r = |c: Call| prepare(&c, &Risky);
+        // Autoremove that would take the desktop is refused.
+        assert!(r(Call::Autoremove).unwrap_err().contains("gnome-shell"));
+        // The login screen is neither restarted nor turned off; a printer service is fine.
+        for unit in ["gdm.service", "user@1000.service"] {
+            assert!(
+                r(Call::RestartService { unit: unit.into() }).is_err(),
+                "{unit}"
+            );
+            assert!(
+                r(Call::SetServiceEnabled {
+                    unit: unit.into(),
+                    enabled: false
+                })
+                .is_err(),
+                "{unit}"
+            );
+        }
+        assert!(
+            r(Call::RestartService {
+                unit: "cups.service".into()
+            })
+            .is_ok()
+        );
+        assert!(
+            r(Call::SetServiceEnabled {
+                unit: "ssh.service".into(),
+                enabled: false
+            })
+            .is_err()
+        );
+        // The firewall lets SSH in before it starts, so a remote session stays connected.
+        let steps = r(Call::SetFirewall { on: true }).unwrap();
+        assert_eq!(steps[0].args, ["allow", "OpenSSH"]);
+        assert_eq!(steps[1].args, ["--force", "enable"]);
+        // Upgrades never remove other packages and keep the user's settings files.
+        let up = r(Call::UpgradePackages {
+            packages: vec!["sudo".into()],
+        })
+        .unwrap();
+        assert!(up[0].args.contains(&"--no-remove".to_owned()));
+        assert!(
+            up[0]
+                .args
+                .contains(&"Dpkg::Options::=--force-confold".to_owned())
         );
     }
 
@@ -610,6 +811,11 @@ mod tests {
             }),
             [
                 "-y",
+                "-o",
+                "Dpkg::Options::=--force-confdef",
+                "-o",
+                "Dpkg::Options::=--force-confold",
+                "--no-remove",
                 "install",
                 "--",
                 "intel-media-va-driver",

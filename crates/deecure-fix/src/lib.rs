@@ -277,6 +277,40 @@ fn set_startup_app(home: &Path, id: &str, enabled: bool) -> Result<String, Strin
     ))
 }
 
+/// Processes that hold the desktop session together: ending one signs the user out at once,
+/// and unsaved work in every app is lost. Names as Linux keeps them (cut at 15 characters).
+const SESSION_PROCESSES: &[&str] = &[
+    "gnome-shell",
+    "gnome-session-b",
+    "gnome-session-c",
+    "gnome-session-s",
+    "gdm-wayland-ses",
+    "gdm-x-session",
+    "Xwayland",
+    "Xorg",
+    "systemd",
+    "dbus-daemon",
+    "dbus-broker",
+    "dbus-broker-lau",
+    "pipewire",
+    "wireplumber",
+    "plasmashell",
+    "kwin_wayland",
+    "kwin_x11",
+    "ksmserver",
+    "xfce4-session",
+    "xfwm4",
+    "cinnamon",
+    "cinnamon-sessio",
+    "mate-session",
+    "lxqt-session",
+];
+
+/// True for a process whose end would end the whole session.
+pub fn holds_the_session(comm: &str) -> bool {
+    SESSION_PROCESSES.contains(&comm)
+}
+
 fn end_process(pid: u32, name: &str) -> Result<String, String> {
     let status = std::fs::read_to_string(format!("/proc/{pid}/status"))
         .map_err(|_| format!("process {pid} has already ended"))?;
@@ -292,6 +326,11 @@ fn end_process(pid: u32, name: &str) -> Result<String, String> {
     if comm != name && !(comm.len() == 15 && name.starts_with(comm)) {
         return Err(format!(
             "process {pid} is now {comm}, not {name}; nothing was done"
+        ));
+    }
+    if holds_the_session(comm) {
+        return Err(format!(
+            "{name} holds your desktop session together; ending it signs you out and unsaved work is lost. Sign out or restart instead"
         ));
     }
     let uid: u32 = field("Uid:")
@@ -584,6 +623,22 @@ fn helper_error(e: &zbus::Error) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_desktop_session_is_never_ended() {
+        for name in [
+            "gnome-shell",
+            "Xwayland",
+            "gnome-session-b",
+            "plasmashell",
+            "pipewire",
+        ] {
+            assert!(holds_the_session(name), "{name}");
+        }
+        for name in ["chrome", "code", "python3", "gnome-terminal-"] {
+            assert!(!holds_the_session(name), "{name}");
+        }
+    }
 
     #[test]
     fn only_real_fwupd_ids_reach_fwupdmgr() {

@@ -8,6 +8,12 @@ ConditionPathExists=/etc/deecure/power.json
 # exec, not oneshot: waiting for a late battery or device never holds up the boot.
 Type=exec
 ExecStart=/usr/libexec/deecure/deecure-helper --apply-saved
+# Stays "active" after applying, so a normal shutdown runs ExecStop, which removes the marker
+# left while riskier settings are in effect. A start that froze keeps it, and the next start
+# skips those settings once (docs/02-architecture/helper.md, "Kept after restart").
+RemainAfterExit=yes
+ExecStop=/usr/libexec/deecure/deecure-helper --power-stopped
+StateDirectory=deecure
 # It only writes the checked files in /sys, its results, and the audit log.
 ProtectSystem=strict
 RuntimeDirectory=deecure

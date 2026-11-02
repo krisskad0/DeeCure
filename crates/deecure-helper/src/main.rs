@@ -263,6 +263,16 @@ impl Probe for Live {
     fn has(&self, program: &str) -> bool {
         Path::new(program).exists()
     }
+    fn autoremove_list(&self) -> Vec<String> {
+        // A dry run: lines such as "Remv gnome-shell [46.0-0ubuntu6]".
+        output("/usr/bin/apt-get", &["-s", "autoremove"])
+            .unwrap_or_default()
+            .lines()
+            .filter_map(|l| l.strip_prefix("Remv "))
+            .filter_map(|l| l.split_whitespace().next())
+            .map(str::to_owned)
+            .collect()
+    }
     fn offered_drivers(&self) -> Vec<String> {
         // Lines such as "nvidia-driver-550, (kernel modules provided by …)".
         output("/usr/bin/ubuntu-drivers", &["list"])
@@ -626,6 +636,14 @@ fn main() -> ExitCode {
         }
         if arg == "--apply-saved" && std::env::args().len() == 2 {
             return apply_saved();
+        }
+        if arg == "--power-stopped" && std::env::args().len() == 2 {
+            if !rustix::process::geteuid().is_root() {
+                eprintln!("deecure-helper: must run as root");
+                return ExitCode::FAILURE;
+            }
+            saved::stopped(Path::new("/"));
+            return ExitCode::SUCCESS;
         }
         if arg == "--power-source-changed" && std::env::args().len() == 2 {
             return power_source_changed();

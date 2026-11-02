@@ -46,12 +46,12 @@ All read-outs share one polkit action, `io.github.krisskad0.deecure.read` (appro
 | `clean_apt_cache` | `apt-get clean` | - |
 | `vacuum_journal` | `journalctl --vacuum-size=<N>M` | 50-10000 MB |
 | `remove_snap_revision` | `snap remove <name> --revision=<rev>` | Name and revision pattern; it must be a **disabled** revision |
-| `autoremove` | `apt-get -y autoremove` | - |
-| `purge_residual` | `apt-get -y purge -- <packages>` | Package names; each must be in the "config files only" state |
-| `upgrade_packages` | `apt-get -y install --only-upgrade -- <packages>` | Package names; each must be installed |
-| `set_firewall` | `ufw --force enable` / `ufw disable` | ufw installed |
-| `restart_service` | `systemctl restart -- <unit>` | Unit pattern; it must exist |
-| `set_service_enabled` | `systemctl enable/disable --now -- <unit>` | As above, and timers too (`<name>.timer`, such as `fstrim.timer`; restarting stays for services only); essential units (D-Bus, logind, journald, udev, GDM, polkit, NetworkManager) can never be turned off |
+| `autoremove` | `apt-get -y <keep config> autoremove` | A dry run (`apt-get -s autoremove`) first; refused when it would remove a package sign-in, the desktop, the network, or admin rights need (`PROTECTED_PACKAGES`: the desktop meta packages, GNOME Shell and session, display managers, NetworkManager, wpasupplicant, systemd, sudo, polkit, D-Bus, the SSH server, the boot loader) or the running kernel. After its meta package is removed by mistake, plain autoremove removes the whole desktop. |
+| `purge_residual` | `apt-get -y <keep config> purge -- <packages>` | Package names; each must be in the "config files only" state |
+| `upgrade_packages` | `apt-get -y <keep config> --no-remove install --only-upgrade -- <packages>` | Package names; each must be installed. `--no-remove`: an upgrade that would remove another package stops instead. |
+| `set_firewall` | `ufw allow OpenSSH` (only when the SSH server is installed and set up), then `ufw --force enable` / `ufw disable` | ufw installed. Someone signed in over SSH stays connected. |
+| `restart_service` | `systemctl restart -- <unit>` | Unit pattern; it must exist. Never units whose restart ends the session (D-Bus, logind, polkit, display managers, `user@`, `getty@`). |
+| `set_service_enabled` | `systemctl enable/disable --now -- <unit>` | As above, and timers too (`<name>.timer`, such as `fstrim.timer`; restarting stays for services only); essential units can never be turned off: D-Bus, logind, journald, udev, resolved, networkd, display managers (GDM, LightDM, SDDM), AccountsService, polkit, NetworkManager, wpa_supplicant, SSH, UDisks, and per-user and console units |
 | `remove_kernels` | `apt-get -y purge -- linux-image-…` | Version pattern; never the running or newest kernel; at least two are always kept |
 | `set_battery_action` | Edits `/etc/UPower/UPower.conf`, then `systemctl try-restart upower` | PowerOff, Hibernate, or HybridSleep at 1-20%. If a later step fails, the file is put back. Returns the old values for undo. |
 | `set_charge_limits` | Writes `/sys/class/power_supply/<battery>/charge_control_{start,end}_threshold` | Battery name pattern (`BAT0`, `BATT`, `CMB0`) and `type` is `Battery`; stop 20-100%; start below stop, and only when the battery has a start limit; written in an order that never puts start at or above stop. Returns the old limits for undo. |
@@ -69,7 +69,7 @@ All read-outs share one polkit action, `io.github.krisskad0.deecure.read` (appro
 | `set_snap_retain` | `snap set system refresh.retain=<n>` | 2-20. Returns the old setting, or, when none was set, the most versions any snap keeps now. |
 | `remove_unused_flatpaks` (system) | `flatpak uninstall --unused --system -y --noninteractive` | Flatpak installed. The user installation runs without the helper. |
 | `finish_package_setup` | `dpkg --force-confdef --force-confold --configure -a` | Keeps changed settings files, as apt does. |
-| `install_packages` | `apt-get -y install -- <packages>` | 1-5 package names, each a hardware video driver (`intel-media-va-driver`, `intel-media-va-driver-non-free`, `i965-va-driver`, `mesa-va-drivers`) or one `ubuntu-drivers list` offers for this computer. |
+| `install_packages` | `apt-get -y <keep config> --no-remove install -- <packages>` | 1-5 package names, each a hardware video driver (`intel-media-va-driver`, `intel-media-va-driver-non-free`, `i965-va-driver`, `mesa-va-drivers`) or one `ubuntu-drivers list` offers for this computer. |
 | `rebuild_dkms` | `dkms autoinstall -k <kernel>` | Kernel version pattern; it must be installed (with `/boot/vmlinuz-<kernel>`); DKMS installed. |
 | `install_update` | Downloads a release from DeeCure's GitHub release page, then `apt-get -y --no-install-recommends install -- <packages>` | A version, newer than the installed one; HTTPS only to the release page built from it; each package listed in the release's `SHA256SUMS` with a safe name, its checksum matching, and its own name, version, and architecture as expected ([Updates](updates.md)) |
 | `set_auto_update` | Writes or removes `/etc/deecure/update.json` | A daily or weekly check; returns the old settings for undo. `deecure-update.timer` runs `deecure-helper --auto-update`, which uses the file only when root alone can change it ([Updates](updates.md)) |
@@ -97,7 +97,11 @@ Linux forgets charge limits, turbo, and device power settings at every start. Th
 - The CPU limit depends on the power source, so `90-deecure-power.rules` (udev) runs `deecure-helper --power-source-changed` when a mains or USB charger changes. It returns at once when no limit is kept, uses the file only under the same root-only rule, and writes an audit line.
 - At boot, `deecure-power.service` (enabled by the package, skipped while the file does not exist) runs `deecure-helper --apply-saved`. It uses the file only when it is a plain file owned by root that no one else can write. Every entry goes through the same checks as a change from the app; a device setting is skipped when a different device is in that place. Batteries and devices that are not there yet are waited for up to 20 seconds. The unit is `Type=exec`, so this never holds up the boot, and it runs with no extra powers, no network, and a read-only system except `/sys`, `/run/deecure`, and `/var/log/deecure`.
 - Each result (setting, change tried, done or why not) goes to `/run/deecure/power-boot.json` and the audit log. The app shows the list with this start's result in Power › Power Profile.
+- **A start that froze:** the riskier kept settings (PCIe power saving policy, suspend type, device power saving, compressed swap) can make some computers freeze. While one is in effect, `/var/lib/deecure/power-applied` exists; a normal shutdown removes it (`ExecStop=deecure-helper --power-stopped`, the unit stays active with `RemainAfterExit=yes`). If it is still there at the next start (a freeze and a forced power-off), those settings are skipped once, with the reason; charge limits, turbo, and the rest still apply. They come back at the start after that unless the user turns them off.
+- **Escape hatch:** `deecure.nosaved` on the kernel command line (press `e` in the boot menu and add it to the `linux` line) skips every kept setting for that start.
 - Purging the package removes `/etc/deecure/power.json`, the lid drop-in, `/run/deecure`, and `/var/log/deecure`.
+
+`<keep config>` is `-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold`: when a package asks whether to keep a settings file the user changed, the user's file is kept. Nobody can answer the question here, and without it the package stops half configured.
 
 How every call is handled:
 
@@ -108,9 +112,11 @@ How every call is handled:
 5. A JSON line goes to `/var/log/deecure/helper.log`: time, caller, operation, inputs, and result.
 6. After 2 minutes without calls (and no write running), the helper exits.
 
+The service (`packaging/helper/deecure-helper.service`) keeps home folders read-only, a private `/tmp`, the clock and hostname protected, and limits on address families, personality, and realtime. It does **not** set `ProtectKernelModules`, `ProtectKernelLogs`, or `ProtectSystem`: they make `/lib/modules` (or all of `/usr`) read-only for everything the helper starts, so a kernel update or the removal of an old kernel fails half way through apt (this happened with the 0.1.0-alpha.6 helper).
+
 ## Tests
 
 - Unit tests: command building, every refusal (shell characters, paths, missing units, essential units, the running kernel, wrong package states), the UPower edit, and literal arguments.
-- `make helper-test` (also in CI): a clean Ubuntu container with a real system D-Bus and polkit. An approved user cleans the apt cache; a bad unit name, an unknown operation, and a user-level call are refused; an unapproved user is denied; a failed step puts `UPower.conf` back; the audit log records everything and never a password hash; `--apply-saved` refuses a settings file others can write and a run without root, and reports a battery that is not there without writing anything.
+- `make helper-test` (also in CI): a clean Ubuntu container with a real system D-Bus and polkit. An approved user cleans the apt cache; a bad unit name, an unknown operation, and a user-level call are refused; an unapproved user is denied; a failed step puts `UPower.conf` back; the audit log records everything and never a password hash; `--apply-saved` refuses a settings file others can write and a run without root, and reports a battery that is not there without writing anything; the unit has nothing that makes `/lib/modules` read-only.
 - Not yet: apply → verify → undo of every fix in a full VM, and the security review by two people (Phase 2 tasks 7 and 9).
 

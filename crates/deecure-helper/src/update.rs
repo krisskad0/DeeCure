@@ -236,8 +236,15 @@ pub fn install(version: &str) -> Result<String, String> {
             set_mode(&path, 0o644)?;
             files.push(path.to_string_lossy().into_owned());
         }
+        // --no-remove: an update that would remove another package stops instead; the user's
+        // settings files are kept, as nobody can answer apt's question here.
         let mut args = vec![
             "-y".to_owned(),
+            "-o".to_owned(),
+            "Dpkg::Options::=--force-confdef".to_owned(),
+            "-o".to_owned(),
+            "Dpkg::Options::=--force-confold".to_owned(),
+            "--no-remove".to_owned(),
             "--no-install-recommends".to_owned(),
             "install".to_owned(),
             "--".to_owned(),

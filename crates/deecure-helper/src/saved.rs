@@ -25,6 +25,20 @@ pub const SAVED: &str = "etc/deecure/power.json";
 pub const RESULTS: &str = "run/deecure/power-boot.json";
 /// Batteries and devices can show up a few seconds into boot.
 const WAIT_ROUNDS: u32 = 20;
+/// Left while riskier settings are applied; a normal shutdown removes it
+/// (`deecure-helper --power-stopped`). Still there at the next start means that start ended
+/// without a normal shutdown (a freeze and a forced power-off), so those settings wait.
+pub const MARKER: &str = "var/lib/deecure/power-applied";
+/// On the kernel command line (the boot menu's "e"), no kept setting is applied at all.
+const NO_SAVED: &str = "deecure.nosaved";
+
+/// Settings that can make some computers freeze or lose a device, unlike charge limits or turbo.
+fn risky(key: &str) -> bool {
+    key == "aspm_policy"
+        || key == "suspend_mode"
+        || key == "zswap"
+        || key.starts_with("power_saving:")
+}
 
 /// One kept setting.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -249,8 +263,32 @@ fn apply_one(root: &Path, key: &str, kept: &Kept) -> Result<String, String> {
 /// for batteries and devices that are not there yet.
 pub fn apply_saved(root: &Path, wait: Duration) -> Vec<Outcome> {
     let saved = load(&root.join(SAVED));
-    let mut pending: Vec<(&String, &Kept)> = saved.settings.iter().collect();
+    let marker = root.join(MARKER);
+    let off = read(&root.join("proc/cmdline"))
+        .is_some_and(|c| c.split_whitespace().any(|w| w == NO_SAVED));
+    let froze = marker.exists();
     let mut done = Vec::new();
+    let mut pending: Vec<(&String, &Kept)> = Vec::new();
+    for (key, kept) in &saved.settings {
+        let why = if off {
+            Some(format!(
+                "not applied: {NO_SAVED} is on the kernel command line"
+            ))
+        } else if froze && risky(key) {
+            Some("not applied this time: the last start ended without a normal shutdown, and this setting can make some computers freeze. Turn it on again in DeeCure if the freeze had another cause".to_owned())
+        } else {
+            None
+        };
+        match why {
+            Some(message) => done.push(Outcome {
+                setting: key.clone(),
+                call: kept.call.clone(),
+                ok: false,
+                message,
+            }),
+            None => pending.push((key, kept)),
+        }
+    }
     for round in 0..WAIT_ROUNDS {
         let (ready, later): (Vec<_>, Vec<_>) = pending
             .into_iter()
@@ -270,7 +308,19 @@ pub fn apply_saved(root: &Path, wait: Duration) -> Vec<Outcome> {
         }
         std::thread::sleep(wait);
     }
+    // Leave the marker only while a riskier setting is in effect.
+    if done.iter().any(|o| o.ok && risky(&o.setting)) {
+        let _ = std::fs::create_dir_all(marker.parent().unwrap_or(root));
+        let _ = std::fs::write(&marker, b"");
+    } else {
+        let _ = std::fs::remove_file(&marker);
+    }
     done
+}
+
+/// A normal shutdown: the riskier settings did not freeze this start.
+pub fn stopped(root: &Path) {
+    let _ = std::fs::remove_file(root.join(MARKER));
 }
 
 /// Applies one kept setting now, if it is kept (the CPU limit, when a charger is plugged in or
@@ -415,6 +465,61 @@ mod tests {
                 "sys/class/power_supply/BAT0/charge_control_end_threshold"
             ),
             "80"
+        );
+    }
+
+    #[test]
+    fn a_start_that_froze_skips_the_riskier_settings_once() {
+        let mut files = BAT.to_vec();
+        files.push((
+            "/sys/module/pcie_aspm/parameters/policy",
+            "[default] performance powersave powersupersave\n",
+        ));
+        let root = test_root("froze", &files);
+        let aspm = |p: &str| Call::SetAspmPolicy {
+            policy: p.into(),
+            keep: true,
+        };
+        remember(&root, &aspm("powersupersave"), &aspm("default")).unwrap();
+        remember(&root, &limits(80), &limits(100)).unwrap();
+
+        // A normal start: both applied, and the marker is left while PCIe power saving is on.
+        let out = apply_saved(&root, Duration::ZERO);
+        assert!(out.iter().all(|o| o.ok), "{out:?}");
+        assert!(root.join(MARKER).exists());
+
+        // That start froze (no normal shutdown): PCIe power saving waits, the charge limit does not.
+        let out = apply_saved(&root, Duration::ZERO);
+        let get = |k: &str| out.iter().find(|o| o.setting == k).unwrap();
+        assert!(!get("aspm_policy").ok);
+        assert!(
+            get("aspm_policy")
+                .message
+                .contains("without a normal shutdown")
+        );
+        assert!(get("charge_limits:BAT0").ok);
+        assert!(!root.join(MARKER).exists(), "nothing risky is on now");
+
+        // Next start: applied again (the real file lists the choices again after a write).
+        std::fs::write(
+            root.join("sys/module/pcie_aspm/parameters/policy"),
+            "[default] performance powersave powersupersave\n",
+        )
+        .unwrap();
+        let out = apply_saved(&root, Duration::ZERO);
+        assert!(out.iter().all(|o| o.ok), "{out:?}");
+        assert!(root.join(MARKER).exists());
+        stopped(&root);
+        assert!(!root.join(MARKER).exists());
+
+        // deecure.nosaved on the kernel command line: nothing at all.
+        std::fs::create_dir_all(root.join("proc")).unwrap();
+        std::fs::write(root.join("proc/cmdline"), "quiet splash deecure.nosaved\n").unwrap();
+        let out = apply_saved(&root, Duration::ZERO);
+        assert!(
+            out.iter()
+                .all(|o| !o.ok && o.message.contains("deecure.nosaved")),
+            "{out:?}"
         );
     }
 
