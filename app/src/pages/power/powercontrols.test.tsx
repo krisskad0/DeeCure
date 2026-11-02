@@ -7,6 +7,7 @@ import type { PowerDetail } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
 import { PowerControls, describeKept, lidSummary, limitsSubject, pciPowerSavingSafe, radioKinds } from "./PowerControls";
 import { WakeExpertSections, mustKeepWaking } from "./PowerExpert";
+import { choose } from "../../test-utils";
 
 const power: PowerDetail = {
   batteries: [{ name: "BAT0", charge_start: 50, charge_stop: 80, charge_mode: { current: "Custom", offered: ["Standard", "Adaptive", "Custom"] } }],
@@ -64,7 +65,7 @@ describe("Power controls", () => {
     fireEvent.change(screen.getByRole("spinbutton", { name: "Start charging below" }), { target: { value: "70" } });
     fireEvent.change(screen.getByRole("spinbutton", { name: "Stop charging at" }), { target: { value: "75" } });
     fireEvent.click(screen.getByRole("button", { name: "Set" }));
-    fireEvent.change(screen.getByRole("combobox", { name: "Charge mode" }), { target: { value: "Adaptive" } });
+    choose("Charge mode", "Adaptive");
     fireEvent.click(screen.getByRole("button", { name: "Change" }));
     await waitFor(() => expect(screen.getByText("Turn turbo off")).toBeTruthy());
     fireEvent.click(screen.getByText("Turn turbo off"));
@@ -126,7 +127,7 @@ describe("Power controls", () => {
     await waitFor(() => expect(screen.getByText("Closing the lid")).toBeTruthy());
     const lidChange = screen.getByRole("button", { name: "Set lid action" }) as HTMLButtonElement;
     expect(lidChange.disabled).toBe(true);
-    fireEvent.change(screen.getByRole("combobox", { name: "Closing the lid plugged in" }), { target: { value: "lock" } });
+    choose("Closing the lid plugged in", "lock");
     fireEvent.click(lidChange);
     fireEvent.click(screen.getByText("Use the system setting"));
     expect(opened).toEqual([

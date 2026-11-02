@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { type CpuDetail, type KeptSetting, type LidSettings, type NetDeep, type PciDevice, type PowerDetail, getInventory } from "../../api";
 import { Button } from "../../components/Button";
-import { FieldRow } from "../../components/FormControls";
+import { FieldRow, Select } from "../../components/FormControls";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useFix } from "../../shell/FixDrawer";
@@ -142,13 +142,7 @@ function LidControls({ lid }: { lid: LidSettings }) {
   const select = (label: string, value: string, set: (v: string) => void) => (
     <label>
       {label}{" "}
-      <select className="select" value={value} onChange={(e) => set(e.target.value)} aria-label={`Closing the lid ${label.toLowerCase()}`}>
-        {LID_CHOICES.map((c) => (
-          <option key={c} value={c}>
-            {LID_NAMES[c]}
-          </option>
-        ))}
-      </select>
+      <Select value={value} options={LID_CHOICES.map((c) => ({ value: c, label: LID_NAMES[c] }))} onChange={set} label={`Closing the lid ${label.toLowerCase()}`} />
     </label>
   );
   return (
@@ -237,13 +231,7 @@ function BatteryControls({ b }: { b: PowerDetail["batteries"][number] }) {
       {b.charge_mode && b.charge_mode.offered.length > 1 && (
         <FieldRow label={`Charge mode · ${b.name}`} description="Adaptive learns your use; Fast charges quickly but wears the battery more; Custom uses the limits above.">
           <span className="btn-row">
-            <select className="select" value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Charge mode">
-              {b.charge_mode.offered.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
+            <Select value={mode} options={b.charge_mode.offered.map((m) => ({ value: m, label: m }))} onChange={setMode} label="Charge mode" />
             <Button small disabled={!mode || mode === b.charge_mode.current} onClick={() => openFix("power.set_charge_mode", `${b.name}:${mode}`)}>
               Change
             </Button>

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HistoryEvent } from "../../api";
 import { resetKb } from "../../kb";
 import { ActivityConfig, ActivityDevices, ActivityPackages, ActivityTimelinePage, deviceCounts, groupChanges, newKernel, perMonth } from "./Activity";
+import { chosen } from "../../test-utils";
 
 const now = Date.now();
 const H = 3_600_000;
@@ -97,7 +98,7 @@ describe("Activity", () => {
     expect(screen.getByText("unit44.service failed")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /more$/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Show older changes" }));
-    expect((screen.getByRole("combobox", { name: "Period" }) as HTMLSelectElement).value).toBe("30");
+    expect(chosen("Period")).toBe("30");
     await waitFor(() => expect(screen.getByText("Showing 20 of 45 changes")).toBeTruthy());
   });
 

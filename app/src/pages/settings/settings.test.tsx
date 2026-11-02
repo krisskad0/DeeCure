@@ -7,6 +7,7 @@ import { usePref } from "../../prefs";
 import { AssistantChat } from "../assistant/Assistant";
 import { DiagnosticsHardware, DiagnosticsNetwork, DiagnosticsPerformance } from "../diagnostics/Diagnostics";
 import { SettingsAbout, SettingsData, SettingsGeneral, SettingsNotifications } from "./Settings";
+import { choices, choose, chosen } from "../../test-utils";
 
 const saved: unknown[] = [];
 const deletes: number[] = [];
@@ -92,10 +93,9 @@ describe("Diagnostics", () => {
 describe("Settings and Assistant", () => {
   it("the view level has three choices and is saved", () => {
     render(<SettingsGeneral />);
-    const level = screen.getByRole("combobox", { name: "View level" }) as HTMLSelectElement;
-    expect([...level.options].map((o) => o.value)).toEqual(["beginner", "advanced", "expert"]);
-    fireEvent.change(level, { target: { value: "advanced" } });
-    expect(level.value).toBe("advanced");
+    expect(choices("View level")).toEqual(["beginner", "advanced", "expert"]);
+    choose("View level", "advanced");
+    expect(chosen("View level")).toBe("advanced");
     expect(localStorage.getItem("deecure.mode")).toBe('"advanced"');
   });
 
@@ -143,7 +143,7 @@ describe("Settings and Assistant", () => {
     expect(screen.getByText("Main disk is almost full")).toBeTruthy();
     fireEvent.click(screen.getByRole("switch", { name: "Warnings" }));
     await waitFor(() => expect(saved).toEqual([{ critical: true, warnings: true, weekly: true, quiet_hours: "22-07" }]));
-    fireEvent.change(screen.getByRole("combobox", { name: "Quiet hours" }), { target: { value: "off" } });
+    choose("Quiet hours", "off");
     await waitFor(() => expect(saved[1]).toEqual({ critical: true, warnings: true, weekly: true, quiet_hours: "off" }));
     fireEvent.click(screen.getByRole("button", { name: "Send a test notification" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Send a test notification" })).toBeTruthy());

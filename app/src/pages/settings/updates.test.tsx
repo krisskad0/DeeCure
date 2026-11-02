@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { UpdateSettings, UpdateStatus } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
 import { Updates, updateLine } from "./Updates";
+import { choose } from "../../test-utils";
 
 const BASE: UpdateStatus = {
   settings: { check: "daily", channel: "prerelease", auto: false },
@@ -68,13 +69,13 @@ describe("Updates", () => {
   it("automatic updates save the choice and ask for the password through the preview", async () => {
     withFix(<Updates />);
     await waitFor(() => expect(screen.getByRole("combobox", { name: "Install updates" })).toBeTruthy());
-    fireEvent.change(screen.getByRole("combobox", { name: "Install updates" }), { target: { value: "auto" } });
+    choose("Install updates", "auto");
     await waitFor(() => expect(saved.at(-1)?.auto).toBe(true));
     await waitFor(() => expect(opened).toEqual([["system.set_auto_update", "on"]]));
     // Not set up until the password was given: the panel says so.
     expect(screen.getByText("Automatic updates are not set up yet")).toBeTruthy();
     // Never: no internet at all, and no automatic updates.
-    fireEvent.change(screen.getByRole("combobox", { name: "Check for updates" }), { target: { value: "off" } });
+    choose("Check for updates", "off");
     await waitFor(() => expect(saved.at(-1)).toEqual({ check: "off", channel: "prerelease", auto: false }));
   });
 });

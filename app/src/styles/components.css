@@ -234,6 +234,25 @@ a.btn { text-decoration: none; }
 }
 .select:hover:not(:disabled) { border-color: var(--muted); }
 .select:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent); }
+/* DeeCure's own dropdown: the button is a .select; the list is drawn here, not by the system. */
+.dd { position: relative; display: inline-block; }
+button.select { display: inline-flex; align-items: center; text-align: left; min-width: 120px; }
+.select[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.select:disabled { opacity: 0.45; box-shadow: none; }
+.dd-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-menu {
+  position: absolute; z-index: 60; top: calc(100% + 4px); left: 0; min-width: 100%; max-height: 268px; overflow-y: auto;
+  margin: 0; padding: 4px; list-style: none; background: var(--panel); border: 1px solid var(--line-2);
+  border-radius: 8px; box-shadow: var(--shadow); animation: dd-in 0.1s ease-out;
+}
+.dd-menu.dd-up { top: auto; bottom: calc(100% + 4px); }
+.dd-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 30px; padding: 0 10px;
+  border-radius: 6px; font-size: 13px; color: var(--ink); white-space: nowrap; cursor: pointer;
+}
+.dd-option.active { background: var(--hover); }
+.dd-option[aria-selected="true"] { color: var(--accent); font-weight: 600; }
+@keyframes dd-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
 .radio-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding: 12px 14px; }
 .radio-card { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; }
 .radio-card.checked { border-color: var(--accent); background: var(--accent-soft); }
