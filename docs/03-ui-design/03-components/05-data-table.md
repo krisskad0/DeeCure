@@ -3,7 +3,7 @@
 [Docs](../../README.md) › [UI design](../README.md) › [Components](README.md)
 
 - **Tools bar** (only if the table has search, filter or selection): padding 8 12, bottom border, wraps.
-  - Search box: 28px, `--panel-2`, 1px border, radius 6, 14px search icon, width 180-260px, placeholder from the spec. Matches any cell's text (case-insensitive substring).
+  - Search box: looks like the dropdowns and buttons: 30px, `--panel`, 1px `--line-2` border, radius 7, `--btn-shadow`, 14px search icon, width 180-260px, placeholder from the spec; hover `--muted` border; while typing an `--accent` border with a 3px `--accent-soft` ring. Matches any cell's text (case-insensitive substring).
   - Filter chips: 26px pills (radius 13, 1px border, 12.5px `--ink-2`). Pressed chip: `--ink` background, `--panel` text. "All" plus options; a row matches when the chosen column's text **starts with** the option (case-insensitive).
   - Selection bar (right): "N selected" or "Select rows", plus a small button (primary when at least one row is selected).
 - **Table:** 100% wide, collapsed borders, 13px.

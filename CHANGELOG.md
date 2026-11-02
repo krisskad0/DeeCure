@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- Number boxes (warning limits, charge limits), table search boxes, and checkboxes now match the buttons and dropdowns: the same height, border, corners, and focus ring, without the system spin arrows.
 - Every button, dropdown, fold ("Show all", "How to fix"), and link shows the hand cursor. Buttons share one look with clear hover, press, and keyboard-focus states; text buttons (Open, View) get a hover area instead of an underline; dropdowns match the buttons with DeeCure's own arrow in light and dark mode.
 
 - Settings › General uses the full width with three clear groups (Display, Charts and live data, Startup), and its controls line up. "Start at login" was a fixed "On" label that looked like a setting; it is now "Background agent" with its real state (Running or Not running) and why it is always on. The tray switch is greyed out, with the reason, when the desktop has no tray area, instead of failing after a click.
