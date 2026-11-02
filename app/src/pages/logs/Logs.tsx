@@ -7,6 +7,7 @@ import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { BarChart } from "../../components/charts/BarChart";
+import { BarList } from "../../components/charts/BarList";
 import { Heatmap } from "../../components/charts/Heatmap";
 import { duration, heatRows, unescapeUnit, when } from "../../metrics";
 import { kbError, useKb } from "../../kb";
@@ -44,6 +45,36 @@ const ENTRIES: Column<LogEntry>[] = [
   { key: "message", label: "Message", text: (e) => e.message, render: (e) => <code className="wrap-anywhere">{e.message}</code>, wrap: true },
 ];
 
+/** How often each value appears, most first. */
+export function topCounts(values: string[], limit = 5): { label: string; count: number }[] {
+  const m = new Map<string, number>();
+  for (const v of values) m.set(v, (m.get(v) ?? 0) + 1);
+  return [...m.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+/** Who writes the most lines, and the messages that repeat, over the lines shown below. */
+function LogSummary({ lines, sourceTitle }: { lines: { source: string; message: string }[]; sourceTitle: string }) {
+  if (lines.length < 10) return null;
+  const sources = topCounts(lines.map((l) => l.source));
+  const repeats = topCounts(lines.map((l) => l.message)).filter((r) => r.count > 1);
+  const bars = (rows: { label: string; count: number }[], mono: boolean) => <BarList rows={rows.map((r) => ({ id: r.label, label: r.label, value: r.count, display: `${r.count}×`, mono }))} />;
+  return (
+    <div className="panel-pad log-summary">
+      <div>
+        <div className="kn-head">{sourceTitle}</div>
+        {bars(sources, false)}
+      </div>
+      <div>
+        <div className="kn-head">Most repeated</div>
+        {repeats.length ? bars(repeats, true) : <div className="muted">No message repeats.</div>}
+      </div>
+    </div>
+  );
+}
+
 function Waiting({ title, error }: { title: string; error: Parameters<typeof NoData>[0]["error"] }) {
   return (
     <Panel title={title} span={12}>
@@ -72,6 +103,7 @@ export function LogsJournal() {
         />
       </Panel>
       <Panel title="Journal entries" subtitle={`newest ${j.entries.length} of ${j.total.toLocaleString()}`} span={12} flush>
+        <LogSummary lines={j.entries.map((e) => ({ source: unescapeUnit(e.unit), message: e.message }))} sourceTitle="Writes the most" />
         <DataTable rows={j.entries} columns={ENTRIES} rowKey={(e) => `${e.at}|${e.unit}|${e.message.slice(0, 40)}`} search={{ placeholder: "Filter messages" }} filter={{ column: "priority", options: ["error", "warning", "info"] }} pageSize={12} />
       </Panel>
     </>
@@ -170,6 +202,7 @@ export function LogsKernel() {
   if (!lines) return <Waiting title="Kernel messages" error={error} />;
   return (
     <Panel title="Kernel messages" subtitle="last 7 days, newest first" source="journalctl -k" span={12} flush>
+      <LogSummary lines={lines.map((k) => ({ source: k.subsystem, message: k.message }))} sourceTitle="Busiest parts of the kernel" />
       <DataTable rows={lines} columns={KERNEL} rowKey={(k) => `${k.at}|${k.message.slice(0, 60)}`} search={{ placeholder: "Filter kernel log" }} filter={{ column: "level", options: ["error", "warning", "info"] }} pageSize={14} />
     </Panel>
   );

@@ -42,6 +42,8 @@
 | `Mon 09:44:09` | {off:info} | `kernel` | `usb 3-2: USB disconnect, device number 3` |
 | `Sun 03:10:00` | {off:notice} | `systemd` | `e2scrub_all.timer: skipped, system suspended` |
 
+Above the table (10 lines or more): two columns of ranked bars over the lines shown: "Writes the most" (top 5 units) and "Most repeated" (top 5 messages that appear more than once; the full message shows on hover).
+
 ## Logs › Errors: `logs/errors`
 
 Tab count pill: 37.
@@ -115,6 +117,8 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | 08:58:06 | {off:info} | nvme | `nvme0: 8/0/0 default/read/poll queues` |
 | Mon 10:02 | {off:info} | usb | `usb 3-2: new SuperSpeed USB device number 4` |
 | Mon 09:44 | {warn:warn} | usb | `usb 3-2: USB disconnect, device number 3` |
+
+Above the table: the same two columns, "Busiest parts of the kernel" (subsystems) and "Most repeated".
 
 ## Logs › Boots: `logs/boots`
 

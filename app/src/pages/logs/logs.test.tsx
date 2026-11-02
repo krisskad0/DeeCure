@@ -4,7 +4,7 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { heatRows } from "../../metrics";
-import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel, level } from "./Logs";
+import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel, level, topCounts } from "./Logs";
 
 const now = Date.now();
 const H = 3_600_000;
@@ -71,5 +71,12 @@ describe("Logs", () => {
     cleanup();
     render(<LogsErrors />);
     await waitFor(() => expect(screen.getByText("No errors in the last 7 days")).toBeTruthy());
+  });
+
+  it("counts who writes most and what repeats", () => {
+    expect(topCounts(["a", "b", "a", "c", "a", "b"], 2)).toEqual([
+      { label: "a", count: 3 },
+      { label: "b", count: 2 },
+    ]);
   });
 });
