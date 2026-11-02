@@ -80,8 +80,25 @@ describe("Activity", () => {
   it("no tip without a new kernel, and an empty week says so", async () => {
     events = [];
     render(<ActivityTimelinePage />);
-    await waitFor(() => expect(screen.getByText("No changes in the last 7 days.")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/No changes in the last 7 days\./)).toBeTruthy());
+    expect(screen.getByRole("button", { name: "Look further back" })).toBeTruthy();
     expect(screen.queryByText(/A new kernel arrived/)).toBeNull();
+  });
+
+  it("a long timeline shows 20 at a time, then offers older changes", async () => {
+    events = Array.from({ length: 45 }, (_, i): HistoryEvent => ({ at: Date.now() - i * 3_600_000, kind: "service_failed", title: `unit${i}.service failed`, source: "systemd" }) as HistoryEvent);
+    render(<ActivityTimelinePage />);
+    await waitFor(() => expect(screen.getByText("Showing 20 of 45 changes")).toBeTruthy());
+    expect(screen.getByText("unit19.service failed")).toBeTruthy();
+    expect(screen.queryByText("unit20.service failed")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show 20 more" }));
+    expect(screen.getByText("Showing 40 of 45 changes")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show 5 more" }));
+    expect(screen.getByText("unit44.service failed")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /more$/ })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show older changes" }));
+    expect((screen.getByRole("combobox", { name: "Period" }) as HTMLSelectElement).value).toBe("30");
+    await waitFor(() => expect(screen.getByText("Showing 20 of 45 changes")).toBeTruthy());
   });
 
   it("config changes open a diff", async () => {

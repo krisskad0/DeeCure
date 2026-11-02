@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - Overview shows the GPU: a tile (CPU, GPU, Memory, Disk, Network, Battery) with how busy the graphics card is, and a GPU line in the utilization chart. AMD and Intel graphics report it; for NVIDIA's own driver the tile says it does not report busy time. A computer without a graphics card shows no GPU tile or line. The busy time is kept in the history from now on.
 
+- Activity › Timeline can show more: it starts with the newest 20 changes and has **Show 20 more**, with "Showing 20 of N changes", and a **Period** menu (7, 30, or 90 days) with **Show older changes** at the end. Before, it stopped at 60 changes without saying so, and only covered 7 days.
+
 ### Changed
 
 - Overview shows the health score once, as the gauge panel with what takes points off, now next to the chart. The duplicate tile is gone.

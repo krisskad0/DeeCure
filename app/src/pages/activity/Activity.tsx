@@ -14,6 +14,7 @@ import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { Donut } from "../../components/charts/Donut";
+import { Select } from "../../components/FormControls";
 import { useKb } from "../../kb";
 import { when } from "../../metrics";
 import { href } from "../../route";
@@ -221,12 +222,30 @@ function KernelTip({ event }: { event: HistoryEvent }) {
   );
 }
 
+/** How far back the timeline goes. */
+type Period = "7" | "30" | "90";
+const PERIODS: { value: Period; label: string }[] = [
+  { value: "7", label: "Last 7 days" },
+  { value: "30", label: "Last 30 days" },
+  { value: "90", label: "Last 90 days" },
+];
+/** Timeline rows shown at first, and added by each "Show more". */
+export const PAGE = 20;
+
 export function ActivityTimelinePage() {
-  const { data: week, error } = useLive(loadWeek, 60_000);
+  const [period, setPeriod] = useState<Period>("7");
+  const days = Number(period);
+  const { data: week, error } = useLive(() => getEvents(Date.now() - days * DAY), 60_000, period);
   const [open, setOpen] = useState<HistoryEvent | null>(null);
+  const [shown, setShown] = useState(PAGE);
+  const choose = (p: Period) => {
+    setPeriod(p);
+    setShown(PAGE);
+  };
+  const periodPicker = <Select label="Period" value={period} options={PERIODS} onChange={choose} />;
   if (!week) {
     return (
-      <Panel title="Change timeline" span={12}>
+      <Panel title="Change timeline" actions={periodPicker} span={12}>
         <NoData error={error} waiting="Collecting changes…" />
       </Panel>
     );
@@ -246,7 +265,8 @@ export function ActivityTimelinePage() {
     if (c.type === "Configuration") return <LinkButton to={href("activity", "config")}>Files</LinkButton>;
     return undefined;
   };
-  const rows: TimelineRow[] = changes.slice(0, 60).map((c) => ({ time: when(c.at), title: c.title, detail: c.detail, tone: c.tone, action: action(c) }));
+  const rows: TimelineRow[] = changes.slice(0, shown).map((c) => ({ time: when(c.at), title: c.title, detail: c.detail, tone: c.tone, action: action(c) }));
+  const span = `last ${days} days`;
   const types: ChangeType[] = ["Packages", "Configuration", "Devices", "System", "Services", "Crashes", "DeeCure"];
   const segments = types
     .map((t) => ({ name: t, value: by(t) }))
@@ -256,7 +276,7 @@ export function ActivityTimelinePage() {
     <>
       <KpiRow
         tiles={[
-          { label: "Changes", value: String(changes.length), subtext: "last 7 days" },
+          { label: "Changes", value: String(changes.length), subtext: span },
           { label: "Package changes", value: String(by("Packages")) },
           { label: "Configuration changes", value: String(by("Configuration")) },
           { label: "Crashes", value: String(by("Crashes")), status: by("Crashes") ? "warn" : "ok" },
@@ -264,10 +284,48 @@ export function ActivityTimelinePage() {
         ]}
       />
       {kernel && <KernelTip event={kernel} />}
-      <Panel title="Change timeline" subtitle={week.truncated ? "newest changes only" : undefined} info="What changed on this computer, newest first. Something broke? Look at what changed just before." span={8} flush>
-        {rows.length ? <ActivityTimeline rows={rows} /> : <div className="empty muted">No changes in the last 7 days.</div>}
+      <Panel
+        title="Change timeline"
+        subtitle={week.truncated ? "newest changes only" : undefined}
+        info="What changed on this computer, newest first. Something broke? Look at what changed just before."
+        actions={periodPicker}
+        span={8}
+        flush
+      >
+        {rows.length ? (
+          <>
+            <ActivityTimeline rows={rows} />
+            <div className="tl-more">
+              <span className="muted">
+                Showing {rows.length} of {changes.length} {changes.length === 1 ? "change" : "changes"}
+              </span>
+              {rows.length < changes.length && (
+                <Button small onClick={() => setShown((n) => n + PAGE)}>
+                  Show {Math.min(PAGE, changes.length - rows.length)} more
+                </Button>
+              )}
+              {rows.length >= changes.length && period !== "90" && (
+                <Button small onClick={() => choose(period === "7" ? "30" : "90")}>
+                  Show older changes
+                </Button>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="empty muted">
+            No changes in the {span}.
+            {period !== "90" && (
+              <>
+                {" "}
+                <Button small onClick={() => choose(period === "7" ? "30" : "90")}>
+                  Look further back
+                </Button>
+              </>
+            )}
+          </div>
+        )}
       </Panel>
-      <Panel title="Changes by type" subtitle="7 days" span={4}>
+      <Panel title="Changes by type" subtitle={`${days} days`} span={4}>
         <Donut segments={segments.length ? segments : [{ name: "None", value: 0, tone: "neutral" }]} center={{ value: String(changes.length), subtitle: "changes" }} />
       </Panel>
       {open && <DiffDrawer event={open} onClose={() => setOpen(null)} />}
