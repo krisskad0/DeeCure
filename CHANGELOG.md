@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- The one-command install (`install.sh`) repairs a DeeCure update that stopped half way: apt refuses a half-installed package ("needs to be reinstalled"), so the installer puts the new packages in place with dpkg first. `install.sh` is served from `main`, so this works without a release.
+
+### Added
+
+- `make update-systemd-test`: the in-app update, the automatic update, the repair, and the helper's sandbox, tested with systemd running as on a desktop.
+
 ## [0.1.0-alpha.8] - 2026-11-02
 
 ### Fixed

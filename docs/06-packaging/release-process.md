@@ -39,7 +39,7 @@ The `~` makes a pre-release sort **before** the final release, so apt upgrades f
    5. Signs build provenance for every file (Sigstore, no long-lived key).
    6. Creates the GitHub Release with the two `.deb` files, `SHA256SUMS`, the SBOM, and `install.sh`. A **pre-release tag** (with `-alpha`, `-beta`, or `-rc`) is **published at once**, so the one-command installer can find it. A **stable tag** is created as a **draft**, to publish by hand after step 7.
    7. Updates the APT repository, only when the `APT_SIGNING_KEY` secret exists (not yet).
-7. Check: `gh release view v0.3.0`, then `make clean-install-test` (the real one-command install from GitHub on clean 24.04 and 26.04 containers). Before a stable release, also smoke test on real 24.04 and 26.04 VMs: install, open the app, run `deecure status`, upgrade from the last version.
+7. Check: `gh release view v0.3.0`, then `make clean-install-test` (the real one-command install from GitHub on clean 24.04 and 26.04 containers) and `make update-systemd-test OLD=<release before>` (the in-app and automatic update, a repair with `install.sh`, and the helper's sandbox, with systemd running as on a desktop; the other container tests cannot see a package that stops a running service). Before a stable release, also smoke test on real 24.04 and 26.04 VMs: install, open the app, run `deecure status`, upgrade from the last version.
 8. Publish the GitHub Release (stable only). Later: promote to the `main` APT component, upload to the PPA.
 9. Post the release notes.
 

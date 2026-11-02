@@ -88,7 +88,7 @@ All 78 tabs show real data and every data source was checked on a real laptop. F
 4. Build once (`make deb`), then on `target/deb/`: `deb-test`, `helper-test`, and `upgrade-test` (installs the newest published release, then upgrades to the new packages as the in-app updater does). Also `make ui-real`.
 5. Commit (`git commit -s`), push, and wait until CI is green on that exact commit (`gh run list --commit <sha>`).
 6. `git tag -a v<version> -m "…"` and `git push origin v<version>`. The release workflow builds, tests, signs provenance and the SBOM, and publishes. Pre-releases publish at once; stable releases are drafts to publish by hand.
-7. Check: `gh release view v<version>`, then `make clean-install-test` (the real one-command install against the published release), and the real in-app update from the release before (`scripts/test-self-update.sh`).
+7. Check: `gh release view v<version>`, then `make clean-install-test` (the real one-command install against the published release), the real in-app update from the release before (`scripts/test-self-update.sh`), and `make update-systemd-test OLD=<release before>` (with systemd running, as on a desktop: the Install button over D-Bus, the automatic update through `deecure-update.service`, repairing an update that stopped half way with `install.sh`, and a package that writes `/lib/modules` and installs a setuid program through the helper). The other container tests have no systemd, and Docker's `policy-rc.d` blocks service stops, so only this test sees a package that stops the service installing it.
 
 ## 8. How to work here (owner's rules and practical notes)
 

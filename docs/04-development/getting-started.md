@@ -70,6 +70,7 @@ The `Makefile` gives short names to the real commands:
 | `make deb-test` | Installs, uses, and purges the packages in a clean Ubuntu container (needs Docker) |
 | `make helper-test` | Tests the root helper with real D-Bus and polkit in a container (needs Docker) |
 | `make install-test` | Tests `install.sh` against a signed throwaway APT repository in a container (needs Docker) |
+| `make update-systemd-test` | With systemd running in a container, as on a desktop: the in-app update (the Install button over D-Bus), the automatic update, repairing an update that stopped half way with `install.sh`, and a package that writes `/lib/modules` and installs a setuid program through the helper (needs Docker and internet; `OLD=`, `NEW=`, `BROKEN=` versions) |
 | `make clean-install-test` | The real one-command install from the newest GitHub release on clean Ubuntu 24.04 (curl) and 26.04 (wget), then update and uninstall (needs Docker and internet) |
 | `make help` | Lists all commands |
 

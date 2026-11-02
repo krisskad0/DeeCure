@@ -25,6 +25,7 @@
 | Install, use, purge in a clean container | `make deb-test` | Every push | ✅ |
 | Root helper with real D-Bus and polkit | `make helper-test` | Every push | ✅ |
 | Install script against a signed test repository | `make install-test` | Before a release | ✅ |
+| In-app and automatic updates, the repair of a half-done update, and the helper's sandbox, with systemd running (D-Bus, polkit, `deecure-update.service`; Docker's `policy-rc.d` removed as on a desktop) | `make update-systemd-test` | After each release | ✅ Passed 0.1.0-alpha.7 to 0.1.0-alpha.8 on 2026-11-03, and reproduced the alpha.6 to alpha.7 failure |
 | The real one-command install from GitHub, on clean Ubuntu 24.04 (curl) and 26.04 (wget) | `make clean-install-test` | After each release | ✅ Passed with v0.1.0-alpha.2 on 2026-10-23 |
 | Desktop notifications | A fake notification server on a private session bus (`dbus-run-session`), never the real desktop | By hand | ✅ |
 | Dependency checks | `cargo-deny` (known vulnerabilities, licenses, sources; `deny.toml`) and `npm audit` | Every push, pull request, and weekly | ✅ |

@@ -224,6 +224,19 @@ done
 echo "  ok"
 
 refresh_lists
+# A DeeCure update that stopped half way (the 0.1.0-alpha.6 and alpha.7 in-app updates did)
+# leaves a package apt will not touch ("needs to be reinstalled, but I can't find an archive").
+# dpkg can install the downloaded packages over it; apt then finishes as usual.
+half_done=""
+for p in deecure deecure-desktop; do
+  state="$(dpkg-query -W -f='${db:Status-Abbrev}' "$p" 2>/dev/null || true)"
+  case "$state" in "" | "ii "*) ;; *) half_done="$half_done $p($state)" ;; esac
+done
+if [ -n "$half_done" ]; then
+  echo "DeeCure was left half installed:$half_done; putting the new version in place first."
+  # shellcheck disable=SC2086 # the file list is meant to split
+  (cd "$TMP" && run dpkg -i $LOCAL) || true
+fi
 echo "Installing DeeCure and the libraries it needs from Ubuntu (1-3 minutes on a new system)..."
 # shellcheck disable=SC2086 # the file and package lists are meant to split
 (cd "$TMP" && install_packages $LOCAL $(extras))

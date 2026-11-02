@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status app web ui-real perf db-size deb deb-test helper-test upgrade-test install-test clean-install-test clean
+.PHONY: help build test lint fmt agent status app web ui-real perf db-size deb deb-test helper-test upgrade-test install-test clean-install-test update-systemd-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -55,6 +55,9 @@ upgrade-test: deb ## Upgrade from the newest published release to target/deb/ as
 
 install-test: deb ## Build a signed APT repository and test install.sh against it in a clean container (needs Docker)
 	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash -c '/src/scripts/test-install.sh --throwaway /src/target/deb/deecure_*.deb /src/target/deb/deecure-desktop_*.deb'
+
+update-systemd-test: ## After a release: the in-app update, automatic update, repair, and helper sandbox, with systemd running (needs Docker; BROKEN=, OLD=, NEW= versions)
+	scripts/systemd-container.sh ubuntu:24.04 scripts/test-update-systemd.sh --throwaway $(or $(BROKEN),0.1.0-alpha.6) $(or $(OLD),0.1.0-alpha.7) $(or $(NEW),$(patsubst v%,%,$(shell git describe --tags --abbrev=0)))
 
 clean-install-test: ## The real one-command install from GitHub on clean Ubuntu 24.04 (curl) and 26.04 (wget) containers (needs Docker)
 	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash /src/scripts/test-clean-install.sh --throwaway curl
