@@ -18,7 +18,7 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 | Speed policy of each core (governor and energy preference) | Explains a slow or hot CPU; the power mode sets it | `scaling_governor`, `energy_performance_preference` | You | ✅ Built |
 | Heat slowdowns: how many times and how long each core was slowed by heat | Proves heat throttling instead of guessing | `/sys/devices/system/cpu/cpu*/thermal_throttle` (Intel) | You | ✅ Built |
 | CPU sleep and wake-ups | Shown with the battery, where they matter: [7b. Sleep and wake-ups](#7b-sleep-and-wake-ups) | - | - | - |
-| CPU power in watts: whole chip, cores, built-in graphics, memory | Measured power, not a model | `/sys/class/powercap/intel-rapl*` (Intel, and AMD Zen) | Admin | New |
+| CPU power in watts: whole chip, cores, built-in graphics, memory | Measured power, not a model | `/sys/class/powercap/intel-rapl*` (Intel, and AMD Zen) | Admin | ✅ Built (Performance › CPU, Expert: measured over one second when asked) |
 | Interrupts per device per second | Finds a device that keeps the CPU busy | `/proc/interrupts`, `/proc/softirqs` | You | ✅ Built |
 | Processes waiting for the disk | High load with low CPU use comes from these | process state `D` in `/proc/<pid>/stat` | You | ✅ Built |
 | Each known CPU security flaw and whether it is fixed | Real exposure, flaw by flaw | `/sys/devices/system/cpu/vulnerabilities` | You | ✅ Built |
@@ -128,15 +128,15 @@ Two different things, shown apart:
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
-| Whole-chip deep sleep: share of time the chip reached each sleep level | The chip, not one core, decides the battery drain; this is the number that matters | Intel `pmc_core` (`/sys/kernel/debug/pmc_core`), package C-state counters | Admin | New |
+| Whole-chip deep sleep: share of time the chip reached each sleep level | The chip, not one core, decides the battery drain; this is the number that matters | Intel `pmc_core` (`/sys/kernel/debug/pmc_core`), package C-state counters | Admin | ✅ Built (Power › Sleep, Expert: counters since start, Intel `pmc_core` and AMD `amd_pmc`) |
 | Time each core spends in each sleep state | Shows which cores never rest | `/sys/devices/system/cpu/cpu*/cpuidle/state*` | You | ✅ Built |
 | What blocks deep sleep: devices with power saving off, PCIe links with power saving off | The exact reasons, device by device | `/sys/bus/{pci,usb}/devices/*/power/*`, `/sys/bus/pci/devices/*/link/*aspm*` when the kernel exposes it | You | ✅ Built (device power saving; PCIe link power saving: later) |
-| Wake-ups per second, per process | Finds the app that keeps waking the CPU | kernel tracing (`sched_wakeup`) through the helper | Admin | New |
+| Wake-ups per second, per process | Finds the app that keeps waking the CPU | kernel tracing (`sched_wakeup`) through the helper | Admin | ✅ Built (Power › Sleep, Expert: counted for 5 seconds when asked; in the process drawer: later) |
 | Interrupts per second, per device | Finds the device that keeps waking the CPU | `/proc/interrupts` | You | ✅ Built (Performance › CPU) |
 | What woke the computer from suspend, with how often each source fired | Explains a laptop that wakes in the bag | `/sys/class/wakeup/*`, journal | You | ✅ Built (last wake interrupt; per-source counts) |
 | Devices allowed to wake the computer from suspend | Turn off the ones that should not (7c) | `/sys/devices/*/power/wakeup`, `/proc/acpi/wakeup` | You | ✅ Built |
 | Suspend type in use and the types offered (light `s2idle` or deep `deep`) | Deep sleep drains less with the lid closed, when the laptop offers it | `/sys/power/mem_sleep` | You | ✅ Built |
-| Time really spent in low power during each suspend | A light sleep that never reaches low power drains the battery | `/sys/kernel/debug/pmc_core` (Intel), journal | Admin | New |
+| Time really spent in low power during each suspend | A light sleep that never reaches low power drains the battery | `/sys/kernel/debug/pmc_core` (Intel), journal | Admin | Partly: deepest-sleep time since start (Power › Sleep); per suspend: later |
 | Devices that can save power but do not | Each one is a measured fix, not a general tip | `/sys/bus/{pci,usb}/devices/*/power/{control,runtime_status}` | You | ✅ Built |
 
 ### 7c. Power controls

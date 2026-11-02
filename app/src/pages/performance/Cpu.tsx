@@ -13,6 +13,7 @@ import { pick, pickAll } from "../../metrics";
 import { atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
 import { CpuExpertSections } from "./CpuExpert";
+import { PowerMetersPanel } from "../power/AdminMeasures";
 import { TimeChart, compact, spark, useHistory, useLatest } from "./shared";
 
 const loadSystem = () => getInventory("system");
@@ -81,6 +82,7 @@ export function PerformanceCpu() {
         {processes ? <DataTable rows={processes.slice(0, 7)} columns={COLUMNS} rowKey={(p) => String(p.pid)} pageSize={7} /> : <div className="empty muted">Loading…</div>}
       </Panel>
       {atLeast(mode, "expert") && <Guard><CpuExpertSections waitingForDisk={processes?.filter((p) => p.state === "D").map((p) => p.name)} /></Guard>}
+      {atLeast(mode, "expert") && <Guard><PowerMetersPanel /></Guard>}
     </>
   );
 }

@@ -4,7 +4,8 @@
 //! offers a fixed list of actions (docs/02-architecture/helper.md):
 //!
 //! - `Run(call)`: one admin fix step, a JSON [`Call`]. Unknown operations cannot even be read.
-//! - `Read(what, arg)`: an admin read-out (SMART, firewall rules, crontabs, account status).
+//! - `Read(what, arg)`: an admin read-out from a fixed list (`READS`): drive health, memory
+//!   slots, BIOS settings, power meters, wake-ups, and more. Read-outs change nothing.
 //!
 //! Every call: polkit asks the person (each action has its own polkit ID), inputs are
 //! checked against strict patterns and the live system, programs run with a fixed argument
@@ -13,6 +14,7 @@
 
 mod actions;
 mod lid;
+mod measure;
 mod power;
 mod reads;
 mod saved;
@@ -53,7 +55,12 @@ const READS: &[&str] = &[
     "memory_slots",
     "bios_settings",
     "serial",
+    "power_meters",
+    "low_power",
+    "wakeups",
 ];
+/// How long `wakeups` counts.
+const WAKEUP_SECONDS: u64 = 5;
 
 /// The polkit action for a call: `io.github.krisskad0.deecure.<operation>`.
 fn polkit_action(call: &Call) -> String {
@@ -495,6 +502,28 @@ impl Helper {
                     .ok_or_else(|| "dmidecode gave no answer".into()),
                 "bios_settings" => serde_json::to_string(&reads::bios_settings(Path::new("/")))
                     .map_err(|e| e.to_string()),
+                "power_meters" => {
+                    serde_json::to_string(&measure::power_meters(Path::new("/"), 1.0, || {
+                        std::thread::sleep(Duration::from_secs(1))
+                    }))
+                    .map_err(|e| e.to_string())
+                }
+                "low_power" => serde_json::to_string(&measure::low_power(Path::new("/")))
+                    .map_err(|e| e.to_string()),
+                "wakeups" => {
+                    let dir = measure::tracing_dir(Path::new("/"))
+                        .ok_or("kernel tracing is not available")?;
+                    let hist = measure::trace_wakeups(&dir, std::process::id(), || {
+                        std::thread::sleep(Duration::from_secs(WAKEUP_SECONDS));
+                    })?;
+                    let lines = measure::hist_lines(&hist);
+                    serde_json::to_string(&measure::per_process(
+                        &lines,
+                        WAKEUP_SECONDS as f64,
+                        |tid| measure::thread_owner(Path::new("/"), tid),
+                    ))
+                    .map_err(|e| e.to_string())
+                }
                 "firewall_rules" => output("/usr/sbin/ufw", &["status", "verbose"])
                     .ok_or_else(|| "ufw is not installed".into()),
                 "crontabs" => serde_json::to_string(&reads::all_crontabs(Path::new(

@@ -6,6 +6,7 @@ import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { CpuSleepStates } from "../performance/CpuExpert";
 import { BatteryExpertSections, WakeExpertSections } from "./PowerExpert";
+import { LowPowerPanel, WakeupsPanel } from "./AdminMeasures";
 import { PowerControls } from "./PowerControls";
 import { type SleepEvent, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -190,6 +191,8 @@ export function PowerSleep() {
         <>
           <WakeExpertSections />
           <CpuSleepStates />
+          <LowPowerPanel />
+          <WakeupsPanel />
         </>
         </Guard>
       )}
