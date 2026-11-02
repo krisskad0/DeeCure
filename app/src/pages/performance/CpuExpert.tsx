@@ -9,6 +9,7 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { perSecond, useLiveWithPrevious } from "../../useLive";
@@ -147,6 +148,32 @@ function windowText(s?: number): string {
   return s >= 1 ? `${s.toFixed(s >= 10 ? 0 : 1)} s` : `${(s * 1000).toFixed(s * 1000 >= 10 ? 0 : 1)} ms`;
 }
 
+type Limit = CpuDetail["power_limits"][number];
+
+/** The limit that applies for each kind: the lowest enabled one across zones. */
+export function effectiveLimits(limits: Limit[]): { name: string; watts: number; window_s?: number }[] {
+  const out = new Map<string, { name: string; watts: number; window_s?: number }>();
+  for (const l of limits) {
+    if (!l.watts || l.enabled === false) continue;
+    const prev = out.get(l.name);
+    if (!prev || l.watts < prev.watts) out.set(l.name, { name: l.name, watts: l.watts, window_s: l.window_s });
+  }
+  const order = ["long_term", "short_term", "peak_power"];
+  return [...out.values()].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+}
+
+/** Caches by level: "L1 data" → ["48 KB × 2, each for 2 CPUs", …]. */
+export function cacheLevels(caches: { level: number; kind: string; bytes: number; copies: number; sharedBy: Set<number> }[]): [string, string[]][] {
+  const out = new Map<string, string[]>();
+  for (const c of [...caches].sort((a, b) => a.level - b.level || a.kind.localeCompare(b.kind) || b.bytes - a.bytes)) {
+    const name = `L${c.level} ${c.kind.toLowerCase()}`;
+    const shared = [...c.sharedBy].sort((a, b) => a - b).map((n) => (n === 1 ? "1 CPU" : `${n} CPUs`)).join(" or ");
+    const size = c.copies > 1 ? `${bytes(c.bytes, 0)} × ${c.copies}, each for ${shared}` : `${bytes(c.bytes, 0)}, for ${shared}`;
+    out.set(name, [...(out.get(name) ?? []), size]);
+  }
+  return [...out];
+}
+
 const FLAW_BADGE = {
   not_affected: ["ok", "Not affected"],
   mitigated: ["info", "Protected"],
@@ -175,6 +202,7 @@ export function ProcessorExpertSections() {
   const loaded = d.microcode_loaded ? parseInt(d.microcode_loaded, 16) : undefined;
   const onDisk = d.microcode_on_disk ? parseInt(d.microcode_on_disk, 16) : undefined;
   const open = d.flaws.filter((f) => f.state === "vulnerable").length;
+  const count = (state: string) => d.flaws.filter((f) => f.state === state).length;
   return (
     <>
       <Panel
@@ -182,20 +210,35 @@ export function ProcessorExpertSections() {
         info="Set by the firmware. The CPU may use the short-term limit for a short time, then drops to the long-term limit. When two zones set the same kind of limit, the lower one applies."
         source="/sys/class/powercap"
         span={6}
-        flush
       >
-        <DataTable
-          rows={d.power_limits}
-          columns={[
-            { key: "zone", label: "Zone", text: (l) => l.zone },
-            { key: "name", label: "Limit", text: (l) => LIMIT_NAMES[l.name] ?? l.name },
-            { key: "watts", label: "Watts", text: (l) => (l.watts ? `${l.watts.toFixed(l.watts >= 10 ? 0 : 1)} W` : "-"), numeric: true },
-            { key: "window", label: "Averaged over", text: (l) => windowText(l.window_s), numeric: true },
-            { key: "on", label: "On", text: (l) => (l.enabled === undefined ? "-" : l.enabled ? "Yes" : "No") },
-          ]}
-          rowKey={(l) => `${l.zone}|${l.name}`}
-          empty="This computer does not report power limits"
-        />
+        {d.power_limits.length === 0 ? (
+          <div className="empty muted">This computer does not report power limits.</div>
+        ) : (
+          <>
+            <div className="pl-grid">
+              {effectiveLimits(d.power_limits).map((l) => (
+                <div key={l.name} className="pl-item">
+                  <span className="muted">{LIMIT_NAMES[l.name] ?? l.name}</span>
+                  <b>{l.watts >= 10 ? l.watts.toFixed(0) : l.watts.toFixed(1)} W</b>
+                  <span className="muted">{l.window_s === undefined ? "the most it may draw" : `averaged over ${windowText(l.window_s)}`}</span>
+                </div>
+              ))}
+            </div>
+            <ShowAll label={`Show all ${d.power_limits.length} limits by zone`}>
+              <DataTable
+                rows={d.power_limits}
+                columns={[
+                  { key: "zone", label: "Zone", text: (l) => l.zone },
+                  { key: "name", label: "Limit", text: (l) => LIMIT_NAMES[l.name] ?? l.name },
+                  { key: "watts", label: "Watts", text: (l) => (l.watts ? `${l.watts.toFixed(l.watts >= 10 ? 0 : 1)} W` : "-"), numeric: true },
+                  { key: "window", label: "Averaged over", text: (l) => windowText(l.window_s), numeric: true },
+                  { key: "on", label: "On", text: (l) => (l.enabled === undefined ? "-" : l.enabled ? "Yes" : "No") },
+                ]}
+                rowKey={(l) => `${l.zone}|${l.name}`}
+              />
+            </ShowAll>
+          </>
+        )}
       </Panel>
       <Panel title="Chip revision and microcode" source="/proc/cpuinfo · /lib/firmware/intel-ucode" span={6} flush>
         <KeyValueList
@@ -216,31 +259,66 @@ export function ProcessorExpertSections() {
           ]}
         />
       </Panel>
-      <Panel title="Caches" source="/sys/devices/system/cpu/cpu*/cache" span={6} flush>
-        <DataTable
-          rows={caches}
-          columns={[
-            { key: "cache", label: "Cache", text: (c) => `L${c.level} ${c.kind.toLowerCase()}` },
-            { key: "size", label: "Size", text: (c) => bytes(c.bytes, 0), numeric: true },
-            { key: "copies", label: "Copies", text: (c) => String(c.copies), numeric: true },
-            { key: "shared", label: "Each shared by", text: (c) => [...c.sharedBy].sort((a, b) => a - b).map((n) => (n === 1 ? "1 CPU" : `${n} CPUs`)).join(" or ") },
-          ]}
-          rowKey={(c) => `${c.level}|${c.kind}|${c.bytes}`}
-          empty="This computer does not report its caches"
-        />
+      <Panel title="Caches" info="Fast memory inside the chip. Lower levels are smaller and faster; each is shared by the CPUs listed." source="/sys/devices/system/cpu/cpu*/cache" span={6} flush>
+        {caches.length === 0 ? (
+          <div className="empty muted">This computer does not report its caches.</div>
+        ) : (
+          <KeyValueList
+            rows={cacheLevels(caches).map(([name, parts]): [string, string] => [name, parts.join(" · ")])}
+          />
+        )}
       </Panel>
-      <Panel title="CPU security flaws" subtitle={`${d.flaws.length} checked · ${open} open`} info="Known flaws in the processor design, as the kernel sees them on this computer. Protected means the kernel or microcode works around it." source="/sys/devices/system/cpu/vulnerabilities" span={6} flush>
-        <DataTable
-          rows={d.flaws}
-          columns={[
-            { key: "name", label: "Flaw", text: (f) => f.name.replaceAll("_", " ") },
-            { key: "state", label: "State", text: (f) => FLAW_BADGE[f.state][1], render: (f) => <StatusBadge variant={FLAW_BADGE[f.state][0]} label={FLAW_BADGE[f.state][1]} /> },
-            { key: "detail", label: "Kernel says", text: (f) => f.detail, wrap: true, expert: true },
-          ]}
-          rowKey={(f) => f.name}
-          pageSize={20}
-          empty="The kernel does not report CPU flaws"
-        />
+      <Panel title="CPU security flaws" subtitle={`${d.flaws.length} checked`} info="Known flaws in the processor design, as the kernel sees them on this computer. Protected means the kernel or microcode works around it." source="/sys/devices/system/cpu/vulnerabilities" span={6}>
+        {d.flaws.length === 0 ? (
+          <div className="empty muted">The kernel does not report CPU flaws.</div>
+        ) : (
+          <>
+            {open === 0 ? (
+              <div className="kn-verdict">
+                <StatusBadge variant="ok" label="None open" />
+                <span>
+                  {count("not_affected")} do not affect this CPU, and {count("mitigated")} are worked around by the kernel or microcode.
+                </span>
+              </div>
+            ) : (
+              <ul className="kn-notable">
+                {d.flaws
+                  .filter((f) => f.state === "vulnerable")
+                  .map((f) => (
+                    <li key={f.name}>
+                      <StatusBadge variant="crit" label="Open" /> <b>{f.name.replaceAll("_", " ")}</b> <span className="muted">{f.detail}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
+            {count("mitigated") > 0 && (
+              <>
+                <div className="kn-head svc-head">Worked around</div>
+                <div className="kn-chips">
+                  {d.flaws
+                    .filter((f) => f.state === "mitigated")
+                    .map((f) => (
+                      <span key={f.name} className="kn-chip" title={f.detail}>
+                        {f.name.replaceAll("_", " ")}
+                      </span>
+                    ))}
+                </div>
+              </>
+            )}
+            <ShowAll label={`Show all ${d.flaws.length} with what the kernel says`}>
+              <DataTable
+                rows={d.flaws}
+                columns={[
+                  { key: "name", label: "Flaw", text: (f) => f.name.replaceAll("_", " ") },
+                  { key: "state", label: "State", text: (f) => FLAW_BADGE[f.state][1], render: (f) => <StatusBadge variant={FLAW_BADGE[f.state][0]} label={FLAW_BADGE[f.state][1]} /> },
+                  { key: "detail", label: "Kernel says", text: (f) => f.detail, wrap: true },
+                ]}
+                rowKey={(f) => f.name}
+                pageSize={20}
+              />
+            </ShowAll>
+          </>
+        )}
       </Panel>
     </>
   );

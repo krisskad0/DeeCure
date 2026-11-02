@@ -8,6 +8,7 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { InlineMeter } from "../../components/InlineMeter";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { GaugeGroup } from "../../components/charts/Gauge";
 import { bytes, heatStatus, pick } from "../../metrics";
 import { useLatest } from "../performance/shared";
@@ -16,7 +17,7 @@ import { atLeast, useUi } from "../../ui";
 import { NoData } from "../NoData";
 import { GHZ, useHardware } from "./shared";
 
-interface Row {
+export interface Row {
   label: string;
   type: string;
   mhz?: number;
@@ -31,6 +32,39 @@ const COLUMNS: Column<Row>[] = [
   { key: "usage", label: "Utilization", text: (r) => (r.usage === undefined ? "-" : `${Math.round(r.usage)}%`), render: (r) => (r.usage === undefined ? "-" : <InlineMeter percent={r.usage} />) },
   { key: "temp", label: "Temperature", text: (r) => (r.temp === undefined ? "-" : tempText(r.temp)), numeric: true },
 ];
+
+/** One small tile per CPU thread, grouped by core type (performance, efficient). */
+export function CoreGrid({ rows }: { rows: Row[] }) {
+  const groups = [...new Set(rows.map((r) => r.type.split(" · ")[0]))];
+  return (
+    <div className="core-groups">
+      {groups.map((g) => (
+        <div key={g}>
+          {groups.length > 1 && <div className="kn-head">{g} cores</div>}
+          <ul className="core-grid">
+            {rows
+              .filter((r) => r.type.startsWith(g))
+              .map((r) => (
+                <li key={r.label} title={r.type}>
+                  <div className="core-top">
+                    <b>{r.label}</b>
+                    <span className="muted">{r.mhz === undefined ? "-" : r.mhz >= 1000 ? `${(r.mhz / 1000).toFixed(1)} GHz` : `${Math.round(r.mhz)} MHz`}</span>
+                  </div>
+                  <div className="core-bar">
+                    <span style={{ width: `${Math.min(100, r.usage ?? 0)}%` }} />
+                  </div>
+                  <div className="core-bottom">
+                    <span>{r.usage === undefined ? "-" : `${Math.round(r.usage)}%`}</span>
+                    <span className="muted">{r.temp === undefined ? "" : tempText(r.temp)}</span>
+                  </div>
+                </li>
+              ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 /** P0, P1, … for performance threads and E0, E1, … for efficient ones; plain numbers otherwise. */
 function rows(p: HardwareInfo["processor"], latest: ReturnType<typeof useLatest>): Row[] {
@@ -87,8 +121,11 @@ export function HardwareProcessor() {
           ]}
         />
       </Panel>
-      <Panel title="Cores" subtitle="utilization over the last minute" source="/sys/devices/system/cpu" span={12} flush>
-        <DataTable rows={rows(p, latest)} columns={COLUMNS} rowKey={(r) => r.label} pageSize={16} />
+      <Panel title="Cores" subtitle="use over the last minute, speed, and temperature" source="/sys/devices/system/cpu" span={12}>
+        <CoreGrid rows={rows(p, latest)} />
+        <ShowAll label="Show as a table">
+          <DataTable rows={rows(p, latest)} columns={COLUMNS} rowKey={(r) => r.label} pageSize={16} />
+        </ShowAll>
       </Panel>
       {atLeast(mode, "expert") && <Guard><ProcessorExpertSections /></Guard>}
     </>

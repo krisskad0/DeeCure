@@ -88,9 +88,11 @@ describe("Hardware pages", () => {
   it("processor names P and E cores and shows their temperature", async () => {
     render(<HardwareProcessor />);
     await waitFor(() => expect(screen.getByText("10 (2 performance + 8 efficient)")).toBeTruthy());
-    expect(screen.getByText("P0")).toBeTruthy();
-    expect(screen.getByText("E0")).toBeTruthy();
-    expect(screen.getByText("56 °C")).toBeTruthy();
+    // Core tiles (and the same in the folded table).
+    expect(screen.getAllByText("P0").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("E0").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("56 °C").length).toBeGreaterThan(0);
+    expect(screen.getByText("Performance cores")).toBeTruthy();
   });
 
   it("memory, storage, graphics, and sensors render", async () => {

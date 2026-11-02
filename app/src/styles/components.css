@@ -398,3 +398,15 @@ a.btn { text-decoration: none; }
 .svc-verdict { margin-top: 10px; }
 .svc-head { margin-top: 12px; }
 
+/* Hardware › Processor: core tiles and power limits */
+.core-groups { display: flex; flex-direction: column; gap: 10px; }
+.core-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.core-grid li { display: flex; flex-direction: column; gap: 5px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.core-top, .core-bottom { display: flex; justify-content: space-between; gap: 6px; }
+.core-top b { font-size: 13px; }
+.core-bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.core-bar span { display: block; height: 100%; background: var(--s1); }
+.pl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.pl-item { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 8px; background: var(--track); font-size: 12px; }
+.pl-item b { font-size: 22px; font-variant-numeric: tabular-nums; }
+

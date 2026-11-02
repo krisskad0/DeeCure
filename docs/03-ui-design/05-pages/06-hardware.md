@@ -71,6 +71,9 @@
 | E6 | Efficient | 1100 MHz | [meter 8%] | 53 °C |
 | E7 | Efficient | 1010 MHz | [meter 5%] | 53 °C |
 
+
+**Cores** is a grid of small tiles, one per CPU thread, grouped into performance and efficient cores: name (P0, E0…), speed, a use bar, use, and temperature; **Show as a table** gives the table. Expert adds: **Power limits** as the limit that applies for each kind (sustained, boost, peak: the lowest enabled one across zones) with all zones under **Show all**; **Caches** by level ("48 KB × 2, each for 2 CPUs"); **CPU security flaws** as a green "None open" line (or the open ones with what the kernel says), the worked-around flaws as chips, and the full list under **Show all**.
+
 ## Hardware › Memory: `hardware/memory`
 
 1. **Key-value list**: "Modules" · span 6

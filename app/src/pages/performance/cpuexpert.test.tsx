@@ -5,7 +5,7 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CpuDetail } from "../../api";
 import { REFRESH_EVENT } from "../../units";
-import { CpuExpertSections, CpuSleepStates, ProcessorExpertSections, irqDevice } from "./CpuExpert";
+import { CpuExpertSections, CpuSleepStates, ProcessorExpertSections, effectiveLimits, irqDevice } from "./CpuExpert";
 
 const core = (cpu: number, throttles: number, deep: number) => ({
   cpu,
@@ -85,12 +85,17 @@ describe("Expert processor sections", () => {
 
   it("explains power limits, a newer microcode, and open flaws", async () => {
     render(<ProcessorExpertSections />);
-    await waitFor(() => expect(screen.getByText("Long-term (sustained)")).toBeTruthy());
-    expect(screen.getByText("15 W")).toBeTruthy();
+    // The limit that applies, as a number; the full table is folded.
+    await waitFor(() => expect(screen.getAllByText("Long-term (sustained)").length).toBeGreaterThan(0));
+    expect(screen.getAllByText("15 W").length).toBeGreaterThan(0);
+    expect(screen.getByText("averaged over 28 s")).toBeTruthy();
     expect(screen.getByText(/newer: restart to load it/)).toBeTruthy();
-    expect(screen.getByText("2 checked · 1 open")).toBeTruthy();
-    expect(screen.getByText("Open")).toBeTruthy();
-    expect(screen.getByText("48 KB")).toBeTruthy();
+    // An open flaw is listed with what the kernel says.
+    expect(screen.getByText("2 checked")).toBeTruthy();
+    expect(screen.getAllByText("Open").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Vulnerable: no microcode").length).toBeGreaterThan(0);
+    // Caches by level.
+    expect(screen.getByText("48 KB, for 2 CPUs")).toBeTruthy();
   });
 
   it("sleep states show the share since start, then now", async () => {
@@ -104,5 +109,10 @@ describe("Expert processor sections", () => {
   it("names the device behind an interrupt line", () => {
     expect(irqDevice("IR-PCI-MSI-0000:00:14.3 0-edge iwlwifi")).toBe("iwlwifi");
     expect(irqDevice("Local timer interrupts")).toBe("Local timer interrupts");
+  });
+
+  it("picks the limit that applies: the lowest enabled one per kind", () => {
+    const l = (zone: string, name: string, watts: number, enabled = true) => ({ zone, name, watts, window_s: 28, enabled });
+    expect(effectiveLimits([l("package-0", "long_term", 200), l("package-0 (MMIO)", "long_term", 15), l("psys", "long_term", 5, false), l("package-0", "peak_power", 114)]).map((x) => [x.name, x.watts])).toEqual([["long_term", 15], ["peak_power", 114]]);
   });
 });
