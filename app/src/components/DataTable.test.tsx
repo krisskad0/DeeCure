@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { UiContext } from "../ui";
 import { type Column, DataTable, compareCells, sortNumber } from "./DataTable";
+import { ShowAll } from "./ShowAll";
 
 afterEach(cleanup);
 
@@ -35,6 +36,10 @@ const names = () => screen.getAllByRole("row").slice(1).map((tr) => tr.querySele
 describe("data table", () => {
   it("pages, searches, and filters", () => {
     render(<DataTable rows={rows} columns={columns} rowKey={(r) => r.name} search={{ placeholder: "Filter units" }} filter={{ column: "state", options: ["active", "failed"] }} pageSize={10} total={181} />);
+    // A short preview first, then every row, page by page.
+    expect(names()).toHaveLength(8);
+    expect(screen.getByText("Showing 8 of 181")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show all 181" }));
     expect(names()).toHaveLength(10);
     expect(screen.getByText("1-10 of 181")).toBeTruthy();
     fireEvent.click(screen.getByText("Next"));
@@ -46,6 +51,19 @@ describe("data table", () => {
     fireEvent.click(screen.getByRole("button", { name: "All" }));
     fireEvent.change(screen.getByLabelText("Filter units"), { target: { value: "UNIT1" } });
     expect(names()).toEqual(["unit1", "unit10", "unit11", "unit12", "unit13", "unit14"]);
+  });
+
+  it("searches every row while previewing, and shows all rows inside Show all", () => {
+    render(<DataTable rows={rows} columns={columns} rowKey={(r) => r.name} search={{ placeholder: "Filter units" }} />);
+    fireEvent.change(screen.getByLabelText("Filter units"), { target: { value: "unit14" } });
+    expect(names()).toEqual(["unit14"]);
+    cleanup();
+    render(
+      <ShowAll label="Show all">
+        <DataTable rows={rows} columns={columns} rowKey={(r) => r.name} pageSize={20} />
+      </ShowAll>,
+    );
+    expect(screen.queryByText(/^Showing/)).toBeNull();
   });
 
   it("sorts by a column, then reverses", () => {

@@ -13,6 +13,7 @@
   - Selection: 34px checkbox column, header checkbox selects all on the current page.
   - Clickable rows (pointer cursor): rows with a row action run it; tables marked "Inspect" open the row-inspect drawer ([Row-inspect drawer](../04-behavior/interactions.md#row-inspect-drawer)).
 - **Sorting:** parse a leading number with units (KB, kB, K = ×0.001, MB = ×1, GB = ×1000, TB = ×1,000,000, plus ms, s, %, h, m, W). Compare numerically when both values parse, otherwise compare text.
+- **Short preview:** a table with more than 8 rows shows the first 8 (after sorting), and the footer says "Showing 8 of N" with a small "Show all N" button. The button opens the full table with paging. A search or filter always looks at every row. A table can set its own preview size, or turn it off. Tables inside a "Show all" fold skip the preview, since the person already asked for everything.
 - **Paging:** default 12 rows per page (some tables differ). Footer (top border, padding 6 12, 12px muted): "1-12 of N" and Previous/Next small buttons when there is more than one page. When the spec gives a total count, "of N" shows that total while no search or filter is active.
 - **Empty:** one full-width cell, centered muted text, padding 28 14. Text comes from the spec, default "No matching rows".
 - Wide tables scroll horizontally inside the panel.

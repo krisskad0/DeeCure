@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // 05 Data table (docs/03-ui-design/03-components/05-data-table.md).
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useContext, useMemo, useState } from "react";
 import { useUi } from "../ui";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
+import { FullList } from "./ShowAll";
 
 export interface Column<R> {
   key: string;
@@ -39,6 +40,9 @@ export function compareCells(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 }
 
+/** Rows a table shows before "Show all". */
+export const DEFAULT_PREVIEW = 8;
+
 export function DataTable<R>(props: {
   rows: R[];
   columns: Column<R>[];
@@ -49,6 +53,11 @@ export function DataTable<R>(props: {
   /** Row selection with one bulk action. */
   selection?: { action: string; onAction: (rows: R[]) => void };
   pageSize?: number;
+  /**
+   * Rows shown before "Show all N" (default 8), so a long list does not fill the page. Search
+   * and filters always work on every row. `false` shows the paged table at once.
+   */
+  preview?: number | false;
   /** The full count, shown as "of N" while nothing is filtered. */
   total?: number;
   empty?: string;
@@ -72,6 +81,8 @@ export function DataTable<R>(props: {
   const [sort, setSort] = useState<{ key: string; desc: boolean } | null>(null);
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState(false);
+  const inFullList = useContext(FullList);
 
   const filterColumn = props.filter && props.columns.find((c) => c.key === props.filter?.column);
   const shown = useMemo(() => {
@@ -88,10 +99,13 @@ export function DataTable<R>(props: {
     return out;
   }, [rows, query, chip, sort, props.columns, filterColumn]);
 
-  const pages = Math.max(1, Math.ceil(shown.length / pageSize));
-  const current = Math.min(page, pages - 1);
-  const visible = shown.slice(current * pageSize, current * pageSize + pageSize);
   const filtered = query.trim() !== "" || chip !== null;
+  // A short preview until the person asks for all, unless they search or filter.
+  const limit = props.preview === false || inFullList ? undefined : (props.preview ?? DEFAULT_PREVIEW);
+  const previewing = limit !== undefined && !expanded && !filtered && shown.length > limit;
+  const pages = previewing ? 1 : Math.max(1, Math.ceil(shown.length / pageSize));
+  const current = Math.min(page, pages - 1);
+  const visible = previewing ? shown.slice(0, limit) : shown.slice(current * pageSize, current * pageSize + pageSize);
   const count = !filtered && props.total !== undefined ? props.total : shown.length;
   const pageKeys = visible.map(rowKey);
   const allOnPage = pageKeys.length > 0 && pageKeys.every((k) => selected.has(k));
@@ -217,7 +231,17 @@ export function DataTable<R>(props: {
           </tbody>
         </table>
       </div>
-      {pages > 1 && (
+      {previewing && (
+        <div className="dt-foot">
+          <span>
+            Showing {visible.length} of {props.total ?? shown.length}
+          </span>
+          <Button small onClick={() => setExpanded(true)}>
+            Show all {props.total ?? shown.length}
+          </Button>
+        </div>
+      )}
+      {!previewing && pages > 1 && (
         <div className="dt-foot">
           <span>
             {current * pageSize + 1}-{current * pageSize + visible.length} of {count}
