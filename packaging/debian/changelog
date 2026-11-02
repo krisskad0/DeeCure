@@ -1,3 +1,11 @@
+deecure (0.1.0~alpha.6-1) noble; urgency=medium
+
+  * Readable pages with summaries first, warnings marked on their sub-
+    page and panel, open issues as cards, and fewer false warnings (disk
+    forecast, heat slowdowns, firewall, stale warnings).
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Mon, 02 Nov 2026 18:37:35 +0530
+
 deecure (0.1.0~alpha.5-1) noble; urgency=medium
 
   * New pre-release: admin read-outs (memory slots, BIOS settings, NVMe,

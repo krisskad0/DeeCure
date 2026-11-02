@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.6" date="2026-11-02" type="development">
+      <description>
+        <p>Every page is easier to read: a short summary first, then bars, tiles, and charts, with full tables under Show all. A warning now marks the exact sub-page and the panel that shows it, and open issues are cards with Open and Fix. Fewer false warnings: the disk forecast handles a laptop that sleeps, heat slowdowns count only while the CPU is hot, the firewall warning leaves out Docker's ports, and a warning that cannot be confirmed for a day closes.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.5" date="2026-11-02" type="development">
       <description>
         <p>Admin details read with your password: memory slots, BIOS settings, NVMe details, drive self-tests, measured chip power, deep-sleep time, wake-ups per process, sudo rules, and the SSH server's real settings. Two new warnings from a daily check: a drive wearing out, and SSH letting root sign in with a password.</p>

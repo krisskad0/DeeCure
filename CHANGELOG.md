@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.6] - 2026-11-02
+
 ### Added
 
 - Overview shows the GPU: a tile (CPU, GPU, Memory, Disk, Network, Battery) with how busy the graphics card is, and a GPU line in the utilization chart. AMD and Intel graphics report it; for NVIDIA's own driver the tile says it does not report busy time. A computer without a graphics card shows no GPU tile or line. The busy time is kept in the history from now on.
