@@ -11,7 +11,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
-  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 85, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
+  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 95, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
 </picture>
 
 *The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages. [More screenshots](#what-the-expert-view-shows).*
@@ -79,9 +79,18 @@ It works without a password for looking around. It never changes anything unless
 
 - **Harm, not use:** a CPU at 100%, memory full of cache, or a busy disk never warns. Stalls, errors, heat, wear, and risk do.
 - **Each part's own limits:** temperatures are checked against the limit each CPU, drive, graphics card, and Wi-Fi chip reports about itself.
-- **No false alarms from spikes:** most warnings need the problem to last, for example 5 minutes near the limit.
+- **No false alarms from spikes:** most warnings need the problem to last, for example 5 minutes near the limit. A short turbo burst that touches the CPU's limit while it is cool is normal and never warns.
+- **Never out of date:** a warning that DeeCure cannot confirm for a day closes, so old numbers never stay on screen.
 - **Your rules:** turn any warning off or change when it fires. The safe default is shown next to your value.
 - **55 warnings** across CPU, memory, disks, battery, temperatures, fans, graphics, hardware errors, services, packages, network, and security. [Full list](docs/01-product/health-warnings.md)
+
+### Easy to read, and it shows where to look
+
+- **The answer first:** every page starts with a short summary (counts, a green "all fine" line, or the few things worth a look), then bars, tiles, and charts. Long lists show 8 rows with **Show all**, and full tables wait under **Show all**, so nothing is hidden and nothing overwhelms.
+- **Where is the problem?** A warning puts a dot on its page and on the exact sub-page in the sidebar. That sub-page opens with the warning explained at the top, a **Show where** button, and the panel behind it outlined.
+- **Every open issue as a card**, most serious first, with the area it belongs to, how to fix it, **Open**, and **Fix**.
+
+![DeeCure open issues on Ubuntu: each problem as a card with its severity, the page that shows it, a plain explanation, how to fix it, and Open and Fix buttons](docs/07-user-guide/images/deecure-expert-open-issues.png)
 
 ### A complete, honest view of your hardware
 
@@ -113,7 +122,7 @@ Every fix shows its steps and commands first. Untick any step. Admin steps ask f
 ### What changed, forecasts, and notifications
 
 - **Timeline** of package installs and upgrades (apt, snap, Flatpak), config changes, USB devices, boots, crashes, and hardware errors, for the last 7, 30, or 90 days.
-- **Disk forecast:** "full in about N days", only when the disk keeps filling, so one big install never causes a false alarm.
+- **Disk forecast:** "full in about N days", only when the disk keeps filling over both the last day and the last 3 days, so one big install or a snapshot never causes a false alarm. It works on a laptop that sleeps at night.
 - **Notifications** for critical problems, with quiet hours, and a weekly summary of your computer's health.
 
 ![DeeCure Activity timeline: what changed on this Linux computer, with package upgrades, config file changes, USB devices, and boots, filtered by the last 7, 30, or 90 days](docs/07-user-guide/images/deecure-expert-activity-timeline.png)
@@ -135,7 +144,7 @@ Switch at any time from the top bar. [View levels](docs/01-product/view-levels.m
 <table>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-processor-cores-power-limits.png"><img src="docs/07-user-guide/images/deecure-expert-processor-cores-power-limits.png" alt="DeeCure Expert view of the processor on Linux: live load, temperature, and frequency gauges, specifications, every performance and efficient core with its speed, use, and temperature, and the chip's power limits"></a><br><b>Processor:</b> every core's speed, use, and temperature, and the chip's power limits.</td>
-    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-temperature-sensors-fans.png"><img src="docs/07-user-guide/images/deecure-expert-temperature-sensors-fans.png" alt="DeeCure temperature sensors on a Linux laptop: CPU, NVMe SSD, and battery temperatures, a 24-hour temperature history with the throttle line, fan speeds, and thermal zones with their slow-down and shut-down limits"></a><br><b>Sensors:</b> every temperature with its own limits, fans, and thermal zones.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-temperature-sensors-fans.png"><img src="docs/07-user-guide/images/deecure-expert-temperature-sensors-fans.png" alt="DeeCure temperature sensors on a Linux laptop: CPU, NVMe SSD, and battery temperatures, a 24-hour temperature history with the throttle line, fan speeds, and thermal zones as bars of the room left before the system slows down"></a><br><b>Sensors:</b> every temperature with its own limits, fans, and thermal zones.</td>
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-nvme-ssd-details.png"><img src="docs/07-user-guide/images/deecure-expert-nvme-ssd-details.png" alt="DeeCure NVMe SSD details on Linux: drive model and firmware, temperature history, the drive's own warning and critical temperatures, PCIe link at full speed, block size, scheduler, and weekly TRIM"></a><br><b>Drives:</b> NVMe details, the drive's own limits, PCIe link speed, and TRIM.</td>
@@ -147,7 +156,7 @@ Switch at any time from the top bar. [View levels](docs/01-product/view-levels.m
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-memory-map.png"><img src="docs/07-user-guide/images/deecure-expert-memory-map.png" alt="DeeCure memory page on Linux: what fills RAM as one bar with cache striped, a plain-language verdict, memory usage over 24 hours, where memory goes in detail, and the apps, services, and processes using the most memory"></a><br><b>Memory:</b> what really fills RAM, what can be freed, and who uses it.</td>
-    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-health-score-breakdown.png"><img src="docs/07-user-guide/images/deecure-expert-health-score-breakdown.png" alt="DeeCure health score breakdown: 100 minus the points each area loses equals 85, and a card per area with its points kept, status, and open problems"></a><br><b>Health score:</b> how the score is reached, area by area.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-health-score-breakdown.png"><img src="docs/07-user-guide/images/deecure-expert-health-score-breakdown.png" alt="DeeCure health score breakdown: 100 minus the points each area loses equals 95, and a card per area with its points kept, status, and open problems"></a><br><b>Health score:</b> how the score is reached, area by area.</td>
   </tr>
 </table>
 

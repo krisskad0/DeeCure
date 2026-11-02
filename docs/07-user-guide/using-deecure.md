@@ -36,7 +36,19 @@ Then a first check runs. Each area turns green, yellow, or red as it finishes. Y
 - **Subsystems:** all 13 areas (hardware, power, storage, network, security, and more), each with a number and a status. Click a row to open its page.
 - **Active issues:** the problems, most serious first. Each has a button to fix or look.
 
+**Overview › Issues** shows every open problem as a card: its level (colored edge), the page and sub-page it belongs to, what it means, **How to fix** (click to open the steps), **Open** (goes to that sub-page), and **Fix** when DeeCure can fix it.
+
 Status words always come with a color and an icon: **Healthy** (green), **Warning** (yellow), **Critical** (red), **Info** (blue).
+
+### Finding where a problem is
+
+- In the sidebar, a page with a problem has a yellow (warning) or red (critical) dot. Open its list of sub-pages: the sub-page that shows the problem has the same dot.
+- That sub-page starts with a box that says what is wrong. **Show where** scrolls to the panel behind it, which has a colored outline and a "Warning here" label. **Fix** is there too when DeeCure can fix it.
+- Clicking a notification opens that sub-page.
+
+### Reading a page
+
+Each page starts with the answer: a few counts, a green line when all is fine, or only the things worth a look. Then bars, tiles, and charts. Lists longer than 8 rows show 8 and a **Show all** button; search and filters always look through every row. Full tables are folded under **Show all**.
 
 ## 3. Fix a problem
 
@@ -83,6 +95,8 @@ DeeCure warns about things that can harm the computer, not about normal use: a b
 - **Each part's own limits:** temperatures are judged against the limit the CPU, drive, graphics card, or Wi-Fi chip reports itself.
 - **Only when it lasts:** most warnings need the problem to go on for a few minutes, so a short spike never warns.
 - **Each warning says** what was measured, why it matters, and what to do, with a **Fix** button or a help page.
+- **Never out of date:** if DeeCure cannot confirm a warning for a whole day (for example the laptop was mostly off), the warning closes instead of showing old numbers.
+- **Normal behavior is not a problem:** a CPU that touches its limit for a split second in a turbo burst while it is cool, a disk that jumped once (an install, a snapshot) and then stayed flat, and ports that Docker opens (a firewall cannot block those; the container warning covers them) do not warn as heat, "disk filling", or "firewall".
 
 To change them, switch to Advanced or Expert, then open **Settings › Notifications › Warnings and limits**:
 

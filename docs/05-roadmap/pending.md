@@ -4,7 +4,7 @@
 
 **Read this first when you continue the work.** It says where the project stands, what is left in order, and how to work here. When an item is done, delete it here and note it in the phase's Progress table and in `CHANGELOG.md`.
 
-Last updated: 2026-11-02: step 6 (admin reads in the helper) is built, except eBPF traffic counters. Released as `v0.1.0-alpha.5`.
+Last updated: 2026-11-02: step 6 (admin reads in the helper) is built, except eBPF traffic counters. Released as `v0.1.0-alpha.5`. After that release, on `main` and not released yet (next: `v0.1.0-alpha.6`): a readability pass on every page (summaries first, bars and tiles, tables of more than 8 rows show 8 with Show all, full tables under Show all), warnings shown where they are (sidebar dot on the sub-page, a box at the top of it with Show where and Fix, the panel outlined), Overview › Issues as cards, and four warning fixes found on a real laptop: the disk forecast (sleep gaps and emptying), stale warnings close after a day, heat slowdowns count only while the CPU is hot, and the firewall warning counts each port once and leaves out Docker's.
 
 ## 1. Where the project stands
 
