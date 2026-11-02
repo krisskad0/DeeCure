@@ -10,11 +10,11 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/krisskad0/DeeCure/badge)](https://securityscorecards.dev/viewer/?uri=github.com/krisskad0/DeeCure)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-overview-health-dashboard-dark.png">
-  <img src="docs/07-user-guide/images/deecure-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 85, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-beginner-overview-health-dashboard-dark.png">
+  <img src="docs/07-user-guide/images/deecure-beginner-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 85, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
 </picture>
 
-*The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at.*
+*The Overview in the Beginner view, on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. The Expert view goes much deeper: [see the screenshots](#beginner-advanced-and-expert-views).*
 
 ## Install in one step
 
@@ -93,19 +93,18 @@ It works without a password for looking around. It never changes anything unless
 
 A value DeeCure cannot read is shown as unknown, never guessed.
 
-![DeeCure Hardware page on Linux: machine model, BIOS version, Secure Boot, and the health of the processor, memory, SSD, battery, graphics, fans, peripherals, and firmware](docs/07-user-guide/images/deecure-hardware-summary.png)
+![DeeCure Hardware page on Linux (Advanced view): machine model, BIOS version, Secure Boot, and the health of the processor, memory, SSD, battery, graphics, fans, peripherals, and firmware](docs/07-user-guide/images/deecure-advanced-hardware-summary.png)
 
 ### Optimize: only what your computer actually needs
 
 Improvements are offered **only when a measurement on this computer shows they help**, with the numbers behind each one: unused packages, a log size cap, compressed swap when swapping stays high, a charge limit when the laptop is mostly plugged in, the right hardware video driver, firmware updates. Popular "speed-up tips" that do not help on Ubuntu are never offered. [Optimize catalog](docs/01-product/optimize-catalog.md)
 
-![DeeCure Optimize page: device power saving, Docker and snap cleanup, emptying the trash, and the APT cache, each with the measured space or reason](docs/07-user-guide/images/deecure-optimize-improvements.png)
 
 ### Battery and power controls
 
 Battery charge limits (presets or your own), charge mode, CPU turbo, the highest CPU speed on battery, PCIe and device power saving, sleep type, lid action, keyboard backlight, and radios. Risky settings are tried for one session first and kept only when you choose **Keep**.
 
-![DeeCure battery page on a Linux laptop: charge level, battery health 84% of design capacity, power draw, charge cycles, a 24-hour charge chart, and a 30-day health trend](docs/07-user-guide/images/deecure-battery-health-and-charge.png)
+![DeeCure battery page on a Linux laptop (Beginner view): charge level, battery health 84% of design capacity, power draw, charge cycles, a 24-hour charge chart, and a 30-day health trend](docs/07-user-guide/images/deecure-beginner-battery-health.png)
 
 ### Safe fixes with undo
 
@@ -117,11 +116,11 @@ Every fix shows its steps and commands first. Untick any step. Admin steps ask f
 - **Disk forecast:** "full in about N days", only when the disk keeps filling, so one big install never causes a false alarm.
 - **Notifications** for critical problems, with quiet hours, and a weekly summary of your computer's health.
 
-![DeeCure Activity timeline: what changed on this Linux computer, with package upgrades, config file changes, USB devices, and boots, filtered by the last 7, 30, or 90 days](docs/07-user-guide/images/deecure-activity-what-changed-timeline.png)
+![DeeCure Activity timeline: what changed on this Linux computer, with package upgrades, config file changes, USB devices, and boots, filtered by the last 7, 30, or 90 days](docs/07-user-guide/images/deecure-advanced-activity-timeline.png)
 
-![DeeCure Storage page on Ubuntu: used and free disk space, reclaimable space, what fills the disk (home, apps, system), a 30-day usage trend with the low-space line, and mount points](docs/07-user-guide/images/deecure-storage-disk-space-forecast.png)
+![DeeCure Storage page on Ubuntu: used and free disk space, reclaimable space, what fills the disk (home, apps, system), a 30-day usage trend with the low-space line, and mount points](docs/07-user-guide/images/deecure-advanced-storage-disk-space.png)
 
-*Screenshots are from a real Dell laptop running Ubuntu 24.04. The computer and user names are replaced.*
+*All screenshots are from a real Dell laptop running Ubuntu 24.04, in the Beginner, Advanced, and Expert views. The computer and user names are replaced.*
 
 ## Beginner, Advanced, and Expert views
 
@@ -130,6 +129,23 @@ Every fix shows its steps and commands first. Untick any step. Admin steps ask f
 - **Expert:** everything above, plus deep hardware data, exact commands, data sources, and the Optimize page.
 
 Switch at any time from the top bar. [View levels](docs/01-product/view-levels.md)
+
+### What the Expert view shows
+
+<table>
+  <tr>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-processor-cores-power-limits.png"><img src="docs/07-user-guide/images/deecure-expert-processor-cores-power-limits.png" alt="DeeCure Expert view of the processor on Linux: live load, temperature, and frequency gauges, specifications, every performance and efficient core with its speed, use, and temperature, and the chip's power limits"></a><br><b>Processor:</b> every core's speed, use, and temperature, and the chip's power limits.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-temperature-sensors-fans.png"><img src="docs/07-user-guide/images/deecure-expert-temperature-sensors-fans.png" alt="DeeCure temperature sensors on a Linux laptop: CPU, NVMe SSD, and battery temperatures, a 24-hour temperature history with the throttle line, fan speeds, and thermal zones with their slow-down and shut-down limits"></a><br><b>Sensors:</b> every temperature with its own limits, fans, and thermal zones.</td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-nvme-ssd-details.png"><img src="docs/07-user-guide/images/deecure-expert-nvme-ssd-details.png" alt="DeeCure NVMe SSD details on Linux: drive model and firmware, temperature history, the drive's own warning and critical temperatures, PCIe link at full speed, block size, scheduler, and weekly TRIM"></a><br><b>Drives:</b> NVMe details, the drive's own limits, PCIe link speed, and TRIM.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-sleep-wake-power-saving.png"><img src="docs/07-user-guide/images/deecure-expert-sleep-wake-power-saving.png" alt="DeeCure sleep page on a Linux laptop: suspend history with results and durations, the suspend type, and devices that could save power with a Try power saving button"></a><br><b>Sleep:</b> every suspend, what woke the laptop, and devices that waste power.</td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png"><img src="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png" alt="DeeCure Linux kernel page: running kernel, command line, installed kernels with the fallback, loaded kernel modules, file watches, open files, kernel lockdown, and clock offset"></a><br><b>Kernel:</b> installed kernels, loaded modules, limits, and settings with the file that set them.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: device power saving, Docker and snap cleanup, emptying the trash, and the APT cache, each with the measured space or reason and a Preview button"></a><br><b>Optimize:</b> only the improvements this computer measurably needs.</td>
+  </tr>
+</table>
 
 ## Private and safe by design
 
