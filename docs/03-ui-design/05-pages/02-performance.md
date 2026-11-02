@@ -64,29 +64,22 @@
 - X axis: time (current range)
 - Threshold line at 7.6: "Total 7.6 GB"
 
-3. **Donut chart**: "Composition" · span 4
-- Subtitle: "now"
-- Center: "7.6" / "GB total" · unit "GB"
+3. **Memory map**: "What fills memory" · span 4
+- Subtitle: "31.0 GB in all". Info tooltip: striped parts are cache, given back at once when an app needs memory.
+- Three numbers: **really in use**, **can be freed**, **free**, each with its share.
+- One bar: Apps and the kernel (slot 1), Cache (slot 2, striped), Free (track colour); then a legend with size and share.
+- One sentence on what it means: almost full of apps (90%+: close apps or add memory), most of it apps (75%+), mostly cache ("Nothing to worry about"), or plenty of room.
 
-| Segment | Value | Color | Display value |
-| --- | --- | --- | --- |
-| Used | 5.9 | slot 1 | - |
-| Cache | 1.6 | slot 2 | - |
-| Free | 0.1 | kn | 0.1 GB |
+4. **Ranked bars**: "Biggest memory users" · span 12 (Beginner and Advanced; Expert shows "Real memory per process" instead)
+- The 8 biggest processes by resident memory: name, a second line with the user and share of memory, a bar, and the size. Processes with the same name are separate rows.
 
-4. **Data table**: "Top memory consumers" · span 12
-- Source chip (Expert): `ps --sort=-rss`
-
-| Process | PID [n] | User | Resident [n] | Share of total [n] | Swap [n, ,x] |
-| --- | --- | --- | --- | --- | --- |
-| chrome | 4121 | riya | 842 MB | [meter 44% "11.1%"] | 120 MB |
-| chrome (renderer) | 4388 | riya | 612 MB | [meter 32% "8.1%"] | 84 MB |
-| gnome-shell | 1874 | riya | 410 MB | [meter 22% "5.4%"] | 0 |
-| code | 5102 | riya | 486 MB | [meter 26% "6.4%"] | 62 MB |
-| telegram-desktop | 2230 | riya | 280 MB | [meter 15% "3.7%"] | 0 |
-| dropbox | 2301 | riya | 210 MB | [meter 11% "2.8%"] | 0 |
-| postgres | 2811 | 999 | 142 MB | [meter 7% "1.9%"] | 0 |
-| dockerd | 1320 | root | 96 MB | [meter 5% "1.3%"] | 0 |
+Expert adds, below the page:
+- **KPI row:** hard page faults, swapped in and out, waits while memory was freed, out-of-memory kills.
+- **Memory map**: "Where memory goes" · span 12. The same map in detail, without the three numbers (they are already above): Apps, Shared memory, Kernel (cannot be freed), Kernel caches (striped), File cache (striped), Other (drivers, graphics), Free, each with one line on what it is; then "Also: N waiting to be written to disk" when there is any.
+- **Ranked bars**: "Apps and services" · span 6: the top 10 by own memory, with kind, file cache, and memory waits on the second line. **Show all N apps and services** opens the full table with search.
+- **Ranked bars**: "Real memory per process" · span 6: the top 10 by real memory (PSS; resident for other users' processes, with a note), with PID and own memory (USS). **Show all** opens the full table with resident size, swap, hard faults, and out-of-memory score.
+- **Swap and compression** · span 6: a usage meter per swap device, zswap, zram, huge pages.
+- **Out-of-memory guard** · span 6.
 
 ## Performance › Disk I/O: `performance/disk`
 

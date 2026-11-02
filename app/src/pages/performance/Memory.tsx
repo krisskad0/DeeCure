@@ -1,41 +1,26 @@
 // SPDX-License-Identifier: Apache-2.0
 // Performance › Memory (docs/03-ui-design/05-pages/02-performance.md), with real data.
-// Not shown yet: OOM kills, which come from the journal with the Logs page.
+// The Expert view adds the detailed memory map, apps and services, and real memory per process
+// (MemoryExpert.tsx), and leaves out the simple process list they replace.
 
 import { Guard } from "../../components/ErrorBoundary";
-import { type Process, getInventory } from "../../api";
-import { type Column, DataTable } from "../../components/DataTable";
-import { InlineMeter } from "../../components/InlineMeter";
+import { getInventory } from "../../api";
 import { type Kpi, KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
-import { Donut } from "../../components/charts/Donut";
+import { BarList } from "../../components/charts/BarList";
 import { bytes, pick } from "../../metrics";
 import { atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
 import { MemoryExpertSections } from "./MemoryExpert";
+import { MemoryMap } from "./MemoryMap";
 import { GB, TimeChart, spark, useHistory, useLatest } from "./shared";
 
 const loadProcesses = () => getInventory("processes");
 
-function columns(total: number | undefined): Column<Process>[] {
-  return [
-    { key: "name", label: "Process", text: (p) => p.name },
-    { key: "pid", label: "PID", text: (p) => String(p.pid), numeric: true },
-    { key: "user", label: "User", text: (p) => p.user },
-    { key: "rss", label: "Resident", text: (p) => bytes(p.memory_bytes), numeric: true },
-    {
-      key: "share",
-      label: "Share of total",
-      text: (p) => (total ? `${((p.memory_bytes / total) * 100).toFixed(1)}%` : "-"),
-      render: (p) => (total ? <InlineMeter percent={(p.memory_bytes / total) * 100 * 4} label={`${((p.memory_bytes / total) * 100).toFixed(1)}%`} tone="ok" /> : "-"),
-    },
-    { key: "swap", label: "Swap", text: (p) => (p.swap_bytes ? bytes(p.swap_bytes) : "0"), numeric: true, expert: true },
-  ];
-}
-
 export function PerformanceMemory() {
   const { mode } = useUi();
   const latest = useLatest();
+  const expert = atLeast(mode, "expert");
   const processes = useLive(loadProcesses, 10_000).data;
   const history = useHistory(["memory.used", "memory.cache"]);
   const percent = useHistory(["memory.used_percent"]);
@@ -79,24 +64,30 @@ export function PerformanceMemory() {
           threshold={total ? { value: total / GB, label: `Total ${bytes(total)}` } : undefined}
         />
       </Panel>
-      <Panel title="Composition" subtitle="now" span={4}>
+      <Panel title="What fills memory" subtitle={total ? `${bytes(total)} in all` : "now"} info="Striped parts are cache: the kernel gives that memory back at once when an app needs it, so a full-looking memory is normal." span={4}>
         {total === undefined || used === undefined || free === undefined || reclaimable === undefined ? (
           <div className="empty muted">Measuring…</div>
         ) : (
-          <Donut
-            segments={[
-              { name: "Used", value: used, slot: 1, display: bytes(used) },
-              { name: "Cache (can be freed)", value: reclaimable, slot: 2, display: bytes(reclaimable) },
-              { name: "Free", value: free, tone: "neutral", display: bytes(free) },
+          <MemoryMap
+            total={total}
+            parts={[
+              { name: "Apps and the kernel", bytes: used, slot: 1 },
+              { name: "Cache", bytes: reclaimable, slot: 2, freeable: true },
+              { name: "Free", bytes: free, slot: "free" },
             ]}
-            center={{ value: (total / GB).toFixed(1), subtitle: "GB total" }}
           />
         )}
       </Panel>
-      <Panel title="Top memory consumers" source="/proc/[pid]/status" span={12} flush>
-        {processes ? <DataTable rows={top} columns={columns(total)} rowKey={(p) => String(p.pid)} pageSize={8} /> : <div className="empty muted">Loading…</div>}
-      </Panel>
-      {atLeast(mode, "expert") && <Guard><MemoryExpertSections /></Guard>}
+      {!expert && (
+        <Panel title="Biggest memory users" subtitle="now" info="Resident memory of each process: what it holds in RAM, counting memory it shares with others." source="/proc/[pid]/status" span={12}>
+          {processes ? (
+            <BarList rows={top.map((p) => ({ id: String(p.pid), label: p.name, hint: `${p.user}${total ? ` · ${((p.memory_bytes / total) * 100).toFixed(1)}% of memory` : ""}`, value: p.memory_bytes, display: bytes(p.memory_bytes) }))} />
+          ) : (
+            <div className="empty muted">Loading…</div>
+          )}
+        </Panel>
+      )}
+      {expert && <Guard><MemoryExpertSections /></Guard>}
     </>
   );
 }

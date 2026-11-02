@@ -5,7 +5,8 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MemoryDetail } from "../../api";
 import { REFRESH_EVENT } from "../../units";
-import { MemoryErrors, MemoryExpertSections, breakdown } from "./MemoryExpert";
+import { MemoryErrors, MemoryExpertSections } from "./MemoryExpert";
+import { memoryParts, memoryVerdict } from "./MemoryMap";
 
 const GiB = 1024 ** 3;
 let step = 0;
@@ -48,20 +49,31 @@ afterEach(() => {
 });
 
 describe("Expert memory sections", () => {
-  it("breaks memory down without counting shared memory twice", () => {
-    const rows = breakdown({ AnonPages: 6, Cached: 5, Shmem: 1, MemFree: 2 });
-    expect(rows.find((r) => r.part === "File cache")?.bytes).toBe(4);
-    expect(rows.map((r) => r.part)).not.toContain("Page tables");
+  it("maps memory without counting shared memory twice, and the parts add up to the total", () => {
+    const parts = memoryParts({ MemTotal: 20, AnonPages: 6, Cached: 5, Shmem: 1, Buffers: 1, SReclaimable: 2, SUnreclaim: 1, MemFree: 2 });
+    expect(parts.find((p) => p.name === "File cache")?.bytes).toBe(5);
+    expect(parts.find((p) => p.name === "File cache")?.freeable).toBe(true);
+    expect(parts.find((p) => p.name === "Kernel, cannot be freed")?.bytes).toBe(1);
+    expect(parts.find((p) => p.name === "Other")?.bytes).toBe(3);
+    expect(parts.reduce((n, p) => n + p.bytes, 0)).toBe(20);
+  });
+
+  it("explains the memory map in one sentence", () => {
+    expect(memoryVerdict(10, 19, 31)).toMatch(/Most of it is cache/);
+    expect(memoryVerdict(24, 2, 31)).toMatch(/Apps use most of the memory/);
+    expect(memoryVerdict(29, 1, 31)).toMatch(/close apps you do not need/);
+    expect(memoryVerdict(8, 4, 31)).toMatch(/plenty of room/);
   });
 
   it("shows rates after a second reading, app memory without file cache, and the guard", async () => {
     render(<MemoryExpertSections />);
-    await waitFor(() => expect(screen.getByText("Visual Studio Code")).toBeTruthy());
-    const row = screen.getByText("Visual Studio Code").closest("tr")?.textContent ?? "";
-    expect(row).toContain("2.0 GB");
-    expect(row).toContain("16.0 GB");
-    expect(row).not.toContain("18.0 GB");
-    expect(screen.getByText(/1 of them belong to other users/)).toBeTruthy();
+    await waitFor(() => expect(screen.getAllByText("Visual Studio Code").length).toBeGreaterThan(0));
+    // The top-10 bar: own memory as the value, file cache only as a note.
+    const bar = screen.getAllByText("Visual Studio Code")[0].closest("li")?.textContent ?? "";
+    expect(bar).toContain("2.0 GB");
+    expect(bar).toContain("+16.0 GB file cache");
+    expect(bar).not.toContain("18.0 GB");
+    expect(screen.getByText(/1 of the biggest belong to other users/)).toBeTruthy();
     expect(screen.getByText("60% for 20s")).toBeTruthy();
     expect(screen.getByText("Off")).toBeTruthy();
     step = 1;

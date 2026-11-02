@@ -62,7 +62,9 @@ describe("Performance tabs", () => {
   it("memory composition adds up and swap is shown", async () => {
     render(<PerformanceMemory />);
     await waitFor(() => expect(screen.getByText("of 2.0 GB")).toBeTruthy());
-    expect(screen.getByText("Cache (can be freed)")).toBeTruthy();
+    // The memory map: cache is shown as memory that can be freed, and the parts add up.
+    expect(screen.getByText(/can be freed ·/)).toBeTruthy();
+    expect(screen.getByRole("img", { name: /Apps and the kernel .*Cache .*Free / })).toBeTruthy();
   });
 
   it("disk lists devices and is honest about per-process I/O", async () => {
