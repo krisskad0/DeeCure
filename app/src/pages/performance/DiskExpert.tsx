@@ -7,6 +7,7 @@ import { type Groups, type JobsInfo, type PciDevice, type ProcessesIo, type Stor
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes, rate } from "../../metrics";
 import { ago } from "../../time";
@@ -232,18 +233,59 @@ export function FilesystemExpert() {
 
 // ---------- Hardware › Peripherals ----------
 
+/** How many links have each verdict ("Full speed 5", "Nothing connected 2", …), most first. */
+export function linkCounts(links: PciDevice[]): [string, number][] {
+  const counts = new Map<string, number>();
+  for (const d of links) counts.set(linkVerdict(d).text, (counts.get(linkVerdict(d).text) ?? 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1]);
+}
+
 export function PcieLinks() {
   const { data, error } = useLive(loadPci, 60_000);
   const links = (data ?? []).filter((d) => d.link_speed || d.link_width !== undefined);
+  // Links slower than they could be (not idle by design), or with errors.
+  const notable = links.filter((d) => (linkVerdict(d).variant !== "ok" && linkVerdict(d).variant !== "off") || (d.errors && d.errors.corrected + d.errors.nonfatal + d.errors.fatal > 0));
   return (
     <Panel
       title="PCIe links"
       info="The link can only be as fast as the slower of the device and its slot. Link errors are counted by the hardware since start."
       source="/sys/bus/pci/devices"
       span={12}
-      flush
     >
       {data ? (
+        links.length === 0 ? (
+          <div className="empty muted">No PCIe links reported.</div>
+        ) : (
+          <>
+            <div className="kn-chips">
+              {linkCounts(links).map(([label, n]) => (
+                <span key={label} className="kn-chip">
+                  {label} <b>{n}</b>
+                </span>
+              ))}
+            </div>
+            {notable.length === 0 ? (
+              <div className="kn-verdict svc-verdict">
+                <StatusBadge variant="ok" label="All good" />
+                <span>Every connected link runs as fast as both sides allow, with no link errors.</span>
+              </div>
+            ) : (
+              <>
+                <div className="kn-head svc-head">Worth a look</div>
+                <ul className="kn-notable">
+                  {notable.map((d) => (
+                    <li key={d.address}>
+                      <b>{d.model ?? d.address}</b> <StatusBadge variant={linkVerdict(d).variant} label={linkVerdict(d).text} />
+                      <span className="muted">
+                        now {linkText(d.link_speed, d.link_width)} · can do {linkText(d.max_link_speed, d.max_link_width)}
+                        {d.errors && d.errors.corrected + d.errors.nonfatal + d.errors.fatal > 0 ? ` · ${d.errors.corrected + d.errors.nonfatal + d.errors.fatal} link errors` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <ShowAll label={`Show all ${links.length} links`}>
         <DataTable
           rows={links}
           columns={[
@@ -264,8 +306,10 @@ export function PcieLinks() {
           ]}
           rowKey={(d) => d.address}
           pageSize={30}
-          empty="No PCIe links reported"
         />
+            </ShowAll>
+          </>
+        )
       ) : (
         <NoData error={error} waiting="Loading…" />
       )}

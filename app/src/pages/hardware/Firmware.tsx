@@ -9,6 +9,7 @@ import type { FirmwareInfo } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { NoData } from "../NoData";
 import { biosDate, useFirmware, useHardware } from "./shared";
@@ -61,7 +62,38 @@ export function HardwareFirmware() {
         ) : !fw.available ? (
           <div className="empty muted">The firmware update service (fwupd) is not running, so updates are unknown. DeeCure does not start it.</div>
         ) : (
-          <DataTable rows={fw.devices} columns={COLUMNS} rowKey={(d) => `${d.name}-${d.version}`} empty="fwupd knows no devices" />
+          <div className="panel-pad">
+            <div className="kn-chips">
+              {[
+                ["updates available", fw.devices.filter((d) => d.available).length],
+                ["up to date", fw.devices.filter((d) => !d.available && d.updatable).length],
+                ["not on LVFS", fw.devices.filter((d) => !d.updatable).length],
+              ].map(([label, n]) => (
+                <span key={label} className="kn-chip">
+                  {label} <b>{n}</b>
+                </span>
+              ))}
+            </div>
+            {fw.devices.some((d) => d.available) ? (
+              <ul className="kn-notable svc-verdict">
+                {fw.devices
+                  .filter((d) => d.available)
+                  .map((d) => (
+                    <li key={`${d.name}-${d.version}`}>
+                      <b>{d.name}</b> <code>{d.version ?? "-"}</code> → <code>{d.available}</code> <StatusBadge variant="info" label="Update available" />
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <div className="kn-verdict svc-verdict">
+                <StatusBadge variant="ok" label="Up to date" />
+                <span>No firmware update is waiting. Devices not on LVFS get updates from their maker instead.</span>
+              </div>
+            )}
+            <ShowAll label={`Show all ${fw.devices.length} devices`}>
+              <DataTable rows={fw.devices} columns={COLUMNS} rowKey={(d) => `${d.name}-${d.version}`} empty="fwupd knows no devices" />
+            </ShowAll>
+          </div>
         )}
       </Panel>
       {atLeast(mode, "expert") && <Guard><FirmwareExpertSections /></Guard>}

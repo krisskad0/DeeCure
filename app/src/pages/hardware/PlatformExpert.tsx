@@ -8,6 +8,7 @@ import { type PlatformDetail, getInventory } from "../../api";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
@@ -74,7 +75,32 @@ export function FirmwareExpertSections() {
           ]}
         />
       </Panel>
-      <Panel title="Security checks" subtitle={`${failed.length} not passed`} source="fwupdmgr security" span={6} flush>
+      <Panel title="Security checks" subtitle={`${d.security_checks.length - failed.length} of ${d.security_checks.length} passed`} info="Each firmware and platform protection fwupd checks. Running system means it is about how this system runs now, not the firmware." source="fwupdmgr security" span={6}>
+        {d.security_checks.length === 0 ? (
+          <div className="empty muted">fwupd is not installed or did not answer.</div>
+        ) : (
+          <>
+            <div className="sc-bar" role="img" aria-label={`${d.security_checks.length - failed.length} of ${d.security_checks.length} passed`}>
+              <span style={{ width: `${((d.security_checks.length - failed.length) / d.security_checks.length) * 100}%` }} />
+            </div>
+            {failed.length === 0 ? (
+              <div className="kn-verdict svc-verdict">
+                <StatusBadge variant="ok" label="All passed" />
+                <span>Every check fwupd runs on this computer passed.</span>
+              </div>
+            ) : (
+              <>
+                <div className="kn-head svc-head">Not passed</div>
+                <ul className="kn-notable">
+                  {failed.map((c) => (
+                    <li key={c.id}>
+                      <b>{c.name}</b> <StatusBadge variant={c.runtime ? "info" : "warn"} label={`${c.result}${c.runtime ? " (running system)" : ""}`} />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <ShowAll label={`Show all ${d.security_checks.length} checks`}>
         <DataTable
           rows={[...d.security_checks].sort((a, b) => Number(a.passed) - Number(b.passed))}
           columns={[
@@ -89,8 +115,10 @@ export function FirmwareExpertSections() {
           ]}
           rowKey={(c) => c.id}
           pageSize={12}
-          empty="fwupd is not installed or did not answer"
         />
+            </ShowAll>
+          </>
+        )}
       </Panel>
       <Panel title="UEFI boot entries" info="What the firmware can start, in the order it tries them. The current entry is the one this boot used." source="/sys/firmware/efi/efivars" span={12} flush>
         <DataTable

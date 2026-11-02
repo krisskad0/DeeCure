@@ -197,6 +197,9 @@
 | Touchpad | Input | ELAN | `i2c_hid` | {ok:Active} |  |
 | Keyboard | Input | AT Translated | `atkbd` | {ok:Active} |  |
 
+
+Expert **PCIe links** shows chips by verdict (Full speed, Nothing connected, …), a green "All good" line or "Worth a look" with each link slower than it could be or with link errors, and every link under **Show all**.
+
 ## Hardware › Firmware: `hardware/firmware`
 
 1. **Key-value list**: "Platform firmware" · span 5
@@ -223,3 +226,5 @@
 ---
 
 ← Previous: [System](05-system.md) · [Index](README.md) · Next: [Power](07-power.md) →
+
+**Firmware updates** shows chips (updates available, up to date, not on LVFS), then the devices with an update (current → available) or a green "Up to date" line; every device is under **Show all**. Expert **Security checks** shows a pass bar ("34 of 37 passed"), the checks that did not pass with their result, and every check under **Show all**.

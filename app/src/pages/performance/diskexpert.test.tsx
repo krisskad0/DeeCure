@@ -4,7 +4,7 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PciDevice } from "../../api";
-import { DiskIoExpertSections, DriveExpertSections, FilesystemExpert, PcieLinks, linkVerdict } from "./DiskExpert";
+import { DiskIoExpertSections, DriveExpertSections, FilesystemExpert, PcieLinks, linkCounts, linkVerdict } from "./DiskExpert";
 
 const ssd: PciDevice = {
   address: "0000:01:00.0",
@@ -72,6 +72,11 @@ describe("PCIe link verdict", () => {
     expect(linkVerdict({ ...ssd, link_width: 0 }).text).toBe("Nothing connected");
     expect(linkVerdict({ address: "x" }).text).toBe("Not reported");
   });
+
+  it("counts links by verdict, most first", () => {
+    const full = { ...ssd, link_speed: "16.0 GT/s PCIe" };
+    expect(linkCounts([full, full, { ...ssd, link_width: 0 }])).toEqual([["Full speed", 2], ["Nothing connected", 1]]);
+  });
 });
 
 describe("Expert drive sections", () => {
@@ -106,7 +111,7 @@ describe("Expert drive sections", () => {
 
   it("PCIe links list empty ports and link errors", async () => {
     render(<PcieLinks />);
-    await waitFor(() => expect(screen.getByText("Nothing connected")).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText("Nothing connected")[0]).toBeTruthy());
     expect(screen.getByText("2 corrected")).toBeTruthy();
   });
 });

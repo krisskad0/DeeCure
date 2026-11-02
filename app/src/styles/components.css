@@ -424,4 +424,7 @@ a.btn { text-decoration: none; }
 /* Padding for content placed in a flush panel next to a table or list. */
 .panel-pad { padding: 10px 14px; }
 .snap-grid .kn-chip { white-space: nowrap; flex: none; }
+/* A pass bar: the green share is what passed. */
+.sc-bar { height: 8px; border-radius: 4px; background: var(--warn); overflow: hidden; margin-bottom: 4px; }
+.sc-bar span { display: block; height: 100%; background: var(--good); }
 

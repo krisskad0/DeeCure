@@ -122,7 +122,7 @@ describe("Hardware pages", () => {
     cleanup();
     firmware = { available: true, devices: [{ name: "Touchpad", vendor: "Synaptics", version: "1.4", available: "1.6", updatable: true }] };
     render(<HardwareFirmware />);
-    await waitFor(() => expect(screen.getByText("Update available")).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText("Update available").length).toBeGreaterThan(0));
   });
 });
 

@@ -48,7 +48,7 @@ describe("Expert firmware and ports", () => {
   it("firmware: level, failed checks first, protections, and boot order", async () => {
     render(<FirmwareExpertSections />);
     await waitFor(() => expect(screen.getByText("1 of 2")).toBeTruthy());
-    expect(screen.getByText("not-encrypted (running system)")).toBeTruthy();
+    expect(screen.getAllByText("not-encrypted (running system)").length).toBeGreaterThan(0);
     expect(screen.getByText("On, unlocked with a password")).toBeTruthy();
     expect(screen.getByText("Ask before new devices · DMA protection on")).toBeTruthy();
     expect(screen.getByText("Intel VT-x on · KVM ready")).toBeTruthy();
