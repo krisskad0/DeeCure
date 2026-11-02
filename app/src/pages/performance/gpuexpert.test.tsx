@@ -44,7 +44,7 @@ describe("Expert graphics sections", () => {
     await act(async () => {
       window.dispatchEvent(new Event(REFRESH_EVENT));
     });
-    await waitFor(() => expect(screen.getByText("25.0%")).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText("25.0%").length).toBeGreaterThan(0));
     expect(screen.getByText("90.0% now")).toBeTruthy();
   });
 

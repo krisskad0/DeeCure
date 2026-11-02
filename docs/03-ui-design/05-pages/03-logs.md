@@ -102,6 +102,8 @@ Wed  2 0 1 1 0 0 1 0 0 9 1 1 1 0 0 0 0 1 0 0 0 5 1 0
 | Mon 16:12 | `chrome (renderer)` | SIGKILL (OOM) | kernel | 1 | {warn:Resolved} |  |
 | Mon 11:47 | `gnome-calculator` | SIGABRT | apport | 1 | {off:Reported} |  |
 
+With no crash, the panel is one green line ("No crashes in the last 7 days") instead of an empty table.
+
 ## Logs › Kernel: `logs/kernel`
 
 1. **Data table**: "Kernel messages" · span 12

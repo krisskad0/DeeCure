@@ -7,6 +7,7 @@ import { AlertBanner } from "../../components/AlertBanner";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { BarChart } from "../../components/charts/BarChart";
 import { when } from "../../metrics";
@@ -33,11 +34,13 @@ function Waiting({ title, error }: { title: string; error: Parameters<typeof NoD
 
 const tags = (list: string[]) => <span className="tags">{list.map((g) => <span key={g} className="tag">{g}</span>)}</span>;
 
+const role = (u: User) => (u.uid === 0 ? "System admin (root)" : u.admin ? "Administrator" : "Standard");
+
 const USERS: Column<User>[] = [
   { key: "user", label: "User", text: (u) => `${u.name} ${u.full_name}`, render: (u) => (<span className="cell-two"><b>{u.name}</b><span>{u.full_name || "-"}</span></span>) },
   { key: "uid", label: "UID", text: (u) => String(u.uid), numeric: true },
   { key: "groups", label: "Groups", text: (u) => u.groups.join(" "), render: (u) => tags(u.groups.slice(0, 6)), wrap: true },
-  { key: "role", label: "Role", text: (u) => (u.admin ? "Administrator" : "Standard"), render: (u) => <StatusBadge variant={u.admin ? "info" : "off"} label={u.uid === 0 ? "System admin (root)" : u.admin ? "Administrator" : "Standard"} /> },
+  { key: "role", label: "Role", text: (u) => (u.admin ? "Administrator" : "Standard"), render: (u) => <StatusBadge variant={u.admin ? "info" : "off"} label={role(u)} /> },
   { key: "shell", label: "Shell", text: (u) => u.shell, render: (u) => <code>{u.shell}</code>, expert: true },
   { key: "last", label: "Last sign-in", text: (u) => (u.last_sign_in ? String(u.last_sign_in) : "-"), render: (u) => (u.last_sign_in ? when(u.last_sign_in) : <span className="muted">not in records</span>) },
 ];
@@ -55,8 +58,23 @@ export function AccountsUsers() {
           { label: "Signed in now", value: String(new Set(a.sessions.filter((s) => s.class === "user").map((s) => s.user)).size) },
         ]}
       />
-      <Panel title="Users" source="/etc/passwd · /etc/group · last" span={12} flush>
-        <DataTable rows={a.users} columns={USERS} rowKey={(u) => u.name} />
+      <Panel title="Users" source="/etc/passwd · /etc/group · last" span={12}>
+        <ul className="snap-grid user-grid">
+          {a.users.map((u) => (
+            <li key={u.name}>
+              <b className="img-name">{u.name}</b>
+              <span className="muted">{u.full_name || (u.uid === 0 ? "built-in system account" : "-")}</span>
+              <span className="snap-meta">
+                <StatusBadge variant={u.admin ? "info" : "off"} label={role(u)} />
+              </span>
+              <span className="muted">Last sign-in: {u.last_sign_in ? when(u.last_sign_in) : "not in records"}</span>
+              {u.groups.length > 1 && <span className="muted">In {u.groups.length} groups</span>}
+            </li>
+          ))}
+        </ul>
+        <ShowAll label={`Show all ${a.users.length} as a table`}>
+          <DataTable rows={a.users} columns={USERS} rowKey={(u) => u.name} />
+        </ShowAll>
       </Panel>
       <AlertBanner tone="info" title="Password strength cannot be checked" text="Linux stores only salted hashes, and DeeCure never reads them." />
     </>
@@ -73,10 +91,44 @@ const GROUPS: Column<Group>[] = [
 export function AccountsGroups() {
   const { data: a, error } = useAccounts();
   if (!a) return <Waiting title="Groups with members" error={error} />;
+  const powerful = a.groups.filter((g) => g.privilege);
+  const others = a.groups.filter((g) => !g.privilege);
   return (
     <>
-      <Panel title="Groups with members" source="/etc/group" span={12} flush>
-        <DataTable rows={a.groups} columns={GROUPS} rowKey={(g) => g.name} search={{ placeholder: "Filter groups" }} />
+      <Panel title="Groups with members" source="/etc/group" span={12}>
+        {powerful.length > 0 && (
+          <>
+            <div className="kn-head">Groups that give extra power</div>
+            <ul className="src-list">
+              {powerful.map((g) => (
+                <li key={g.name}>
+                  <span className="src-main">
+                    <b>{g.name}</b>
+                    <span className="muted">{g.members.join(", ") || "no members"}</span>
+                  </span>
+                  <span className="src-tags">
+                    <StatusBadge variant={/Admin|Root/.test(g.privilege ?? "") ? "warn" : "info"} label={g.privilege ?? ""} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {others.length > 0 && (
+          <>
+            <div className="kn-head" style={{ marginTop: 12 }}>Other groups</div>
+            <div className="kn-chips">
+              {others.map((g) => (
+                <span key={g.name} className="kn-chip" title={g.members.join(", ")}>
+                  {g.name} <b>{g.members.length}</b>
+                </span>
+              ))}
+            </div>
+          </>
+        )}
+        <ShowAll label={`Show all ${a.groups.length} groups as a table`}>
+          <DataTable rows={a.groups} columns={GROUPS} rowKey={(g) => g.name} search={{ placeholder: "Filter groups" }} />
+        </ShowAll>
       </Panel>
       <SudoRulesPanel />
     </>

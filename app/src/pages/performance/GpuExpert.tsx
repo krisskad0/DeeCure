@@ -7,6 +7,8 @@ import { type GpuDetail, type GraphicsStack, getInventory } from "../../api";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
+import { BarList } from "../../components/charts/BarList";
 import { StatusBadge } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { perSecond, useLive, useLiveWithPrevious } from "../../useLive";
@@ -106,6 +108,12 @@ export function GpuExpertSections() {
       </Panel>
     );
   };
+  const load = (c: (typeof clients)[number]) => (c.render ?? 0) + (c.video ?? 0) + (c.other ?? 0);
+  const busy = before ? clients.filter((c) => load(c) > 0).slice(0, 6) : [];
+  const heavy = clients
+    .filter((c) => (c.memory ?? 0) > 0)
+    .sort((a, b) => (b.memory ?? 0) - (a.memory ?? 0))
+    .slice(0, 6);
   return (
     <>
       {d.cards.map(cardPanel)}
@@ -117,21 +125,41 @@ export function GpuExpertSections() {
         span={12}
         flush
       >
-        <DataTable
-          rows={clients}
-          columns={[
-            { key: "name", label: "App", text: (c) => c.name },
-            { key: "pid", label: "PID", text: (c) => String(c.pid), numeric: true },
-            { key: "render", label: "Render", text: (c) => (before ? pct(c.render) : `${((c.engines.render ?? 0) / 1e9).toFixed(0)} s`), numeric: true },
-            { key: "video", label: "Video", text: (c) => (before ? pct(c.video) : `${((c.engines.video ?? 0) / 1e9).toFixed(0)} s`), numeric: true },
-            { key: "other", label: "Other engines", text: (c) => (before ? pct(c.other) : "-"), numeric: true },
-            { key: "memory", label: "Graphics memory", text: (c) => (c.memory === undefined ? "-" : bytes(c.memory)), numeric: true },
-            { key: "card", label: "Card", text: (c) => c.pci_address ?? "-", expert: true },
-          ]}
-          rowKey={(c) => `${c.pid}|${c.pci_address}`}
-          pageSize={12}
-          empty="No app of yours uses the graphics card, or this driver does not report it"
-        />
+        <div className="panel-pad">
+          {clients.length > 0 && (
+            <div className="log-summary">
+              <div>
+                <div className="kn-head">Busiest now</div>
+                {busy.length ? (
+                  <BarList rows={busy.map((c) => ({ id: `${c.pid}|${c.pci_address}`, label: c.name, hint: `render ${pct(c.render)} · video ${pct(c.video)}`, value: load(c), display: pct(load(c)) }))} />
+                ) : (
+                  <div className="muted">{before ? "No app is using the graphics engines right now." : "Shares show after the next reading."}</div>
+                )}
+              </div>
+              <div>
+                <div className="kn-head">Most graphics memory</div>
+                {heavy.length ? <BarList rows={heavy.map((c) => ({ id: `${c.pid}|${c.pci_address}`, label: c.name, hint: `PID ${c.pid}`, value: c.memory ?? 0, display: bytes(c.memory ?? 0) }))} /> : <div className="muted">Not reported by this driver.</div>}
+              </div>
+            </div>
+          )}
+          <ShowAll label={`Show all ${clients.length} apps as a table`}>
+            <DataTable
+              rows={clients}
+              columns={[
+                { key: "name", label: "App", text: (c) => c.name },
+                { key: "pid", label: "PID", text: (c) => String(c.pid), numeric: true },
+                { key: "render", label: "Render", text: (c) => (before ? pct(c.render) : `${((c.engines.render ?? 0) / 1e9).toFixed(0)} s`), numeric: true },
+                { key: "video", label: "Video", text: (c) => (before ? pct(c.video) : `${((c.engines.video ?? 0) / 1e9).toFixed(0)} s`), numeric: true },
+                { key: "other", label: "Other engines", text: (c) => (before ? pct(c.other) : "-"), numeric: true },
+                { key: "memory", label: "Graphics memory", text: (c) => (c.memory === undefined ? "-" : bytes(c.memory)), numeric: true },
+                { key: "card", label: "Card", text: (c) => c.pci_address ?? "-", expert: true },
+              ]}
+              rowKey={(c) => `${c.pid}|${c.pci_address}`}
+              pageSize={12}
+              empty="No app of yours uses the graphics card, or this driver does not report it"
+            />
+          </ShowAll>
+        </div>
       </Panel>
     </>
   );

@@ -34,6 +34,8 @@ describe("Expert security", () => {
     expect(screen.getByText("Every day")).toBeTruthy();
     expect(screen.getByText("1 of 335 processes enforced")).toBeTruthy();
     expect(screen.getByText("Profile that allows everything")).toBeTruthy();
+    // One bar of processes by how much AppArmor limits them.
+    expect(screen.getByRole("img", { name: "Enforced 1, Allows everything 29, No profile 305" })).toBeTruthy();
   });
 
   it("plain verdicts for the last run", () => {

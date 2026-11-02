@@ -134,6 +134,8 @@ The panel shows chips (connected, not connected, virtual), then a tile per hardw
 | Office | WireGuard | {off:Disconnected} | [Connect](act:toast:Connecting to Office (WireGuard)…) |
 | Tailscale | tailscale | {ok:Connected} |   |
 
+Expert: "Routes" shows the internet route (device and gateway) as one row, chips for local networks and links that are down, and the table under "Show all".
+
 ## Network › Traffic: `network/traffic`
 
 1. **Line chart**: "Throughput" · span 12

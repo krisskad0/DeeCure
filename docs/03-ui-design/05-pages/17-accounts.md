@@ -29,6 +29,8 @@
 3. **Alert banner**: "Password strength cannot be checked" · span 12
 - State: `info` · Title: "Password strength cannot be checked" · Text: "Linux stores only salted hashes. DeeCure shows password age instead."
 
+The panel shows a card per user (name, full name, role, last sign-in, how many groups). The table is under "Show all".
+
 ## Accounts › Groups: `accounts/groups`
 
 1. **Data table**: "Groups with members" · span 12
@@ -44,6 +46,8 @@
 | plugdev | 46 | riya | - |
 | lpadmin | 114 | riya | Printers |
 | sambashare | 117 | riya | - |
+
+The panel lists the groups that give extra power first (members and what the group allows, admin and root-equivalent ones as warnings), then the other groups as chips with their member count. The table, with its search, is under "Show all".
 
 ## Accounts › Sessions: `accounts/sessions`
 

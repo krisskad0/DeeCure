@@ -6,6 +6,8 @@ import { type SecurityDetail, getInventory } from "../../api";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
+import { BarList } from "../../components/charts/BarList";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
@@ -47,6 +49,13 @@ export function SecurityExpertSections() {
   const verdict = lastRunVerdict(d.upgrade_runs);
   const confined = d.confinement.filter((c) => c.mode === "enforce").reduce((n, c) => n + c.processes, 0);
   const total = d.confinement.reduce((n, c) => n + c.processes, 0);
+  // Processes by how much AppArmor limits them, for one bar.
+  const modes = [
+    { label: "Enforced", cls: "ok", n: confined },
+    { label: "Warn only", cls: "warn", n: d.confinement.filter((c) => c.mode === "complain").reduce((n, c) => n + c.processes, 0) },
+    { label: "Allows everything", cls: "info", n: d.confinement.filter((c) => c.mode === "unconfined").reduce((n, c) => n + c.processes, 0) },
+    { label: "No profile", cls: "off", n: d.confinement.filter((c) => c.mode === "none").reduce((n, c) => n + c.processes, 0) },
+  ].filter((m) => m.n > 0);
   return (
     <>
       <Panel
@@ -84,17 +93,44 @@ export function SecurityExpertSections() {
         span={6}
         flush
       >
-        <DataTable
-          rows={d.confinement}
-          columns={[
-            { key: "profile", label: "Profile", text: (c) => (c.profile === "unconfined" ? "None" : c.profile), wrap: true },
-            { key: "mode", label: "Mode", text: (c) => (MODE[c.mode] ?? ["off", c.mode])[1], render: (c) => <StatusBadge variant={(MODE[c.mode] ?? ["off", c.mode])[0]} label={(MODE[c.mode] ?? ["off", c.mode])[1]} /> },
-            { key: "n", label: "Processes", text: (c) => String(c.processes), numeric: true },
-            { key: "names", label: "Such as", text: (c) => c.names.join(", "), wrap: true },
-          ]}
-          rowKey={(c) => `${c.profile}|${c.mode}`}
-          pageSize={10}
-        />
+        <div className="panel-pad">
+          <div className="xp">
+            <div className="xp-bar" role="img" aria-label={modes.map((m) => `${m.label} ${m.n}`).join(", ")}>
+              {modes.map((m) => (
+                <span key={m.label} className={`xp-${m.cls}`} style={{ flex: m.n }} title={`${m.label}: ${m.n} processes`} />
+              ))}
+            </div>
+            <ul className="xp-legend">
+              {modes.map((m) => (
+                <li key={m.label}>
+                  <i className={`xp-${m.cls}`} aria-hidden="true" />
+                  {m.label} <b>{m.n}</b>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="kn-head">Profiles with the most processes</div>
+          <BarList
+            rows={d.confinement
+              .filter((c) => c.mode !== "none")
+              .sort((a, b) => b.processes - a.processes)
+              .slice(0, 6)
+              .map((c) => ({ id: `${c.profile}|${c.mode}`, label: c.profile, hint: `${(MODE[c.mode] ?? ["off", c.mode])[1]} · such as ${c.names.slice(0, 3).join(", ")}`, value: c.processes, display: String(c.processes) }))}
+          />
+          <ShowAll label={`Show all ${d.confinement.length} profiles as a table`}>
+            <DataTable
+              rows={d.confinement}
+              columns={[
+                { key: "profile", label: "Profile", text: (c) => (c.profile === "unconfined" ? "None" : c.profile), wrap: true },
+                { key: "mode", label: "Mode", text: (c) => (MODE[c.mode] ?? ["off", c.mode])[1], render: (c) => <StatusBadge variant={(MODE[c.mode] ?? ["off", c.mode])[0]} label={(MODE[c.mode] ?? ["off", c.mode])[1]} /> },
+                { key: "n", label: "Processes", text: (c) => String(c.processes), numeric: true },
+                { key: "names", label: "Such as", text: (c) => c.names.join(", "), wrap: true },
+              ]}
+              rowKey={(c) => `${c.profile}|${c.mode}`}
+              pageSize={10}
+            />
+          </ShowAll>
+        </div>
       </Panel>
     </>
   );

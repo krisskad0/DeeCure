@@ -183,8 +183,15 @@ export function LogsCrashes() {
           { label: "Recurring", value: String(crashes.filter((c) => c.count > 2).length), status: crashes.some((c) => c.count > 2) ? "crit" : "ok" },
         ]}
       />
-      <Panel title="Crash reports" source="journal · /var/crash" span={12} flush>
-        <DataTable rows={crashes} columns={CRASHES} rowKey={(c) => `${c.app}|${c.signal}`} empty="No crashes in the last 7 days" />
+      <Panel title="Crash reports" source="journal · /var/crash" span={12} flush={crashes.length > 0}>
+        {crashes.length ? (
+          <DataTable rows={crashes} columns={CRASHES} rowKey={(c) => `${c.app}|${c.signal}`} empty="No crashes in the last 7 days" />
+        ) : (
+          <div className="kn-verdict">
+            <StatusBadge variant="ok" label="All fine" />
+            <span>No crashes in the last 7 days</span>
+          </div>
+        )}
       </Panel>
     </>
   );

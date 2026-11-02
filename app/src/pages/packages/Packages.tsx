@@ -14,6 +14,7 @@ import { Icon } from "../../components/Icon";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { BarList } from "../../components/charts/BarList";
 import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Donut } from "../../components/charts/Donut";
@@ -70,6 +71,13 @@ export function PackagesInstalled() {
         <Donut
           segments={SOURCES.filter((s) => of(s).length).map((s, i) => ({ name: LABEL[s], value: size(s), slot: ((i % 5) + 1) as 1 | 2 | 3 | 4 | 5, display: bytes(size(s)) }))}
           center={{ value: (total / 1024 ** 3).toFixed(1), subtitle: "GB" }}
+        />
+        <div className="kn-head" style={{ marginTop: 16 }}>Biggest packages</div>
+        <BarList
+          rows={[...info.packages]
+            .sort((a, b) => b.size - a.size)
+            .slice(0, 8)
+            .map((p) => ({ id: `${p.source}|${p.name}`, label: p.name, hint: LABEL[p.source], value: p.size, display: bytes(p.size) }))}
         />
       </Panel>
       <Panel title="Packages" source="dpkg · snap · flatpak" span={8} flush>

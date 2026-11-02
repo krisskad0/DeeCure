@@ -166,17 +166,51 @@ export function DnsRoutesExpert() {
         )}
       </Panel>
       <Panel title="Routes" subtitle={def.length ? `internet through ${def.map((r) => r.device).join(", ")}` : "no internet route"} info="Where traffic goes. The default route carries everything that has no route of its own. VPNs add their own routes or routing rules." source="ip -j route · ip -j rule" span={6} flush>
-        <DataTable
-          rows={d.routes}
-          columns={[
-            { key: "dst", label: "To", text: (r) => (r.destination === "default" ? `everything (IPv${r.family})` : r.destination) },
-            { key: "via", label: "Through", text: (r) => [r.device, r.gateway && `via ${r.gateway}`].filter(Boolean).join(" ") || "-" },
-            { key: "metric", label: "Priority", text: (r) => (r.metric === undefined ? "-" : String(r.metric)), numeric: true },
-            { key: "state", label: "State", text: (r) => (r.down ? "Link down" : "In use") },
-          ]}
-          rowKey={(r) => `${r.family}|${r.destination}|${r.device}|${r.metric}`}
-          pageSize={10}
-        />
+        <div className="panel-pad">
+          {def.length ? (
+            <ul className="src-list" style={{ marginTop: 0 }}>
+              {def.map((r) => (
+                <li key={`${r.family}|${r.device}|${r.metric}`}>
+                  <span className="src-main">
+                    <b>Internet (IPv{r.family})</b>
+                    <span className="muted">
+                      through {r.device}
+                      {r.gateway && ` via ${r.gateway}`}
+                    </span>
+                  </span>
+                  <span className="src-tags">
+                    <StatusBadge variant="ok" label="In use" />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="kn-notable">
+              <StatusBadge variant="warn" label="No internet route" /> Nothing carries traffic to the internet.
+            </div>
+          )}
+          <div className="kn-chips" style={{ marginTop: 10 }}>
+            <span className="kn-chip">
+              local networks <b>{d.routes.filter((r) => r.destination !== "default" && !r.down).length}</b>
+            </span>
+            <span className="kn-chip">
+              link down <b>{d.routes.filter((r) => r.down).length}</b>
+            </span>
+          </div>
+          <ShowAll label={`Show all ${d.routes.length} routes`}>
+            <DataTable
+              rows={d.routes}
+              columns={[
+                { key: "dst", label: "To", text: (r) => (r.destination === "default" ? `everything (IPv${r.family})` : r.destination) },
+                { key: "via", label: "Through", text: (r) => [r.device, r.gateway && `via ${r.gateway}`].filter(Boolean).join(" ") || "-" },
+                { key: "metric", label: "Priority", text: (r) => (r.metric === undefined ? "-" : String(r.metric)), numeric: true },
+                { key: "state", label: "State", text: (r) => (r.down ? "Link down" : "In use") },
+              ]}
+              rowKey={(r) => `${r.family}|${r.destination}|${r.device}|${r.metric}`}
+              pageSize={10}
+            />
+          </ShowAll>
+        </div>
         {d.extra_rules > 0 && <p className="muted panel-pad">{d.extra_rules} extra routing rules: a VPN (such as WireGuard or Tailscale) decides some traffic itself.</p>}
       </Panel>
     </>

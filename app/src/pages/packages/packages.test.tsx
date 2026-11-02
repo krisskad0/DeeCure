@@ -57,7 +57,7 @@ describe("Packages", () => {
   it("lists packages from every source and inspects one", async () => {
     render(<PackagesInstalled />);
     await waitFor(() => expect(screen.getByText("1 installed by you")).toBeTruthy());
-    fireEvent.click(screen.getByText("htop"));
+    fireEvent.click(screen.getAllByText("htop").find((el) => el.closest("tr")) as HTMLElement);
     expect(screen.getByRole("dialog", { name: "htop" })).toBeTruthy();
     expect(screen.getByText("utils")).toBeTruthy();
   });

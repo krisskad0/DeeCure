@@ -185,6 +185,8 @@ Expert: "Disk use per service" and "Disk use per process" are ranked bars: first
 3. **Alert banner**: "GPU temperature is not exposed" · span 12
 - State: `info` · Title: "GPU temperature is not exposed" · Text: "The Intel i915 driver shares the CPU package sensor. See Hardware › Sensors." · Buttons: [Open sensors](go:hardware/sensors)
 
+Expert: "Graphics use per app" is two columns of ranked bars, "Busiest now" (share of the graphics engines) and "Most graphics memory". The table is under "Show all".
+
 ## Performance › Pressure (PSI): `performance/pressure`
 
 1. **KPI row** · span 12

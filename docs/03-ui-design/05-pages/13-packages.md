@@ -61,6 +61,8 @@
 | typescript | `5.6.3` | `npm` | 22 MB | User | 2 days ago |
 | ripgrep | `14.1.1` | `cargo` | 6 MB | User | Today |
 
+Under the donut, "Biggest packages" ranks the 8 largest packages from any source.
+
 ## Packages › Sources: `packages/sources`
 
 1. **Data table**: "Software sources" · span 12

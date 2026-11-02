@@ -43,6 +43,8 @@
 | Fail | 1 | kc | - |
 | Not applicable | 1 | kn | - |
 
+Expert: "AppArmor by process" is one bar of running processes by how much AppArmor limits them (enforced, warn only, allows everything, no profile), then ranked bars of the profiles with the most processes. The table is under "Show all".
+
 ## Security › Vulnerabilities: `security/vulns`
 
 Tab count pill: 3.

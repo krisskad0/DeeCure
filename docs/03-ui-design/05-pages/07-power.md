@@ -49,6 +49,8 @@
 | code | 0.8 W | [meter 10%] |
 | Wi-Fi | 0.7 W | [meter 8%] |
 
+Expert: "Battery used while suspended" starts with one line on the usual loss per hour while asleep (normal at 2% or less, a warning above), or says no charge readings exist yet; then bars of how long each recent suspend lasted, with the charge before and after as a hint. The table is under "Show all".
+
 ## Power › Power Profile: `power/profile`
 
 1. **Radio cards ([Form controls](../03-components/21-form-controls.md))**: "Power mode" · span 6

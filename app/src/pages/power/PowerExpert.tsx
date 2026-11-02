@@ -8,6 +8,7 @@ import { Button } from "../../components/Button";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { BarList } from "../../components/charts/BarList";
 import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useFix } from "../../shell/FixDrawer";
@@ -132,25 +133,58 @@ function SuspendDrain({ battery }: { battery?: string }) {
     key,
   ).data;
   if (!battery) return null;
+  // The middle loss per hour of the suspends with readings (charging ones left out).
+  const rates = (drains ?? []).flatMap((r) => (r.perHour === undefined ? [] : [r.perHour])).sort((a, b) => a - b);
+  const typical = rates.length ? rates[Math.floor(rates.length / 2)] : undefined;
+  const table = (
+    <DataTable
+      rows={drains ?? []}
+      columns={[
+        { key: "at", label: "When", text: (r) => new Date(r.at).toLocaleString() },
+        { key: "hours", label: "Asleep", text: (r) => `${r.hours.toFixed(1)} h`, numeric: true },
+        { key: "levels", label: "Charge", text: (r) => (r.from !== undefined && r.to !== undefined ? `${r.from.toFixed(0)}% to ${r.to.toFixed(0)}%` : "No reading"), numeric: true },
+        {
+          key: "rate",
+          label: "Per hour",
+          text: (r) => (r.perHour === undefined ? (r.to !== undefined && r.from !== undefined ? "Charging" : "-") : `${r.perHour.toFixed(1)}%`),
+          render: (r) => (r.perHour === undefined ? (r.to !== undefined && r.from !== undefined ? "Charging" : "-") : r.perHour > 2 ? <StatusBadge variant="warn" label={`${r.perHour.toFixed(1)}%`} /> : `${r.perHour.toFixed(1)}%`),
+          numeric: true,
+        },
+      ]}
+      rowKey={(r) => String(r.at)}
+      empty={sleep ? "No suspend of 10 minutes or more in the last 30 days" : "Loading…"}
+    />
+  );
   return (
     <Panel title="Battery used while suspended" subtitle="suspends of 10 minutes or more" info="From the charge level just before and just after each suspend. A sleeping laptop should lose about 1% per hour or less." source="journal: systemd-sleep · battery.charge history" span={12} flush>
-      <DataTable
-        rows={drains ?? []}
-        columns={[
-          { key: "at", label: "When", text: (r) => new Date(r.at).toLocaleString() },
-          { key: "hours", label: "Asleep", text: (r) => `${r.hours.toFixed(1)} h`, numeric: true },
-          { key: "levels", label: "Charge", text: (r) => (r.from !== undefined && r.to !== undefined ? `${r.from.toFixed(0)}% to ${r.to.toFixed(0)}%` : "No reading"), numeric: true },
-          {
-            key: "rate",
-            label: "Per hour",
-            text: (r) => (r.perHour === undefined ? (r.to !== undefined && r.from !== undefined ? "Charging" : "-") : `${r.perHour.toFixed(1)}%`),
-            render: (r) => (r.perHour === undefined ? (r.to !== undefined && r.from !== undefined ? "Charging" : "-") : r.perHour > 2 ? <StatusBadge variant="warn" label={`${r.perHour.toFixed(1)}%`} /> : `${r.perHour.toFixed(1)}%`),
-            numeric: true,
-          },
-        ]}
-        rowKey={(r) => String(r.at)}
-        empty={sleep ? "No suspend of 10 minutes or more in the last 30 days" : "Loading…"}
-      />
+      {drains && drains.length > 0 && (
+        <div className="panel-pad">
+          {typical === undefined ? (
+            <div className="kn-notable">No charge readings around these suspends yet, so the battery use is unknown. They come from the charge history DeeCure keeps from now on.</div>
+          ) : typical > 2 ? (
+            <div className="kn-notable">
+              <StatusBadge variant="warn" label="Drains fast" /> The battery usually loses {typical.toFixed(1)}% per hour while asleep. About 1% or less is normal.
+            </div>
+          ) : (
+            <div className="kn-verdict">
+              <StatusBadge variant="ok" label="Normal" />
+              <span>The battery usually loses {typical.toFixed(1)}% per hour while asleep.</span>
+            </div>
+          )}
+          <div className="kn-head" style={{ marginTop: 12 }}>Recent suspends</div>
+          <BarList
+            rows={drains.slice(0, 8).map((r) => ({
+              id: String(r.at),
+              label: new Date(r.at).toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+              hint: r.from === undefined || r.to === undefined ? "no charge reading" : r.perHour === undefined ? `charged ${r.from.toFixed(0)}% to ${r.to.toFixed(0)}%` : `${r.from.toFixed(0)}% to ${r.to.toFixed(0)}% · ${r.perHour.toFixed(1)}% per hour`,
+              value: r.hours,
+              display: `${r.hours.toFixed(1)} h`,
+              tone: r.perHour !== undefined && r.perHour > 2 ? ("warn" as const) : undefined,
+            }))}
+          />
+        </div>
+      )}
+      {drains && drains.length > 0 ? <ShowAll label={`Show all ${drains.length} suspends as a table`}>{table}</ShowAll> : table}
     </Panel>
   );
 }
