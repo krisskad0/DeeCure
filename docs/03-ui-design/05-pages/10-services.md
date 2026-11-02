@@ -61,6 +61,13 @@ Tab count pill: 1 (red).
 | **fwupd.service** · Firmware update daemon | {off:inactive} | dead | static | 0 | - |  |
 | **kerneloops.service** · Collects kernel crash signatures | {ok:active} | running | {info:enabled} | 0 | 2 MB |  |
 
+
+Expert adds, below the units list (visual summaries first, full tables under **Show all**):
+- **KPI row:** changed on this computer, restarting again and again, services with almost every right.
+- **Cost per service** · span 6: the top 8 by own memory as ranked bars, with CPU and disk reads on the second line.
+- **How locked down services are** · span 6: one bar of how many services are locked down, have some rights, many rights, or almost every right (systemd's exposure levels), then the 8 most exposed as bars.
+- **Service setup** · span 12: a chip per way services start (Starts at boot, Started by others, Blocked by its package, Off, No unit file, …) with counts; a green "As shipped" line, or "Worth a look" listing services overridden or blocked here, or restarting 3 times or more.
+
 ## Services › User Services: `services/user`
 
 1. **Data table**: "User units" · span 12

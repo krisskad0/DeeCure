@@ -70,6 +70,9 @@ Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label
 - Height 220px · Y max auto · unit "s" · highlighted (warn + value label): index 9
 - Bars (label: value): 8 Oct: 29; 10 Oct: 28; 12 Oct: 31; 13 Oct: 27; 14 Oct: 28; 15 Oct: 30; 16 Oct: 29; 17 Oct: 28; 19 Oct: 28; Today: 41.2
 
+
+Expert adds: **What the desktop waited for** (the boot's critical chain, indented by depth, the slowest step marked) and **Every unit's start time**: chips for how many units started, took over 1 s, over 100 ms, and under 100 ms, with the full list under **Show all** (the slowest are already in "Slowest units").
+
 ## System › Updates: `system/updates`
 
 Header actions: [**Install security updates**](act:fix:sec) (hidden once done), then Refresh.

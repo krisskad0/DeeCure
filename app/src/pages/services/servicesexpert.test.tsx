@@ -3,7 +3,7 @@
 
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BootExpertSections, ServicesExpertSections, exposureBadge, stateText } from "./ServicesExpert";
+import { BootExpertSections, ServicesExpertSections, exposureBadge, setupCounts, stateText } from "./ServicesExpert";
 
 vi.mock("../../api", () => ({
   getInventory: (kind: string) =>
@@ -34,11 +34,14 @@ afterEach(cleanup);
 describe("Expert services and boot", () => {
   it("services: local changes, loops, who blocked a service, and exposure", async () => {
     render(<ServicesExpertSections />);
-    await waitFor(() => expect(screen.getByText("Blocked by its package")).toBeTruthy());
-    expect(screen.getByText("Blocked on this computer")).toBeTruthy();
+    await waitFor(() => expect(screen.getAllByText("Blocked by its package").length).toBeGreaterThan(0));
+    expect(screen.getAllByText("Blocked on this computer").length).toBeGreaterThan(0);
     expect(screen.getByText("1 override")).toBeTruthy();
     expect(screen.getByText("4 (on-failure)")).toBeTruthy();
-    expect(screen.getByText("2")).toBeTruthy();
+    // The summary: what is worth a look, and how many services start each way.
+    expect(screen.getByText("Worth a look")).toBeTruthy();
+    expect(screen.getByText("restarted 4 times")).toBeTruthy();
+    expect(screen.getByText(/overridden here by/)).toBeTruthy();
     await waitFor(() => expect(screen.getByText("9.9 almost every right")).toBeTruthy());
     expect(screen.getByText("5 s")).toBeTruthy();
   });
@@ -52,5 +55,10 @@ describe("Expert services and boot", () => {
   it("plain words", () => {
     expect(exposureBadge({ unit: "x", score: 7.8, level: "EXPOSED" }).variant).toBe("warn");
     expect(stateText({ unit: "x", local_overrides: [], package_overrides: [], wanted_by: [], restarts: 0, state: "static" })).toBe("Started by others");
+  });
+
+  it("counts services by how they start, most first", () => {
+    const u = (state: string) => ({ unit: `${state}.service`, local_overrides: [], package_overrides: [], wanted_by: [], restarts: 0, state }) as never;
+    expect(setupCounts([u("enabled"), u("enabled"), u("static"), u("disabled")])).toEqual([["Starts at boot", 2], ["Off", 1], ["Started by others", 1]]);
   });
 });
