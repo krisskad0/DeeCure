@@ -5,13 +5,13 @@ import { temp as tempText } from "../../units";
 import { type Finding, type Gpu, type Metric, type Process, type SystemInfo, getInventory, getLatest, getMetrics, getSnapshot } from "../../api";
 import { ActivityTimeline } from "../../components/ActivityTimeline";
 import { LinkButton } from "../../components/Button";
-import { type Column, DataTable } from "../../components/DataTable";
+import { InlineMeter } from "../../components/InlineMeter";
 import { KeyValueList } from "../../components/KeyValueList";
 import { type Kpi, KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { type StatusRow, StatusList } from "../../components/StatusList";
-import { Donut } from "../../components/charts/Donut";
+import { BarList } from "../../components/charts/BarList";
 import { Heatmap } from "../../components/charts/Heatmap";
 import { LineChart } from "../../components/charts/LineChart";
 import { RANGE_MS, align, bytes, duration, heatRows, pick, rate, when } from "../../metrics";
@@ -106,14 +106,15 @@ export function OverviewSummary({ report, error, now }: PageProps) {
         now={now}
         span={8}
         actions={<LinkButton to={href("overview", "issues")}>View all</LinkButton>}
+        compact
       />
-      <Panel title="Subsystems" info="Status of every area DeeCure checks. Select a row to open it." span={4} flush>
-        <StatusList rows={subsystems(report, latest, system)} />
+      <DiskPanel latest={latest} disks={disks?.data} findings={findings} />
+      <Panel title="Subsystems" info="Status of every area DeeCure checks. Select one to open it." span={12} flush>
+        <StatusList rows={subsystems(report, latest, system)} layout="grid" />
       </Panel>
-      <DiskPanel latest={latest} disks={disks?.data} />
       <TopProcesses processes={processes} />
-      <SystemPanel system={system} now={now} />
       <RecentActivity />
+      <SystemPanel system={system} now={now} />
       <ErrorHeatmap />
     </>
   );
@@ -282,52 +283,43 @@ function subsystems(report: PageProps["report"], latest: Metric[] | undefined, s
   ];
 }
 
-function DiskPanel({ latest, disks }: { latest: Metric[] | undefined; disks: FsEntry[] | undefined }) {
-  const size = disks?.find((d) => d.mount_point === "/")?.size;
-  const free = pick(latest, "disk.free", "/");
-  const pct = pick(latest, "disk.used_percent", "/");
+function DiskPanel({ latest, disks, findings }: { latest: Metric[] | undefined; disks: FsEntry[] | undefined; findings: Finding[] }) {
+  // Every disk DeeCure measures, the main one first.
+  const mounts = (disks ?? []).filter((d) => pick(latest, "disk.used_percent", d.mount_point) !== undefined).sort((a, b) => (a.mount_point === "/" ? -1 : b.mount_point === "/" ? 1 : a.mount_point.localeCompare(b.mount_point)));
   return (
-    <Panel
-      title="Disk usage ( / )"
-      subtitle={size === undefined ? undefined : bytes(size, 0)}
-      source="statvfs /"
-      actions={<LinkButton to={href("storage", "overview")}>Open</LinkButton>}
-      span={4}
-    >
-      {size === undefined || free === undefined || pct === undefined ? (
-        <div className="empty muted">DeeCure has not measured the disk yet.</div>
+    <Panel title="Disks" subtitle="space used" source="statvfs" actions={<LinkButton to={href("storage", "overview")}>Open</LinkButton>} span={4}>
+      {mounts.length === 0 ? (
+        <div className="empty muted">DeeCure has not measured the disks yet.</div>
       ) : (
-        <Donut
-          segments={[
-            { name: "Used", value: size - free, slot: 1, display: bytes(size - free) },
-            { name: "Free", value: free, tone: "neutral", display: bytes(free) },
-          ]}
-          center={{ value: `${Math.round(pct)}%`, subtitle: "used" }}
-        />
+        <ul className="disk-list">
+          {mounts.map((d) => {
+            const pct = pick(latest, "disk.used_percent", d.mount_point) ?? 0;
+            const free = pick(latest, "disk.free", d.mount_point);
+            const status = worst(findings.filter((f) => f.rule.startsWith("storage.") && f.subject === d.mount_point));
+            return (
+              <li key={d.mount_point}>
+                <div className="disk-head">
+                  <code>{d.mount_point}</code>
+                  <span className="muted">
+                    {free === undefined ? "" : `${bytes(free, 0)} free of ${bytes(d.size, 0)}`}
+                  </span>
+                </div>
+                <InlineMeter percent={pct} label={`${Math.round(pct)}%`} tone={status === "crit" ? "crit" : status === "warn" ? "warn" : "ok"} />
+              </li>
+            );
+          })}
+        </ul>
       )}
     </Panel>
   );
 }
 
-const PROCESS_COLUMNS: Column<Process>[] = [
-  { key: "name", label: "Process", text: (p) => p.name },
-  { key: "cpu", label: "CPU", text: (p) => `${p.cpu_percent.toFixed(1)}%`, numeric: true },
-  { key: "memory", label: "Memory", text: (p) => bytes(p.memory_bytes), numeric: true },
-];
-
 function TopProcesses({ processes }: { processes: Process[] | undefined }) {
   const top = [...(processes ?? [])].sort((a, b) => b.memory_bytes - a.memory_bytes).slice(0, 6);
   return (
-    <Panel
-      title="Top processes"
-      subtitle="by memory"
-      source="/proc/[pid]/stat · status"
-      actions={<LinkButton to={href("processes", "all")}>View all</LinkButton>}
-      span={4}
-      flush
-    >
+    <Panel title="Top processes" subtitle="by memory" source="/proc/[pid]/stat · status" actions={<LinkButton to={href("processes", "all")}>View all</LinkButton>} span={6}>
       {processes ? (
-        <DataTable rows={top} columns={PROCESS_COLUMNS} rowKey={(p) => String(p.pid)} pageSize={6} />
+        <BarList rows={top.map((p) => ({ id: String(p.pid), label: p.name, hint: `CPU ${p.cpu_percent.toFixed(1)}% · ${p.user}`, value: p.memory_bytes, display: bytes(p.memory_bytes) }))} />
       ) : (
         <div className="empty muted">Loading…</div>
       )}
@@ -337,7 +329,7 @@ function TopProcesses({ processes }: { processes: Process[] | undefined }) {
 
 function SystemPanel({ system, now }: { system: SystemInfo | undefined; now: number }) {
   return (
-    <Panel title="System" source="/etc/os-release · /proc" span={4} flush>
+    <Panel title="System" source="/etc/os-release · /proc" span={6} flush>
       {system ? (
         <KeyValueList
           rows={[
@@ -363,7 +355,9 @@ function RecentActivity() {
       {!changes ? (
         <div className="empty muted">Loading…</div>
       ) : changes.length ? (
-        <ActivityTimeline rows={changes.slice(0, 6).map((c) => ({ time: when(c.at), title: c.title, detail: c.detail, tone: c.tone }))} />
+        <div className="tl-clamp">
+          <ActivityTimeline rows={changes.slice(0, 5).map((c) => ({ time: when(c.at), title: c.title, detail: c.detail, tone: c.tone }))} />
+        </div>
       ) : (
         <div className="empty muted">No changes in the last 7 days.</div>
       )}

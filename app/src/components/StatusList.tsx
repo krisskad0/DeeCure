@@ -15,9 +15,10 @@ export interface StatusRow {
   href?: string;
 }
 
-export function StatusList({ rows }: { rows: StatusRow[] }) {
+/** `grid` shows the rows as small tiles side by side, for a full-width panel. */
+export function StatusList({ rows, layout = "list" }: { rows: StatusRow[]; layout?: "list" | "grid" }) {
   return (
-    <ul className="status-list">
+    <ul className={layout === "grid" ? "status-list status-grid" : "status-list"}>
       {rows.map((row) => {
         const content = (
           <>

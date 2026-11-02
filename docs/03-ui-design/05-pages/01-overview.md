@@ -7,6 +7,8 @@
 
 ## Overview › Summary: `overview/summary`
 
+**Layout, row by row** (panels in one row share its height, so their edges line up): KPI row; chart (8) and Health score (4); Active issues (8) and Disks (4); Subsystems (12); Top processes (6) and Recent activity (6); System (6) and Errors by hour (6). The numbered sections below describe each panel.
+
 1. **KPI row** · span 12
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
@@ -30,7 +32,7 @@ The GPU tile shows only when the computer has a graphics card. Without a reading
 - Order of panels: chart (8) and Health score (4); Active issues (8) and Subsystems (4).
 - X axis: time (current range)
 
-3. **Status list**: "Subsystems" · span 4
+3. **Status tiles**: "Subsystems" · span 12 (a grid of small tiles, at least 230px wide: icon and name, the metric under it, the badge on the right; each opens its area)
 - Info tooltip: "Status of every area DeeCure checks. Select a row to open it."
 
 | Icon | Label | Metric | Badge | Opens |
@@ -49,7 +51,7 @@ The GPU tile shows only when the computer has a graphics card. Without a reading
 | `shield` | Security | 4 updates | {warn:Warning} | `security/overview` |
 | `eye` | Privacy | No active access | {ok:Healthy} | `privacy/access` |
 
-4. **Data table**: "Active issues" · span 8
+4. **Compact issue rows**: "Active issues" · span 8 (one row each: level badge, title, "Area · first seen N ago", and **Fix** when there is one; the title opens the area. The full explanation and how-to are on Overview › Issues.)
 - Subtitle: "9 open"
 - Header actions: [View all](go:overview/issues) (link style)
 
@@ -73,7 +75,7 @@ From top to bottom:
 - Three counters: critical, warnings, info (tinted when above 0).
 - "What takes points off": one row per area with a deduction, most first: area icon and name, its worst problem's title (one line), and "−5" in the problem's color. Each row opens the area. Then "Fix these to get back N points." Without deductions: "Nothing takes points off. DeeCure keeps checking every minute."
 
-6. **Donut chart**: "Disk usage ( / )" · span 4
+6. **Disk meters**: "Disks" · span 4 (one meter per measured disk, `/` first: mount point, "N free of M", and the share used, coloured by that disk's open warnings. It replaced the donut, which repeated the Disk tile.)
 - Subtitle: "238 GB"
 - Source chip (Expert): `df -h / · du`
 - Header actions: [Open](go:storage/overview) (link style)
@@ -88,7 +90,7 @@ From top to bottom:
 | Reclaimable | 15.2 | kc | - |
 | Free | 13.8 | kn | - |
 
-7. **Data table**: "Top processes" · span 4
+7. **Ranked bars**: "Top processes" · span 6 (the 6 biggest by memory, with CPU and user on the second line)
 - Subtitle: "by memory"
 - Source chip (Expert): `ps -eo comm,%cpu,rss`
 - Header actions: [View all](go:processes/all) (link style)
@@ -102,7 +104,7 @@ From top to bottom:
 | telegram-desktop | 0.4% | 280 MB |
 | dropbox | 0.3% | 210 MB |
 
-8. **Key-value list**: "System" · span 4
+8. **Key-value list**: "System" · span 6
 - Source chip (Expert): `hostnamectl`
 
 | Key | Value |
@@ -114,7 +116,7 @@ From top to bottom:
 | Last boot | Today 08:58 |
 | Reboot required | {warn:Yes} |
 
-9. **Activity timeline**: "Recent activity" · span 6
+9. **Activity timeline**: "Recent activity" · span 6 (the 5 newest changes; titles and details cut to two lines)
 - Header actions: [View all](go:activity/timeline) (link style)
 
 | Time | Title | Detail | Dot |
