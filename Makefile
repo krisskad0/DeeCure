@@ -2,7 +2,7 @@
 
 CARGO ?= cargo
 
-.PHONY: help build test lint fmt agent status app web ui-real perf db-size deb deb-test helper-test install-test clean-install-test clean
+.PHONY: help build test lint fmt agent status app web ui-real perf db-size deb deb-test helper-test upgrade-test install-test clean-install-test clean
 
 help: ## List the available commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-8s %s\n", $$1, $$2}'
@@ -49,6 +49,9 @@ deb-test: deb ## Install, use, and purge the .deb in a clean Ubuntu 24.04 contai
 
 helper-test: deb ## Test the admin helper with real D-Bus and polkit in a clean Ubuntu 24.04 container (needs Docker)
 	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 sh -c '/src/scripts/test-helper.sh --throwaway /src/target/deb/deecure_*.deb'
+
+upgrade-test: deb ## Upgrade from the newest published release to target/deb/ as the in-app updater does, in a clean container (needs Docker and the network)
+	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash -c '/src/scripts/test-upgrade.sh --throwaway $(patsubst v%,%,$(shell git describe --tags --abbrev=0)) /src/target/deb/deecure_*.deb /src/target/deb/deecure-desktop_*.deb'
 
 install-test: deb ## Build a signed APT repository and test install.sh against it in a clean container (needs Docker)
 	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash -c '/src/scripts/test-install.sh --throwaway /src/target/deb/deecure_*.deb /src/target/deb/deecure-desktop_*.deb'

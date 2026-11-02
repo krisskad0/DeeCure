@@ -1,3 +1,12 @@
+deecure (0.1.0~alpha.5-1) noble; urgency=medium
+
+  * New pre-release: admin read-outs (memory slots, BIOS settings, NVMe,
+    self-tests, chip power, low power, wake-ups, sudo rules, SSH server
+    settings) and two new health warnings from a daily admin read (drive
+    wear, SSH root login with a password).
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Mon, 02 Nov 2026 12:38:24 +0530
+
 deecure (0.1.0~alpha.4-1) noble; urgency=medium
 
   * New pre-release: Beginner, Advanced, and Expert views, deep hardware

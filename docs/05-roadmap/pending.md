@@ -85,9 +85,10 @@ All 78 tabs show real data and every data source was checked on a real laptop. F
 1. `scripts/bump-version.sh <version>` (such as `0.1.0-beta.1`); it prints the next steps.
 2. Move the `Unreleased` notes in `CHANGELOG.md` under the version, and give the AppStream entry it added in `packaging/desktop/*.metainfo.xml` a description.
 3. In `packaging/`: `dch -v <debian version> -D noble "…"` with `DEBFULLNAME="DeeCure maintainers"` and `DEBEMAIL="krisskad0@users.noreply.github.com"` (the Debian version of `0.1.0-beta.1` is `0.1.0~beta.1-1`).
-4. Commit (`git commit -s`), push, and wait until CI is green on that exact commit (`gh run list --commit <sha>`).
-5. `git tag -a v<version> -m "…"` and `git push origin v<version>`. The release workflow builds, tests, signs provenance and the SBOM, and publishes. Pre-releases publish at once; stable releases are drafts to publish by hand.
-6. Check: `gh release view v<version>`, then `make clean-install-test` (the real one-command install against the published release).
+4. Build once (`make deb`), then on `target/deb/`: `deb-test`, `helper-test`, and `upgrade-test` (installs the newest published release, then upgrades to the new packages as the in-app updater does). Also `make ui-real`.
+5. Commit (`git commit -s`), push, and wait until CI is green on that exact commit (`gh run list --commit <sha>`).
+6. `git tag -a v<version> -m "…"` and `git push origin v<version>`. The release workflow builds, tests, signs provenance and the SBOM, and publishes. Pre-releases publish at once; stable releases are drafts to publish by hand.
+7. Check: `gh release view v<version>`, then `make clean-install-test` (the real one-command install against the published release), and the real in-app update from the release before (`scripts/test-self-update.sh`).
 
 ## 8. How to work here (owner's rules and practical notes)
 

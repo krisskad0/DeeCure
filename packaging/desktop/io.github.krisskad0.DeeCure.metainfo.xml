@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.5" date="2026-11-02" type="development">
+      <description>
+        <p>Admin details read with your password: memory slots, BIOS settings, NVMe details, drive self-tests, measured chip power, deep-sleep time, wake-ups per process, sudo rules, and the SSH server's real settings. Two new warnings from a daily check: a drive wearing out, and SSH letting root sign in with a password.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.4" date="2026-10-24" type="development">
       <description>
         <p>Beginner, Advanced, and Expert views with deep hardware and system details; about 50 health warnings judged against each part's own limits, with your own limits in Settings; battery and power controls kept after restart; an Optimize page; and updates that check themselves and install after your OK.</p>
