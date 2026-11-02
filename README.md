@@ -9,6 +9,13 @@
 [![Release](https://img.shields.io/github/v/release/krisskad0/DeeCure?include_prereleases&label=pre-release)](https://github.com/krisskad0/DeeCure/releases)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/krisskad0/DeeCure/badge)](https://securityscorecards.dev/viewer/?uri=github.com/krisskad0/DeeCure)
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-overview-health-dashboard-dark.png">
+  <img src="docs/07-user-guide/images/deecure-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 85, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
+</picture>
+
+*The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at.*
+
 ## Install in one step
 
 On **Ubuntu 24.04 LTS or 26.04 LTS**, open the Terminal (`Ctrl` + `Alt` + `T`) and paste:
@@ -86,13 +93,19 @@ It works without a password for looking around. It never changes anything unless
 
 A value DeeCure cannot read is shown as unknown, never guessed.
 
+![DeeCure Hardware page on Linux: machine model, BIOS version, Secure Boot, and the health of the processor, memory, SSD, battery, graphics, fans, peripherals, and firmware](docs/07-user-guide/images/deecure-hardware-summary.png)
+
 ### Optimize: only what your computer actually needs
 
 Improvements are offered **only when a measurement on this computer shows they help**, with the numbers behind each one: unused packages, a log size cap, compressed swap when swapping stays high, a charge limit when the laptop is mostly plugged in, the right hardware video driver, firmware updates. Popular "speed-up tips" that do not help on Ubuntu are never offered. [Optimize catalog](docs/01-product/optimize-catalog.md)
 
+![DeeCure Optimize page: device power saving, Docker and snap cleanup, emptying the trash, and the APT cache, each with the measured space or reason](docs/07-user-guide/images/deecure-optimize-improvements.png)
+
 ### Battery and power controls
 
 Battery charge limits (presets or your own), charge mode, CPU turbo, the highest CPU speed on battery, PCIe and device power saving, sleep type, lid action, keyboard backlight, and radios. Risky settings are tried for one session first and kept only when you choose **Keep**.
+
+![DeeCure battery page on a Linux laptop: charge level, battery health 84% of design capacity, power draw, charge cycles, a 24-hour charge chart, and a 30-day health trend](docs/07-user-guide/images/deecure-battery-health-and-charge.png)
 
 ### Safe fixes with undo
 
@@ -103,6 +116,12 @@ Every fix shows its steps and commands first. Untick any step. Admin steps ask f
 - **Timeline** of package installs and upgrades (apt, snap, Flatpak), config changes, USB devices, boots, crashes, and hardware errors, for the last 7, 30, or 90 days.
 - **Disk forecast:** "full in about N days", only when the disk keeps filling, so one big install never causes a false alarm.
 - **Notifications** for critical problems, with quiet hours, and a weekly summary of your computer's health.
+
+![DeeCure Activity timeline: what changed on this Linux computer, with package upgrades, config file changes, USB devices, and boots, filtered by the last 7, 30, or 90 days](docs/07-user-guide/images/deecure-activity-what-changed-timeline.png)
+
+![DeeCure Storage page on Ubuntu: used and free disk space, reclaimable space, what fills the disk (home, apps, system), a 30-day usage trend with the low-space line, and mount points](docs/07-user-guide/images/deecure-storage-disk-space-forecast.png)
+
+*Screenshots are from a real Dell laptop running Ubuntu 24.04. The computer and user names are replaced.*
 
 ## Beginner, Advanced, and Expert views
 
