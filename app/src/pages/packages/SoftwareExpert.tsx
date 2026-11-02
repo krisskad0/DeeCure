@@ -9,6 +9,7 @@ import { Button } from "../../components/Button";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { ago } from "../../time";
@@ -61,6 +62,27 @@ export function PackageExpertDetail({ name }: { name: string }) {
 
 // ---------- Packages › Sources ----------
 
+type Snap = NonNullable<SoftwareHealth["snaps"]>[number];
+
+/** One entry per snap: its current version, channel, and how many old versions are kept. */
+export function snapGroups(snaps: Snap[]): { name: string; version: string; tracking?: string; classic: boolean; old: number }[] {
+  const out = new Map<string, { name: string; version: string; tracking?: string; classic: boolean; old: number }>();
+  for (const s of snaps) {
+    const g = out.get(s.name) ?? { name: s.name, version: "-", tracking: undefined, classic: false, old: 0 };
+    if (s.notes.includes("disabled")) {
+      g.old += 1;
+      // A snap with only old versions shows the newest of them.
+      if (g.version === "-") g.version = s.version;
+    } else {
+      g.version = s.version;
+      g.tracking = s.tracking ?? undefined;
+    }
+    g.classic ||= s.notes.includes("classic");
+    out.set(s.name, g);
+  }
+  return [...out.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export function SoftwareHealthExpert() {
   const { data: h, error } = useLive<SoftwareHealth>(loadHealth, 300_000);
   if (!h) {
@@ -83,15 +105,16 @@ export function SoftwareHealthExpert() {
           ]}
         />
         {h.local.length > 0 && (
-          <DataTable
-            rows={h.local.map(([name, version]) => ({ name, version }))}
-            columns={[
-              { key: "name", label: "Package from no repository", text: (p) => p.name },
-              { key: "version", label: "Version", text: (p) => p.version },
-            ]}
-            rowKey={(p) => p.name}
-            pageSize={8}
-          />
+          <div className="panel-pad">
+            <div className="kn-head">From no repository</div>
+            <div className="kn-chips">
+              {h.local.map(([name, version]) => (
+                <span key={name} className="kn-chip" title={version}>
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
       </Panel>
       <Panel title="Snap refreshes" source="snap refresh --time" span={6} flush>
@@ -111,27 +134,44 @@ export function SoftwareHealthExpert() {
         )}
       </Panel>
       {h.snaps && (
-        <Panel title="Snap versions" info="Snap keeps old versions to go back to; they are marked old. Classic snaps can read and change everything your account can." source="snap list --all" span={12} flush>
-          <DataTable
-            rows={h.snaps}
-            columns={[
-              { key: "name", label: "Snap", text: (s) => s.name },
-              { key: "version", label: "Version", text: (s) => s.version },
-              { key: "rev", label: "Revision", text: (s) => s.revision, numeric: true },
-              { key: "channel", label: "Channel", text: (s) => s.tracking ?? "-" },
-              { key: "publisher", label: "Publisher", text: (s) => s.publisher ?? "-" },
-              {
-                key: "notes",
-                label: "Notes",
-                text: (s) => s.notes.join(", ") || "-",
-                render: (s) =>
-                  s.notes.includes("disabled") ? "Old version" : s.notes.includes("classic") ? <StatusBadge variant="info" label="Classic: no sandbox" /> : s.notes.join(", ") || "-",
-              },
-            ]}
-            rowKey={(s) => `${s.name}|${s.revision}`}
-            pageSize={15}
-            search={{ placeholder: "Filter snaps" }}
-          />
+        <Panel title="Snaps" subtitle={`${snapGroups(h.snaps).length} installed · ${old.length} old versions kept`} info="Snap keeps old versions to go back to. Classic snaps can read and change everything your account can." source="snap list --all" span={12}>
+          <ul className="snap-grid">
+            {snapGroups(h.snaps).map((g) => (
+              <li key={g.name}>
+                <div className="core-top">
+                  <b>{g.name}</b>
+                  {g.old > 0 && <span className="kn-chip">+{g.old} old</span>}
+                </div>
+                <span className="muted">{g.version}</span>
+                <span className="muted snap-meta">
+                  {g.tracking ?? ""}
+                  {g.classic ? " · classic: no sandbox" : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <ShowAll label={`Show all ${h.snaps.length} versions`}>
+            <DataTable
+              rows={h.snaps}
+              columns={[
+                { key: "name", label: "Snap", text: (s) => s.name },
+                { key: "version", label: "Version", text: (s) => s.version },
+                { key: "rev", label: "Revision", text: (s) => s.revision, numeric: true },
+                { key: "channel", label: "Channel", text: (s) => s.tracking ?? "-" },
+                { key: "publisher", label: "Publisher", text: (s) => s.publisher ?? "-" },
+                {
+                  key: "notes",
+                  label: "Notes",
+                  text: (s) => s.notes.join(", ") || "-",
+                  render: (s) =>
+                    s.notes.includes("disabled") ? "Old version" : s.notes.includes("classic") ? <StatusBadge variant="info" label="Classic: no sandbox" /> : s.notes.join(", ") || "-",
+                },
+              ]}
+              rowKey={(s) => `${s.name}|${s.revision}`}
+              pageSize={15}
+              search={{ placeholder: "Filter snaps" }}
+            />
+          </ShowAll>
         </Panel>
       )}
       {h.runtimes && (

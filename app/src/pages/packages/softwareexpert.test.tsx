@@ -4,7 +4,8 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { VerifyAnswer } from "../../api";
-import { FileCheck, PackageExpertDetail, SoftwareHealthExpert, sourceText } from "./SoftwareExpert";
+import { sourceParts } from "./Packages";
+import { FileCheck, PackageExpertDetail, SoftwareHealthExpert, snapGroups, sourceText } from "./SoftwareExpert";
 
 let verify: VerifyAnswer = { running: false };
 const asked: string[] = [];
@@ -99,5 +100,15 @@ describe("Expert software", () => {
   it("sources in plain words", () => {
     expect(sourceText("http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages")).toBe("archive.ubuntu.com/ubuntu noble-updates/main");
     expect(sourceText("/var/lib/dpkg/status")).toBe("this computer (no repository)");
+  });
+
+  it("splits a source line and groups snap versions", () => {
+    expect(sourceParts("https://packages.microsoft.com/repos/vscode stable main")).toEqual({ host: "packages.microsoft.com", path: "/repos/vscode", rest: "stable main" });
+    expect(sourceParts("deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ noble main")).toEqual({ host: "archive.ubuntu.com", path: "/ubuntu", rest: "noble main" });
+    const s = (name: string, version: string, notes: string[] = []) => ({ name, version, revision: "1", tracking: "latest/stable", publisher: "canonical", notes });
+    expect(snapGroups([s("core22", "2", []), s("core22", "1", ["disabled"]), s("code", "1.9", ["classic"])])).toEqual([
+      { name: "code", version: "1.9", tracking: "latest/stable", classic: true, old: 0 },
+      { name: "core22", version: "2", tracking: "latest/stable", classic: false, old: 1 },
+    ]);
   });
 });

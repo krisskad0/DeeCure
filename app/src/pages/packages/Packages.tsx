@@ -14,6 +14,7 @@ import { Icon } from "../../components/Icon";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Donut } from "../../components/charts/Donut";
 import { bytes } from "../../metrics";
@@ -111,6 +112,15 @@ const SOURCE_COLUMNS: Column<SourceRow>[] = [
   { key: "file", label: "File", text: (s) => s.file, expert: true },
 ];
 
+/** "https://packages.microsoft.com/repos/vscode stable main" → the site, the path, and the rest. */
+export function sourceParts(line: string): { host: string; path: string; rest: string } {
+  const tokens = line.split(/\s+/).filter(Boolean);
+  const i = tokens.findIndex((t) => /^[a-z+]+:\/\//i.test(t));
+  if (i < 0) return { host: line, path: "", rest: "" };
+  const m = /^[a-z+]+:\/\/([^/]+)(.*)$/i.exec(tokens[i]);
+  return { host: m?.[1] ?? tokens[i], path: (m?.[2] ?? "").replace(/\/$/, ""), rest: tokens.slice(i + 1).join(" ") };
+}
+
 export function PackagesSources() {
   const { mode } = useUi();
   const { data: info, error } = usePackages();
@@ -119,8 +129,49 @@ export function PackagesSources() {
   return (
     <>
       {unchecked > 0 && <AlertBanner tone="crit" title={`${unchecked} source${unchecked === 1 ? " skips" : "s skip"} signature checks`} text="Sources marked trusted=yes can install anything. Remove the option, or the source." />}
-      <Panel title="Software sources" source="/etc/apt/sources.list · sources.list.d" span={12} flush>
-        <DataTable rows={info.sources} columns={SOURCE_COLUMNS} rowKey={(s) => `${s.file}|${s.line}`} filter={{ column: "kind", options: ["Official", "PPA", "Third-party"] }} />
+      <Panel title="Software sources" subtitle={`${info.sources.length} sources`} info="Where apt gets packages. Official sources come from Ubuntu; PPAs and third-party sources come from others. Signed sources are checked before anything installs." source="/etc/apt/sources.list · sources.list.d" span={12}>
+        <div className="kn-chips">
+          {(["Official", "PPA", "Third-party"] as const).map((k) => {
+            const n = info.sources.filter((s) => s.kind === k).length;
+            return n ? (
+              <span key={k} className="kn-chip">
+                {k} <b>{n}</b>
+              </span>
+            ) : null;
+          })}
+          <span className="kn-chip">
+            signed <b>{info.sources.filter((s) => s.signed).length}</b>
+          </span>
+          {info.sources.some((s) => !s.enabled) && (
+            <span className="kn-chip">
+              off <b>{info.sources.filter((s) => !s.enabled).length}</b>
+            </span>
+          )}
+        </div>
+        <ul className="src-list">
+          {info.sources.map((s) => {
+            const parts = sourceParts(s.line);
+            return (
+              <li key={`${s.file}|${s.line}`} className={s.enabled ? "" : "src-off"}>
+                <div className="src-main">
+                  <b>{parts.host}</b>
+                  <span className="muted">
+                    {parts.path}
+                    {parts.rest ? ` · ${parts.rest}` : ""}
+                  </span>
+                </div>
+                <div className="src-tags">
+                  <StatusBadge variant={s.kind === "Official" ? "ok" : s.kind === "PPA" ? "info" : "off"} label={s.kind} />
+                  {!s.signed ? <StatusBadge variant="crit" label="Not checked" /> : <span className="kn-chip">{s.own_key ? "signed, own key" : "signed"}</span>}
+                  {!s.enabled && <StatusBadge variant="off" label="Off" />}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <ShowAll label="Show as a table with files">
+          <DataTable rows={info.sources} columns={SOURCE_COLUMNS} rowKey={(s) => `${s.file}|${s.line}`} filter={{ column: "kind", options: ["Official", "PPA", "Third-party"] }} />
+        </ShowAll>
       </Panel>
       {atLeast(mode, "expert") && <Guard><SoftwareHealthExpert /></Guard>}
     </>

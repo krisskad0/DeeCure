@@ -77,6 +77,9 @@
 | `ppa:deadsnakes/ppa` | PPA | ✓ | 0 | {info:Unused} |
 | `ppa:obsproject/obs-studio` | PPA | ✓ | 0 | {info:Unused} |
 
+
+**Software sources** starts with chips (Official, PPA, Third-party, signed, off) and lists one row per source: the site in bold, its path and suites under it, the type badge, and "signed" or "signed, own key" (or "Not checked" in red); the table with files is under **Show as a table with files**. Expert adds **Package health** (packages from no repository as chips), **Snap refreshes**, **Snaps** as one tile per snap (current version, channel, "+N old", classic), with every version under **Show all**, and **Flatpak runtimes**.
+
 ## Packages › Cleanup: `packages/cleanup`
 
 1. **Data table**: "Reclaimable" · span 12

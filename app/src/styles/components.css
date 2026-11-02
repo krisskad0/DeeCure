@@ -410,3 +410,18 @@ a.btn { text-decoration: none; }
 .pl-item { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 8px; background: var(--track); font-size: 12px; }
 .pl-item b { font-size: 22px; font-variant-numeric: tabular-nums; }
 
+/* Packages › Sources: one row per source, snap tiles */
+.src-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.src-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.src-list li.src-off { opacity: 0.6; }
+.src-main { display: flex; flex-direction: column; min-width: 0; }
+.src-main .muted { font-size: 12px; overflow-wrap: anywhere; }
+.src-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; flex: none; }
+.snap-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.snap-grid li { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 12.5px; min-width: 0; }
+.snap-grid li .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.snap-meta { font-size: 11.5px; }
+/* Padding for content placed in a flush panel next to a table or list. */
+.panel-pad { padding: 10px 14px; }
+.snap-grid .kn-chip { white-space: nowrap; flex: none; }
+
