@@ -40,8 +40,13 @@ pub mod method {
     /// Returns a list of [`Metric`](crate::Metric). Takes [`MetricsParams`](super::MetricsParams).
     pub const METRICS: &str = "metrics";
     /// Returns the newest point of every metric from the last 10 minutes, as a list of
-    /// [`Metric`](crate::Metric). Takes no params.
+    /// [`Metric`](crate::Metric). Readings taken by [`REFRESH`] count while they are newer.
+    /// Takes no params.
     pub const LATEST: &str = "latest";
+    /// Reads CPU, memory, temperatures, disks, network, pressure, and battery now (about a
+    /// second), for the Refresh button, and returns them as a list of [`Metric`](crate::Metric).
+    /// It never adds to the history or to warning counters. Takes no params.
+    pub const REFRESH: &str = "refresh";
     /// Returns a [`Snapshot`](crate::Snapshot) or `null`. Takes [`SnapshotParams`](super::SnapshotParams).
     pub const SNAPSHOT: &str = "snapshot";
     /// Returns live data read now, such as `system` facts or `processes`. Takes [`InventoryParams`](super::InventoryParams).

@@ -18,6 +18,8 @@ pub struct Agent {
     processes: Mutex<ProcessSampler>,
     /// Wakes the collectors now instead of at the next minute (after a fix).
     pub recheck: Arc<tokio::sync::Notify>,
+    /// Readings taken now for the Refresh button, apart from the background collection.
+    pub live: Arc<Mutex<crate::live::Live>>,
     /// Set once at start by `main`; empty in tests.
     pub facts: std::sync::OnceLock<Facts>,
     /// The last folder-size scan, shared with the thread that runs a new one.
@@ -64,6 +66,7 @@ impl Agent {
             verify: Arc::new(Mutex::new(VerifyState::default())),
             facts: std::sync::OnceLock::new(),
             recheck: Arc::new(tokio::sync::Notify::new()),
+            live: Arc::new(Mutex::new(crate::live::Live::default())),
             system_bus: tokio::sync::Mutex::new(None),
             session_bus: tokio::sync::Mutex::new(None),
         })

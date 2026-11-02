@@ -96,3 +96,24 @@ describe("Beginner and Expert menus", () => {
     await waitFor(() => expect(screen.getByText("cups.service")).toBeTruthy());
   });
 });
+
+describe("Refresh button", () => {
+  it("shows that it is working, then when it last read", async () => {
+    let finish = () => {};
+    const done = new Promise<void>((r) => (finish = r));
+    inMode("beginner", <PageHeader route={parseHash("#/overview/summary")} status={null} tabCounts={{}} onRefresh={() => done} />);
+    const button = screen.getByRole("button", { name: /Refresh/ });
+    fireEvent.click(button);
+    await waitFor(() => expect(screen.getByText("Refreshing…")).toBeTruthy());
+    expect((button as HTMLButtonElement).disabled).toBe(true);
+    finish();
+    await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/^Updated /));
+    expect((button as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("still finishes when reading fails", async () => {
+    inMode("beginner", <PageHeader route={parseHash("#/overview/summary")} status={null} tabCounts={{}} onRefresh={() => Promise.reject(new Error("agent down"))} />);
+    fireEvent.click(screen.getByRole("button", { name: /Refresh/ }));
+    await waitFor(() => expect(screen.getByText("Refresh")).toBeTruthy());
+  });
+});

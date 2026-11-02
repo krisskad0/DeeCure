@@ -50,8 +50,27 @@ pub use updates::{Updates, UpdatesInfo, Upgradable};
 
 /// How often the file collectors run in the background.
 pub const EVERY: Duration = Duration::from_secs(60);
-/// Services are checked on every fifth run, so every 5 minutes.
-const SERVICES_EVERY_NTH_RUN: u64 = 5;
+/// Services, boot, containers, and the slow health readings run every 5 minutes, by the
+/// clock: an extra run (after a fix) does not bring them forward. A little early still counts,
+/// so timer jitter never skips one.
+const SLOW_EVERY_MS: i64 = 5 * 60_000 - 5_000;
+
+/// Minutes since the last reading, for counters of "minutes in a row". At most `max` (one
+/// regular interval): an extra reading, such as after a fix, adds only the time that really
+/// passed, and a long gap (suspend) never counts as more than one interval. The first reading
+/// counts `max`.
+pub fn minutes_since(last: &mut Option<Timestamp>, now: Timestamp, max: f64) -> f64 {
+    let step = last.map_or(max, |l| {
+        ((now.as_millis() - l.as_millis()) as f64 / 60_000.0).clamp(0.0, max)
+    });
+    *last = Some(now);
+    step
+}
+
+/// True when a job last run at `last` is due again.
+fn due(last: Option<Timestamp>, now: Timestamp) -> bool {
+    last.is_none_or(|l| now.as_millis() - l.as_millis() >= SLOW_EVERY_MS)
+}
 
 /// Where `/proc` and `/sys` are read from: `/` on a real system, a fixture folder in tests.
 #[derive(Debug, Clone)]
@@ -128,7 +147,7 @@ pub async fn run(
     let mut timer = interval(EVERY);
     timer.set_missed_tick_behavior(MissedTickBehavior::Delay);
 
-    let mut run_number: u64 = 0;
+    let (mut services_at, mut slow_at) = (None, None);
     loop {
         // Every minute, or right away when a fix asks for a fresh check.
         tokio::select! {
@@ -141,7 +160,8 @@ pub async fn run(
             let result = collector.collect(&root, now);
             merge(&mut sample, &mut failing, collector.name(), result);
         }
-        if run_number.is_multiple_of(SERVICES_EVERY_NTH_RUN) {
+        if due(services_at, now) {
+            services_at = Some(now);
             let result = services.collect(now).await;
             merge(&mut sample, &mut failing, Services::NAME, result);
             // Reads once per boot; until the boot has finished, it tries again here.
@@ -150,7 +170,8 @@ pub async fn run(
             let result = containers.collect(&root, now).await;
             merge(&mut sample, &mut failing, Containers::NAME, result);
         }
-        if run_number.is_multiple_of(HealthSlow::EVERY_NTH_RUN) {
+        if due(slow_at, now) {
+            slow_at = Some(now);
             let result = health_slow.collect(&root, now).await;
             merge(&mut sample, &mut failing, HealthSlow::NAME, result);
         }
@@ -159,7 +180,6 @@ pub async fn run(
         let result = backups.collect(&root, now).await;
         merge(&mut sample, &mut failing, Backups::NAME, result);
         save(&store, &sample, now, &mut after_save);
-        run_number = run_number.wrapping_add(1);
     }
 }
 

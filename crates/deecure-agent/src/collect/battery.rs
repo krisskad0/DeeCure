@@ -7,7 +7,7 @@ use std::path::Path;
 
 use deecure_core::{Timestamp, Unit};
 
-use super::{Collector, Sample, SystemRoot, metric, read_trimmed};
+use super::{Collector, Sample, SystemRoot, metric, minutes_since, read_trimmed};
 
 /// Charge, health, and power draw of each system battery.
 ///
@@ -17,6 +17,7 @@ use super::{Collector, Sample, SystemRoot, metric, read_trimmed};
 pub struct Battery {
     /// Minutes in a row plugged in while the battery drains, per battery.
     drain: std::collections::HashMap<String, f64>,
+    last: Option<Timestamp>,
 }
 
 /// What the battery's own `health` file says when something is wrong (anything but "Good").
@@ -37,6 +38,7 @@ impl Collector for Battery {
     }
 
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
+        let step = minutes_since(&mut self.last, now, 1.0);
         let mut sample = Sample::default();
         let dir = root.path("/sys/class/power_supply");
         let mut entries = match std::fs::read_dir(&dir) {
@@ -135,7 +137,7 @@ impl Collector for Battery {
             // "Not charging" at a charge limit is normal; only draining on the charger counts.
             let minutes = self.drain.entry(name.clone()).or_insert(0.0);
             *minutes = if draining && on_mains {
-                *minutes + 1.0
+                *minutes + step
             } else {
                 0.0
             };

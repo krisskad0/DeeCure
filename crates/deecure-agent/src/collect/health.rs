@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use deecure_core::{Timestamp, Unit};
 
-use super::{Collector, Sample, SystemRoot, metric, read_trimmed};
+use super::{Collector, Sample, SystemRoot, metric, minutes_since, read_trimmed};
 use crate::inventory::{command, security_detail};
 
 /// Kernel taint bits: `D` (a kernel crash: oops or BUG) and `M` (a machine-check error).
@@ -32,6 +32,7 @@ const NET_WINDOW: usize = 10;
 #[derive(Debug, Default)]
 pub struct Health {
     weak_wifi: f64,
+    last: Option<Timestamp>,
     /// The last 10 readings of (errors, packets) per network interface.
     net: HashMap<String, VecDeque<(f64, f64)>>,
 }
@@ -159,6 +160,7 @@ impl Collector for Health {
 
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
         let mut sample = Sample::default();
+        let step = minutes_since(&mut self.last, now, 1.0);
         let mut push = |name: &str, subject: Option<&str>, value: f64| {
             sample
                 .metrics
@@ -296,7 +298,7 @@ impl Collector for Health {
         {
             push("wifi.signal_dbm", None, dbm);
             self.weak_wifi = if dbm < WEAK_WIFI {
-                self.weak_wifi + 1.0
+                self.weak_wifi + step
             } else {
                 0.0
             };
@@ -359,13 +361,12 @@ pub fn days_from_date(date: &str) -> Option<i64> {
 pub struct HealthSlow {
     unsynced: f64,
     limited: f64,
+    last: Option<Timestamp>,
 }
 
 impl HealthSlow {
     /// The name used in logs.
     pub const NAME: &'static str = "health (slow)";
-    /// It runs every this many collector runs (minutes).
-    pub const EVERY_NTH_RUN: u64 = 5;
     const LIMIT: Duration = Duration::from_secs(10);
 
     /// Time sync, half-installed packages, internet reachability, and automatic updates.
@@ -376,7 +377,7 @@ impl HealthSlow {
                 .metrics
                 .push(metric(name, None, value, Unit::Count, now));
         };
-        let minutes = Self::EVERY_NTH_RUN as f64;
+        let minutes = minutes_since(&mut self.last, now, 5.0);
 
         if let Some(out) = command::output(
             "timedatectl",
@@ -500,7 +501,10 @@ mod tests {
         assert_eq!(value(&s, "security.apparmor", None), Some(1.0));
         assert_eq!(value(&s, "cpu.flaws_vulnerable", None), Some(1.0));
         assert_eq!(value(&s, "wifi.signal_dbm", None), Some(-80.0));
-        let s = h.collect(&root, Timestamp(0)).unwrap();
+        let s = h.collect(&root, Timestamp(60_000)).unwrap();
+        assert_eq!(value(&s, "wifi.weak_minutes", None), Some(2.0));
+        // A reading at the same moment (an extra run) adds no time.
+        let s = h.collect(&root, Timestamp(60_000)).unwrap();
         assert_eq!(value(&s, "wifi.weak_minutes", None), Some(2.0));
     }
 

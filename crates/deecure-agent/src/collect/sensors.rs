@@ -11,7 +11,7 @@ use std::io;
 
 use deecure_core::{Timestamp, Unit};
 
-use super::{Collector, Sample, SystemRoot, metric, read_trimmed};
+use super::{Collector, Sample, SystemRoot, metric, minutes_since, read_trimmed};
 
 /// Chips whose first reading is the CPU temperature, best first.
 const CPU_CHIPS: &[(&str, &[&str])] = &[
@@ -42,8 +42,9 @@ pub struct Sensors {
     fan_stopped_hot: f64,
     /// Minutes in a row at the fallback limit, for a CPU without its own.
     cpu_hot_fallback: f64,
-    /// The throttle counter at each of the last 61 readings.
-    throttle: VecDeque<f64>,
+    /// The throttle counter at each reading of the last hour.
+    throttle: VecDeque<(Timestamp, f64)>,
+    last: Option<Timestamp>,
 }
 
 /// One temperature: chip, label, °C, where it starts to be too hot, and its critical limit.
@@ -69,6 +70,7 @@ impl Collector for Sensors {
 
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
         let mut sample = Sample::default();
+        let step = minutes_since(&mut self.last, now, 1.0);
         if let Some(count) = read_trimmed(
             &root.path("/sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_count"),
         )
@@ -77,21 +79,29 @@ impl Collector for Sensors {
             sample
                 .metrics
                 .push(metric("cpu.throttle_total", None, count, Unit::Count, now));
-            self.throttle.push_back(count);
-            if self.throttle.len() > 61 {
+            self.throttle.push_back((now, count));
+            while self
+                .throttle
+                .front()
+                .is_some_and(|(t, _)| now.as_millis() - t.as_millis() > 60 * 60_000)
+            {
                 self.throttle.pop_front();
             }
-            // A minute counts when the counter went up (a restart sets it back to 0).
-            let slowed = self
+            // The time between two readings counts when the counter went up (a restart sets
+            // it back to 0), at most a minute each, so an extra reading adds nothing.
+            let slowed: f64 = self
                 .throttle
                 .iter()
                 .zip(self.throttle.iter().skip(1))
-                .filter(|(a, b)| b > a)
-                .count();
+                .filter(|((_, a), (_, b))| b > a)
+                .map(|((ta, _), (tb, _))| {
+                    ((tb.as_millis() - ta.as_millis()) as f64 / 60_000.0).clamp(0.0, 1.0)
+                })
+                .sum();
             sample.metrics.push(metric(
                 "cpu.throttle_minutes_hour",
                 None,
-                slowed as f64,
+                slowed.round(),
                 Unit::Count,
                 now,
             ));
@@ -143,7 +153,7 @@ impl Collector for Sensors {
                     if let Some(l) = limit {
                         sample.metrics.push(at("temp.limit", l, Unit::Celsius));
                         let minutes = self.hot.entry(subject.clone()).or_insert(0.0);
-                        *minutes = if celsius >= l { *minutes + 1.0 } else { 0.0 };
+                        *minutes = if celsius >= l { *minutes + step } else { 0.0 };
                         sample
                             .metrics
                             .push(at("temp.hot_minutes", *minutes, Unit::Count));
@@ -189,13 +199,13 @@ impl Collector for Sensors {
                 // No limit of its own: count here against the fallback.
                 None => {
                     let m = self.cpu_hot_fallback;
-                    self.cpu_hot_fallback = if celsius >= limit { m + 1.0 } else { 0.0 };
+                    self.cpu_hot_fallback = if celsius >= limit { m + step } else { 0.0 };
                     self.cpu_hot_fallback
                 }
             };
             push("temp.cpu_hot_minutes", minutes, Unit::Count);
             self.fan_stopped_hot = if celsius >= FAN_HOT_C && fans.contains(&0.0) {
-                self.fan_stopped_hot + 1.0
+                self.fan_stopped_hot + step
             } else {
                 0.0
             };
@@ -270,19 +280,29 @@ mod tests {
             )
         };
         let mut s = Sensors::default();
-        for (temp, throttle) in [
+        let minute = |n: i64| Timestamp(n * 60_000);
+        for (n, (temp, throttle)) in [
             ("97000\n", "10\n"),
             ("98000\n", "12\n"),
             ("96000\n", "12\n"),
-        ] {
-            s.collect(&files(temp, throttle), Timestamp(0)).unwrap();
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            s.collect(&files(temp, throttle), minute(n as i64)).unwrap();
         }
-        let sample = s.collect(&files("99000\n", "15\n"), Timestamp(0)).unwrap();
+        let sample = s.collect(&files("99000\n", "15\n"), minute(3)).unwrap();
         assert_eq!(value(&sample, "temp.cpu_hot_minutes", None), Some(4.0));
         assert_eq!(value(&sample, "cpu.throttle_minutes_hour", None), Some(2.0));
         assert_eq!(value(&sample, "fan.stopped_hot_minutes", None), Some(4.0));
+        // An extra reading 6 seconds later (after a fix) adds only those 6 seconds.
+        let sample = s
+            .collect(&files("99000\n", "16\n"), Timestamp(3 * 60_000 + 6_000))
+            .unwrap();
+        assert_eq!(value(&sample, "temp.cpu_hot_minutes", None), Some(4.1));
+        assert_eq!(value(&sample, "cpu.throttle_minutes_hour", None), Some(2.0));
         // Cooler: the count starts again.
-        let sample = s.collect(&files("60000\n", "15\n"), Timestamp(0)).unwrap();
+        let sample = s.collect(&files("60000\n", "16\n"), minute(4)).unwrap();
         assert_eq!(value(&sample, "temp.cpu_hot_minutes", None), Some(0.0));
         assert_eq!(value(&sample, "fan.stopped_hot_minutes", None), Some(0.0));
     }

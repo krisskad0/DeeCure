@@ -2,6 +2,8 @@
 
 //! Turns one request line into one response. No I/O here, so it is easy to test.
 
+use std::sync::PoisonError;
+
 use deecure_core::rpc::{
     EventList, EventParams, EventsParams, FixPlanParams, FixRecordParams, FixUndoneParams,
     InventoryParams, MAX_EVENTS, MAX_MESSAGE_BYTES, MAX_POINTS, MetricsParams, PROTOCOL_VERSION,
@@ -125,8 +127,34 @@ pub async fn handle(request: Request, agent: &Agent) -> Response {
         }),
         method::LATEST => no_params(&request).and_then(|()| {
             let since = Timestamp(Timestamp::now().as_millis() - FRESH_FOR_MS);
-            to_result(&store().latest_metrics(since).map_err(store_failed)?)
+            let stored = store().latest_metrics(since).map_err(store_failed)?;
+            // While a refresh is reading (up to a second), answer from the store alone.
+            let fresh: Vec<_> = agent.live.try_lock().map_or_else(
+                |_| Vec::new(),
+                |live| {
+                    live.latest()
+                        .iter()
+                        .filter(|m| m.at >= since)
+                        .cloned()
+                        .collect()
+                },
+            );
+            to_result(&crate::live::overlay(stored, &fresh))
         }),
+        method::REFRESH => match no_params(&request) {
+            Ok(()) => {
+                let (live, root) = (agent.live.clone(), agent.root.clone());
+                tokio::task::spawn_blocking(move || {
+                    live.lock()
+                        .unwrap_or_else(PoisonError::into_inner)
+                        .refresh(&root)
+                })
+                .await
+                .map_err(|e| RpcError::new(RpcError::INTERNAL_ERROR, e.to_string()))
+                .and_then(|m| to_result(&m))
+            }
+            Err(e) => Err(e),
+        },
         method::SNAPSHOT => params::<SnapshotParams>(&request)
             .and_then(|p| to_result(&store().latest_snapshot(p.kind).map_err(store_failed)?)),
         method::INVENTORY => match params::<InventoryParams>(&request) {

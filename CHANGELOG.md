@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- **Refresh** now reads the numbers again right away (CPU, memory, temperatures, disks, network, battery) instead of showing the last one-minute reading again. The icon spins while it works, then "Updated" shows the time. History and warnings are not affected.
+- Warnings that need a problem to last ("hot for 5 minutes", "fan stopped while hot", memory and disk stalls, draining on the charger, clock not synced, weak Wi-Fi, heat slowdowns in the last hour) now count real time. The extra check after a fix no longer counts as a whole minute, so it can never bring a warning forward. Checks that run every 5 minutes are timed by the clock.
+
 ## [0.1.0-alpha.5] - 2026-11-02
 
 ### Added

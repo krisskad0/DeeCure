@@ -7,7 +7,7 @@ use std::io;
 
 use deecure_core::{Timestamp, Unit};
 
-use super::{Collector, Sample, SystemRoot, metric};
+use super::{Collector, Sample, SystemRoot, metric, minutes_since};
 
 /// The `avg10` value of the `some` or `full` line of a `/proc/pressure/*` file, in percent.
 /// `some`: at least one task waited. `full`: all tasks waited at once.
@@ -33,6 +33,7 @@ const IO_STALL: f64 = 20.0;
 pub struct Pressure {
     memory_stall: f64,
     io_stall: f64,
+    last: Option<Timestamp>,
 }
 
 impl Collector for Pressure {
@@ -42,6 +43,7 @@ impl Collector for Pressure {
 
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
         let mut sample = Sample::default();
+        let step = minutes_since(&mut self.last, now, 1.0);
         for resource in ["cpu", "memory", "io"] {
             let Ok(text) = root.read(&format!("/proc/pressure/{resource}")) else {
                 continue;
@@ -64,7 +66,7 @@ impl Collector for Pressure {
                     (&mut self.io_stall, IO_STALL)
                 };
                 *minutes = if full.is_some_and(|f| f >= limit) {
-                    *minutes + 1.0
+                    *minutes + step
                 } else {
                     0.0
                 };

@@ -4,7 +4,7 @@
 
 import { REFRESH_EVENT, type TempUnit } from "./units";
 import { useCallback, useEffect, useState } from "react";
-import { type AppError, type Machine, type StatusReport, getMachine, getStatus, toAppError } from "./api";
+import { type AppError, type Machine, type StatusReport, getMachine, getStatus, refreshNow, toAppError } from "./api";
 import { NotBuilt } from "./pages/NotBuilt";
 import { OverviewScore } from "./pages/overview/HealthScore";
 import { PerformanceCpu } from "./pages/performance/Cpu";
@@ -287,8 +287,11 @@ export default function App() {
             route={route}
             status={pageStatus(route.page.id, report, error)}
             tabCounts={tabCounts}
-            onRefresh={() => {
-              void refresh();
+            onRefresh={async () => {
+              // Fresh readings first (an older agent does not know this; then the panels
+              // simply load again), then every panel loads again.
+              await refreshNow().catch(() => undefined);
+              await refresh();
               window.dispatchEvent(new Event(REFRESH_EVENT));
             }}
           />

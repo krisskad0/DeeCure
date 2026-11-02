@@ -91,6 +91,11 @@ export function getLatest(): Promise<Metric[]> {
   return invoke<Metric[]>("latest");
 }
 
+/** Reads CPU, memory, temperatures, disks, and network now (about a second), for Refresh. */
+export function refreshNow(): Promise<Metric[]> {
+  return invoke<Metric[]>("refresh_now");
+}
+
 export interface SystemInfo {
   hostname?: string;
   os?: string;

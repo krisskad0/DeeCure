@@ -125,6 +125,13 @@ async fn latest() -> Result<Vec<Metric>, AppError> {
     ask(method::LATEST, None).await
 }
 
+/// Readings taken now, for the Refresh button (about a second). History and warning
+/// counters are not touched.
+#[tauri::command]
+async fn refresh_now() -> Result<Vec<Metric>, AppError> {
+    ask(method::REFRESH, None).await
+}
+
 /// What changed from `since` (ms) on, newest first, without config diffs.
 #[tauri::command]
 async fn events(
@@ -473,6 +480,7 @@ fn main() {
             package_detail,
             metrics,
             latest,
+            refresh_now,
             events,
             event,
             notify_settings,
