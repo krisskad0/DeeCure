@@ -32,6 +32,8 @@
 | `usb` | Peripherals | 11 devices · 0 missing drivers | {crit:1 unstable} | `hardware/peripherals` |
 | `bolt` | Firmware | 1 update available | {info:Update} | `hardware/firmware` |
 
+Expert adds "Hardware errors": one green line ("No errors", with how many sources were checked) or a list of only the kinds with errors (count, last time, one example). The full list of checks is under "Show all". "Drivers Ubuntu offers" is one line when no device needs an extra driver.
+
 ## Hardware › Processor: `hardware/processor`
 
 1. **Gauge group**: "Live" · span 6

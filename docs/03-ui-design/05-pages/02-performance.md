@@ -44,6 +44,11 @@
 | pipewire | 1702 | riya | [meter 3% "0.5%"] |
 | telegram-desktop | 2230 | riya | [meter 2% "0.4%"] |
 
+Expert adds, below the page:
+
+- "Speed policy per core": chips for the speed policy (with how many cores use it), the allowed range, and the preferred cores; a small tile per core with its speed now as a bar of its hardware maximum and its heat slowdowns; one line on heat slowdowns ("Cool" when none, else how many cores slowed and any slowing now). The full table is under "Show all".
+- "Interrupts": ranked bars of the busiest interrupt lines (per second now, or since start before the second reading), with the line and its total as a hint. The table is under "Show all".
+
 ## Performance › Memory: `performance/memory`
 
 1. **KPI row** · span 12

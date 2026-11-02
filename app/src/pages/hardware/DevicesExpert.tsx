@@ -6,6 +6,7 @@ import { type DevicesDetail, type HwErrors, getInventory } from "../../api";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { ago } from "../../time";
 import { useLive } from "../../useLive";
@@ -194,20 +195,48 @@ export function HardwareErrorsPanel() {
         flush
       >
         {e.kinds === undefined && <p className="muted panel-pad">The kernel log cannot be read, so only the hardware counters are shown.</p>}
-        <DataTable
-          rows={rows}
-          columns={[
-            { key: "name", label: "Kind", text: (r) => r.name, wrap: true },
-            { key: "count", label: "Count", text: (r) => String(r.count), render: (r) => (r.count ? <StatusBadge variant="warn" label={String(r.count)} /> : "0"), numeric: true },
-            { key: "last", label: "Last", text: (r) => (r.last ? ago(r.last, now) : "-") },
-            { key: "example", label: "Example", text: (r) => r.example ?? "-", wrap: true },
-          ]}
-          rowKey={(r) => r.key}
-          pageSize={12}
-        />
+        <div className="panel-pad">
+          {total ? (
+            <ul className="kn-notable svc-verdict">
+              {rows
+                .filter((r) => r.count)
+                .map((r) => (
+                  <li key={r.key}>
+                    <b>{r.name}</b> <StatusBadge variant="warn" label={String(r.count)} />
+                    {r.last && <span className="muted"> last {ago(r.last, now)}</span>}
+                    {r.example && <> <code>{r.example}</code></>}
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <div className="kn-verdict svc-verdict">
+              <StatusBadge variant="ok" label="No errors" />
+              <span>The hardware reported no errors. Checked {rows.length} sources: the kernel log, the error counters, and driver crash dumps.</span>
+            </div>
+          )}
+          <ShowAll label={`Show all ${rows.length} checks`}>
+            <DataTable
+              rows={rows}
+              columns={[
+                { key: "name", label: "Kind", text: (r) => r.name, wrap: true },
+                { key: "count", label: "Count", text: (r) => String(r.count), render: (r) => (r.count ? <StatusBadge variant="warn" label={String(r.count)} /> : "0"), numeric: true },
+                { key: "last", label: "Last", text: (r) => (r.last ? ago(r.last, now) : "-") },
+                { key: "example", label: "Example", text: (r) => r.example ?? "-", wrap: true },
+              ]}
+              rowKey={(r) => r.key}
+              pageSize={12}
+            />
+          </ShowAll>
+        </div>
       </Panel>
       {e.driver_offers && (
-        <Panel title="Drivers Ubuntu offers" info="Devices for which Ubuntu has a driver package, such as NVIDIA's. The recommended one is Ubuntu's pick." source="ubuntu-drivers devices" span={12} flush>
+        <Panel title="Drivers Ubuntu offers" info="Devices for which Ubuntu has a driver package, such as NVIDIA's. The recommended one is Ubuntu's pick." source="ubuntu-drivers devices" span={12} flush={e.driver_offers.length > 0}>
+          {e.driver_offers.length === 0 ? (
+            <div className="kn-verdict svc-verdict">
+              <StatusBadge variant="ok" label="Nothing needed" />
+              <span>No device needs an extra driver from Ubuntu.</span>
+            </div>
+          ) : (
           <DataTable
             rows={e.driver_offers}
             columns={[
@@ -217,6 +246,7 @@ export function HardwareErrorsPanel() {
             rowKey={(o) => `${o.vendor}|${o.model}`}
             empty="No device needs an extra driver"
           />
+          )}
         </Panel>
       )}
     </>

@@ -79,8 +79,8 @@ describe("Expert processor sections", () => {
     expect(screen.getByText("jbd2/nvme0n1p2-8")).toBeTruthy();
     await secondReading();
     await waitFor(() => expect(screen.getByText(/5\.0 per second now/)).toBeTruthy());
-    expect(screen.getByText("iwlwifi")).toBeTruthy();
-    expect(screen.getByText("500")).toBeTruthy();
+    expect(screen.getAllByText("iwlwifi").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("500").length).toBeGreaterThan(0);
   });
 
   it("explains power limits, a newer microcode, and open flaws", async () => {

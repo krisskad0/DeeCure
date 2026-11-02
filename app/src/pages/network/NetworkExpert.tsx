@@ -8,6 +8,7 @@ import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes, rate } from "../../metrics";
 import { perSecond, useLiveWithPrevious } from "../../useLive";
@@ -56,6 +57,7 @@ export function InterfacesExpert() {
     const dropsNow = perSecond(i.rx_dropped + i.tx_dropped, b ? b.rx_dropped + b.tx_dropped : undefined, seconds);
     return { ...i, dropsNow };
   });
+  const troubled = ifaces.filter((i) => i.rx_errors + i.tx_errors + i.collisions > 0 || (i.dropsNow ?? 0) > 0);
   return (
     <>
       {d.wifi.map((w) => {
@@ -91,19 +93,40 @@ export function InterfacesExpert() {
         ]}
       />
       <Panel title="Errors and drops per interface" subtitle="since start" info="Errors are damaged packets (often a bad cable or weak Wi-Fi). Drops are packets thrown away, often because nobody wanted them. Link changes count how often the connection went down and up." source="/sys/class/net/*/statistics" span={12} flush>
-        <DataTable
-          rows={ifaces}
-          columns={[
-            { key: "name", label: "Interface", text: (i) => i.name },
-            { key: "err", label: "Errors (in · out)", text: (i) => `${count(i.rx_errors)} · ${count(i.tx_errors)}`, numeric: true },
-            { key: "drop", label: "Dropped (in · out)", text: (i) => `${count(i.rx_dropped)} · ${count(i.tx_dropped)}`, numeric: true },
-            { key: "dropsNow", label: "Drops per second now", text: (i) => (i.dropsNow === undefined ? "-" : i.dropsNow.toFixed(1)), numeric: true },
-            { key: "coll", label: "Collisions", text: (i) => count(i.collisions), numeric: true },
-            { key: "carrier", label: "Link changes", text: (i) => (i.carrier_changes === undefined ? "-" : count(i.carrier_changes)), numeric: true },
-          ]}
-          rowKey={(i) => i.name}
-          pageSize={12}
-        />
+        <div className="panel-pad">
+          {troubled.length ? (
+            <ul className="kn-notable svc-verdict">
+              {troubled.map((i) => (
+                <li key={i.name}>
+                  <code>{i.name}</code>
+                  {i.rx_errors + i.tx_errors > 0 && <StatusBadge variant="warn" label={`${count(i.rx_errors + i.tx_errors)} damaged packets`} />}
+                  {i.collisions > 0 && <StatusBadge variant="warn" label={`${count(i.collisions)} collisions`} />}
+                  {(i.dropsNow ?? 0) > 0 && <StatusBadge variant="info" label={`${i.dropsNow?.toFixed(1)} drops per second now`} />}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="kn-verdict svc-verdict">
+              <StatusBadge variant="ok" label="Clean" />
+              <span>No damaged packets or collisions on any interface, and nothing is being dropped now.</span>
+            </div>
+          )}
+          <ShowAll label={`Show all ${ifaces.length} interfaces`}>
+            <DataTable
+              rows={ifaces}
+              columns={[
+                { key: "name", label: "Interface", text: (i) => i.name },
+                { key: "err", label: "Errors (in · out)", text: (i) => `${count(i.rx_errors)} · ${count(i.tx_errors)}`, numeric: true },
+                { key: "drop", label: "Dropped (in · out)", text: (i) => `${count(i.rx_dropped)} · ${count(i.tx_dropped)}`, numeric: true },
+                { key: "dropsNow", label: "Drops per second now", text: (i) => (i.dropsNow === undefined ? "-" : i.dropsNow.toFixed(1)), numeric: true },
+                { key: "coll", label: "Collisions", text: (i) => count(i.collisions), numeric: true },
+                { key: "carrier", label: "Link changes", text: (i) => (i.carrier_changes === undefined ? "-" : count(i.carrier_changes)), numeric: true },
+              ]}
+              rowKey={(i) => i.name}
+              pageSize={12}
+            />
+          </ShowAll>
+        </div>
       </Panel>
     </>
   );

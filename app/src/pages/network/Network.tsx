@@ -12,6 +12,7 @@ import { InlineMeter } from "../../components/InlineMeter";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
 import { useLive } from "../../useLive";
@@ -69,12 +70,53 @@ export function NetworkInterfaces() {
     return { name: i.name, kind: i.kind, state: i.state, ipv4: link?.ipv4.join(", ") ?? "", mac: i.mac, speed: i.speed_mbps ?? (d.wifi?.interface === i.name ? d.wifi.bitrate_mbps : undefined), rx: link?.rx ?? 0, tx: link?.tx ?? 0 };
   });
   rows.sort((a, b) => Number(b.state === "up") - Number(a.state === "up") || b.rx - a.rx);
+  const real = rows.filter((r) => r.kind !== "Virtual" && r.kind !== "Loopback");
   const w = d.wifi;
   const conn = d.connectivity ? CONNECTIVITY[d.connectivity] : null;
   return (
     <>
-      <Panel title="Interfaces" source="ip addr · /sys/class/net" span={12} flush>
-        <DataTable rows={rows} columns={INTERFACES} rowKey={(r) => r.name} />
+      <Panel title="Interfaces" info="Each network connection of this computer. Virtual ones are made by software, such as containers and the loopback the computer uses to talk to itself." source="ip addr · /sys/class/net" span={12} flush>
+        <div className="panel-pad">
+          <div className="kn-chips">
+            {[
+              ["connected", real.filter((r) => r.state === "up").length],
+              ["not connected", real.filter((r) => r.state !== "up").length],
+              ["virtual", rows.length - real.length],
+            ].map(([label, n]) => (
+              <span key={label} className="kn-chip">
+                {label} <b>{n}</b>
+              </span>
+            ))}
+          </div>
+          {real.length > 0 ? (
+            <ul className="snap-grid img-grid">
+              {real.map((r) => (
+                <li key={r.name} className={r.state === "up" ? "" : "img-unused"} title={[r.name, r.ipv4].filter(Boolean).join(" · ")}>
+                  <b className="img-name">{r.kind}</b>
+                  <span className="muted">
+                    <code>{r.name}</code>
+                    {r.ipv4 && <> · <code>{r.ipv4}</code></>}
+                  </span>
+                  <span className="snap-meta">
+                    {r.state === "up" ? (
+                      <>
+                        <StatusBadge variant="ok" label={r.speed ? `${r.speed} Mb/s` : "connected"} />
+                        <span className="muted"> ↓ {bytes(r.rx)} · ↑ {bytes(r.tx)}</span>
+                      </>
+                    ) : (
+                      <span className="muted">not connected</span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="empty muted">No network hardware found, only virtual interfaces.</div>
+          )}
+          <ShowAll label={`Show all ${rows.length} interfaces`}>
+            <DataTable rows={rows} columns={INTERFACES} rowKey={(r) => r.name} />
+          </ShowAll>
+        </div>
       </Panel>
       <Panel title="Wi-Fi" source="NetworkManager · /proc/net/wireless" span={6} flush>
         {w ? (

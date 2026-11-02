@@ -17,6 +17,8 @@
 | `lo` | Loopback | {off:unmanaged} | `127.0.0.1/8` | - | - | 88 MB | 88 MB |
 | `enx00e04c68` | Ethernet | {off:unavailable} | - | `00:e0:4c:..:68` | - | 0 | 0 |
 
+The panel shows chips (connected, not connected, virtual), then a tile per hardware interface (type, name, address, speed, data in and out; not connected ones greyed). Virtual and loopback interfaces are only counted. The table above is under "Show all". Expert: "Errors and drops per interface" is one line ("Clean") unless an interface has damaged packets, collisions, or drops now; those are listed. Its table is under "Show all".
+
 2. **Key-value list**: "Wi-Fi" · span 6
 - Source chip (Expert): `nmcli -f all dev wifi`
 

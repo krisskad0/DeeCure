@@ -59,9 +59,9 @@ describe("Expert devices, screens, sound, and errors", () => {
 
   it("hardware errors gather the log and the counters", async () => {
     render(<HardwareErrorsPanel />);
-    await waitFor(() => expect(screen.getByText("USB errors")).toBeTruthy());
-    expect(screen.getByText("usb 3-2: device descriptor read/64, error -71")).toBeTruthy();
-    await waitFor(() => expect(screen.getByText("PCIe link errors (counted by the hardware since start)")).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText("USB errors").length).toBeGreaterThan(0));
+    expect(screen.getAllByText("usb 3-2: device descriptor read/64, error -71").length).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.getAllByText("PCIe link errors (counted by the hardware since start)").length).toBeGreaterThan(0));
     expect(screen.getByText("5 in the last 7 days or since start")).toBeTruthy();
     expect(screen.getByText("nvidia-driver-535 (recommended)")).toBeTruthy();
   });

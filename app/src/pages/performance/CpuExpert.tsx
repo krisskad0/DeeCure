@@ -22,6 +22,8 @@ const loadDetail = () => getInventory("cpu_detail");
 export const useCpuDetail = () => useLiveWithPrevious(loadDetail, 5000);
 
 const mhz = (khz?: number) => (khz === undefined ? "-" : `${Math.round(khz / 1000).toLocaleString()} MHz`);
+const ghz = (khz?: number) => (khz === undefined ? "-" : `${(khz / 1e6).toFixed(1)} GHz`);
+const compact = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toLocaleString());
 const rateText = (r?: number) => (r === undefined ? "-" : r >= 100 ? Math.round(r).toLocaleString() : r.toFixed(1));
 
 // ---------- Performance › CPU ----------
@@ -48,6 +50,13 @@ const CORE_COLUMNS: Column<CoreRow>[] = [
   { key: "throttles", label: "Heat slowdowns", text: (r) => (r.throttles === undefined ? "-" : r.throttles.toLocaleString()), numeric: true },
   { key: "throttlesNow", label: "Per second now", text: (r) => rateText(r.throttlesNow), numeric: true },
 ];
+
+/** How often each value appears, in first-seen order. */
+function countBy(values: string[]): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const v of values) m.set(v, (m.get(v) ?? 0) + 1);
+  return m;
+}
 
 /** The device at the end of an interrupt line, after its trigger type (`0-edge iwlwifi`). */
 export function irqDevice(text: string): string {
@@ -80,6 +89,10 @@ export function CpuExpertSections({ waitingForDisk }: { waitingForDisk?: string[
     throttles: c.throttle_count,
     throttlesNow: perSecond(c.throttle_count, before?.cores.find((b) => b.cpu === c.cpu)?.throttle_count, seconds),
   }));
+  const ranges = new Set(rows.map((r) => (r.min === undefined || r.max === undefined ? "-" : `${mhz(r.min)} to ${mhz(r.max)}`)));
+  const preferred = rows.filter((r) => r.preferred).map((r) => r.cpu);
+  const hot = rows.filter((r) => (r.throttles ?? 0) > 0).sort((a, b) => (b.throttles ?? 0) - (a.throttles ?? 0));
+  const hotNow = hot.filter((r) => (r.throttlesNow ?? 0) > 0);
   const chipNow = perSecond(d.package_throttle_count, before?.package_throttle_count, seconds);
   const irqs = d.interrupts
     .map((i) => ({ ...i, rate: perSecond(i.count, before?.interrupts.find((b) => b.irq === i.irq)?.count, seconds) }))
@@ -114,7 +127,62 @@ export function CpuExpertSections({ waitingForDisk }: { waitingForDisk?: string[
         span={12}
         flush
       >
-        <DataTable rows={rows} columns={CORE_COLUMNS} rowKey={(r) => String(r.cpu)} pageSize={16} />
+        <div className="panel-pad">
+          <div className="kn-chips">
+            {[...countBy(rows.map((r) => r.policy))].map(([policy, n]) => (
+              <span key={policy} className="kn-chip">
+                {policy} <b>{n === rows.length ? "all cores" : `${n} cores`}</b>
+              </span>
+            ))}
+            {ranges.size === 1 && (
+              <span className="kn-chip">
+                allowed <b>{[...ranges][0]}</b>
+              </span>
+            )}
+            {preferred.length > 0 && (
+              <span className="kn-chip">
+                preferred <b>CPU {preferred.join(", ")}</b>
+              </span>
+            )}
+          </div>
+          <ul className="core-grid">
+            {rows.map((r) => (
+              <li key={r.cpu} title={`${r.policy} · allowed ${r.min === undefined || r.max === undefined ? "-" : `${mhz(r.min)} to ${mhz(r.max)}`}`}>
+                <div className="core-top">
+                  <b>CPU {r.cpu}</b>
+                  <span className="muted">{ghz(r.now)}</span>
+                </div>
+                <div className="core-bar">
+                  <span style={{ width: `${r.now && r.hwMax ? Math.min(100, (r.now / r.hwMax) * 100) : 0}%` }} />
+                </div>
+                <div className="core-bottom">
+                  <span className="muted">/ {ghz(r.hwMax)}</span>
+                  {r.throttles ? <span className="kn-warn">{compact(r.throttles)} hot</span> : <span className="muted">{r.preferred ? "preferred" : ""}</span>}
+                </div>
+              </li>
+            ))}
+          </ul>
+          {hot.length ? (
+            <ul className="kn-notable svc-verdict">
+              <li>
+                <b>{hot.length === rows.length ? "Every core" : `${hot.length} of ${rows.length} cores`}</b> slowed by heat since start, {compact(hot[hot.length - 1].throttles ?? 0)} to {compact(hot[0].throttles ?? 0)} times each.
+              </li>
+              {hotNow.length > 0 && (
+                <li>
+                  <StatusBadge variant="warn" label="Slowing now" /> CPU {hotNow.map((r) => r.cpu).join(", ")} · {rateText(Math.max(...hotNow.map((r) => r.throttlesNow ?? 0)))} per second
+                </li>
+              )}
+            </ul>
+          ) : (
+            <div className="kn-verdict svc-verdict">
+              <StatusBadge variant="ok" label="Cool" />
+              <span>Heat never forced a core to slow down since start.</span>
+            </div>
+          )}
+          <ShowAll label={`Show all ${rows.length} cores`}>
+            <DataTable rows={rows} columns={CORE_COLUMNS} rowKey={(r) => String(r.cpu)} pageSize={16} />
+          </ShowAll>
+        </div>
       </Panel>
       <Panel
         title="Interrupts"
@@ -124,17 +192,33 @@ export function CpuExpertSections({ waitingForDisk }: { waitingForDisk?: string[
         span={12}
         flush
       >
-        <DataTable
-          rows={irqs}
-          columns={[
-            { key: "irq", label: "Line", text: (i) => i.irq },
-            { key: "device", label: "Device", text: (i) => irqDevice(i.device), wrap: true },
-            { key: "rate", label: "Per second", text: (i) => rateText(i.rate), numeric: true },
-            { key: "count", label: "Since start", text: (i) => i.count.toLocaleString(), numeric: true },
-          ]}
-          rowKey={(i) => i.irq}
-          empty="No interrupts reported"
-        />
+        {irqs.length ? (
+          <div className="panel-pad">
+            <BarList
+              rows={irqs.map((i) => ({
+                id: i.irq,
+                label: irqDevice(i.device),
+                hint: `line ${i.irq} · ${i.count.toLocaleString()} since start`,
+                value: before ? (i.rate ?? 0) : i.count,
+                display: before ? `${rateText(i.rate)}/s` : i.count.toLocaleString(),
+              }))}
+            />
+            <ShowAll label={`Show all ${irqs.length} as a table`}>
+            <DataTable
+              rows={irqs}
+              columns={[
+                { key: "irq", label: "Line", text: (i) => i.irq },
+                { key: "device", label: "Device", text: (i) => irqDevice(i.device), wrap: true },
+                { key: "rate", label: "Per second", text: (i) => rateText(i.rate), numeric: true },
+                { key: "count", label: "Since start", text: (i) => i.count.toLocaleString(), numeric: true },
+              ]}
+              rowKey={(i) => i.irq}
+            />
+            </ShowAll>
+          </div>
+        ) : (
+          <div className="empty muted">No interrupts reported</div>
+        )}
       </Panel>
     </>
   );

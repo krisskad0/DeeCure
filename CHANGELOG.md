@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - Overview shows the GPU: a tile (CPU, GPU, Memory, Disk, Network, Battery) with how busy the graphics card is, and a GPU line in the utilization chart. AMD and Intel graphics report it; for NVIDIA's own driver the tile says it does not report busy time. A computer without a graphics card shows no GPU tile or line. The busy time is kept in the history from now on.
 
+- Performance › CPU (Expert), Network › Interfaces, and Hardware › Summary (Expert) are lighter: cores are tiles with their speed and heat slowdowns under one summary line, interrupts are ranked bars, network interfaces are tiles (virtual ones only counted), and errors are one green line unless something is wrong; the full tables are under "Show all".
 - Long tables are shorter: every table shows its first 8 rows with "Show all N" to see the rest. Search and filters still look at every row, and tables under "Show all" show everything.
 - The weekly summary works again after the first one was shown: the agent stored "nothing waiting" in a form it could not read back, so every later weekly check failed (other notifications were not affected).
 - Containers › Images and Volumes is lighter: named images are tiles (unused ones greyed), unnamed leftovers and unused volumes are counted with their size, and the largest volumes are bars; the full tables are under "Show all". Scheduled Jobs › All: the timers table fits, with the started service shown only when it differs from the timer.
