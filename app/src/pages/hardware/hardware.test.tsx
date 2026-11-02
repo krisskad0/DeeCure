@@ -5,7 +5,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Metric } from "../../api";
 import { DisplayAudio, DisplayDisplays } from "../display/Display";
-import { PowerBattery, PowerProfile, PowerSleep } from "../power/Power";
+import { PowerBattery, PowerProfile, PowerSleep, sleepSummary } from "../power/Power";
 import { HardwareFirmware } from "./Firmware";
 import { HardwareGraphics } from "./Graphics";
 import { HardwareMemory } from "./Memory";
@@ -160,5 +160,16 @@ describe("Power and Display pages", () => {
     audio = { outputs: [], inputs: [], streams: [] };
     render(<DisplayAudio />);
     await waitFor(() => expect(screen.getByText(/No sound server answered/)).toBeTruthy());
+  });
+
+  it("sums up sleep: how many woke fine, had no resume, failed, and the longest", () => {
+    const e = (duration_ms?: number, failed = false) => ({ at: 1, kind: "suspend", duration_ms, failed });
+    expect(sleepSummary([e(3_600_000), e(60_000), e(undefined), e(undefined, true)])).toEqual([
+      ["suspends", "4"],
+      ["woke fine", "2"],
+      ["no resume logged", "1"],
+      ["failed", "1"],
+      ["longest", "1 h 0 m"],
+    ]);
   });
 });

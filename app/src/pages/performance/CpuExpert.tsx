@@ -9,6 +9,7 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { BarList } from "../../components/charts/BarList";
 import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { bytes } from "../../metrics";
@@ -353,24 +354,24 @@ export function CpuSleepStates() {
   return (
     <Panel
       title="CPU sleep states"
-      subtitle="share of the time the cores rest"
+      subtitle="share of the time the cores rest, now (or since start)"
       info="Deeper states save more power but take longer to wake up. Much time in the deepest state means the CPU rests well."
       source="/sys/devices/system/cpu/cpu*/cpuidle"
       span={12}
-      flush
     >
-      <DataTable
-        rows={rows}
-        columns={[
-          { key: "name", label: "State", text: (r) => r.name },
-          { key: "latency", label: "Wake-up time", text: (r) => (r.latency === undefined ? "-" : `${r.latency} µs`), numeric: true },
-          { key: "now", label: "Now", text: (r) => pct(r.now), numeric: true },
-          { key: "since", label: "Since start", text: (r) => pct(r.since), numeric: true },
-          { key: "off", label: "Turned off", text: (r) => (r.disabled ? "Yes" : "-") },
-        ]}
-        rowKey={(r) => r.name}
-        empty="This computer does not report CPU sleep states"
-      />
+      {rows.length === 0 ? (
+        <div className="empty muted">This computer does not report CPU sleep states.</div>
+      ) : (
+        <BarList
+          rows={rows.map((r) => ({
+            id: r.name,
+            label: r.name,
+            hint: [r.latency === undefined ? "" : `wakes in ${r.latency} µs`, r.now !== undefined ? `since start ${pct(r.since)}` : "", r.disabled ? "turned off" : ""].filter(Boolean).join(" · "),
+            value: r.now ?? r.since ?? 0,
+            display: pct(r.now ?? r.since),
+          }))}
+        />
+      )}
     </Panel>
   );
 }

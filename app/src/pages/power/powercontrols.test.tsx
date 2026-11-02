@@ -151,8 +151,8 @@ describe("Power controls", () => {
 
   it("the lid keeps waking; other devices get a stop button, savers a try button", async () => {
     withFix(<WakeExpertSections />);
-    await waitFor(() => expect(screen.getByText("Always kept")).toBeTruthy());
-    fireEvent.click(screen.getByText("Stop waking…"));
+    await waitFor(() => expect(screen.getAllByText("Always kept").length).toBeGreaterThan(0));
+    fireEvent.click(screen.getAllByText("Stop waking…")[0]);
     await waitFor(() => expect(screen.getByText("Try power saving…")).toBeTruthy());
     fireEvent.click(screen.getByText("Try power saving…"));
     expect(opened).toEqual([

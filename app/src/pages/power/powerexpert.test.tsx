@@ -68,10 +68,12 @@ describe("Expert power sections", () => {
 
   it("wake sources by name, the last wake, and devices that could save power", async () => {
     render(<WakeExpertSections />);
-    await waitFor(() => expect(screen.getByText("Lid")).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText("Lid").length).toBeGreaterThan(0));
     expect(screen.getByText("interrupt 9 (acpi)")).toBeTruthy();
     expect(screen.queryByText("Built-in keyboard")).toBeNull();
-    await waitFor(() => expect(screen.getAllByText("RTL8111 Ethernet").length).toBe(2));
+    // Shown where it signalled, in the folded table, and as a device that could save power.
+    await waitFor(() => expect(screen.getAllByText("RTL8111 Ethernet").length).toBeGreaterThanOrEqual(2));
+    expect(screen.getByText(/may wake it/)).toBeTruthy();
     expect(screen.getByText("Fingerprint reader")).toBeTruthy();
     expect(screen.queryByText("Dell Universal Receiver")).toBeNull();
     expect(screen.getByText("1 input or sound device stays awake on purpose.")).toBeTruthy();

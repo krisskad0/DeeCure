@@ -13,6 +13,8 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { BarList } from "../../components/charts/BarList";
+import { ShowAll } from "../../components/ShowAll";
 import { RadioCards } from "../../components/FormControls";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Gauge } from "../../components/charts/Gauge";
@@ -161,6 +163,21 @@ const EVENTS: Column<SleepEvent>[] = [
   { key: "result", label: "Result", text: (e) => (e.failed ? "Failed" : e.duration_ms === undefined ? "No resume logged" : "Success"), render: (e) => (e.failed ? <StatusBadge variant="crit" label="Failed" /> : e.duration_ms === undefined ? <StatusBadge variant="off" label="No resume logged" /> : <StatusBadge variant="ok" label="Success" />) },
 ];
 
+/** Counts for the sleep chips: suspends, woke fine, no resume logged, failed, and the longest. */
+export function sleepSummary(events: SleepEvent[]): [string, string][] {
+  const fine = events.filter((e) => !e.failed && e.duration_ms !== undefined).length;
+  const none = events.filter((e) => !e.failed && e.duration_ms === undefined).length;
+  const failed = events.filter((e) => e.failed).length;
+  const longest = Math.max(0, ...events.map((e) => e.duration_ms ?? 0));
+  return [
+    ["suspends", String(events.length)],
+    ["woke fine", String(fine)],
+    ...(none ? [["no resume logged", String(none)] as [string, string]] : []),
+    ...(failed ? [["failed", String(failed)] as [string, string]] : []),
+    ...(longest ? [["longest", duration(longest / 1000)] as [string, string]] : []),
+  ];
+}
+
 export function PowerSleep() {
   const { mode } = useUi();
   const { data: events, error } = useLive(loadSleep, 300_000);
@@ -183,8 +200,34 @@ export function PowerSleep() {
           { label: "Time asleep", value: String(Math.round(asleep / 3600)), unit: "h", subtext: "last 7 days" },
         ]}
       />
-      <Panel title="Sleep events" subtitle="last 30 days" source="journal: systemd-sleep" span={12} flush>
-        <DataTable rows={events} columns={EVENTS} rowKey={(e) => String(e.at)} pageSize={12} empty="No sleep in the last 30 days, or the journal cannot be read" />
+      <Panel title="Sleep events" subtitle="last 30 days" info="Each time the computer slept, and for how long. No resume logged means the journal has no wake-up for it, such as when the battery ran out or the computer was turned off while asleep." source="journal: systemd-sleep" span={12}>
+        {events.length === 0 ? (
+          <div className="empty muted">No sleep in the last 30 days, or the journal cannot be read.</div>
+        ) : (
+          <>
+            <div className="kn-chips">
+              {sleepSummary(events).map(([label, n]) => (
+                <span key={label} className="kn-chip">
+                  {label} <b>{n}</b>
+                </span>
+              ))}
+            </div>
+            <div className="kn-head svc-head">Most recent</div>
+            <BarList
+              rows={events.slice(0, 8).map((e) => ({
+                id: String(e.at),
+                label: when(e.at),
+                hint: e.failed ? "Failed" : e.duration_ms === undefined ? "No resume logged" : "Woke fine",
+                value: e.duration_ms ?? 0,
+                display: e.duration_ms === undefined ? "-" : duration(e.duration_ms / 1000),
+                tone: e.failed ? "warn" : undefined,
+              }))}
+            />
+            <ShowAll label={`Show all ${events.length} events`}>
+              <DataTable rows={events} columns={EVENTS} rowKey={(e) => String(e.at)} pageSize={12} />
+            </ShowAll>
+          </>
+        )}
       </Panel>
       {atLeast(mode, "expert") && (
         <Guard>

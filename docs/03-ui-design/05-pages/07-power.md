@@ -97,3 +97,5 @@ Radio group name: `pp`.
 ---
 
 ← Previous: [Hardware](06-hardware.md) · [Index](README.md) · Next: [Display & Audio](08-display.md) →
+
+**Sleep events** starts with chips (suspends, woke fine, no resume logged, failed, longest), then the 8 most recent as bars of how long the computer slept (with the result under the date); every event is under **Show all**. Expert: **May wake the computer** shows chips (may wake it, can be stopped, always kept) and only the devices that signalled since start, each with **Stop waking…**, or a green "Quiet" line; the full table is under **Show all**. **CPU sleep states** are bars of the share of time in each state now (since start until the second reading), with the wake-up time and the share since start on the second line. Whole-chip low power and Wake-ups per process sit side by side.

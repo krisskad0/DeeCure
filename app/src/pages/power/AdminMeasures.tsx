@@ -135,7 +135,7 @@ export function LowPowerPanel() {
 
 export function WakeupsPanel() {
   return (
-    <Panel title="Wake-ups per process" info="How often each process woke the processor, counted by the kernel for 5 seconds. Fewer wake-ups let the chip sleep longer and save battery." source="tracefs: sched_wakeup" span={12} flush>
+    <Panel title="Wake-ups per process" info="How often each process woke the processor, counted by the kernel for 5 seconds. Fewer wake-ups let the chip sleep longer and save battery." source="tracefs: sched_wakeup" span={6} flush>
       <AdminRead what="wakeups" label="Count for 5 seconds (asks for your password)">
         {(t) => parsed<Wakeups[]>(t, (v) => <WakeupsView data={v} />)}
       </AdminRead>

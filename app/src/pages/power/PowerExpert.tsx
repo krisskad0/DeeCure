@@ -8,6 +8,7 @@ import { Button } from "../../components/Button";
 import { DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useFix } from "../../shell/FixDrawer";
 import { useLive } from "../../useLive";
@@ -173,6 +174,8 @@ export function WakeExpertSections() {
     );
   }
   const allowed = d.wake_sources.filter((w) => w.may_wake);
+  // The ones that did something since start, most first.
+  const active = allowed.filter((w) => w.events > 0 || w.wakeups > 0).sort((a, b) => b.wakeups - a.wakeups || b.events - a.events);
   const savers = [
     ...(pci ?? []).filter(pciPowerSavingSafe).map((p) => ({ key: p.address, name: p.model ?? p.address, bus: "PCI", state: p.power_state, path: p.sys_path })),
     ...d.usb.filter((u) => u.control === "on" && !u.keep_awake && u.sys_path).map((u) => ({ key: u.port, name: u.product ?? u.port, bus: "USB", state: u.state, path: u.sys_path })),
@@ -216,26 +219,76 @@ export function WakeExpertSections() {
         info="Devices allowed to wake the computer from suspend. Signalled counts every event since start; stopped a suspend counts the times it kept the computer from going to sleep or woke it at once."
         source="/sys/class/wakeup · power/wakeup"
         span={12}
-        flush
       >
-        <DataTable
-          rows={allowed}
-          columns={[
-            { key: "label", label: "Device", text: (w) => wakeLabel(w, pci), wrap: true },
-            { key: "events", label: "Signalled", text: (w) => w.events.toLocaleString(), numeric: true },
-            { key: "wakeups", label: "Stopped a suspend", text: (w) => w.wakeups.toLocaleString(), numeric: true },
-            {
-              key: "act",
-              label: "",
-              text: () => "",
-              render: (w) => (w.device && !mustKeepWaking(w) ? <Button small onClick={() => openFix("power.set_device_wakeup", `${w.device}|off`)}>Stop waking…</Button> : mustKeepWaking(w) ? <span className="muted">Always kept</span> : null),
-            },
-            { key: "name", label: "Kernel name", text: (w) => w.name, expert: true },
-          ]}
-          rowKey={(w) => w.name}
-          pageSize={12}
-          empty="No device may wake the computer"
-        />
+        {allowed.length === 0 ? (
+          <div className="empty muted">No device may wake the computer.</div>
+        ) : (
+          <>
+            <div className="kn-chips">
+              <span className="kn-chip">
+                may wake it <b>{allowed.length}</b>
+              </span>
+              <span className="kn-chip">
+                can be stopped <b>{allowed.filter((w) => w.device && !mustKeepWaking(w)).length}</b>
+              </span>
+              <span className="kn-chip">
+                always kept (lid, buttons, keyboard) <b>{allowed.filter((w) => mustKeepWaking(w)).length}</b>
+              </span>
+            </div>
+            {active.length === 0 ? (
+              <div className="kn-verdict svc-verdict">
+                <StatusBadge variant="ok" label="Quiet" />
+                <span>None of them has signalled since the computer started.</span>
+              </div>
+            ) : (
+              <>
+                <div className="kn-head svc-head">Signalled since start</div>
+                <ul className="src-list">
+                  {active.map((w) => (
+                    <li key={w.name}>
+                      <div className="src-main">
+                        <b>{wakeLabel(w, pci)}</b>
+                        <span className="muted">
+                          signalled {w.events.toLocaleString()} {w.events === 1 ? "time" : "times"}
+                          {w.wakeups ? ` · stopped a suspend ${w.wakeups.toLocaleString()} ${w.wakeups === 1 ? "time" : "times"}` : ""}
+                        </span>
+                      </div>
+                      <div className="src-tags">
+                        {w.device && !mustKeepWaking(w) ? (
+                          <Button small onClick={() => openFix("power.set_device_wakeup", `${w.device}|off`)}>
+                            Stop waking…
+                          </Button>
+                        ) : mustKeepWaking(w) ? (
+                          <span className="muted">Always kept</span>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <ShowAll label={`Show all ${allowed.length} with Stop waking`}>
+              <DataTable
+                rows={allowed}
+                columns={[
+                  { key: "label", label: "Device", text: (w) => wakeLabel(w, pci), wrap: true },
+                  { key: "events", label: "Signalled", text: (w) => w.events.toLocaleString(), numeric: true },
+                  { key: "wakeups", label: "Stopped a suspend", text: (w) => w.wakeups.toLocaleString(), numeric: true },
+                  {
+                    key: "act",
+                    label: "",
+                    text: () => "",
+                    render: (w) => (w.device && !mustKeepWaking(w) ? <Button small onClick={() => openFix("power.set_device_wakeup", `${w.device}|off`)}>Stop waking…</Button> : mustKeepWaking(w) ? <span className="muted">Always kept</span> : null),
+                  },
+                  { key: "name", label: "Kernel name", text: (w) => w.name, expert: true },
+                ]}
+                rowKey={(w) => w.name}
+                pageSize={12}
+                empty="No device may wake the computer"
+              />
+            </ShowAll>
+          </>
+        )}
       </Panel>
     </>
   );
