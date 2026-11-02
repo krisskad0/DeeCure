@@ -3,13 +3,16 @@
 // Rule (docs/02-architecture/health-score.md): open critical −15, warning −5, info 0;
 // each area loses at most 15 points. The agent saves the score after every check.
 
-import { type Report, getMetrics, getWeeklyReports } from "../../api";
+import { type Finding, type Report, getMetrics, getWeeklyReports } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
+import { Icon } from "../../components/Icon";
 import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { Gauge } from "../../components/charts/Gauge";
 import { LineChart } from "../../components/charts/LineChart";
 import { RANGE_MS, scoreTone } from "../../metrics";
+import { href } from "../../route";
+import { PAGES } from "../../spec/pages";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 import { type PageProps, areaLabel, worst } from "./shared";
@@ -48,20 +51,83 @@ const loadTrend = () => {
   return getMetrics("health.score", until - RANGE_MS["30d"], until, { maxPoints: 30 });
 };
 
-interface Row {
-  area: string;
+export interface AreaScore {
+  id: string;
+  label: string;
   deduction: number;
-  findings: string;
+  findings: Finding[];
   status: StatusVariant;
 }
 
-const COLUMNS: Column<Row>[] = [
-  { key: "area", label: "Area", text: (r) => r.area },
-  { key: "max", label: "Most it can take", text: () => String(AREA_SHARE), numeric: true },
-  { key: "deduction", label: "Deduction", text: (r) => (r.deduction ? `−${r.deduction}` : "0"), numeric: true },
-  { key: "findings", label: "Open findings", text: (r) => r.findings, wrap: true },
-  { key: "status", label: "Status", text: (r) => r.status, render: (r) => <StatusBadge variant={r.status} /> },
-];
+/** Every checked area, plus any area that lost points: the ones losing most first. */
+export function areaScores(report: NonNullable<PageProps["report"]>): AreaScore[] {
+  const ids = [...new Set([...(report.checked ?? []), ...(report.deductions ?? []).map((d) => d.category)])];
+  return ids
+    .map((id) => {
+      const findings = report.findings.filter((f) => f.rule.split(".")[0] === id);
+      return { id, label: areaLabel(id), deduction: report.deductions?.find((d) => d.category === id)?.points ?? 0, findings, status: worst(findings) };
+    })
+    .sort((a, b) => b.deduction - a.deduction || a.label.localeCompare(b.label));
+}
+
+const SEVERITY_ORDER: Record<Finding["severity"], number> = { critical: 0, warning: 1, info: 2 };
+
+/** How the score is reached: 100, minus each area's points, equals the score. */
+function ScoreSum({ areas, score }: { areas: AreaScore[]; score: number }) {
+  const losing = areas.filter((a) => a.deduction > 0);
+  return (
+    <div className="score-sum" aria-label={`Score: 100${losing.map((a) => ` minus ${a.deduction} for ${a.label}`).join("")} equals ${score}`}>
+      <span className="score-start">100</span>
+      {losing.length === 0 ? (
+        <span className="muted">Nothing takes points off.</span>
+      ) : (
+        losing.map((a) => (
+          <span key={a.id} className={`score-chip score-chip-${a.status}`}>
+            −{a.deduction} {a.label}
+          </span>
+        ))
+      )}
+      <span className="score-equals">=</span>
+      <span className={`score-total score-total-${scoreTone(score)}`}>{score}</span>
+    </div>
+  );
+}
+
+function AreaCard({ area }: { area: AreaScore }) {
+  const page = PAGES.find((p) => p.id === area.id);
+  const kept = AREA_SHARE - area.deduction;
+  const open = [...area.findings].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
+  return (
+    <a className={`area-card area-card-${area.status}`} href={href(area.id, page?.tabs[0]?.id ?? "")}>
+      <div className="area-card-head">
+        {page && <Icon name={page.icon} size={16} />}
+        <span className="area-card-name">{area.label}</span>
+        <StatusBadge variant={area.status} />
+      </div>
+      <div className="area-card-points">
+        <span className="area-card-kept">{kept}</span>
+        <span className="muted">of {AREA_SHARE} points kept</span>
+        {area.deduction > 0 && <span className="area-card-lost">−{area.deduction}</span>}
+      </div>
+      <div className="area-card-bar" role="meter" aria-valuemin={0} aria-valuemax={AREA_SHARE} aria-valuenow={kept} aria-label={`${area.label}: ${kept} of ${AREA_SHARE} points kept`}>
+        <span style={{ width: `${(kept / AREA_SHARE) * 100}%` }} />
+      </div>
+      {open.length ? (
+        <ul className="area-card-findings">
+          {open.slice(0, 3).map((f) => (
+            <li key={`${f.rule}|${f.subject ?? ""}`}>
+              <span className={`sev-dot sev-dot-${f.severity}`} aria-hidden="true" />
+              {f.title}
+            </li>
+          ))}
+          {open.length > 3 && <li className="muted">+{open.length - 3} more</li>}
+        </ul>
+      ) : (
+        <p className="area-card-none muted">No open problems</p>
+      )}
+    </a>
+  );
+}
 
 export function OverviewScore({ report, error }: PageProps) {
   const trend = useLive(loadTrend, 300_000).data;
@@ -73,19 +139,7 @@ export function OverviewScore({ report, error }: PageProps) {
     );
   }
   const score = report.score;
-  // Areas that have rules, plus any area that lost points.
-  const areas = [...new Set([...(report.checked ?? []), ...(report.deductions ?? []).map((d) => d.category)])];
-  const rows: Row[] = areas
-    .map((id) => {
-      const open = report.findings.filter((f) => f.rule.split(".")[0] === id);
-      return {
-        area: areaLabel(id),
-        deduction: report.deductions?.find((d) => d.category === id)?.points ?? 0,
-        findings: open.map((f) => f.title).join(" · ") || "-",
-        status: worst(open),
-      };
-    })
-    .sort((a, b) => b.deduction - a.deduction || a.area.localeCompare(b.area));
+  const areas = areaScores(report);
 
   return (
     <>
@@ -100,8 +154,19 @@ export function OverviewScore({ report, error }: PageProps) {
         <Gauge value={score} subtitle="out of 100" status={scoreTone(score)} />
         <p className="muted center">90+ Healthy · 75-89 Fair · below 75 At risk</p>
       </Panel>
-      <Panel title="Score breakdown" subtitle="Areas DeeCure checks today" span={12} flush>
-        <DataTable rows={rows} columns={COLUMNS} rowKey={(r) => r.area} empty="No areas are checked yet" />
+      <Panel title="Score breakdown" subtitle="Areas DeeCure checks today" info={`Each area can take at most ${AREA_SHARE} points off: a critical problem takes 15, a warning 5, and info nothing. Select an area to open it.`} span={12}>
+        {areas.length ? (
+          <>
+            <ScoreSum areas={areas} score={score} />
+            <div className="area-grid">
+              {areas.map((a) => (
+                <AreaCard key={a.id} area={a} />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="empty muted">No areas are checked yet.</div>
+        )}
       </Panel>
       <WeeklySummaries />
     </>

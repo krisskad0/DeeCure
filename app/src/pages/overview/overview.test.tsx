@@ -83,12 +83,14 @@ describe("Overview pages", () => {
     expect(screen.getByText("Battery has lost capacity")).toBeTruthy();
   });
 
-  it("score breakdown lists checked areas, worst first", async () => {
+  it("score breakdown shows how the score is reached and a card per area, worst first", async () => {
     render(<OverviewScore report={REPORT} error={null} now={at} />);
-    const cells = screen.getAllByRole("cell").map((c) => c.textContent);
-    expect(cells[0]).toBe("Storage");
-    expect(cells).toContain("−5");
-    expect(cells).toContain("Services");
+    const meters = screen.getAllByRole("meter").map((m) => m.getAttribute("aria-label"));
+    expect(meters[0]).toMatch(/^Storage: \d+ of 15 points kept$/);
+    expect(meters.some((m) => m?.startsWith("Services: 15 of 15"))).toBe(true);
+    expect(screen.getAllByText("No open problems").length).toBeGreaterThan(0);
+    expect(screen.getByText("=")).toBeTruthy();
+    expect(screen.getAllByRole("link").some((l) => l.getAttribute("href")?.includes("storage"))).toBe(true);
     await waitFor(() => expect(screen.getByText("Set up backups.")).toBeTruthy());
     expect(screen.getByText("17")).toBeTruthy();
   });

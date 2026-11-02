@@ -180,20 +180,11 @@ Tab count pill: 9 (red).
 
 Gauge: value **82**, subtitle "out of 100", arc color `warn` (by score: ≥90 ok, ≥75 warn, else crit). Caption under the gauge (muted, centered): "90+ Healthy · 75-89 Fair · below 75 At risk".
 
-3. **Data table**: "Score breakdown" · span 12
-
-| Category | Weight [n] | Deduction [n] | Open findings | Status |
-| --- | --- | --- | --- | --- |
-| Storage | 15 | −8 | Root filesystem almost full | {crit:Critical} |
-| Services | 15 | −5 | bluetooth.service crash loop | {crit:Critical} |
-| Security | 15 | −3 | 4 security updates pending | {warn:Warning} |
-| Power | 10 | −1 | Battery health 71% | {warn:Warning} |
-| Backups | 10 | −1 | Last backup 21 days ago | {warn:Warning} |
-| Hardware | 10 | 0 | - | {ok:Healthy} |
-| Network | 10 | 0 | - | {ok:Healthy} |
-| Accounts | 5 | 0 | - | {ok:Healthy} |
-| Privacy | 5 | 0 | - | {ok:Healthy} |
-| Packages | 5 | 0 | - | {ok:Healthy} |
+3. **Area cards**: "Score breakdown" · span 12
+- Subtitle: "Areas DeeCure checks today". Info tooltip: each area takes at most 15 points off (critical 15, warning 5, info 0); select an area to open it.
+- First line, the sum: **100**, a chip per area that loses points ("−5 Containers", coloured by its worst problem), **=**, and the score coloured by its level. Without deductions: "Nothing takes points off."
+- Then a grid of cards (at least 240px wide), areas losing the most first, then by name. Each card links to its area's page and shows: the area icon, name, and status badge; "**10** of 15 points kept" with "−5" on the right; a bar of the points kept (green, amber, or red by status); and up to 3 open problems, worst first, each with a severity dot ("+N more" after that), or "No open problems".
+- Each card has a left edge in its status colour.
 
 ---
 
