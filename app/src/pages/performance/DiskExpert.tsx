@@ -7,6 +7,7 @@ import { type Groups, type JobsInfo, type PciDevice, type ProcessesIo, type Stor
 import { type Column, DataTable } from "../../components/DataTable";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
+import { BarList } from "../../components/charts/BarList";
 import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { bytes, rate } from "../../metrics";
@@ -44,6 +45,47 @@ export function linkVerdict(d: PciDevice): { variant: StatusVariant; text: strin
 
 // ---------- Performance › Disk I/O ----------
 
+interface IoRow {
+  id: string;
+  name: string;
+  readNow?: number;
+  writeNow?: number;
+  read: number;
+  written: number;
+}
+
+const hint = (r: IoRow) => `read ${bytes(r.read)} · wrote ${bytes(r.written)} since start`;
+
+/**
+ * The top 8 disk users as bars: first the ones busy now (bytes per second), then, to fill up to
+ * 8, the ones that moved the most since start, so a quiet minute still shows who uses the disk.
+ */
+export function IoBars({ rows, empty }: { rows: IoRow[]; empty: string }) {
+  const nowOf = (r: IoRow) => (r.readNow ?? 0) + (r.writeNow ?? 0);
+  const busy = rows.filter((r) => nowOf(r) > 0).slice(0, 8);
+  const most = rows
+    .filter((r) => !busy.includes(r) && r.read + r.written > 0)
+    .sort((a, b) => b.read + b.written - a.read - a.written)
+    .slice(0, 8 - busy.length);
+  if (busy.length + most.length === 0) return <div className="empty muted">{empty}</div>;
+  return (
+    <>
+      {busy.length > 0 && (
+        <>
+          <div className="kn-head">Busiest now</div>
+          <BarList rows={busy.map((r) => ({ id: r.id, label: r.name, hint: hint(r), value: nowOf(r), display: rate(nowOf(r)) }))} />
+        </>
+      )}
+      {most.length > 0 && (
+        <>
+          <div className="kn-head">{busy.length ? "Others, most since start" : "Quiet now · most since start"}</div>
+          <BarList rows={most.map((r) => ({ id: r.id, label: r.name, hint: hint(r), value: r.read + r.written, display: bytes(r.read + r.written) }))} />
+        </>
+      )}
+    </>
+  );
+}
+
 export function DiskIoExpertSections() {
   const groups = useLiveWithPrevious<Groups>(loadGroups, 10_000);
   const io = useLiveWithPrevious<ProcessesIo>(loadIo, 10_000);
@@ -67,19 +109,24 @@ export function DiskIoExpertSections() {
     <>
       <Panel title="Disk use per service" subtitle={groups.before ? "now, busiest first" : "since start (rates after the next reading)"} source="/sys/fs/cgroup/system.slice/*/io.stat" span={6} flush>
         {groups.data ? (
-          <DataTable
-            rows={services}
-            columns={[
-              { key: "name", label: "Service", text: (g) => g.name },
-              { key: "r", label: "Read/s", text: (g) => perS(g.readNow), numeric: true },
-              { key: "w", label: "Write/s", text: (g) => perS(g.writeNow), numeric: true },
-              { key: "rt", label: "Read since start", text: (g) => bytes(g.disk_read ?? 0), numeric: true },
-              { key: "wt", label: "Written since start", text: (g) => bytes(g.disk_write ?? 0), numeric: true },
-            ]}
-            rowKey={(g) => g.unit}
-            pageSize={10}
-            empty="No service used the disk"
-          />
+          <div className="panel-pad">
+            <IoBars rows={services.map((g) => ({ id: g.unit, name: g.name, readNow: g.readNow, writeNow: g.writeNow, read: g.disk_read ?? 0, written: g.disk_write ?? 0 }))} empty="No service used the disk" />
+            <ShowAll label={`Show all ${services.length} services as a table`}>
+              <DataTable
+                rows={services}
+                columns={[
+                  { key: "name", label: "Service", text: (g) => g.name },
+                  { key: "r", label: "Read/s", text: (g) => perS(g.readNow), numeric: true },
+                  { key: "w", label: "Write/s", text: (g) => perS(g.writeNow), numeric: true },
+                  { key: "rt", label: "Read since start", text: (g) => bytes(g.disk_read ?? 0), numeric: true },
+                  { key: "wt", label: "Written since start", text: (g) => bytes(g.disk_write ?? 0), numeric: true },
+                ]}
+                rowKey={(g) => g.unit}
+                pageSize={10}
+                empty="No service used the disk"
+              />
+            </ShowAll>
+          </div>
         ) : (
           <NoData error={groups.error} waiting="Loading…" />
         )}
@@ -87,19 +134,24 @@ export function DiskIoExpertSections() {
       <Panel title="Disk use per process" subtitle={io.before ? "now, busiest first" : "since each started (rates after the next reading)"} info="Bytes really read from and written to storage, not served from the cache." source="/proc/[pid]/io" span={6} flush>
         {io.data ? (
           <>
-            <DataTable
-              rows={processes}
-              columns={[
-                { key: "name", label: "Process", text: (p) => p.name },
-                { key: "pid", label: "PID", text: (p) => String(p.pid), numeric: true },
-                { key: "r", label: "Read/s", text: (p) => perS(p.readNow), numeric: true },
-                { key: "w", label: "Write/s", text: (p) => perS(p.writeNow), numeric: true },
-                { key: "wt", label: "Written since start", text: (p) => bytes(p.write_bytes), numeric: true },
-              ]}
-              rowKey={(p) => String(p.pid)}
-              pageSize={10}
-              empty="No process of yours used the disk"
-            />
+            <div className="panel-pad">
+              <IoBars rows={processes.map((p) => ({ id: String(p.pid), name: p.name, readNow: p.readNow, writeNow: p.writeNow, read: p.read_bytes, written: p.write_bytes }))} empty="No process of yours used the disk" />
+              <ShowAll label={`Show all ${processes.length} processes as a table`}>
+                <DataTable
+                  rows={processes}
+                  columns={[
+                    { key: "name", label: "Process", text: (p) => p.name },
+                    { key: "pid", label: "PID", text: (p) => String(p.pid), numeric: true },
+                    { key: "r", label: "Read/s", text: (p) => perS(p.readNow), numeric: true },
+                    { key: "w", label: "Write/s", text: (p) => perS(p.writeNow), numeric: true },
+                    { key: "wt", label: "Written since start", text: (p) => bytes(p.write_bytes), numeric: true },
+                  ]}
+                  rowKey={(p) => String(p.pid)}
+                  pageSize={10}
+                  empty="No process of yours used the disk"
+                />
+              </ShowAll>
+            </div>
             {io.data.unreadable > 0 && <p className="muted panel-pad">{io.data.unreadable} processes of other users are not counted: that needs Full access.</p>}
           </>
         ) : (

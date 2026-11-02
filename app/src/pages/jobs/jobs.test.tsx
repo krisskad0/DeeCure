@@ -130,6 +130,8 @@ describe("Scheduled jobs", () => {
   it("names commands briefly", () => {
     expect(shortCommand("~/bin/sync-notes.sh")).toBe("sync-notes.sh");
     expect(shortCommand("cd / && run-parts --report /etc/cron.hourly")).toBe("run-parts cron.hourly");
+    expect(shortCommand("test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron")).toBe("e2scrub_all_cron");
+    expect(shortCommand("[ -x /etc/init.d/anacron ] && if [ ! -d /run/systemd/system ]; then /usr/sbin/invoke-rc.d anacron start >/dev/null; fi")).toBe("anacron");
     expect(shortCommand("test -x /usr/sbin/anacron || { cd / && run-parts --report /etc/cron.daily; }")).toBe("run-parts cron.daily");
   });
 

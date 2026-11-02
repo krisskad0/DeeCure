@@ -8,10 +8,11 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { Icon } from "../../components/Icon";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Heatmap } from "../../components/charts/Heatmap";
 import { type Lane, SwimLanes } from "../../components/charts/SwimLanes";
-import { describeCron, nextRun, parseCron, runsBetween } from "../../cron";
+import { describeCron, describeTimer, nextRun, parseCron, runsBetween } from "../../cron";
 import { heatRows, when } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
@@ -25,9 +26,15 @@ const HOUR = 3_600_000;
 
 /** A short name for a cron command, for the swim lanes: the program, without paths. */
 export function shortCommand(command: string): string {
-  // Skip wrappers such as "cd / &&" and "test -x … || {", which may come one after another.
-  const words = command.replace(/^(?:cd \S+ && |test -x \S+ \|\| \{ )+/, "").split(/\s+/);
-  const program = words.find((w) => !w.includes("=") && w !== "command" && w !== "-v") ?? command;
+  // Skip wrappers such as "cd / &&", "test -x … || {", "[ -x … ] &&", and "if [ … ]; then",
+  // which may come one after another.
+  const words = command
+    .replace(/^(?:cd \S+ && |(?:test -\w \S+|\[ [^\]]* \]) (?:&&|\|\|) (?:\{ )?|if (?:test -\w \S+|\[ [^\]]* \]); then )+/, "")
+    .split(/\s+/);
+  const first = words.findIndex((w) => !w.includes("=") && w !== "command" && w !== "-v");
+  const program = words[first] ?? command;
+  // "invoke-rc.d anacron start" runs anacron.
+  if (/(?:^|\/)(?:invoke-rc\.d|service)$/.test(program) && words[first + 1]) return words[first + 1];
   // For run-parts, the folder it runs says what the job is, such as cron.daily.
   const folder = words.filter((w) => w.startsWith("/")).pop()?.replace(/[;}]+$/, "");
   return program === "run-parts" && folder ? `run-parts ${folder.split("/").pop()}` : (program.split("/").pop() ?? program);
@@ -82,6 +89,13 @@ export function JobsCalendar() {
   );
 }
 
+/** When a cron job runs next, in short words. */
+function cronNext(j: CronJob): string {
+  const c = parseCron(j.schedule);
+  const n = c && nextRun(c, Date.now());
+  return n ? when(n) : j.schedule === "@reboot" ? "At next start" : "-";
+}
+
 const CRON: Column<CronJob>[] = [
   { key: "schedule", label: "Schedule", text: (j) => j.schedule, render: (j) => (<span className="cell-two"><b>{j.schedule}</b><span>{describeCron(j.schedule)}</span></span>) },
   { key: "command", label: "Command", text: (j) => j.command, render: (j) => <code className="wrap-anywhere">{j.command}</code>, wrap: true },
@@ -90,11 +104,7 @@ const CRON: Column<CronJob>[] = [
   {
     key: "next",
     label: "Next run",
-    text: (j) => {
-      const c = parseCron(j.schedule);
-      const n = c && nextRun(c, Date.now());
-      return n ? when(n) : j.schedule === "@reboot" ? "At next start" : "-";
-    },
+    text: cronNext,
   },
   { key: "result", label: "Last result", text: () => "Not recorded", render: () => <StatusBadge variant="off" label="Not recorded" /> },
 ];
@@ -104,8 +114,29 @@ export function JobsCron() {
   if (!jobs) return <Loading error={error} />;
   return (
     <>
-      <Panel title="Cron jobs" source="crontab -l · /etc/crontab · /etc/cron.d" span={12} flush>
-        <DataTable rows={jobs.cron} columns={CRON} rowKey={(j) => `${j.source}|${j.schedule}|${j.command}`} empty="No cron jobs" />
+      <Panel title="Cron jobs" subtitle={`${jobs.cron.length} jobs`} source="crontab -l · /etc/crontab · /etc/cron.d" span={12}>
+        {jobs.cron.length === 0 ? (
+          <div className="empty muted">No cron jobs</div>
+        ) : (
+          <>
+            <ul className="src-list">
+              {jobs.cron.map((j) => (
+                <li key={`${j.source}|${j.schedule}|${j.command}`} title={j.command}>
+                  <span className="src-main">
+                    <b>{shortCommand(j.command)}</b>
+                    <span className="muted">
+                      {describeCron(j.schedule)} · {j.user} · {j.source}
+                    </span>
+                  </span>
+                  <span className="src-tags muted">next {cronNext(j)}</span>
+                </li>
+              ))}
+            </ul>
+            <ShowAll label={`Show all ${jobs.cron.length} as a table`}>
+              <DataTable rows={jobs.cron} columns={CRON} rowKey={(j) => `${j.source}|${j.schedule}|${j.command}`} empty="No cron jobs" />
+            </ShowAll>
+          </>
+        )}
       </Panel>
       <AlertBanner tone="info" title="Cron does not record job results" text="Cron only logs that a job started. Tracking exit codes and output comes in a later version." />
     </>
@@ -128,7 +159,18 @@ const TIMERS: Column<Timer>[] = [
     ),
     wrap: true,
   },
-  { key: "schedule", label: "Schedule", text: (t) => t.schedule.join(", "), render: (t) => <code className="wrap-anywhere">{t.schedule.join(", ") || "-"}</code>, wrap: true },
+  {
+    key: "schedule",
+    label: "Schedule",
+    text: (t) => t.schedule.join(", "),
+    render: (t) => (
+      <span className="cell-two">
+        <span>{describeTimer(t.schedule)}</span>
+        <code className="wrap-anywhere muted">{t.schedule.join(", ") || "-"}</code>
+      </span>
+    ),
+    wrap: true,
+  },
   { key: "last", label: "Last trigger", text: (t) => (t.last ? when(t.last) : "Never") },
   { key: "next", label: "Next", text: (t) => (t.next ? when(t.next) : "-") },
   {
@@ -144,9 +186,55 @@ const TIMERS: Column<Timer>[] = [
 export function JobsTimers() {
   const { data: jobs, error } = useJobs();
   if (!jobs) return <Loading error={error} />;
+  const failed = jobs.timers.filter((t) => t.result && t.result !== "success");
+  const next = jobs.timers
+    .filter((t) => t.next)
+    .sort((a, b) => (a.next ?? 0) - (b.next ?? 0))
+    .slice(0, 5);
   return (
-    <Panel title="Timers" subtitle={`${jobs.timers.length} timers`} source="systemctl list-timers --all" span={12} flush>
-      <DataTable rows={jobs.timers} columns={TIMERS} rowKey={(t) => `${t.scope}|${t.name}`} filter={{ column: "scope", options: ["system", "user"] }} pageSize={14} />
+    <Panel title="Timers" subtitle={`${jobs.timers.length} timers`} source="systemctl list-timers --all" span={12}>
+      <div className="kn-chips">
+        {[
+          ["succeeded", jobs.timers.filter((t) => t.result === "success").length],
+          ["failed", failed.length],
+          ["not run yet", jobs.timers.filter((t) => !t.last).length],
+          ["your own", jobs.timers.filter((t) => t.scope === "user").length],
+        ].map(([label, n]) => (
+          <span key={label} className="kn-chip">
+            {label} <b>{n}</b>
+          </span>
+        ))}
+      </div>
+      {failed.length ? (
+        <ul className="kn-notable svc-verdict">
+          {failed.map((t) => (
+            <li key={`${t.scope}|${t.name}`}>
+              <code>{t.name}</code> <StatusBadge variant={RESULT[t.result ?? ""]?.[0] ?? "warn"} label={RESULT[t.result ?? ""]?.[1] ?? t.result ?? ""} />
+              {t.last && <span className="muted"> last run {when(t.last)}</span>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="kn-verdict svc-verdict">
+          <StatusBadge variant="ok" label="All fine" />
+          <span>Every timer that ran finished without an error.</span>
+        </div>
+      )}
+      <div className="kn-head" style={{ marginTop: 12 }}>Coming up</div>
+      <ul className="src-list">
+        {next.map((t) => (
+          <li key={`${t.scope}|${t.name}`} title={t.schedule.join(", ")}>
+            <span className="src-main">
+              <b>{t.name.replace(/\.timer$/, "")}</b>
+              <span className="muted">{describeTimer(t.schedule)}</span>
+            </span>
+            <span className="src-tags muted">{t.next ? when(t.next) : "-"}</span>
+          </li>
+        ))}
+      </ul>
+      <ShowAll label={`Show all ${jobs.timers.length} timers`}>
+        <DataTable rows={jobs.timers} columns={TIMERS} rowKey={(t) => `${t.scope}|${t.name}`} filter={{ column: "scope", options: ["system", "user"] }} pageSize={14} />
+      </ShowAll>
     </Panel>
   );
 }

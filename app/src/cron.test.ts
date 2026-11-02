@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from "vitest";
-import { describeCron, nextRun, parseCron, runsBetween } from "./cron";
+import { describeCalendar, describeCron, describeTimer, nextRun, parseCron, runsBetween } from "./cron";
 
 const at = (y: number, mo: number, d: number, h = 0, mi = 0) => new Date(y, mo - 1, d, h, mi).getTime();
 
@@ -14,6 +14,8 @@ describe("cron", () => {
     expect(describeCron("@daily")).toBe("Every day at 00:00");
     expect(describeCron("@reboot")).toBe("At every start");
     expect(describeCron("5 4 1-7 * 1")).toBe("5 4 1-7 * 1");
+    expect(describeCron("30 7-23 * * *")).toBe("Hourly at :30, 07:00 to 23:00");
+    expect(describeCron("5-55/10 * * * *")).toBe("Every 10 minutes from :05");
   });
 
   it("finds the next run in local time", () => {
@@ -39,5 +41,26 @@ describe("cron", () => {
     expect(parseCron("@reboot")).toBeNull();
     expect(parseCron("61 * * * *")).toBeNull();
     expect(parseCron("* * *")).toBeNull();
+  });
+});
+
+describe("timer schedules in plain words", () => {
+  it("reads common systemd calendar forms", () => {
+    expect(describeCalendar("*-*-* *:00/10:00")).toBe("Every 10 minutes");
+    expect(describeCalendar("*-*-* *:00:00")).toBe("Every hour");
+    expect(describeCalendar("*-*-* 00:00:00")).toBe("Every day at 00:00");
+    expect(describeCalendar("*-*-* 6,18:00")).toBe("Every day at 06:00, 18:00");
+    expect(describeCalendar("*-*-* 07..23:30:00")).toBe("Hourly at :30, 07:00 to 23:00");
+    expect(describeCalendar("Mon *-*-* 00:00:00")).toBe("Mondays at 00:00");
+    expect(describeCalendar("*-*-01 03:00:00")).toBe("Monthly on day 1 at 03:00");
+    expect(describeCalendar("OnStartupUSec=1min")).toBe("1min after start");
+    expect(describeCalendar("weekly")).toBe("Weekly");
+    expect(describeCalendar("*-*-* 00:00:00/3")).toBe("*-*-* 00:00:00/3");
+  });
+
+  it("folds many daily times", () => {
+    expect(describeTimer(["*-*-* 03:00:00", "*-*-* 09:00:00", "*-*-* 15:00:00", "*-*-* 21:00:00"])).toBe("4 times a day");
+    expect(describeTimer(["*-*-* 00,12:00:00", "OnStartupUSec=1min"])).toBe("Every day at 00:00, 12:00, 1min after start");
+    expect(describeTimer([])).toBe("-");
   });
 });

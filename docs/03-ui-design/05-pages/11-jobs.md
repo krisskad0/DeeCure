@@ -57,6 +57,8 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | **17 * * * *** · Hourly at :17 | `run-parts --report /etc/cron.hourly` | root | `/etc/crontab` | 22:17 | {ok:Success} |
 | **30 3 * * 0** · Sundays 03:30 | `e2scrub_all_cron` | root | `/etc/cron.d/e2scrub_all` | Sun 25 Oct | {off:Skipped (systemd)} |
 
+The panel shows one row per job: a short name (the program, past shell guards such as `test -x … ||` and `[ … ] &&`), the schedule in plain words, the user and file, and the next run. The table is under "Show all".
+
 2. **Alert banner**: "Cron does not record job results" · span 12
 - State: `info` · Title: "Cron does not record job results" · Text: "Track wraps a job so its exit code and output are saved from the next run."
 
@@ -75,6 +77,8 @@ Wed  1 0 0 0 0 0 2 0 0 2 2 2 2 2 2 2 2 2 3 2 2 3 0 0
 | `e2scrub_all.timer` | `e2scrub_all.service` | `Sun *-*-* 03:10` | Sun 18 Oct | Sun 25 Oct | {warn:Missed} | - |
 | `anacron.timer` | `anacron.service` | `hourly` | Today 21:07 | 22:07 | {ok:Success} | ✓ |
 | `snapd.snap-repair.timer` | `snapd.snap-repair.service` | `random 6h` | Today 17:40 | Tomorrow 01:12 | {ok:Success} | - |
+
+The panel shows chips (succeeded, failed, not run yet, your own), the failed timers (or one green line), and the next 5 timers to run with their schedule in plain words ("Every 10 minutes", "Every day at 00:00", "8 times a day"). The table is under "Show all"; its schedule column shows the plain words above the raw setting.
 
 ## Scheduled Jobs › Anacron: `jobs/anacron`
 

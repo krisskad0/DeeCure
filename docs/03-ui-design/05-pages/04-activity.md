@@ -64,6 +64,8 @@
 | Fri 12:20 | {crit:Remove} | thunderbird (snap) | `128.3.1` | - | snap |
 | Thu 09:30 | {ok:Install} | httpie | - | `3.2.2` | pip |
 
+Above the table: chips (installed, upgraded, removed) and a bar chart of changes per month, from the first month with any change.
+
 ## Activity › Config Changes: `activity/config`
 
 1. **Data table**: "Configuration changes" · span 12
@@ -87,6 +89,8 @@
 | Mon 10:02 | {ok:Connected} | USB storage PHOTOS (64 GB) | USB 3.2 | `0781:5583` |
 | Mon 09:44 | {warn:Disconnected} | USB storage PHOTOS (64 GB) | USB 3.2 | `0781:5583` |
 | Sat 18:30 | {ok:Connected} | USB mouse | USB 2.0 | `046d:c077` |
+
+Above the table: ranked bars of the 5 devices plugged in and out most, with the last time as a hint.
 
 ## Activity › DeeCure Actions: `activity/deecure`
 

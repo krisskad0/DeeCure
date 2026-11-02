@@ -13,6 +13,8 @@ import { HowTo } from "../../components/HowTo";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
+import { BarChart } from "../../components/charts/BarChart";
+import { BarList } from "../../components/charts/BarList";
 import { Donut } from "../../components/charts/Donut";
 import { Select } from "../../components/FormControls";
 import { useKb } from "../../kb";
@@ -349,12 +351,42 @@ const PACKAGES: Column<HistoryEvent>[] = [
   { key: "source", label: "Source", text: (e) => e.source },
 ];
 
+/** Package changes in each of the last 12 months, oldest first, from the first month with any. */
+export function perMonth(events: HistoryEvent[], now = Date.now()): { label: string; long: string; value: number }[] {
+  const end = new Date(now);
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const start = new Date(end.getFullYear(), end.getMonth() - 11 + i, 1);
+    const next = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+    return {
+      label: start.toLocaleDateString(undefined, { month: "short" }),
+      long: start.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+      value: events.filter((e) => e.at >= start.getTime() && e.at < next.getTime()).length,
+    };
+  });
+  return months.slice(Math.max(0, months.findIndex((m) => m.value > 0)));
+}
+
 export function ActivityPackages() {
   const { data, error } = useLive(loadPackages, 300_000);
   return (
     <Panel title="Package history" subtitle="last 12 months" source="/var/log/apt/history.log · /var/log/dpkg.log · snap · flatpak" span={12} flush>
       {data ? (
-        <DataTable rows={data.events} columns={PACKAGES} rowKey={(e) => String(e.id)} search={{ placeholder: "Search packages" }} filter={{ column: "action", options: ["Install", "Upgrade", "Remove"] }} pageSize={14} empty="No package changes yet. DeeCure reads the package logs every few minutes." />
+        <>
+          {data.events.length > 0 && (
+            <div className="panel-pad">
+              <div className="kn-chips">
+                {(["install", "upgrade", "remove"] as const).map((a) => (
+                  <span key={a} className="kn-chip">
+                    {a === "install" ? "installed" : a === "upgrade" ? "upgraded" : "removed"} <b>{data.events.filter((e) => (a === "remove" ? ["remove", "purge"] : [a]).includes(actionOf(e))).length}</b>
+                  </span>
+                ))}
+              </div>
+              <div className="kn-head" style={{ marginTop: 10 }}>Changes per month</div>
+              <BarChart bars={perMonth(data.events)} height={110} />
+            </div>
+          )}
+          <DataTable rows={data.events} columns={PACKAGES} rowKey={(e) => String(e.id)} search={{ placeholder: "Search packages" }} filter={{ column: "action", options: ["Install", "Upgrade", "Remove"] }} pageSize={14} empty="No package changes yet. DeeCure reads the package logs every few minutes." />
+        </>
       ) : (
         <NoData error={error} waiting="Loading…" />
       )}
@@ -400,11 +432,40 @@ const DEVICES: Column<HistoryEvent>[] = [
   { key: "id", label: "ID", text: (e) => e.data?.id ?? "-", render: (e) => (e.data?.id ? <code>{e.data.id}</code> : "-") },
 ];
 
+/** Events per device (a folded repeat counts as many), most first. */
+export function deviceCounts(events: HistoryEvent[]): { name: string; count: number; last: number }[] {
+  const m = new Map<string, { name: string; count: number; last: number }>();
+  for (const e of events) {
+    const name = e.subject ?? e.title;
+    const d = m.get(name) ?? { name, count: 0, last: 0 };
+    d.count += e.data?.count ?? 1;
+    d.last = Math.max(d.last, e.at);
+    m.set(name, d);
+  }
+  return [...m.values()].sort((a, b) => b.count - a.count || b.last - a.last);
+}
+
 export function ActivityDevices() {
   const { data, error } = useLive(loadDevices, 120_000);
   return (
     <Panel title="Device events" subtitle="last 30 days" source="kernel log" span={12} flush>
-      {data ? <DataTable rows={data.events} columns={DEVICES} rowKey={(e) => String(e.id)} empty="No USB devices were plugged in or out" /> : <NoData error={error} waiting="Loading…" />}
+      {data ? (
+        <>
+          {data.events.length > 0 && (
+            <div className="panel-pad">
+              <div className="kn-head">Most plugged in and out</div>
+              <BarList
+                rows={deviceCounts(data.events)
+                  .slice(0, 5)
+                  .map((d) => ({ id: d.name, label: d.name, hint: `last ${when(d.last)}`, value: d.count, display: `${d.count}×` }))}
+              />
+            </div>
+          )}
+          <DataTable rows={data.events} columns={DEVICES} rowKey={(e) => String(e.id)} empty="No USB devices were plugged in or out" />
+        </>
+      ) : (
+        <NoData error={error} waiting="Loading…" />
+      )}
     </Panel>
   );
 }

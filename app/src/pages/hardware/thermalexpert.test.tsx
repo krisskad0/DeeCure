@@ -26,9 +26,10 @@ afterEach(cleanup);
 describe("Expert temperature sections", () => {
   it("zones show where the system acts, and little room left is pointed out", async () => {
     render(<ThermalExpertSections />);
-    await waitFor(() => expect(screen.getByText("Case surface (skin)")).toBeTruthy());
-    expect(screen.getByText("MYSTERY")).toBeTruthy();
-    expect(screen.getByText("3 °C")).toBeTruthy();
+    await waitFor(() => expect(screen.getAllByText("Case surface (skin)").length).toBeGreaterThan(0));
+    expect(screen.getAllByText("MYSTERY").length).toBeGreaterThan(0);
+    // Little room left shows as a warning on the bar.
+    expect(screen.getByText("3 °C left")).toBeTruthy();
     expect(screen.getByText("Fan (dell-smm-fan1)")).toBeTruthy();
     expect(screen.getByText("2 of 2 (full speed)")).toBeTruthy();
   });

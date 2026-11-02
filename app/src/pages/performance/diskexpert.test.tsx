@@ -104,8 +104,9 @@ describe("Expert drive sections", () => {
 
   it("disk use per service and process, and who is not counted", async () => {
     render(<DiskIoExpertSections />);
-    await waitFor(() => expect(screen.getByText("systemd-journald")).toBeTruthy());
-    expect(screen.getByText("9.0 GB")).toBeTruthy();
+    await waitFor(() => expect(screen.getAllByText("systemd-journald").length).toBeGreaterThan(0));
+    expect(screen.getAllByText("9.0 GB").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/most since start|Busiest now/).length).toBe(2);
     await waitFor(() => expect(screen.getByText(/232 processes of other users/)).toBeTruthy());
   });
 

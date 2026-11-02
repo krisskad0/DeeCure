@@ -6,6 +6,7 @@
 import { type ThermalInfo, getInventory } from "../../api";
 import { DataTable } from "../../components/DataTable";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { tempUnit, tempValue } from "../../units";
 import { useLive } from "../../useLive";
@@ -64,6 +65,12 @@ export function ThermalExpertSections() {
     );
   }
   const first = (z: ThermalInfo["zones"][number], kind: string) => z.trips.find((x) => x.kind === kind)?.celsius;
+  // Zones with a slow-down point get a bar of how close they are to it; the rest are chips.
+  const watched = t.zones.flatMap((z) => {
+    const at = first(z, "passive");
+    return at !== undefined && z.celsius !== undefined && at > 0 ? [{ z, at }] : [];
+  });
+  const others = t.zones.filter((z) => !watched.some((w) => w.z === z));
   return (
     <>
       <Panel
@@ -73,35 +80,73 @@ export function ThermalExpertSections() {
         span={12}
         flush
       >
-        <DataTable
-          rows={t.zones}
-          columns={[
-            { key: "zone", label: "Zone", text: (z) => ZONES[z.kind] ?? z.kind },
-            { key: "now", label: "Now", text: (z) => temp(z.celsius), numeric: true },
-            { key: "passive", label: "Slows down at", text: (z) => temp(first(z, "passive")), numeric: true },
-            { key: "active", label: "Fans at", text: (z) => temp(first(z, "active")), numeric: true },
-            { key: "critical", label: "Shuts down at", text: (z) => temp(first(z, "critical")), numeric: true },
-            {
-              key: "margin",
-              label: "Room before slowing",
-              text: (z) => {
-                const p = first(z, "passive");
-                return z.celsius === undefined || p === undefined ? "-" : `${Math.round(p - z.celsius)} °C`;
-              },
-              render: (z) => {
-                const p = first(z, "passive");
-                if (z.celsius === undefined || p === undefined) return "-";
-                const room = Math.round(p - z.celsius);
-                return room <= 5 ? <StatusBadge variant="warn" label={`${room} °C`} /> : `${room} °C`;
-              },
-              numeric: true,
-            },
-            { key: "kind", label: "Firmware name", text: (z) => `${z.kind} (${z.zone})`, expert: true },
-          ]}
-          rowKey={(z) => z.zone}
-          pageSize={20}
-          empty="This computer reports no thermal zones"
-        />
+        <div className="panel-pad">
+          {watched.length > 0 && (
+            <>
+              <div className="kn-head">Room before the system slows down</div>
+              <ul className="barlist">
+                {watched.map(({ z, at }) => {
+                  const room = Math.round(at - (z.celsius ?? 0));
+                  return (
+                    <li key={z.zone}>
+                      <span className="bl-label" title={`${z.kind} (${z.zone})`}>
+                        {ZONES[z.kind] ?? z.kind}
+                        <span className="bl-hint">
+                          now {temp(z.celsius)} · slows at {temp(at)}
+                          {first(z, "critical") !== undefined && ` · shuts down at ${temp(first(z, "critical"))}`}
+                        </span>
+                      </span>
+                      <span className="bl-track">
+                        <span className={`bl-fill${room <= 5 ? " warn" : ""}`} style={{ width: `${Math.max(0, Math.min(100, ((z.celsius ?? 0) / at) * 100))}%` }} />
+                      </span>
+                      <span className="bl-value">{room <= 5 ? <StatusBadge variant="warn" label={`${room} °C left`} /> : `${room} °C left`}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+          {others.length > 0 && (
+            <div className="kn-chips" style={{ marginTop: 8 }}>
+              {others.map((z) => (
+                <span key={z.zone} className="kn-chip" title={`${z.kind} (${z.zone}): no slow-down point set`}>
+                  {ZONES[z.kind] ?? z.kind} <b>{temp(z.celsius)}</b>
+                </span>
+              ))}
+            </div>
+          )}
+          <ShowAll label={`Show all ${t.zones.length} zones as a table`}>
+            <DataTable
+              rows={t.zones}
+              columns={[
+                { key: "zone", label: "Zone", text: (z) => ZONES[z.kind] ?? z.kind },
+                { key: "now", label: "Now", text: (z) => temp(z.celsius), numeric: true },
+                { key: "passive", label: "Slows down at", text: (z) => temp(first(z, "passive")), numeric: true },
+                { key: "active", label: "Fans at", text: (z) => temp(first(z, "active")), numeric: true },
+                { key: "critical", label: "Shuts down at", text: (z) => temp(first(z, "critical")), numeric: true },
+                {
+                  key: "margin",
+                  label: "Room before slowing",
+                  text: (z) => {
+                    const p = first(z, "passive");
+                    return z.celsius === undefined || p === undefined ? "-" : `${Math.round(p - z.celsius)} °C`;
+                  },
+                  render: (z) => {
+                    const p = first(z, "passive");
+                    if (z.celsius === undefined || p === undefined) return "-";
+                    const room = Math.round(p - z.celsius);
+                    return room <= 5 ? <StatusBadge variant="warn" label={`${room} °C`} /> : `${room} °C`;
+                  },
+                  numeric: true,
+                },
+                { key: "kind", label: "Firmware name", text: (z) => `${z.kind} (${z.zone})`, expert: true },
+              ]}
+              rowKey={(z) => z.zone}
+              pageSize={20}
+              empty="This computer reports no thermal zones"
+            />
+          </ShowAll>
+        </div>
       </Panel>
       <Panel title="Cooling" info="What the system does to cool down right now." source="/sys/class/thermal/cooling_device*" span={6} flush>
         <DataTable

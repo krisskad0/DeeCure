@@ -6,7 +6,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HistoryEvent } from "../../api";
 import { resetKb } from "../../kb";
-import { ActivityConfig, ActivityDevices, ActivityPackages, ActivityTimelinePage, groupChanges, newKernel } from "./Activity";
+import { ActivityConfig, ActivityDevices, ActivityPackages, ActivityTimelinePage, deviceCounts, groupChanges, newKernel, perMonth } from "./Activity";
 
 const now = Date.now();
 const H = 3_600_000;
@@ -119,5 +119,17 @@ describe("Activity", () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
       cleanup();
     }
+  });
+
+  it("counts package changes per month and device events per device", () => {
+    const at = new Date(2026, 10, 15).getTime();
+    const months = perMonth([ev({ kind: "package_installed", at, title: "a" }), ev({ kind: "package_installed", at: new Date(2026, 9, 2).getTime(), title: "b" })], at);
+    // Empty months before the first change are left out.
+    expect(months.map((m) => m.value)).toEqual([1, 1]);
+    const devices = deviceCounts([
+      ev({ kind: "device_added", at: 1, title: "x", subject: "Mouse" }),
+      ev({ kind: "device_added", at: 2, title: "x", subject: "Key", data: { count: 3 } }),
+    ]);
+    expect(devices.map((d) => [d.name, d.count])).toEqual([["Key", 3], ["Mouse", 1]]);
   });
 });

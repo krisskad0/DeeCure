@@ -169,6 +169,8 @@ Expert adds "Hardware errors": one green line ("No errors", with how many source
 3. **Alert banner**: "Fan speed not reported" · span 12
 - State: `info` · Title: "Fan speed not reported" · Text: "This laptop’s embedded controller does not expose fan RPM to Linux."
 
+Fans are chips with their speed. Expert: "Thermal zones" shows a bar per zone with a slow-down point (how close it is now, with the degrees left; 5 °C or less is a warning), and the other zones as chips. The table is under "Show all".
+
 ## Hardware › Peripherals: `hardware/peripherals`
 
 1. **KPI row** · span 12

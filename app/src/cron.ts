@@ -103,6 +103,10 @@ export function describeCron(schedule: string): string {
   if (every.test(m) && h === "*" && rest(dom, mon, dow)) return `Every ${m.match(every)?.[1]} minutes`;
   if (m === "*" && h === "*" && rest(dom, mon, dow)) return "Every minute";
   if (/^\d+$/.test(m) && h === "*" && rest(dom, mon, dow)) return `Hourly at :${two(Number(m))}`;
+  const stepFrom = m.match(/^(\d+)-\d+\/(\d+)$/);
+  if (stepFrom && h === "*" && rest(dom, mon, dow)) return `Every ${stepFrom[2]} minutes from :${two(Number(stepFrom[1]))}`;
+  const hours = h.match(/^(\d+)-(\d+)$/);
+  if (/^\d+$/.test(m) && hours && rest(dom, mon, dow)) return `Hourly at :${two(Number(m))}, ${two(Number(hours[1]))}:00 to ${two(Number(hours[2]))}:00`;
   if (/^\d+$/.test(m) && /^\d+$/.test(h)) {
     const time = `${two(Number(h))}:${two(Number(m))}`;
     if (rest(dom, mon, dow)) return `Every day at ${time}`;
@@ -110,4 +114,51 @@ export function describeCron(schedule: string): string {
     if (/^\d+$/.test(dom) && mon === "*" && dow === "*") return `Monthly on day ${dom} at ${time}`;
   }
   return schedule;
+}
+
+const WEEKDAYS: Record<string, string> = { mon: "Mondays", tue: "Tuesdays", wed: "Wednesdays", thu: "Thursdays", fri: "Fridays", sat: "Saturdays", sun: "Sundays" };
+
+/**
+ * One systemd timer setting in plain words, such as "*-*-* *:00/10:00" as "Every 10 minutes" or
+ * "OnStartupUSec=1min" as "1min after start". Unusual forms come back as they are.
+ */
+export function describeCalendar(spec: string): string {
+  const s = spec.trim();
+  const after = s.match(/^On(?:Startup|Boot)USec=(.+)$/);
+  if (after) return `${after[1]} after start`;
+  const again = s.match(/^OnUnit(?:Active|Inactive)USec=(.+)$/);
+  if (again) return `Every ${again[1]}`;
+  const nick = s.toLowerCase();
+  if (["hourly", "daily", "weekly", "monthly", "yearly"].includes(nick)) return nick[0].toUpperCase() + nick.slice(1);
+  const m = s.match(/^(?:([A-Za-z]{3}(?:[.,]+[A-Za-z]{3})*) )?(?:\*-\*-(\*|\d+) )?(\S+)$/);
+  if (!m) return spec;
+  const [, days, dom = "*", time] = m;
+  const [h, min = "00", sec = "00"] = time.split(":");
+  if (!/^(\*|\d+)(\/\d+)?$/.test(min) || !/^\d+$/.test(sec)) return spec;
+  const mm = (x: string) => two(Number(x.split("/")[0]));
+  let when: string;
+  if (h === "*") {
+    const step = min.match(/\/(\d+)$/);
+    when = step ? `Every ${Number(step[1])} minutes` : min === "*" ? "Every minute" : Number(min) === 0 ? "Every hour" : `Hourly at :${mm(min)}`;
+  } else if (/^\d+$/.test(h)) when = `at ${two(Number(h))}:${mm(min)}`;
+  else if (/^\d+(,\d+)+$/.test(h)) when = `at ${h.split(",").map((x) => `${two(Number(x))}:${mm(min)}`).join(", ")}`;
+  else if (/^\d+\.\.\d+$/.test(h)) {
+    const [a, b] = h.split("..").map(Number);
+    when = `Hourly at :${mm(min)}, ${two(a)}:00 to ${two(b)}:00`;
+  } else return spec;
+  const daily = when.startsWith("at ");
+  if (days) {
+    const names = days.split(/[,.]+/).map((d) => WEEKDAYS[d.toLowerCase()] ?? d);
+    return `${names.join(", ")} ${daily ? when : when.toLowerCase()}`;
+  }
+  if (dom !== "*") return `Monthly on day ${Number(dom)}${daily ? ` ${when}` : ""}`;
+  return daily ? `Every day ${when}` : when;
+}
+
+/** All of a timer's settings in plain words; many daily times become "N times a day". */
+export function describeTimer(schedule: string[]): string {
+  const parts = schedule.map(describeCalendar);
+  const daily = parts.filter((p) => p.startsWith("Every day at "));
+  if (daily.length > 3) return [`${daily.length} times a day`, ...parts.filter((p) => !p.startsWith("Every day at "))].join(", ");
+  return parts.join(", ") || "-";
 }

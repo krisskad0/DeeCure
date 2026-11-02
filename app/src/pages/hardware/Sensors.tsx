@@ -7,7 +7,6 @@ import { ThermalExpertSections } from "./ThermalExpert";
 import { temp as tempText, tempUnit, tempValue } from "../../units";
 import type { Metric } from "../../api";
 import { AlertBanner } from "../../components/AlertBanner";
-import { type Column, DataTable } from "../../components/DataTable";
 import { Panel } from "../../components/Panel";
 import { GaugeGroup } from "../../components/charts/Gauge";
 import { heatStatus, pick, pickAll } from "../../metrics";
@@ -24,10 +23,7 @@ export function hottestPerChip(temps: Metric[]): Metric[] {
   return [...best.values()].sort((a, b) => b.value - a.value);
 }
 
-const FANS: Column<Metric>[] = [
-  { key: "fan", label: "Fan", text: (f) => f.subject ?? "fan" },
-  { key: "rpm", label: "Speed", text: (f) => (f.value ? `${Math.round(f.value)} RPM` : "0 RPM (stopped)"), numeric: true },
-];
+const fanText = (f: Metric) => (f.value ? `${Math.round(f.value)} RPM` : "0 RPM (stopped)");
 
 export function HardwareSensors() {
   const { mode } = useUi();
@@ -68,8 +64,14 @@ export function HardwareSensors() {
         />
       </Panel>
       {fans.length ? (
-        <Panel title="Fans" span={12} flush>
-          <DataTable rows={fans} columns={FANS} rowKey={(f) => f.subject ?? "fan"} />
+        <Panel title="Fans" subtitle={fans.every((f) => !f.value) ? "all stopped: the computer is cool enough to stay quiet" : undefined} span={12}>
+          <div className="kn-chips">
+            {fans.map((f) => (
+              <span key={f.subject ?? "fan"} className="kn-chip">
+                {f.subject ?? "fan"} <b>{fanText(f)}</b>
+              </span>
+            ))}
+          </div>
         </Panel>
       ) : (
         latest && <AlertBanner tone="info" title="Fan speed not reported" text="This computer's embedded controller does not expose fan speed to Linux." />
