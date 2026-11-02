@@ -68,7 +68,7 @@ item.health < 60 and not (cpu.usage > 95)
 
 ### When a fact is missing
 
-If a condition needs a fact that is not known right now, the rule says "unknown" and **nothing changes**: no new finding, and no finding is closed. This keeps DeeCure honest on computers without a battery or a sensor. A side that is surely false still decides an `and` (and surely true decides an `or`).
+If a condition needs a fact that is not known right now, the rule says "unknown" and **nothing changes**: no new finding, and no finding is closed. This keeps DeeCure honest on computers without a battery or a sensor. One exception: an open finding that no check has confirmed for a day (`STALE_MS` in `rules/engine.rs`) closes, so its old text and numbers do not stay on screen (they may even come from an older agent's rule). A side that is surely false still decides an `and` (and surely true decides an `or`).
 
 ### How findings open and close
 
@@ -111,13 +111,14 @@ A list that is not known (no battery, for example) means "unknown", not "empty".
 
 ### Trends
 
-The trend fields come from hourly averages of `disk.used_percent` (`rules/forecast.rs`). A disk often jumps once (an install, a download, a build) and then stays flat, and one straight line through all the history would turn that jump into "fills every day". So the rate is measured twice, as a straight line (least squares) over the last day and over the last 3 days. The disk is filling only when both rates say so, and the slower one is used. A jump that stopped shows only in the 3-day rate; a disk that keeps filling shows in both. `gb_per_day` is `percent_per_day` of the disk's size.
+The trend fields come from hourly averages of `disk.used_percent` (`rules/forecast.rs`). A disk often jumps once (an install, a download, a build) and then stays flat, and one straight line through all the history would turn that jump into "fills every day". So the rate is measured twice, as a straight line (least squares) over the last day and over the last 3 days. When the last day alone is flat or emptying, the disk is not filling and the 3 days are not needed. Otherwise the disk is filling only when both rates say so, and the slower one is used. A jump that stopped shows only in the 3-day rate; a disk that keeps filling shows in both. `gb_per_day` is `percent_per_day` of the disk's size.
 
 | Case | `filling` | `days_until_full` |
 | --- | --- | --- |
 | Less than 3 days of history | false (an earlier "filling" finding closes) | missing |
-| 3 days or more, but readings over less than 70% of either window (the agent was off) | missing | missing (rules say "unknown", nothing changes, so a real finding does not flicker) |
-| Either rate grows less than 0.05% a day, shrinks, or the date would be over a year away | false | missing |
+| 3 days or more, but a window's readings span less than 70% of it, or fall in fewer than 4 of every 10 of its hours (the agent was off; a laptop asleep at night still counts) | missing | missing (rules say "unknown"; an open finding stays for up to a day, then closes) |
+| The last day grows less than 0.05% a day or shrinks (the 3-day window is then not needed) | false | missing |
+| The 3-day rate grows less than 0.05% a day or shrinks, or the date would be over a year away | false | missing |
 | Filling | true | rounded, at least 1 |
 
 The Storage page's "Full in" tile shows the same forecast (`root_forecast` in the `storage` inventory), and says how many days of readings it has until there are 3.

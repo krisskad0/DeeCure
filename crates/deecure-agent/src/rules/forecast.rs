@@ -9,9 +9,10 @@
 //! A jump that stopped shows up only in the 3-day rate, so it does not count; a disk that keeps
 //! filling shows up in both.
 //!
-//! It needs 3 days of history, and readings over most of each window (the agent may have been
-//! off), so it says nothing instead of guessing. Growth under 0.05% a day, or a date over a
-//! year away, is "not filling".
+//! When the last day alone is flat or emptying, the disk is not filling, whatever the 3 days
+//! say. It needs 3 days of history, and each window needs readings spread over most of it with
+//! some in at least 4 of every 10 hours (a laptop sleeps at night), so it says nothing instead
+//! of guessing. Growth under 0.05% a day, or a date over a year away, is "not filling".
 
 use deecure_core::{Metric, thin};
 use serde::Serialize;
@@ -25,8 +26,10 @@ const SHORT_MS: i64 = 86_400_000;
 const LONG_MS: i64 = 3 * 86_400_000;
 /// History needed before anything is said.
 pub const MIN_HISTORY_DAYS: f64 = 3.0;
-/// A window needs hourly readings over this share of it.
+/// A window's readings must span this share of it...
 const COVERAGE: f64 = 0.7;
+/// ...and fall in at least this share of its hours.
+const HOURS_COVERED: f64 = 0.4;
 /// Slower than this is "not filling": noise, logs, caches.
 const MIN_PERCENT_PER_DAY: f64 = 0.05;
 const MAX_DAYS: f64 = 365.0;
@@ -57,7 +60,7 @@ fn rate(hourly: &[Metric], window_ms: i64) -> Option<f64> {
         .iter()
         .filter(|p| p.at.as_millis() >= end - window_ms)
         .collect();
-    let needed = (window_ms as f64 / HOUR_MS as f64 * COVERAGE).ceil() as usize;
+    let needed = (window_ms as f64 / HOUR_MS as f64 * HOURS_COVERED).ceil() as usize;
     let first = pts.first()?.at.as_millis();
     if pts.len() < needed || ((end - first) as f64) < window_ms as f64 * COVERAGE {
         return None;
@@ -88,8 +91,15 @@ pub fn disk(points: Vec<Metric>) -> Option<Forecast> {
         usize::try_from(span / HOUR_MS).unwrap_or(1).max(1),
     );
     let short = rate(&hourly, SHORT_MS)?;
+    if short < MIN_PERCENT_PER_DAY {
+        // Flat or emptying over the last day: not filling, so the 3 days are not needed.
+        return Some(Forecast {
+            percent_per_day: short,
+            days_until_full: None,
+        });
+    }
     let long = rate(&hourly, LONG_MS)?;
-    let filling = short >= MIN_PERCENT_PER_DAY && long >= MIN_PERCENT_PER_DAY;
+    let filling = long >= MIN_PERCENT_PER_DAY;
     let slope = if filling { short.min(long) } else { short };
     let days = (100.0 - last).max(0.0) / slope;
     Some(Forecast {
@@ -173,6 +183,36 @@ mod tests {
         gap.push(point(94, 56.0));
         gap.push(point(96, 56.1));
         assert_eq!(disk(gap), None);
+    }
+
+    #[test]
+    fn a_laptop_that_sleeps_still_gets_an_answer() {
+        // Readings only from 8:00 to 20:00 each day (asleep at night), for 4 days.
+        let awake = |h: i64| (h % 24) >= 8 && (h % 24) < 20;
+        let flat: Vec<Metric> = (0..=96)
+            .filter(|h| awake(*h))
+            .map(|h| point(h, 67.0))
+            .collect();
+        assert_eq!(disk(flat).unwrap().days_until_full, None);
+        let filling: Vec<Metric> = (0..=96)
+            .filter(|h| awake(*h))
+            .map(|h| point(h, 60.0 + 2.0 * h as f64 / 24.0))
+            .collect();
+        assert!(disk(filling).unwrap().days_until_full.is_some());
+    }
+
+    #[test]
+    fn emptying_in_the_last_day_is_not_filling_even_with_gaps_before() {
+        // Two jumps up (as before the warning), the agent mostly off on days 2 and 3, then a
+        // clean-up in the last day: the last day decides.
+        let mut points: Vec<Metric> = (0..24)
+            .map(|h| point(h, 52.0 + 15.0 * h as f64 / 24.0))
+            .collect();
+        points.extend([30, 40, 50].map(|h| point(h, 67.0)));
+        points.extend((72..=96).map(|h| point(h, 67.0 - 3.0 * (h - 72) as f64 / 24.0)));
+        let f = disk(points).unwrap();
+        assert_eq!(f.days_until_full, None);
+        assert!(f.percent_per_day < 0.0, "{f:?}");
     }
 
     #[test]

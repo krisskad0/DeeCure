@@ -17,6 +17,10 @@ pub const LAST_CHECK_SETTING: &str = "rules.checked_at";
 /// The setting that holds the user's warning choices ([`WarningSettings`]).
 pub const WARNINGS_SETTING: &str = "warnings";
 
+/// An open finding that no check has confirmed for this long closes: its text and numbers are
+/// out of date (for example a rule that cannot decide while the computer was mostly off).
+pub const STALE_MS: i64 = 86_400_000;
+
 /// Facts plus the rule's limits: `limit.<name>` is the user's value (kept inside the limit's
 /// range) or the default.
 struct LimitScope<'a> {
@@ -159,7 +163,8 @@ pub fn fill_in(template: &str, facts: &dyn Lookup) -> String {
 /// - a rule that fires opens or updates its finding (a dismissed one stays dismissed);
 /// - a rule that is clear resolves its open finding;
 /// - a `for_each` rule resolves open findings whose subject is gone from the list;
-/// - an unknown outcome changes nothing.
+/// - an unknown outcome changes nothing, unless nothing confirmed the finding for a day
+///   ([`STALE_MS`]): then it resolves, so its old text and numbers do not stay on screen.
 ///
 /// Also records `now` as the time of the last check ([`LAST_CHECK_SETTING`]).
 ///
@@ -221,6 +226,18 @@ pub fn apply(
                         subject.as_deref(),
                         FindingState::Resolved,
                     )?;
+                }
+                Outcome::Unknown if open.contains(&key) => {
+                    let stale = store
+                        .finding(&rule.id, subject.as_deref())?
+                        .is_some_and(|f| now.as_millis() - f.last_seen.as_millis() > STALE_MS);
+                    if stale {
+                        store.set_finding_state(
+                            &rule.id,
+                            subject.as_deref(),
+                            FindingState::Resolved,
+                        )?;
+                    }
                 }
                 Outcome::Clear | Outcome::Unknown => {}
                 Outcome::Broken(why) => mistakes.push(format!("rule {}: {why}", rule.id)),
@@ -386,16 +403,28 @@ severity:
         apply(&store, &rules, &Facts::default(), Timestamp(2)).unwrap();
         assert_eq!(store.open_findings().unwrap().len(), 1);
 
-        // Clear resolves it.
-        apply(&store, &rules, &disk(50.0, 100.0), Timestamp(3)).unwrap();
+        // Unknown for over a day: nothing confirmed it, so its old text closes.
+        apply(
+            &store,
+            &rules,
+            &Facts::default(),
+            Timestamp(1 + STALE_MS + 1),
+        )
+        .unwrap();
+        assert!(store.open_findings().unwrap().is_empty());
+
+        // It opens again when it fires again, and Clear resolves it.
+        apply(&store, &rules, &disk(95.0, 10.0), Timestamp(3 + STALE_MS)).unwrap();
+        assert_eq!(store.open_findings().unwrap().len(), 1);
+        apply(&store, &rules, &disk(50.0, 100.0), Timestamp(4 + STALE_MS)).unwrap();
         assert!(store.open_findings().unwrap().is_empty());
 
         // A dismissed finding stays dismissed even when the rule fires again.
-        apply(&store, &rules, &disk(95.0, 10.0), Timestamp(4)).unwrap();
+        apply(&store, &rules, &disk(95.0, 10.0), Timestamp(5 + STALE_MS)).unwrap();
         store
             .set_finding_state(&rules[0].id, None, FindingState::Dismissed)
             .unwrap();
-        apply(&store, &rules, &disk(96.0, 9.0), Timestamp(5)).unwrap();
+        apply(&store, &rules, &disk(96.0, 9.0), Timestamp(6 + STALE_MS)).unwrap();
         assert!(store.open_findings().unwrap().is_empty());
     }
 
