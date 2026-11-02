@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - Admin reads (with your password, through the helper): every memory slot with the board's most memory, free slots, channels in use (a warning for single-channel memory), soldered or removable, and rated against running speed (Hardware › Memory); every BIOS setting with its default and allowed values, and whether BIOS passwords are set (Hardware › Firmware, Expert); NVMe firmware slots, block formats, and power states, and each drive's self-test log (Hardware › Storage Devices, Expert).
 - Admin measurements (Expert, when asked): the chip's measured power per part over one second (Performance › CPU), the whole chip's low-power counters since start, with a warning when it never reached its deepest sleep, and wake-ups per process counted for 5 seconds (Power › Sleep).
+- Admin reads for accounts: every sudo rule, with rules that allow everything without a password marked (Accounts › Groups), and the SSH server's real settings from `sshd -T` with the weak ones listed (Accounts › SSH).
 
 ### Fixed
 

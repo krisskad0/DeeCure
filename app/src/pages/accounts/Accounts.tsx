@@ -12,6 +12,7 @@ import { BarChart } from "../../components/charts/BarChart";
 import { when } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
+import { SshServerPanel, SudoRulesPanel } from "./AdminAccounts";
 
 type User = AccountsInfo["users"][number];
 type Group = AccountsInfo["groups"][number];
@@ -73,9 +74,12 @@ export function AccountsGroups() {
   const { data: a, error } = useAccounts();
   if (!a) return <Waiting title="Groups with members" error={error} />;
   return (
-    <Panel title="Groups with members" source="/etc/group" span={12} flush>
-      <DataTable rows={a.groups} columns={GROUPS} rowKey={(g) => g.name} search={{ placeholder: "Filter groups" }} />
-    </Panel>
+    <>
+      <Panel title="Groups with members" source="/etc/group" span={12} flush>
+        <DataTable rows={a.groups} columns={GROUPS} rowKey={(g) => g.name} search={{ placeholder: "Filter groups" }} />
+      </Panel>
+      <SudoRulesPanel />
+    </>
   );
 }
 
@@ -151,6 +155,7 @@ export function AccountsSsh() {
         ]}
       />
       {s.server_installed && s.password_login && <AlertBanner tone="warn" title="SSH allows password sign-in" text="Keys are much harder to guess than passwords. Turn off PasswordAuthentication once your keys work." />}
+      {s.server_installed && <SshServerPanel />}
       <Panel title="Client keys" subtitle="~/.ssh" source="ssh-keygen -lf" span={12} flush>
         <DataTable rows={s.client_keys} columns={KEYS} rowKey={(k) => k.file} empty="No SSH keys in ~/.ssh" />
       </Panel>

@@ -37,6 +37,8 @@ All read-outs share one polkit action, `io.github.krisskad0.deecure.read` (appro
 | `serial` | `/sys/class/dmi/id/product_serial` | - |
 | `power_meters` | Each `/sys/class/powercap/intel-rapl:*` zone's `energy_uj`, twice, one second apart: watts per zone (a wrapped counter is corrected with `max_energy_range_uj`) | Zone names `intel-rapl:` plus digits and `:`; the MMIO copy of the package counter is left out |
 | `low_power` | `/sys/kernel/debug/pmc_core/{slp_s0_residency_usec,package_cstate_show,substate_residencies}` and `amd_pmc/s0ix_stats`, as name and number pairs | Only these four files |
+| `sudo_rules` | `/etc/sudoers` and the files sudo reads from `/etc/sudoers.d` (plain files, names without `.` or a closing `~`): each rule with who it is for, and whether it allows everything or skips the password | Comments removed (`#1000` stays a user ID), continued lines joined |
+| `ssh_server` | `sshd -T` (the settings the server really uses) and the weak ones: empty passwords, root with a password, passwords at all, many tries, X11, old ciphers, MACs, and key exchanges | Not installed: says so. If `sshd` refuses, its first error line is returned. |
 | `wakeups` | `sched_wakeup` counted per thread for 5 seconds with a tracing histogram, then added up per process (`/proc/<tid>/status`); the 40 busiest | It uses a tracing instance of its own (`instances/deecure-<pid>`), never the main trace; it refuses one that exists already, and removes its trigger and the instance in every case. The event only feeds the histogram: nothing goes to a trace buffer. |
 
 | Admin operation | Runs | Checks |

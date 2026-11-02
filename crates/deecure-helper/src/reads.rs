@@ -415,6 +415,154 @@ pub fn self_tests(json: &str) -> Value {
     json!({ "supported": logged, "running": running, "tests": tests })
 }
 
+/// One rule from the sudo settings.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct SudoRule {
+    /// The file, such as `/etc/sudoers.d/90-cloud-init-users`.
+    pub file: String,
+    /// The whole rule, as written (comments removed, continued lines joined).
+    pub line: String,
+    /// Who it is for (`%sudo` is a group), or `Defaults`, or an alias kind.
+    pub who: String,
+    /// True when it lets someone run commands without their password.
+    pub no_password: bool,
+    /// True when it allows every command.
+    pub all_commands: bool,
+}
+
+/// A sudoers line without its comment. `#` followed by a digit is a user ID (`#1000`), not
+/// a comment.
+fn strip_comment(line: &str) -> &str {
+    let b = line.as_bytes();
+    let at = (0..b.len()).find(|&i| b[i] == b'#' && !b.get(i + 1).is_some_and(u8::is_ascii_digit));
+    at.map_or(line, |i| &line[..i]).trim()
+}
+
+/// The rules in one sudoers file. `#include` lines are kept as rules of their own.
+pub fn sudo_rules(file: &str, text: &str) -> Vec<SudoRule> {
+    let mut joined = Vec::new();
+    let mut current = String::new();
+    for raw in text.lines() {
+        let l = raw.trim();
+        let is_include = l.starts_with("#include") || l.starts_with("@include");
+        let l = if is_include { l } else { strip_comment(l) };
+        if let Some(part) = l.strip_suffix('\\') {
+            current.push_str(part.trim());
+            current.push(' ');
+            continue;
+        }
+        current.push_str(l);
+        let line = std::mem::take(&mut current).trim().to_owned();
+        if !line.is_empty() {
+            joined.push(line);
+        }
+    }
+    joined
+        .into_iter()
+        .map(|line| {
+            let who = line.split_whitespace().next().unwrap_or("").to_owned();
+            let commands = line.split_once('=').map_or("", |(_, c)| c);
+            SudoRule {
+                no_password: commands.contains("NOPASSWD:"),
+                all_commands: !who.starts_with("Defaults")
+                    && commands
+                        .rsplit(':')
+                        .next()
+                        .unwrap_or("")
+                        .split(',')
+                        .any(|c| c.split_whitespace().last() == Some("ALL")),
+                file: file.to_owned(),
+                line,
+                who,
+            }
+        })
+        .collect()
+}
+
+/// Files sudo reads from `/etc/sudoers.d`: names without `.` and not ending in `~`.
+pub fn sudoers_d_names(names: impl Iterator<Item = String>) -> Vec<String> {
+    let mut v: Vec<String> = names
+        .filter(|n| !n.contains('.') && !n.ends_with('~') && plain_name(n))
+        .collect();
+    v.sort();
+    v
+}
+
+/// `sshd -T` output: `key value` lines, keys that repeat (such as `listenaddress`) joined.
+pub fn sshd_settings(text: &str) -> BTreeMap<String, String> {
+    let mut m: BTreeMap<String, String> = BTreeMap::new();
+    for l in text.lines() {
+        let Some((k, v)) = l.trim().split_once(' ') else {
+            continue;
+        };
+        m.entry(k.to_ascii_lowercase())
+            .and_modify(|old| {
+                old.push_str(", ");
+                old.push_str(v.trim());
+            })
+            .or_insert_with(|| v.trim().to_owned());
+    }
+    m
+}
+
+/// A weak SSH server setting: (level, what is weak).
+pub fn sshd_weak(s: &BTreeMap<String, String>) -> Vec<(&'static str, String)> {
+    let is = |k: &str, v: &str| s.get(k).is_some_and(|x| x == v);
+    let passwords = is("passwordauthentication", "yes")
+        || (is("kbdinteractiveauthentication", "yes") && is("usepam", "yes"));
+    let mut out = Vec::new();
+    if is("permitemptypasswords", "yes") {
+        out.push((
+            "critical",
+            "Accounts without a password can sign in".to_owned(),
+        ));
+    }
+    if is("permitrootlogin", "yes") && passwords {
+        out.push(("warning", "root can sign in with a password".to_owned()));
+    }
+    if passwords {
+        out.push((
+            "info",
+            "Passwords are accepted; keys are much safer".to_owned(),
+        ));
+    }
+    if s.get("maxauthtries")
+        .and_then(|n| n.parse::<u32>().ok())
+        .is_some_and(|n| n > 6)
+    {
+        out.push((
+            "info",
+            "More than 6 password tries per connection".to_owned(),
+        ));
+    }
+    if is("x11forwarding", "yes") {
+        out.push(("info", "Graphical apps can be forwarded (X11)".to_owned()));
+    }
+    let old = |k: &str, bad: &[&str]| {
+        s.get(k).and_then(|v| {
+            let found: Vec<&str> = v
+                .split(',')
+                .map(str::trim)
+                .filter(|a| bad.iter().any(|b| a.contains(b)))
+                .collect();
+            (!found.is_empty()).then(|| found.join(", "))
+        })
+    };
+    if let Some(c) = old("ciphers", &["-cbc", "3des", "arcfour"]) {
+        out.push(("warning", format!("Old ciphers allowed: {c}")));
+    }
+    if let Some(c) = old("macs", &["md5", "-96", "hmac-sha1"]) {
+        out.push(("info", format!("Old message checks allowed: {c}")));
+    }
+    if let Some(c) = old(
+        "kexalgorithms",
+        &["group1-sha1", "group14-sha1", "group-exchange-sha1"],
+    ) {
+        out.push(("info", format!("Old key exchanges allowed: {c}")));
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -608,5 +756,57 @@ mod tests {
             (Some(false), Some(50))
         );
         assert_eq!(self_tests("{}")["supported"], false);
+    }
+
+    #[test]
+    fn reads_sudo_rules() {
+        let text = "# comment\nDefaults\tenv_reset\nDefaults\tsecure_path=\"/usr/sbin:/usr/bin\"\nroot\tALL=(ALL:ALL) ALL\n%sudo\tALL=(ALL:ALL) ALL # admins\nriya ALL=(ALL) NOPASSWD: /usr/bin/apt, \\\n  /usr/bin/systemctl\nci ALL=(ALL) NOPASSWD: ALL\n#1001 ALL=(ALL) ALL\n@includedir /etc/sudoers.d\n";
+        let r = sudo_rules("/etc/sudoers", text);
+        let who: Vec<&str> = r.iter().map(|r| r.who.as_str()).collect();
+        assert_eq!(
+            who,
+            [
+                "Defaults",
+                "Defaults",
+                "root",
+                "%sudo",
+                "riya",
+                "ci",
+                "#1001",
+                "@includedir"
+            ]
+        );
+        assert_eq!(r[3].line, "%sudo\tALL=(ALL:ALL) ALL");
+        assert!(r[3].all_commands && !r[3].no_password);
+        assert_eq!(
+            r[4].line,
+            "riya ALL=(ALL) NOPASSWD: /usr/bin/apt, /usr/bin/systemctl"
+        );
+        assert!(r[4].no_password && !r[4].all_commands);
+        assert!(r[5].no_password && r[5].all_commands);
+        assert!(!r[1].all_commands);
+        assert_eq!(
+            sudoers_d_names(
+                ["README", "90-users", "x.dpkg-old", "y~", "ok_1"]
+                    .map(String::from)
+                    .into_iter()
+            ),
+            ["90-users", "README", "ok_1"]
+        );
+    }
+
+    #[test]
+    fn finds_weak_ssh_settings() {
+        let text = "port 22\nlistenaddress 0.0.0.0:22\nlistenaddress [::]:22\npermitrootlogin yes\npasswordauthentication yes\nmaxauthtries 6\nciphers chacha20-poly1305@openssh.com,aes256-cbc\nmacs hmac-sha2-256,hmac-sha1\n";
+        let s = sshd_settings(text);
+        assert_eq!(s["listenaddress"], "0.0.0.0:22, [::]:22");
+        let w = sshd_weak(&s);
+        assert!(w.contains(&("warning", "root can sign in with a password".into())));
+        assert!(w.contains(&("warning", "Old ciphers allowed: aes256-cbc".into())));
+        assert!(w.iter().any(|(_, t)| t.contains("hmac-sha1")));
+        let safe = sshd_settings(
+            "permitrootlogin prohibit-password\npasswordauthentication no\nkbdinteractiveauthentication no\n",
+        );
+        assert!(sshd_weak(&safe).is_empty());
     }
 }

@@ -243,8 +243,8 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | --- | --- | --- | --- | --- |
 | AppArmor state of every running process: enforced, warn-only, or not confined | See which apps run without a sandbox | `/proc/<pid>/attr/apparmor/current` | You | ✅ Built |
 | Automatic security updates: on or off, last run, result | Know that fixes really install | `/etc/apt/apt.conf.d/20auto-upgrades`, unattended-upgrades log | You | ✅ Built |
-| Who may use sudo, and for what | Find too many admin rights | `/etc/sudoers`, `/etc/sudoers.d` | Admin | Partly: admin group |
-| SSH server settings that weaken it | Real settings, not the config file guess | `sshd -T` | Admin | Partly: config file |
+| Who may use sudo, and for what | Find too many admin rights | `/etc/sudoers`, `/etc/sudoers.d` | Admin | ✅ Built (Accounts › Groups: every rule, with "everything without a password" marked) |
+| SSH server settings that weaken it | Real settings, not the config file guess | `sshd -T` | Admin | ✅ Built (Accounts › SSH: real settings and weak ones) |
 
 ## 15. Containers and virtual machines (Containers)
 

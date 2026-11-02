@@ -58,6 +58,8 @@ const READS: &[&str] = &[
     "power_meters",
     "low_power",
     "wakeups",
+    "sudo_rules",
+    "ssh_server",
 ];
 /// How long `wakeups` counts.
 const WAKEUP_SECONDS: u64 = 5;
@@ -130,6 +132,55 @@ fn smartctl(args: &[&str], disk: &str) -> Result<String, String> {
     } else {
         Err("smartctl gave no answer for this drive".into())
     }
+}
+
+/// Every rule in `/etc/sudoers` and the files sudo reads from `/etc/sudoers.d`.
+fn sudo_rules() -> Vec<reads::SudoRule> {
+    let mut files = vec!["/etc/sudoers".to_owned()];
+    if let Ok(dir) = std::fs::read_dir("/etc/sudoers.d") {
+        let names = dir
+            .flatten()
+            .filter(|e| e.file_type().is_ok_and(|t| t.is_file()))
+            .map(|e| e.file_name().to_string_lossy().into_owned());
+        files.extend(
+            reads::sudoers_d_names(names)
+                .into_iter()
+                .map(|n| format!("/etc/sudoers.d/{n}")),
+        );
+    }
+    files
+        .iter()
+        .filter_map(|f| Some(reads::sudo_rules(f, &std::fs::read_to_string(f).ok()?)))
+        .flatten()
+        .collect()
+}
+
+/// The SSH server's real settings (`sshd -T`) and the weak ones.
+fn ssh_server() -> Result<Value, String> {
+    if !Path::new("/usr/sbin/sshd").exists() {
+        return Ok(json!({ "installed": false }));
+    }
+    let out = std::process::Command::new("/usr/sbin/sshd")
+        .arg("-T")
+        .env_clear()
+        .env("PATH", PATH)
+        .env("LC_ALL", "C")
+        .stdin(Stdio::null())
+        .output()
+        .map_err(|e| e.to_string())?;
+    if !out.status.success() {
+        let why = String::from_utf8_lossy(&out.stderr);
+        return Err(format!(
+            "sshd could not check its settings: {}",
+            why.lines().next().unwrap_or("no reason given")
+        ));
+    }
+    let settings = reads::sshd_settings(&String::from_utf8_lossy(&out.stdout));
+    let weak: Vec<Value> = reads::sshd_weak(&settings)
+        .into_iter()
+        .map(|(level, text)| json!({ "level": level, "text": text }))
+        .collect();
+    Ok(json!({ "installed": true, "settings": settings, "weak": weak }))
 }
 
 /// The NVMe details for one disk: controller, namespace, and firmware slots (`nvme-cli`).
@@ -510,6 +561,8 @@ impl Helper {
                 }
                 "low_power" => serde_json::to_string(&measure::low_power(Path::new("/")))
                     .map_err(|e| e.to_string()),
+                "sudo_rules" => serde_json::to_string(&sudo_rules()).map_err(|e| e.to_string()),
+                "ssh_server" => ssh_server().map(|v| v.to_string()),
                 "wakeups" => {
                     let dir = measure::tracing_dir(Path::new("/"))
                         .ok_or("kernel tracing is not available")?;
