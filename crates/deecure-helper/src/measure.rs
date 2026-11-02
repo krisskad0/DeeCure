@@ -216,20 +216,44 @@ pub fn tracing_dir(root: &Path) -> Option<PathBuf> {
 
 const TRIGGER: &str = "hist:keys=pid,comm:vals=hitcount:sort=hitcount.descending:size=8192";
 
+/// Removes a tracing instance: its trigger first, then the folder.
+struct Remove(PathBuf);
+
+impl Drop for Remove {
+    fn drop(&mut self) {
+        let trigger = self.0.join("events/sched/sched_wakeup/trigger");
+        let _ = std::fs::write(trigger, format!("!{TRIGGER}"));
+        let _ = std::fs::remove_dir(&self.0);
+    }
+}
+
+/// Instances left by a helper that was stopped while counting (`deecure-<pid>` whose process
+/// is gone), so a leftover trigger never keeps costing time on every wake-up.
+fn remove_stale(tracing: &Path, id: u32, proc: &Path) {
+    let Ok(dir) = std::fs::read_dir(tracing.join("instances")) else {
+        return;
+    };
+    for e in dir.flatten() {
+        let name = e.file_name().to_string_lossy().into_owned();
+        let Some(pid) = name
+            .strip_prefix("deecure-")
+            .and_then(|p| p.parse::<u32>().ok())
+        else {
+            continue;
+        };
+        if pid != id && !proc.join(pid.to_string()).exists() {
+            drop(Remove(e.path()));
+        }
+    }
+}
+
 /// Counts `sched_wakeup` per thread for as long as `wait` takes, in a tracing instance of
 /// its own (`instances/deecure-<id>`), and returns the histogram text. The instance is
 /// removed again whatever happens; one that already exists is never touched.
 pub fn trace_wakeups(tracing: &Path, id: u32, wait: impl FnOnce()) -> Result<String, String> {
+    remove_stale(tracing, id, Path::new("/proc"));
     let instance = tracing.join("instances").join(format!("deecure-{id}"));
     std::fs::create_dir(&instance).map_err(|e| format!("tracing is not available: {e}"))?;
-    struct Remove(PathBuf);
-    impl Drop for Remove {
-        fn drop(&mut self) {
-            let trigger = self.0.join("events/sched/sched_wakeup/trigger");
-            let _ = std::fs::write(trigger, format!("!{TRIGGER}"));
-            let _ = std::fs::remove_dir(&self.0);
-        }
-    }
     let _remove = Remove(instance.clone());
     let event = instance.join("events/sched/sched_wakeup");
     std::fs::write(event.join("trigger"), TRIGGER)
@@ -378,6 +402,14 @@ mod tests {
         std::fs::create_dir(tracing.join("instances/deecure-8")).unwrap();
         assert!(trace_wakeups(&tracing, 8, || {}).is_err());
         assert!(tracing.join("instances/deecure-8").exists());
+        // A leftover of a helper that is gone is removed; a running one's and others' stay.
+        std::fs::create_dir(tracing.join("instances/deecure-4000000")).unwrap();
+        std::fs::create_dir(tracing.join("instances/other")).unwrap();
+        std::fs::create_dir_all(root.join("proc/8")).unwrap();
+        remove_stale(&tracing, 9, &root.join("proc"));
+        assert!(!tracing.join("instances/deecure-4000000").exists());
+        assert!(tracing.join("instances/deecure-8").exists());
+        assert!(tracing.join("instances/other").exists());
         std::fs::remove_dir_all(&root).unwrap();
     }
 }

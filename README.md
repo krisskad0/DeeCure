@@ -61,7 +61,7 @@ Things that normally take many commands, or are not shown anywhere at all:
 Your Linux computer knows a great deal about itself: every sensor's limit, every battery cell, every drive's link, every wake-up source, every service's sandbox, every change. That knowledge is spread over `/proc`, `/sys`, systemd, the journal, apt, snap, D-Bus, firmware, and dozens of commands. DeeCure reads all of it, connects it, and turns it into answers:
 
 1. **Understand:** a deep view of the whole machine: CPU, memory, disks, graphics, battery, sensors, firmware, USB and PCIe, network, services, packages, containers, security, and what changed.
-2. **Keep it healthy:** 53 health warnings that use each part's **own** limits (the CPU's own critical temperature, the drive's own warning temperature) and fire only when a problem lasts.
+2. **Keep it healthy:** 55 health warnings that use each part's **own** limits (the CPU's own critical temperature, the drive's own warning temperature) and fire only when a problem lasts.
 3. **Warn early:** a disk that keeps filling, a battery that gets too hot while charging, cooling that cannot keep up, memory errors, disk read errors, automatic security updates that silently stopped.
 4. **Fix safely:** 47 fixes with a preview of every step, your password only for admin steps, a check afterwards, and undo.
 5. **Control:** battery charge limits, CPU turbo and speed on battery, sleep and wake-up, lid action, device power saving, all kept after restart.
@@ -91,7 +91,7 @@ Getting this picture today means a dozen tools and commands (`lspci -vv`, `senso
 - **The hardware's own limits:** temperatures are judged against the limit each CPU, drive, graphics card, and Wi-Fi chip reports, not one number for every computer.
 - **No false alarms from spikes:** most warnings need the problem to last (for example 5 minutes near the limit).
 - **Your limits:** turn any warning off, or change when it fires, in Settings. DeeCure's default is shown next to your value, and every value stays inside a safe range.
-- **53 warnings** across CPU, memory, disks and filesystems, battery, temperatures and fans, graphics, hardware errors, the kernel, services, the clock, packages, network, and security. Full list: [Health warnings](docs/01-product/health-warnings.md).
+- **55 warnings** across CPU, memory, disks and filesystems, battery, temperatures and fans, graphics, hardware errors, the kernel, services, the clock, packages, network, and security. Full list: [Health warnings](docs/01-product/health-warnings.md).
 
 ### Deep view of the whole computer (Expert)
 
@@ -155,7 +155,7 @@ flowchart LR
   Boot -->|kept power settings| Helper
 ```
 
-1. **The agent** runs in the background as your normal user. Every minute it reads the system, keeps a compact history (2 years in under 200 MB), and checks 53 rules that turn readings into findings. Deep data is read only while its page is open.
+1. **The agent** runs in the background as your normal user. Every minute it reads the system, keeps a compact history (2 years in under 200 MB), and checks 55 rules that turn readings into findings (two of them use a daily admin read by the helper: drive wear and SSH root login). Deep data is read only while its page is open.
 2. **The desktop app and the `deecure` command** ask the agent over a private Unix socket only your user can open.
 3. **Admin steps** go to a small **root helper** that knows a fixed list of actions (32, each with its own polkit prompt), checks every input against the live system, runs no shell, and writes an audit log. It starts only when needed and exits after 2 idle minutes.
 4. **Kept power settings** are set again at boot by a small service, with the same checks.
@@ -215,7 +215,7 @@ Add `--json` for scripts. [User guide](docs/07-user-guide/using-deecure.md)
 | 0-1 | Agent, history, rules, desktop app with real data on every page | Built |
 | 2 | Safe fixes, root helper, undo, signed APT repository | Built; real-machine test matrix and security review pending |
 | 3 | What-changed timeline, predictions, notifications, weekly report, tray icon | Built |
-| Expert build | Three view levels, deep hardware and system data, power controls kept after restart, Optimize, 53 health warnings with your own limits | Built; admin read-outs (BIOS settings, memory slots, drive wear, power meters) next |
+| Expert build | Three view levels, deep hardware and system data, power controls kept after restart, Optimize, 55 health warnings with your own limits, admin read-outs (BIOS settings, memory slots, NVMe, self-tests, power meters, low power, wake-ups, sudo, SSH) | Built; eBPF traffic per app next |
 | 4 | "Ask DeeCure": a private, local AI that answers questions with sources | Planned |
 | 5 | More distros, KDE, server mode, many PCs | Planned |
 

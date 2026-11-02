@@ -1,0 +1,12 @@
+[Unit]
+Description=DeeCure: read drive wear and SSH root login once a day
+Documentation=https://github.com/krisskad0/DeeCure/blob/main/docs/02-architecture/helper.md
+
+[Timer]
+OnBootSec=15min
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

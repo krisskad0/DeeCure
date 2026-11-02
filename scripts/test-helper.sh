@@ -92,6 +92,15 @@ r="$(cat /run/deecure/power-boot.json)"
 case "$r" in *'"setting":"charge_limits:BAT9"'*'"ok":false'* | *'"ok":false'*'"setting":"charge_limits:BAT9"'*) ;; *) false ;; esac || fail "the missing battery was not reported: $(cat /run/deecure/power-boot.json)"
 grep -q '"ApplySaved"' /var/log/deecure/helper.log || fail "the boot run was not in the audit log"
 echo "ok: only a root-only file is used, and each setting's result is reported"
+
+echo "== daily health reads (deecure-health.timer)"
+if su deecure-test -s /bin/sh -c "/usr/libexec/deecure/deecure-helper --health-reads" 2>/dev/null; then fail "--health-reads ran without root"; fi
+/usr/libexec/deecure/deecure-helper --health-reads || fail "--health-reads failed"
+r="$(cat /run/deecure/admin-health.json)"
+case "$r" in *'"drives":['*'"ssh_root_password":'*) ;; *) fail "unexpected health file: $r" ;; esac
+[ "$(stat -c %a /run/deecure/admin-health.json)" = 644 ] || fail "the health file is not readable by everyone or is writable by others"
+grep -q '"HealthReads"' /var/log/deecure/helper.log || fail "the health reads were not in the audit log"
+echo "ok: root only, a readable result file, and an audit line"
 echo "== automatic updates (deecure-update.timer)"
 # No network needed: an unsafe settings file is refused, and "off" does nothing.
 printf '{"auto": true, "check": "daily", "channel": "prerelease"}' >/etc/deecure/update.json

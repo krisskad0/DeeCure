@@ -36,6 +36,64 @@ pub struct Health {
     net: HashMap<String, VecDeque<(f64, f64)>>,
 }
 
+/// The helper's daily admin reads (deecure-health.timer). Only root can write `/run/deecure`.
+const ADMIN_HEALTH: &str = "/run/deecure/admin-health.json";
+/// The daily file still counts for 3 days, so a missed day does not hide a worn drive.
+const ADMIN_HEALTH_MAX_AGE_MS: i64 = 3 * 24 * 3_600_000;
+/// Drive readings from the file, each as `drive.<field>` for the drive.
+const DRIVE_FIELDS: &[&str] = &[
+    "life_used",
+    "critical_warning",
+    "media_errors",
+    "reallocated",
+    "pending",
+    "failed",
+];
+
+/// Readings from the helper's admin health file: (name, subject, value). Nothing when it is
+/// old or unreadable.
+pub fn admin_health(text: &str, now_ms: i64) -> Vec<(String, Option<String>, f64)> {
+    let Ok(v) = serde_json::from_str::<serde_json::Value>(text) else {
+        return Vec::new();
+    };
+    let time = v
+        .get("time")
+        .and_then(serde_json::Value::as_i64)
+        .unwrap_or(0);
+    if now_ms - time > ADMIN_HEALTH_MAX_AGE_MS || time > now_ms + 3_600_000 {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    for d in v
+        .get("drives")
+        .and_then(|d| d.as_array())
+        .into_iter()
+        .flatten()
+    {
+        let Some(name) = d.get("name").and_then(|n| n.as_str()) else {
+            continue;
+        };
+        for field in DRIVE_FIELDS {
+            let value = match &d[*field] {
+                serde_json::Value::Bool(b) => f64::from(u8::from(*b)),
+                other => other.as_f64().unwrap_or(0.0),
+            };
+            out.push((format!("drive.{field}"), Some(name.to_owned()), value));
+        }
+    }
+    if let Some(on) = v
+        .get("ssh_root_password")
+        .and_then(serde_json::Value::as_bool)
+    {
+        out.push((
+            "security.ssh_root_password".into(),
+            None,
+            f64::from(u8::from(on)),
+        ));
+    }
+    out
+}
+
 /// The sum of `TOTAL_ERR_*` lines in a PCIe AER counter file.
 pub fn aer_total(text: &str) -> f64 {
     text.lines()
@@ -224,6 +282,11 @@ impl Collector for Health {
                 })
                 .count();
             push("cpu.flaws_vulnerable", None, open as f64);
+        }
+        if let Ok(text) = root.read(ADMIN_HEALTH) {
+            for (name, subject, value) in admin_health(&text, now.as_millis()) {
+                push(&name, subject.as_deref(), value);
+            }
         }
 
         if let Some(dbm) = root
@@ -439,6 +502,25 @@ mod tests {
         assert_eq!(value(&s, "wifi.signal_dbm", None), Some(-80.0));
         let s = h.collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&s, "wifi.weak_minutes", None), Some(2.0));
+    }
+
+    #[test]
+    fn reads_the_admin_health_file_while_fresh() {
+        let text = r#"{"time":1000,"drives":[{"name":"nvme0n1","life_used":93,"critical_warning":0,"media_errors":0,"reallocated":0,"pending":0,"failed":false}],"ssh_installed":true,"ssh_root_password":true}"#;
+        let r = admin_health(text, 2000);
+        assert!(r.contains(&("drive.life_used".into(), Some("nvme0n1".into()), 93.0)));
+        assert!(r.contains(&("drive.failed".into(), Some("nvme0n1".into()), 0.0)));
+        assert!(r.contains(&("security.ssh_root_password".into(), None, 1.0)));
+        assert!(
+            admin_health(text, 1000 + ADMIN_HEALTH_MAX_AGE_MS + 1).is_empty(),
+            "too old"
+        );
+        let unknown = r#"{"time":1000,"drives":[],"ssh_root_password":null}"#;
+        assert!(
+            admin_health(unknown, 2000).is_empty(),
+            "no SSH answer is not a safe SSH"
+        );
+        assert!(admin_health("not json", 2000).is_empty());
     }
 
     #[test]

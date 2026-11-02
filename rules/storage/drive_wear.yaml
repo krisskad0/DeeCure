@@ -1,0 +1,22 @@
+id: storage.drive_wear
+category: storage
+for_each: drives
+name: "Drive wearing out"
+title: "Drive {item.name} is wearing out"
+explain: >
+  Drive {item.name} reports wear or failure: {item.life_used}% of its rated life used
+  (NVMe), {item.critical_warning} critical warning flags (NVMe), and {item.reallocated}
+  replaced and {item.pending} unreadable sectors (SATA). It may fail soon. Back up your
+  files now; Hardware › Storage Devices shows the drive's full health. The helper reads
+  this once a day.
+limits:
+  - name: life_used
+    label: "Share of rated life used before warning"
+    default: 90
+    unit: "%"
+    min: 50
+    max: 100
+severity:
+  critical: "item.failed >= 1 or item.critical_warning >= 1 or item.pending >= 1 or item.life_used >= 100"
+  warning: "item.life_used >= limit.life_used or item.reallocated >= 1"
+learn_more: topics/storage/drive-wear

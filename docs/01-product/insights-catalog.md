@@ -90,7 +90,7 @@ Sources are listed in [Collectors](../02-architecture/collectors.md).
 
 ## Checks that turn into findings (rules)
 
-53 rules, all in Basic access (no password). Every one of the 13 areas in Overview › Subsystems has at least one. The full list, with each limit and why: [Health warnings](health-warnings.md). Two more need the admin helper and come with its read-outs: drive wear (SMART and NVMe) and SSH root login.
+55 rules, none of which asks for a password. Every one of the 13 areas in Overview › Subsystems has at least one. The full list, with each limit and why: [Health warnings](health-warnings.md). Two of them, drive wear (SMART and NVMe) and SSH root login, use the helper's daily admin read (`deecure-health.timer`).
 
 | Area | Examples |
 | --- | --- |

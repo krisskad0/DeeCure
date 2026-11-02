@@ -31,6 +31,7 @@ echo "== admin helper (installed, never started by the package)"
 for f in /usr/libexec/deecure/deecure-helper /usr/lib/systemd/system/deecure-helper.service \
   /usr/lib/systemd/system/deecure-power.service /usr/lib/udev/rules.d/90-deecure-power.rules \
   /usr/lib/systemd/system/deecure-update.service /usr/lib/systemd/system/deecure-update.timer \
+  /usr/lib/systemd/system/deecure-health.service /usr/lib/systemd/system/deecure-health.timer \
   /usr/share/dbus-1/system-services/io.github.krisskad0.DeeCure.Helper.service \
   /usr/share/dbus-1/system.d/io.github.krisskad0.DeeCure.Helper.conf \
   /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy; do
@@ -44,6 +45,7 @@ done
 # The daily timer is on, but nothing updates until the user turns automatic updates on.
 [ -L /etc/systemd/system/timers.target.wants/deecure-update.timer ] || fail "deecure-update.timer is not enabled"
 [ -e /etc/deecure/update.json ] && fail "the package must not turn automatic updates on"
+[ -L /etc/systemd/system/timers.target.wants/deecure-health.timer ] || fail "deecure-health.timer is not enabled"
 # Run as a normal user, it refuses to start.
 id deecure-test >/dev/null 2>&1 || useradd -m deecure-test
 if su deecure-test -c /usr/libexec/deecure/deecure-helper 2>/dev/null; then fail "the helper ran without root"; fi

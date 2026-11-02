@@ -23,6 +23,7 @@ pub const LISTS: &[&str] = &[
     "services",
     "sensors",
     "interfaces",
+    "drives",
 ];
 
 /// CPU sensor chips: the CPU warning covers them, so the "part too hot" warning leaves them out.
@@ -89,6 +90,7 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
     let mut batteries: BTreeMap<String, Item> = BTreeMap::new();
     let mut sensors: BTreeMap<String, Item> = BTreeMap::new();
     let mut interfaces: BTreeMap<String, Item> = BTreeMap::new();
+    let mut drives: BTreeMap<String, Item> = BTreeMap::new();
 
     for metric in store.latest_metrics(Timestamp(now.as_millis() - FRESH_FOR_MS))? {
         let value = Value::Number(metric.value);
@@ -128,6 +130,11 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
                 entry(&mut interfaces, iface)
                     .fields
                     .insert("error_percent".into(), value);
+            }
+            (name, Some(drive)) if name.starts_with("drive.") => {
+                entry(&mut drives, drive)
+                    .fields
+                    .insert(name.trim_start_matches("drive.").into(), value);
             }
             (name, Some(battery)) => {
                 if let Some(field) = name.strip_prefix("battery.") {
@@ -334,6 +341,11 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
             .lists
             .insert("interfaces".into(), interfaces.into_values().collect());
     }
+    if !drives.is_empty() {
+        facts
+            .lists
+            .insert("drives".into(), drives.into_values().collect());
+    }
     if !filesystems.is_empty() {
         facts
             .lists
@@ -393,6 +405,7 @@ mod tests {
                 reading("disk.used_percent", Some("/"), 94.2, 0),
                 reading("disk.free", Some("/"), 13.8e9, 0),
                 reading("battery.health", Some("BAT0"), 71.0, 0),
+                reading("drive.life_used", Some("nvme0n1"), 93.0, 0),
                 reading("cpu.usage", None, 50.0, FRESH_FOR_MS + 60_000), // too old
             ])
             .unwrap();
@@ -423,6 +436,15 @@ mod tests {
         assert_eq!(battery.subject, "BAT0");
         assert_eq!(battery.fields["health"], Value::Number(71.0));
         assert_eq!(battery.fields["name"], Value::Text("BAT0".into()));
+        assert_eq!(
+            facts.lists["batteries"].len(),
+            1,
+            "drive readings are not batteries"
+        );
+
+        let drive = &facts.lists["drives"][0];
+        assert_eq!(drive.fields["life_used"], Value::Number(93.0));
+        assert_eq!(drive.fields["name"], Value::Text("nvme0n1".into()));
 
         let service = &facts.lists["services"][0];
         let scope = ItemScope {

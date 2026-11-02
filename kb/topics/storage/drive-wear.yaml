@@ -1,0 +1,6 @@
+title: "A drive that is wearing out"
+summary: "SSDs wear with every write, and any drive can start to lose sectors. The drive itself reports it, before it fails."
+steps:
+  - "Back up your important files now, to another disk or online."
+  - "Open Hardware › Storage Devices and read the drive's health: life used, unreadable sectors, and its overall verdict."
+  - "Plan to replace the drive. Unreadable or replaced sectors that keep growing mean it should be soon."

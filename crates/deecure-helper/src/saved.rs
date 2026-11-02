@@ -173,7 +173,7 @@ fn load(path: &Path) -> Saved {
 }
 
 /// Writes in one step, so a crash never leaves the file half written.
-fn store(path: &Path, text: &str) -> Result<(), String> {
+pub fn store(path: &Path, text: &str) -> Result<(), String> {
     let dir = path.parent().ok_or("no folder")?;
     std::fs::create_dir_all(dir).map_err(|e| format!("could not create {}: {e}", dir.display()))?;
     let tmp = path.with_extension("deecure-tmp");

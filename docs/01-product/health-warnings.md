@@ -16,7 +16,7 @@ DeeCure's main job is to keep the computer healthy and free of errors, and to wa
 6. **One problem, one warning.** A disk that is 97% full does not also say "filling up".
 7. **Your limits:** every warning can be turned off, or its limits changed, in Settings › Notifications (Advanced and Expert). The default is shown next to your value, and each value stays inside a safe range.
 
-**Data:** "✅" = built; "Admin read" = needs the password through the helper (step 6), not built yet.
+**Data:** "✅" = built. "✅ Admin read" = read once a day by the helper as root (`deecure-health.timer`), with no password: only the sums reach the agent (`/run/deecure/admin-health.json`). It needs `smartmontools` for drives and the SSH server for SSH.
 
 ## Changes to warnings that exist today
 
@@ -60,7 +60,7 @@ DeeCure's main job is to keep the computer healthy and free of errors, and to wa
 | Disk became read-only | A disk is read-only now but writable in `/etc/fstab` | Nothing can be saved | Critical | ✅ |
 | Disk read or write errors | I/O, ATA, or NVMe timeout errors in the kernel log in 24 hours | The drive or its cable is failing; data loss | Critical | ✅ |
 | Drive too hot | Covered by "A part is too hot": an NVMe drive reports its own warning and critical temperatures | The drive slows down and wears faster | Warning / Critical | ✅ |
-| Drive wearing out | NVMe life used 90% or more, or a critical warning flag; SATA reallocated or pending sectors above 0 | The drive may fail soon | Warning / Critical | Admin read |
+| Drive wearing out | NVMe life used 90% or more, or a critical warning flag; SATA reallocated or pending sectors above 0 | The drive may fail soon | Warning (life used at your limit, default 90%; replaced sectors) / Critical (100% used, a critical flag, unreadable sectors, or the drive's own verdict "failing") | ✅ Admin read |
 | Everything waits for the disk | Disk pressure "full" 20% or more for 5 minutes | Freezes while the disk catches up | Warning | ✅ |
 
 ## Battery
@@ -122,7 +122,7 @@ DeeCure's main job is to keep the computer healthy and free of errors, and to wa
 | --- | --- | --- | --- |
 | Security updates waiting, firewall off with open ports, an extra root account, a container port open to the network | ✅ Exist today | Warning / Critical | ✅ |
 | AppArmor is off | AppArmor is not enabled | Warning | ✅ |
-| SSH allows root login with a password | `sshd -T` says so | Warning | Admin read |
+| SSH allows root login with a password | `sshd -T` says so: `PermitRootLogin yes` and passwords accepted | Warning | ✅ Admin read |
 | Secure Boot is off | It is off on a computer that supports it | Info | ✅ |
 
 ## Never warned about

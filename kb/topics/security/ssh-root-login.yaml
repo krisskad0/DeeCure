@@ -1,0 +1,6 @@
+title: "Stop root from signing in over SSH with a password"
+summary: "A root password over SSH can be guessed from the network. Sign in as your own account, with a key, and use sudo instead."
+steps:
+  - "Make sure your own account can sign in over SSH and use sudo."
+  - "In /etc/ssh/sshd_config.d/, add a file with the line: PermitRootLogin prohibit-password"
+  - "Restart the SSH server (sudo systemctl restart ssh), then check Accounts › SSH again."

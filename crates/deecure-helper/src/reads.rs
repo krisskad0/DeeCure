@@ -415,6 +415,41 @@ pub fn self_tests(json: &str) -> Value {
     json!({ "supported": logged, "running": running, "tests": tests })
 }
 
+/// A drive's wear and failure signs from `smartctl -j -a`, for the background health file.
+/// Every field is there for every drive (0 where it does not apply), so a rule never waits
+/// on a value an NVMe or SATA drive cannot have.
+pub fn drive_health(name: &str, json: &str) -> Option<Value> {
+    let v: Value = serde_json::from_str(json).ok()?;
+    let nvme = v.get("nvme_smart_health_information_log");
+    let raw = |id: u64| {
+        v.pointer("/ata_smart_attributes/table")?
+            .as_array()?
+            .iter()
+            .find(|a| a.get("id").and_then(Value::as_u64) == Some(id))?
+            .pointer("/raw/value")?
+            .as_u64()
+    };
+    let passed = v.pointer("/smart_status/passed").and_then(Value::as_bool);
+    if nvme.is_none() && passed.is_none() {
+        return None;
+    }
+    let field = |k: &str| {
+        nvme.and_then(|n| n.get(k))
+            .and_then(Value::as_u64)
+            .unwrap_or(0)
+    };
+    Some(json!({
+        "name": name,
+        "model": v.get("model_name").and_then(Value::as_str),
+        "life_used": field("percentage_used"),
+        "critical_warning": field("critical_warning"),
+        "media_errors": field("media_errors"),
+        "reallocated": raw(5).unwrap_or(0),
+        "pending": raw(197).unwrap_or(0),
+        "failed": passed == Some(false),
+    }))
+}
+
 /// One rule from the sudo settings.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SudoRule {
@@ -808,5 +843,33 @@ mod tests {
             "permitrootlogin prohibit-password\npasswordauthentication no\nkbdinteractiveauthentication no\n",
         );
         assert!(sshd_weak(&safe).is_empty());
+    }
+
+    #[test]
+    fn sums_up_drive_health() {
+        let nvme = r#"{"model_name":"PM991a","smart_status":{"passed":true},"nvme_smart_health_information_log":{"critical_warning":4,"percentage_used":93,"media_errors":0}}"#;
+        let v = drive_health("nvme0n1", nvme).unwrap();
+        assert_eq!(
+            (v["life_used"].as_u64(), v["critical_warning"].as_u64()),
+            (Some(93), Some(4))
+        );
+        assert_eq!(
+            (v["reallocated"].as_u64(), v["failed"].as_bool()),
+            (Some(0), Some(false))
+        );
+        let sata = r#"{"smart_status":{"passed":false},"ata_smart_attributes":{"table":[{"id":5,"raw":{"value":8}},{"id":197,"raw":{"value":2}}]}}"#;
+        let v = drive_health("sda", sata).unwrap();
+        assert_eq!(
+            (v["reallocated"].as_u64(), v["pending"].as_u64()),
+            (Some(8), Some(2))
+        );
+        assert_eq!(
+            (v["life_used"].as_u64(), v["failed"].as_bool()),
+            (Some(0), Some(true))
+        );
+        assert!(
+            drive_health("sdb", r#"{"smartctl":{"exit_status":2}}"#).is_none(),
+            "no answer is not a healthy drive"
+        );
     }
 }

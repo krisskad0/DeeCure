@@ -633,11 +633,15 @@ fn main() -> ExitCode {
         if arg == "--auto-update" && std::env::args().len() == 2 {
             return auto_update();
         }
+        if arg == "--health-reads" && std::env::args().len() == 2 {
+            return health_reads();
+        }
         eprintln!(
             "deecure-helper: D-Bus starts this program; it takes no arguments except --version \
              (and --apply-saved, which deecure-power.service runs at boot, and \
              --power-source-changed, which a udev rule runs when a charger is plugged in or out, and \
-             --auto-update, which deecure-update.timer runs)"
+             --auto-update, which deecure-update.timer runs, and \
+             --health-reads, which deecure-health.timer runs)"
         );
         return ExitCode::from(2);
     }
@@ -723,6 +727,63 @@ fn power_source_changed() -> ExitCode {
         }
     }
     ExitCode::SUCCESS
+}
+
+/// Where `--health-reads` writes: readable by everyone, writable by root only.
+const HEALTH_FILE: &str = "/run/deecure/admin-health.json";
+
+/// The admin reads behind two health warnings (deecure-health.timer, daily): each internal
+/// drive's wear and failure signs, and whether SSH lets root sign in with a password. Only
+/// these sums go to `/run/deecure/admin-health.json`, for the agent; no settings, no names
+/// of people.
+fn health_reads() -> ExitCode {
+    if !rustix::process::geteuid().is_root() {
+        eprintln!("deecure-helper: must run as root");
+        return ExitCode::FAILURE;
+    }
+    let mut disks: Vec<String> = std::fs::read_dir("/sys/block")
+        .map(|d| {
+            d.flatten()
+                .map(|e| e.file_name().to_string_lossy().into_owned())
+                .filter(|n| reads::is_disk(n))
+                .filter(|n| {
+                    std::fs::read_to_string(format!("/sys/block/{n}/removable"))
+                        .is_ok_and(|r| r.trim() == "0")
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    disks.sort();
+    let drives: Vec<Value> = disks
+        .iter()
+        .filter_map(|d| reads::drive_health(d, &smartctl(&["-j", "-a"], d).ok()?))
+        .collect();
+    let ssh = ssh_server();
+    let root_password = ssh.as_ref().ok().map(|v| {
+        v.get("weak").and_then(Value::as_array).is_some_and(|w| {
+            w.iter()
+                .any(|x| x["text"] == "root can sign in with a password")
+        })
+    });
+    let text = json!({
+        "time": now_ms(),
+        "drives": drives,
+        "ssh_installed": ssh.as_ref().ok().and_then(|v| v["installed"].as_bool()),
+        "ssh_root_password": root_password,
+    })
+    .to_string();
+    let message = format!("{} drives read", drives.len());
+    match saved::store(Path::new(HEALTH_FILE), &text) {
+        Ok(()) => {
+            audit(0, "HealthReads", &Value::Null, true, &message);
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("deecure-helper: {e}");
+            audit(0, "HealthReads", &Value::Null, false, &e);
+            ExitCode::FAILURE
+        }
+    }
 }
 
 /// Installs a new DeeCure release when the user turned automatic updates on

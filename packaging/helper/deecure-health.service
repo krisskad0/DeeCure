@@ -1,0 +1,35 @@
+[Unit]
+Description=DeeCure: read drive wear and SSH root login for the health warnings
+Documentation=https://github.com/krisskad0/DeeCure/blob/main/docs/02-architecture/helper.md
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/deecure/deecure-helper --health-reads
+# It only reads (smartctl, sshd -T) and writes /run/deecure/admin-health.json and the
+# audit log, at low priority.
+Nice=10
+IOSchedulingClass=idle
+ProtectSystem=strict
+RuntimeDirectory=deecure
+RuntimeDirectoryPreserve=yes
+LogsDirectory=deecure
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+NoNewPrivileges=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_UNIX
+SystemCallArchitectures=native
+# smartctl asks the drives directly (SATA pass-through and NVMe admin commands).
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_RAWIO
+UMask=0022
