@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- Settings › General uses the full width with three clear groups (Display, Charts and live data, Startup), and its controls line up. "Start at login" was a fixed "On" label that looked like a setting; it is now "Background agent" with its real state (Running or Not running) and why it is always on. The tray switch is greyed out, with the reason, when the desktop has no tray area, instead of failing after a click.
+
 - The one-command install (`install.sh`) repairs a DeeCure update that stopped half way: apt refuses a half-installed package ("needs to be reinstalled"), so the installer puts the new packages in place with dpkg first. `install.sh` is served from `main`, so this works without a release.
 
 ### Added

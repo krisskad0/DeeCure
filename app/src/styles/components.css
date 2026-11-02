@@ -224,8 +224,13 @@ a.btn { text-decoration: none; }
 .rc-desc { display: block; font-size: 12px; color: var(--muted); }
 .field-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
 .field-row:last-child { border-bottom: 0; }
+/* Every control in a settings row has the same width, so they line up. */
+.field-row > span:last-child { display: flex; justify-content: flex-end; }
+.field-row .select { min-width: 180px; }
+.switch-disabled { opacity: 0.45; cursor: not-allowed; }
+.switch-disabled input { cursor: not-allowed; }
 .field-label { display: block; font-weight: 600; }
-.field-desc { display: block; font-size: 12px; color: var(--muted); }
+.field-desc { display: block; font-size: 12px; color: var(--muted); max-width: 60ch; }
 .state-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .state-tile { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; }
 .st-icon { width: 32px; height: 32px; border-radius: 7px; background: var(--neutral-soft); display: grid; place-items: center; color: var(--ink-2); flex: none; }

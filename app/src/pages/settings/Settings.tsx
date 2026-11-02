@@ -45,9 +45,13 @@ function TrayRow() {
       toast(`Tray icon not turned on: ${typeof e === "string" ? e : toAppError(e).message}`);
     }
   };
+  const unavailable = current !== undefined && current !== null && !current.available && !current.enabled;
   return (
-    <FieldRow label="Tray icon" description={current && !current.available ? "This desktop has no tray area" : "Keep DeeCure in the tray when the window closes, and start it there at login"}>
-      <Switch checked={current?.enabled ?? false} onChange={(on) => void change(on)} label="Tray icon" />
+    <FieldRow
+      label="Tray icon"
+      description={unavailable ? "This desktop has no tray area (on GNOME it needs the AppIndicator extension, which Ubuntu has on by default)" : "Keep DeeCure in the tray when the window closes, and start it there at login"}
+    >
+      <Switch checked={current?.enabled ?? false} onChange={(on) => void change(on)} label="Tray icon" disabled={unavailable} />
     </FieldRow>
   );
 }
@@ -76,33 +80,43 @@ export function SettingsGeneral() {
   const [refresh, setRefresh] = usePref<RefreshChoice>("refresh", "5s");
   const [unit, setUnit] = usePref<TempUnit>("temp", "celsius");
   const [, setOnboarded] = usePref<boolean>("onboarded", true);
+  const agent = useLive(loadAgent, 60_000);
   return (
-    <Panel title="General" span={8}>
-      <FieldRow label="View level" description="Beginner: the pages most people need. Advanced: every page and tab. Expert: also data sources, commands, raw columns, and deep details. Also in the top bar">
-        <Select value={mode} options={LEVELS} onChange={setMode} label="View level" />
-      </FieldRow>
-      <FieldRow label="Default time range" description="Used by charts; also in the top bar">
-        <Select value={range} options={RANGES} onChange={setRange} label="Default time range" />
-      </FieldRow>
-      <FieldRow label="Refresh interval" description="How often live numbers update while a page is open. Manual: only when you press Refresh">
-        <Select value={refresh} options={REFRESH} onChange={setRefresh} label="Refresh interval" />
-      </FieldRow>
-      <FieldRow label="Temperature unit" description="How temperatures are shown">
-        <Select value={unit} options={UNITS} onChange={setUnit} label="Temperature unit" />
-      </FieldRow>
-      <FieldRow label="Narrow sidebar" description="Show only icons in the sidebar">
-        <Switch checked={rail} onChange={setRail} label="Narrow sidebar" />
-      </FieldRow>
-      <FieldRow label="Welcome screens" description="Show the first-launch screens and the first check again">
-        <Button small onClick={() => setOnboarded(false)}>
-          Show again
-        </Button>
-      </FieldRow>
-      <TrayRow />
-      <FieldRow label="Start at login" description="The background agent starts by itself when you sign in (systemd user service)">
-        <StatusBadge variant="ok" label="On" />
-      </FieldRow>
-    </Panel>
+    <>
+      <Panel title="Display" info="How DeeCure looks. Changes apply at once and are kept." span={6} flush>
+        <FieldRow label="View level" description="Beginner: the pages most people need. Advanced: every page and tab. Expert: also data sources, commands, and deep details. Also in the top bar">
+          <Select value={mode} options={LEVELS} onChange={setMode} label="View level" />
+        </FieldRow>
+        <FieldRow label="Temperature unit" description="How temperatures are shown everywhere">
+          <Select value={unit} options={UNITS} onChange={setUnit} label="Temperature unit" />
+        </FieldRow>
+        <FieldRow label="Narrow sidebar" description="Show only icons in the sidebar; also the Collapse button under it">
+          <Switch checked={rail} onChange={setRail} label="Narrow sidebar" />
+        </FieldRow>
+      </Panel>
+      <Panel title="Charts and live data" span={6} flush>
+        <FieldRow label="Default time range" description="How far back charts look when a page opens; also in the top bar">
+          <Select value={range} options={RANGES} onChange={setRange} label="Default time range" />
+        </FieldRow>
+        <FieldRow label="Refresh interval" description="How often live numbers update while a page is open. Manual: only when you press Refresh">
+          <Select value={refresh} options={REFRESH} onChange={setRefresh} label="Refresh interval" />
+        </FieldRow>
+      </Panel>
+      <Panel title="Startup" span={12} flush>
+        <TrayRow />
+        <FieldRow
+          label="Background agent"
+          description="Starts by itself when you sign in, so warnings, notifications, and history keep working while this window is closed. It is always on; to stop it, remove DeeCure"
+        >
+          {agent.data ? <StatusBadge variant="ok" label="Running" /> : agent.error ? <StatusBadge variant="warn" label="Not running" /> : <span className="muted">Checking…</span>}
+        </FieldRow>
+        <FieldRow label="Welcome screens" description="Show the first-launch screens and the first check again">
+          <Button small onClick={() => setOnboarded(false)}>
+            Show again
+          </Button>
+        </FieldRow>
+      </Panel>
+    </>
   );
 }
 

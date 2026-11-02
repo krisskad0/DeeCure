@@ -15,9 +15,10 @@
 | Default time range |  | Select: 1h / 24h / 7d / 30d | 24h | `set-range` |
 | Refresh interval | Live metrics | Select: 2 s / 5 s / 15 s / Manual | 5 s | `set-refresh` |
 | Temperature unit |  | Select: Celsius / Fahrenheit | Celsius | `set-temp` |
-| Start at login | Collector runs in the background | Switch | On | `set-start` |
 
 What is built: **Refresh interval** (default 5 s) sets how often every live panel (one that updates every 15 s or faster) loads again; slower panels keep their own pace. In **Manual** mode nothing loads by itself, and the page header's **Refresh** button reloads every panel. **Temperature unit** changes how temperatures are shown (numbers, charts, gauges); warning limits such as 90 °C always compare Celsius values. Both are saved in the app (`refresh`, `temp`).
+
+What is built: the tab has three panels so the rows use the full width: **Display** (view level, temperature unit, narrow sidebar) and **Charts and live data** (default time range, refresh interval) side by side (span 6 each), and **Startup** (tray icon, background agent, welcome screens) below (span 12). Every dropdown is at least 180 px wide and right-aligned, so the controls line up. **Background agent** is not a switch: the agent always starts at login (warnings, notifications, and history need it), so the row shows its real state, **Running** when it answers and **Not running** when it does not. The tray switch is turned off (greyed, not clickable) when the desktop has no tray area, and its description says why.
 
 What is built (Phase 3): **Tray icon** (off by default). When on, closing the window keeps DeeCure in the tray (menu: Open DeeCure, Quit DeeCure), and a login entry (`~/.config/autostart/io.github.krisskad0.DeeCure.desktop`, `deecure-desktop --hidden`) starts it there. It can only be turned on when the desktop has a tray area (`org.kde.StatusNotifierWatcher`; on Ubuntu the AppIndicator extension), so the window can never be hidden with no way back. Only one copy of the app runs: starting it again shows the running window. The setting lives in `~/.config/deecure/desktop.json`; DeeCure removes only a login entry it wrote itself.
 

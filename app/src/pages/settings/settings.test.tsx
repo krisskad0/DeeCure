@@ -99,6 +99,12 @@ describe("Settings and Assistant", () => {
     expect(localStorage.getItem("deecure.mode")).toBe('"advanced"');
   });
 
+  it("the background agent shows its real state, not a fixed label", async () => {
+    render(<SettingsGeneral />);
+    await waitFor(() => expect(screen.getByText("Running")).toBeTruthy());
+    expect(screen.queryByText("On")).toBeNull();
+  });
+
   it("delete history asks first, and the retention choice is real", async () => {
     render(<SettingsData />);
     await waitFor(() => expect(screen.getByRole("combobox", { name: "Keep history for" })).toBeTruthy());
@@ -122,9 +128,11 @@ describe("Settings and Assistant", () => {
 
   it("the tray switch says when the desktop has no tray area", async () => {
     render(<SettingsGeneral />);
-    await waitFor(() => expect(screen.getByText("This desktop has no tray area")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/This desktop has no tray area/)).toBeTruthy());
     const tray = screen.getByRole("switch", { name: "Tray icon" }) as HTMLInputElement;
     expect(tray.checked).toBe(false);
+    // It cannot be turned on here, so it is not clickable.
+    expect(tray.disabled).toBe(true);
     fireEvent.click(tray);
     await waitFor(() => expect((screen.getByRole("switch", { name: "Tray icon" }) as HTMLInputElement).checked).toBe(false));
   });
