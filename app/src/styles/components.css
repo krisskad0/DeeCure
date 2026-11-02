@@ -271,10 +271,17 @@ a.btn { text-decoration: none; }
 .question-list li:last-child { border-bottom: none; }
 
 /* Knowledge base "how to fix" under an issue */
-.howto { margin-top: 8px; font-size: 13px; }
-.howto summary { cursor: pointer; color: var(--accent); font-weight: 600; }
-.howto p { margin: 6px 0; }
-.howto ol { margin: 4px 0; padding-left: 20px; display: grid; gap: 3px; }
+.howto { margin-top: 4px; font-size: 13px; }
+.howto summary { cursor: pointer; color: var(--accent); font-weight: 600; list-style: none; display: inline-flex; align-items: center; gap: 6px; }
+.howto summary::-webkit-details-marker { display: none; }
+.howto summary svg { flex: none; transition: transform 0.15s; }
+.howto[open] summary svg { transform: rotate(90deg); }
+.howto-body { margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: var(--panel-2); }
+.howto-body p { margin: 0; }
+.howto-body p + .howto-steps, .howto-steps + p { margin-top: 8px; }
+.howto-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.howto-steps li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; align-items: start; line-height: 20px; }
+.howto-n { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; }
 
 /* Fix drawer steps */
 .fix-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
@@ -288,7 +295,7 @@ a.btn { text-decoration: none; }
 .fix-cmd { font-size: 12px; overflow-wrap: anywhere; }
 .fix-fail { width: 20px; height: 20px; border-radius: 50%; background: var(--crit); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
 /* Issues as cards: two per row on wide screens, the color edge says how serious. */
-.issue-cards { list-style: none; margin: 0; padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 12px; }
+.issue-cards { list-style: none; margin: 0; padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 12px; align-items: start; }
 .issue-card { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 8px; }
 .issue-card.ic-crit { border-left-color: var(--crit); }
 .issue-card.ic-info { border-left-color: var(--s1); }

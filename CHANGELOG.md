@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - Overview shows the GPU: a tile (CPU, GPU, Memory, Disk, Network, Battery) with how busy the graphics card is, and a GPU line in the utilization chart. AMD and Intel graphics report it; for NVIDIA's own driver the tile says it does not report busy time. A computer without a graphics card shows no GPU tile or line. The busy time is kept in the history from now on.
 
+- "How to fix" opens cleanly: an arrow that turns, the steps numbered in a light box, and opening one issue no longer stretches the card next to it.
 - Overview › Issues shows each issue as a card, two per row, with a colored edge for how serious it is, the sub-page it belongs to, and Open and Fix buttons, instead of wide rows with half the width empty.
 - A sub-page with a warning says what it is at the top, with "Show where" and Fix, and the panel that shows it gets an outline and a "Warning here" badge. Overview's issue rows open that sub-page.
 - The sidebar marks the sub-page with the warning, not only the page: for example a dot on Hardware › Sensors for a hot part, or on Storage › Overview for low space. Notifications open that sub-page too.
