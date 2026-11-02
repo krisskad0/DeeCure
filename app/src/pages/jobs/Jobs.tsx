@@ -115,8 +115,19 @@ export function JobsCron() {
 const RESULT: Record<string, ["ok" | "crit" | "warn", string]> = { success: ["ok", "Success"], "exit-code": ["crit", "Failed"], timeout: ["crit", "Timed out"], signal: ["crit", "Killed"], "core-dump": ["crit", "Crashed"] };
 
 const TIMERS: Column<Timer>[] = [
-  { key: "name", label: "Timer", text: (t) => t.name, render: (t) => <code>{t.name}</code> },
-  { key: "activates", label: "Activates", text: (t) => t.activates, render: (t) => <code>{t.activates}</code>, expert: true },
+  {
+    key: "name",
+    label: "Timer",
+    text: (t) => `${t.name} ${t.activates}`,
+    // Most timers start the service of the same name; only a different one is shown, under it.
+    render: (t) => (
+      <span className="cell-two">
+        <code className="wrap-anywhere">{t.name}</code>
+        {t.activates !== t.name.replace(/\.timer$/, ".service") && <span className="muted">starts {t.activates}</span>}
+      </span>
+    ),
+    wrap: true,
+  },
   { key: "schedule", label: "Schedule", text: (t) => t.schedule.join(", "), render: (t) => <code className="wrap-anywhere">{t.schedule.join(", ") || "-"}</code>, wrap: true },
   { key: "last", label: "Last trigger", text: (t) => (t.last ? when(t.last) : "Never") },
   { key: "next", label: "Next", text: (t) => (t.next ? when(t.next) : "-") },

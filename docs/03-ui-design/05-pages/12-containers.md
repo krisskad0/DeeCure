@@ -78,3 +78,6 @@
 ---
 
 ← Previous: [Scheduled Jobs](11-jobs.md) · [Index](README.md) · Next: [Packages](13-packages.md) →
+
+**Images and Volumes (current layout):** Images starts with chips (named, unnamed leftovers with their size, in use) and shows named images as tiles (name, tag and size, "used by N" or "not in use" greyed), with all images under **Show all**. Volumes starts with chips (in use, unused with their size) and shows the 8 largest as bars, with all volumes under **Show all**.
+

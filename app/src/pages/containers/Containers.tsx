@@ -10,8 +10,11 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { Icon } from "../../components/Icon";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
+import { BarList } from "../../components/charts/BarList";
 import { Donut } from "../../components/charts/Donut";
+import { bytes } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 import { Button } from "../../components/Button";
@@ -96,14 +99,50 @@ export function ContainersImages() {
   if (info.docker !== "running") return <Panel title="Images" span={12}><div className="empty muted">{DOCKER_STATE[info.docker]}</div></Panel>;
   const used = info.images.filter((i) => i.containers).reduce((s, i) => s + dockerBytes(i.size), 0);
   const unused = info.images.filter((i) => !i.containers).reduce((s, i) => s + dockerBytes(i.size), 0);
+  // Images without a name are leftovers of earlier builds; the named ones are what people look for.
+  const leftovers = info.images.filter((i) => i.repository === "<none>");
+  const named = info.images.filter((i) => i.repository !== "<none>");
+  const bytesText = (list: typeof info.images) => bytes(list.reduce((s, i) => s + dockerBytes(i.size), 0));
   return (
     <>
       <Panel title="Image storage" span={4}>
         <Donut segments={[{ name: "In use", value: used, slot: 1, display: `${(used / 1e9).toFixed(1)} GB` }, { name: "Unused", value: unused, tone: "warn", display: `${(unused / 1e9).toFixed(1)} GB` }]} center={{ value: ((used + unused) / 1e9).toFixed(1), subtitle: "GB" }} />
         <p className="muted">Sizes count shared layers in each image, so the total can be more than the space used.</p>
       </Panel>
-      <Panel title="Images" source="docker system df -v" span={8} flush actions={unused > 0 && <Button small onClick={() => openFix("storage.prune_docker_images")}>Prune unused…</Button>}>
-        <DataTable rows={info.images} columns={IMAGES} rowKey={(i) => `${i.repository}:${i.tag}`} empty="No images" />
+      <Panel title="Images" subtitle={`${info.images.length} images`} source="docker system df -v" span={8} flush actions={unused > 0 && <Button small onClick={() => openFix("storage.prune_docker_images")}>Prune unused…</Button>}>
+        {info.images.length === 0 ? (
+          <div className="empty muted">No images.</div>
+        ) : (
+          <div className="panel-pad">
+            <div className="kn-chips">
+              <span className="kn-chip">
+                named <b>{named.length}</b>
+              </span>
+              {leftovers.length > 0 && (
+                <span className="kn-chip" title="Images without a name, usually left over from earlier builds">
+                  unnamed leftovers <b>{leftovers.length}</b> · {bytesText(leftovers)}
+                </span>
+              )}
+              <span className="kn-chip">
+                in use <b>{info.images.filter((i) => i.containers).length}</b>
+              </span>
+            </div>
+            <ul className="snap-grid img-grid">
+              {named.map((i) => (
+                <li key={`${i.repository}:${i.tag}`} className={i.containers ? "" : "img-unused"} title={`${i.repository}:${i.tag}`}>
+                  <b className="img-name">{i.repository}</b>
+                  <span className="muted">
+                    :{i.tag} · {i.size}
+                  </span>
+                  <span className="snap-meta">{i.containers ? <StatusBadge variant="ok" label={`used by ${i.containers}`} /> : <span className="muted">not in use · {i.created}</span>}</span>
+                </li>
+              ))}
+            </ul>
+            <ShowAll label={`Show all ${info.images.length} images`}>
+              <DataTable rows={info.images} columns={IMAGES} rowKey={(i) => `${i.repository}:${i.tag}:${i.created}:${i.size}`} />
+            </ShowAll>
+          </div>
+        )}
       </Panel>
       {atLeast(mode, "expert") && info.build_cache && (
         <Panel
@@ -138,8 +177,31 @@ export function ContainersVolumes() {
   if (info.docker !== "running") return <Panel title="Volumes" span={12}><div className="empty muted">{DOCKER_STATE[info.docker]}</div></Panel>;
   return (
     <>
-      <Panel title="Volumes" source="docker system df -v" span={12} flush>
-        <DataTable rows={info.volumes} columns={VOLUMES} rowKey={(v) => v.name} pageSize={14} empty="No volumes" />
+      <Panel title="Volumes" subtitle={`${info.volumes.length} volumes`} source="docker system df -v" span={12}>
+        {info.volumes.length === 0 ? (
+          <div className="empty muted">No volumes.</div>
+        ) : (
+          <>
+            <div className="kn-chips">
+              <span className="kn-chip">
+                in use <b>{info.volumes.filter((v) => v.links).length}</b>
+              </span>
+              <span className="kn-chip">
+                unused <b>{info.volumes.filter((v) => !v.links).length}</b> · {bytes(info.volumes.filter((v) => !v.links).reduce((s, v) => s + dockerBytes(v.size), 0))}
+              </span>
+            </div>
+            <div className="kn-head svc-head">Largest</div>
+            <BarList
+              rows={[...info.volumes]
+                .sort((a, b) => dockerBytes(b.size) - dockerBytes(a.size))
+                .slice(0, 8)
+                .map((v) => ({ id: v.name, label: v.name, hint: v.links ? `used by ${v.links} container${v.links === 1 ? "" : "s"}` : "unused", value: dockerBytes(v.size), display: v.size, mono: true }))}
+            />
+            <ShowAll label={`Show all ${info.volumes.length} volumes`}>
+              <DataTable rows={info.volumes} columns={VOLUMES} rowKey={(v) => v.name} pageSize={14} />
+            </ShowAll>
+          </>
+        )}
       </Panel>
       <AlertBanner tone="info" title="Volumes hold data" text="Unused volumes may still hold databases or files you need. DeeCure never offers to delete them." />
     </>

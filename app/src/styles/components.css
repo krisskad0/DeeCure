@@ -427,4 +427,7 @@ a.btn { text-decoration: none; }
 /* A pass bar: the green share is what passed. */
 .sc-bar { height: 8px; border-radius: 4px; background: var(--warn); overflow: hidden; margin-bottom: 4px; }
 .sc-bar span { display: block; height: 100%; background: var(--good); }
+.img-grid { margin-top: 10px; }
+.img-grid .img-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.img-grid li.img-unused { background: var(--track); border-color: transparent; }
 
