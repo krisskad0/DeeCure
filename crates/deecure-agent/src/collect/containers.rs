@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
-//! Docker containers with a port open to every network (`containers.exposed`).
+//! Docker containers with a port open to every network (`containers.exposed`), and those
+//! ports (`containers.published_port`): the ufw firewall does not filter them.
 //! Asked only when Docker is installed and running; without Docker nothing is exposed.
 
+use std::collections::BTreeSet;
 use std::io;
 use std::time::Duration;
 
@@ -27,6 +29,22 @@ pub fn exposed(ports: &str) -> usize {
         .count()
 }
 
+/// The host ports that running containers publish on every address.
+pub fn published_ports(ports: &str) -> BTreeSet<u16> {
+    ports
+        .lines()
+        .flat_map(|line| line.split(", "))
+        .filter_map(|p| {
+            let (host, _) = p.split_once("->")?;
+            let rest = host
+                .strip_prefix("0.0.0.0:")
+                .or_else(|| host.strip_prefix(":::"))
+                .or_else(|| host.strip_prefix("[::]:"))?;
+            rest.parse().ok()
+        })
+        .collect()
+}
+
 /// Counts exposed containers.
 #[derive(Debug, Default)]
 pub struct Containers;
@@ -40,24 +58,33 @@ impl Containers {
     pub async fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
         let installed = root.path("/usr/bin/docker").exists();
         let running = root.path("/var/run/docker.sock").exists();
-        let count = if !installed || !running {
-            0
+        let ports = if !installed || !running {
+            String::new()
         } else {
-            let ports = command::output("docker", &["ps", "--format", "{{.Ports}}"], LIMIT)
+            command::output("docker", &["ps", "--format", "{{.Ports}}"], LIMIT)
                 .await
                 .ok_or_else(|| {
                     io::Error::other("docker ps failed (is this user in the docker group?)")
-                })?;
-            exposed(&ports)
+                })?
         };
-        Ok(Sample {
-            metrics: vec![metric(
-                "containers.exposed",
-                None,
-                count as f64,
+        let mut metrics = vec![metric(
+            "containers.exposed",
+            None,
+            exposed(&ports) as f64,
+            Unit::Count,
+            now,
+        )];
+        for port in published_ports(&ports) {
+            metrics.push(metric(
+                "containers.published_port",
+                Some(&port.to_string()),
+                1.0,
                 Unit::Count,
                 now,
-            )],
+            ));
+        }
+        Ok(Sample {
+            metrics,
             snapshots: Vec::new(),
         })
     }
@@ -77,5 +104,7 @@ mod tests {
 ";
         assert_eq!(exposed(ps), 2);
         assert_eq!(exposed(""), 0);
+        assert_eq!(published_ports(ps), BTreeSet::from([5432, 8080]));
+        assert!(published_ports("").is_empty());
     }
 }

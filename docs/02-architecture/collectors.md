@@ -192,7 +192,7 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 | `temp.limit`, `temp.critical` | sensor | celsius | Where the sensor starts to be too hot (its own `temp*_max`, or 5 °C under `temp*_crit`) and its critical temperature; only limits between 40 and 150 °C |
 | `temp.hot_minutes` | sensor | count | Minutes in a row at or over `temp.limit` |
 | `temp.cpu_limit`, `temp.cpu_critical`, `temp.cpu_hot_minutes` | - | celsius, count | The same for the CPU sensor; a CPU that reports no limit uses 100 °C and 105 °C |
-| `cpu.throttle_minutes_hour` | - | count | Minutes in the last hour with heat slowdowns |
+| `cpu.throttle_minutes_hour` | - | count | Minutes in the last hour with heat slowdowns while the CPU was within 15 °C of its own limit (turbo bursts that touch the limit at a cool temperature do not count) |
 | `fan.stopped_hot_minutes` | - | count | Minutes in a row with a fan at 0 RPM while the CPU is 75 °C or more |
 | `battery.temp`, `battery.charging`, `battery.fault`, `battery.empty`, `battery.drain_on_mains_minutes` | battery | celsius, count | Its temperature; 1 while charging; 1 when its `health` says Dead, Overheat, Over voltage, Cold, Over current, or another failure; 1 at 2% or less while draining; minutes in a row draining on the charger |
 | `kernel.died`, `kernel.machine_check` | - | count | 1 when the kernel is marked after a crash (taint `D`) or a machine check (`M`) |
@@ -211,12 +211,14 @@ On a real Ubuntu 24.04 laptop the first run found 1,163 events from the last 30 
 | `boot.time` | - | seconds | How long a boot took, stored at the time of that boot |
 | `updates.pending`, `updates.security` | - | count | Packages with a newer version, and how many of those are security updates |
 | `system.reboot_required` | - | count | 1 when an update asks for a restart, else 0 |
-| `net.listening_all` | - | count | TCP ports listening on every network |
+| `net.listening_all` | - | count | TCP ports listening on every network (a port on both IPv4 and IPv6 counts once) |
+| `net.listening_port` | port | 1 | Each of those ports, so the rules can leave out Docker's (`net.listening_unfiltered` in the rules: these ports minus `containers.published_port`) |
 | `net.default_route` | - | count | 1 when an IPv4 or IPv6 default route is up (the loopback's reject routes do not count), else 0; missing without `/proc/net/route` |
 | `accounts.people` | - | count | Accounts a person can sign in with: UID 1000 and up, a real shell, not `nobody` (from `/etc/passwd`) |
 | `accounts.uid0_extra` | - | count | Accounts other than `root` with UID 0 |
 | `privacy.popcon` | - | count | 1 when `/etc/popularity-contest.conf` says `PARTICIPATE="yes"`, else 0 (also when it is not installed) |
 | `containers.exposed` | - | count | Running Docker containers with a port on every address (`0.0.0.0`, `::`), every 5 minutes; 0 without Docker; missing when this user may not talk to Docker |
+| `containers.published_port` | port | 1 | Each host port those containers publish on every address; ufw does not filter them |
 | `firewall.enabled` | - | count | 1 when ufw is on, 0 when off; missing when ufw is not installed |
 | `backup.configured` | - | count | 1 when Déjà Dup or Timeshift runs on a schedule |
 | `backup.age_days` | - | count | Days since the newest backup or snapshot |

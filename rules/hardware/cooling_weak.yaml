@@ -3,8 +3,8 @@ category: hardware
 name: "Cooling cannot keep up"
 title: "The cooling cannot keep up"
 explain: >
-  In {cpu.throttle_minutes_hour} of the last 60 minutes, the processor slowed itself
-  down because of heat. The cooling is not keeping up: often dust in the fan or vents,
+  In {cpu.throttle_minutes_hour} of the last 60 minutes, the processor was hot (within
+  15 °C of its limit) and slowed itself down because of heat. The cooling is not keeping up: often dust in the fan or vents,
   blocked vents (a bed or a lap), or a fan that does not spin well.
 limits:
   - name: minutes

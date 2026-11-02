@@ -4,7 +4,7 @@
 //!
 //! The list of facts is in `docs/02-architecture/rules-engine.md`.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use deecure_core::{EventKind, SnapshotKind, Timestamp};
 use serde_json::Value as Json;
@@ -91,6 +91,9 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
     let mut sensors: BTreeMap<String, Item> = BTreeMap::new();
     let mut interfaces: BTreeMap<String, Item> = BTreeMap::new();
     let mut drives: BTreeMap<String, Item> = BTreeMap::new();
+    // Ports open on every network, and those Docker publishes (ufw does not filter them).
+    let mut listening: BTreeSet<String> = BTreeSet::new();
+    let mut docker: BTreeSet<String> = BTreeSet::new();
 
     for metric in store.latest_metrics(Timestamp(now.as_millis() - FRESH_FOR_MS))? {
         let value = Value::Number(metric.value);
@@ -126,6 +129,12 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
                     Value::Bool(CPU_CHIPS.contains(&chip.as_str())),
                 );
             }
+            ("net.listening_port", Some(port)) => {
+                listening.insert(port);
+            }
+            ("containers.published_port", Some(port)) => {
+                docker.insert(port);
+            }
             ("net.error_percent", Some(iface)) => {
                 entry(&mut interfaces, iface)
                     .fields
@@ -144,6 +153,14 @@ pub fn gather(store: &Store, now: Timestamp) -> store::Result<Facts> {
                 }
             }
         }
+    }
+
+    // The ports turning the firewall on would protect: open on every network, not Docker's.
+    if facts.values.contains_key("net.listening_all") {
+        facts.values.insert(
+            "net.listening_unfiltered".into(),
+            Value::Number(listening.difference(&docker).count() as f64),
+        );
     }
 
     // Add the things that rarely change (device, type, size) to filesystems with fresh readings.
@@ -453,6 +470,27 @@ mod tests {
         };
         assert_eq!(scope.get("item.active"), Some(Value::Text("failed".into())));
         assert_eq!(scope.get("root.used_percent"), Some(Value::Number(94.2)));
+    }
+
+    #[test]
+    fn the_firewall_counts_open_ports_that_are_not_dockers() {
+        let store = Store::open_in_memory().unwrap();
+        store
+            .add_metrics(&[
+                reading("net.listening_all", None, 2.0, 0),
+                reading("net.listening_port", Some("22"), 1.0, 0),
+                reading("net.listening_port", Some("9000"), 1.0, 0),
+                reading("containers.published_port", Some("9000"), 1.0, 0),
+            ])
+            .unwrap();
+        let facts = gather(&store, Timestamp(NOW)).unwrap();
+        assert_eq!(
+            facts.values.get("net.listening_unfiltered"),
+            Some(&Value::Number(1.0))
+        );
+        // Without the port readings, nothing is said.
+        let empty = gather(&Store::open_in_memory().unwrap(), Timestamp(NOW)).unwrap();
+        assert_eq!(empty.values.get("net.listening_unfiltered"), None);
     }
 
     #[test]

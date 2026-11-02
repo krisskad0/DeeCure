@@ -2,12 +2,13 @@ id: security.firewall_off
 category: security
 title: "The firewall is off"
 explain: >
-  The ufw firewall is installed but turned off. Right now {net.listening_all}
-  ports accept connections from any network this computer joins, such as
-  public Wi-Fi. Turning the firewall on blocks those connections while your
-  own apps keep working.
+  The ufw firewall is installed but turned off. Turning it on blocks connections
+  from other computers on any network this computer joins, such as public Wi-Fi,
+  while your own apps keep working. Ports open to them right now:
+  {net.listening_unfiltered} (not counting ports Docker publishes, which ufw does
+  not filter; Containers shows those).
 severity:
-  warning: "firewall.enabled == 0 and net.listening_all >= 1"
+  warning: "firewall.enabled == 0 and net.listening_unfiltered >= 1"
   info: "firewall.enabled == 0"
 fixes:
   - action: security.enable_firewall

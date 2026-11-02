@@ -43,6 +43,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- "The cooling cannot keep up" no longer fires on a cool laptop: a heat slowdown counts only while the CPU is within 15 °C of its own limit. Modern CPUs touch their limit for a split second in turbo bursts at 55-65 °C; that is normal.
+- "The firewall is off" counts each open port once (not once for IPv4 and again for IPv6), and leaves out ports Docker publishes, which ufw does not filter (the container warning covers those).
 - "Disk will be full in N days" no longer gets stuck: a disk that is flat or emptying over the last day is not filling, a laptop that sleeps at night still gets a forecast, and any warning no check has confirmed for a day closes. Before, a warning from an older version (which counted a one-time jump as daily growth) could stay with its old numbers.
 - **Refresh** now reads the numbers again right away (CPU, memory, temperatures, disks, network, battery) instead of showing the last one-minute reading again. The icon spins while it works, then "Updated" shows the time. History and warnings are not affected.
 - Warnings that need a problem to last ("hot for 5 minutes", "fan stopped while hot", memory and disk stalls, draining on the charger, clock not synced, weak Wi-Fi, heat slowdowns in the last hour) now count real time. The extra check after a fix no longer counts as a whole minute, so it can never bring a warning forward. Checks that run every 5 minutes are timed by the clock.

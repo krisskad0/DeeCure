@@ -2,7 +2,7 @@
 
 //! Network traffic from `/proc/net/dev`.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::io;
 use std::time::Instant;
 
@@ -28,20 +28,19 @@ pub fn parse_net_dev(text: &str) -> Counters {
         .collect()
 }
 
-/// TCP ports listening on every network (0.0.0.0 or ::), from `/proc/net/tcp{,6}`.
-pub fn listening_on_all(tcp: &str) -> usize {
-    tcp.lines()
-        .skip(1)
-        .filter(|l| {
+/// TCP ports listening on every network (0.0.0.0 or ::), from `/proc/net/tcp{,6}`. A port
+/// open on both IPv4 and IPv6 is one port.
+pub fn ports_on_all(tables: &[&str]) -> BTreeSet<u16> {
+    tables
+        .iter()
+        .flat_map(|t| t.lines().skip(1))
+        .filter_map(|l| {
             let f: Vec<&str> = l.split_whitespace().collect();
-            let any = f.get(1).is_some_and(|a| {
-                a.split(':')
-                    .next()
-                    .is_some_and(|ip| ip.chars().all(|c| c == '0'))
-            });
-            any && f.get(3) == Some(&"0A")
+            let (ip, port) = f.get(1)?.split_once(':')?;
+            (ip.chars().all(|c| c == '0') && f.get(3) == Some(&"0A"))
+                .then(|| u16::from_str_radix(port, 16).ok())?
         })
-        .count()
+        .collect()
 }
 
 /// True when a routing table has a usable default route: the computer is on a network
@@ -119,15 +118,28 @@ impl Collector for Network {
                 .metrics
                 .push(metric("net.tx", None, tx_total, Unit::BytesPerSecond, now));
         }
-        let open = listening_on_all(&root.read("/proc/net/tcp").unwrap_or_default())
-            + listening_on_all(&root.read("/proc/net/tcp6").unwrap_or_default());
+        let (v4, v6) = (
+            root.read("/proc/net/tcp").unwrap_or_default(),
+            root.read("/proc/net/tcp6").unwrap_or_default(),
+        );
+        let open = ports_on_all(&[&v4, &v6]);
         sample.metrics.push(metric(
             "net.listening_all",
             None,
-            open as f64,
+            open.len() as f64,
             Unit::Count,
             now,
         ));
+        // Each one too, so the rules can leave out ports the firewall cannot block (Docker's).
+        for port in &open {
+            sample.metrics.push(metric(
+                "net.listening_port",
+                Some(&port.to_string()),
+                1.0,
+                Unit::Count,
+                now,
+            ));
+        }
         // Without the IPv4 table (an odd container) the state is unknown, not "offline".
         if let Ok(v4) = root.read("/proc/net/route") {
             let v6 = root.read("/proc/net/ipv6_route").unwrap_or_default();
@@ -186,9 +198,10 @@ wlp0s20f3: 9000000 7000 0 0 0 0 0 0 3000000 2000 0 0 0 0 0 0
     #[test]
     fn counts_ports_open_to_every_network() {
         let tcp = "  sl  local_address rem_address   st\n   0: 0100007F:0277 00000000:0000 0A\n   1: 00000000:1538 00000000:0000 0A\n   2: 00000000:C8E8 0EB7FA8E:01BB 01\n";
-        assert_eq!(listening_on_all(tcp), 1);
-        let tcp6 = "  sl  local_address rem_address st\n   0: 00000000000000000000000000000000:0016 00000000000000000000000000000000:0000 0A\n";
-        assert_eq!(listening_on_all(tcp6), 1);
+        assert_eq!(ports_on_all(&[tcp]), BTreeSet::from([0x1538]));
+        let tcp6 = "  sl  local_address rem_address st\n   0: 00000000000000000000000000000000:0016 00000000000000000000000000000000:0000 0A\n   1: 00000000000000000000000000000000:1538 00000000000000000000000000000000:0000 0A\n";
+        // 0x1538 listens on both IPv4 and IPv6: one port.
+        assert_eq!(ports_on_all(&[tcp, tcp6]), BTreeSet::from([0x16, 0x1538]));
     }
 
     #[test]

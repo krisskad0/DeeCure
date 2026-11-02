@@ -32,7 +32,7 @@ DeeCure's main job is to keep the computer healthy and free of errors, and to wa
 | --- | --- | --- | --- | --- |
 | CPU too hot | Within 5 °C of the CPU's own critical temperature (`temp*_crit`, or its own lower `temp*_max`) for 5 minutes. A CPU that reports no limit (some AMD chips) uses 100 °C, critical 105 °C: above every current CPU's normal maximum | It runs at its limit and slows down hard; long stays shorten its life | Warning | ✅ |
 | CPU reached its critical temperature | At or over the critical trip, or a thermal shutdown is in the log | The computer may switch off to protect itself | Critical | ✅ |
-| Cooling cannot keep up | Heat slowdowns in at least 1 of 4 minutes over the last hour | Dust, a weak fan, or blocked vents | Warning | ✅ |
+| Cooling cannot keep up | Heat slowdowns while the CPU is within 15 °C of its limit, in at least 1 of 4 minutes over the last hour (turbo bursts at a cool temperature do not count) | Dust, a weak fan, or blocked vents | Warning | ✅ |
 | CPU hardware errors | Any machine-check error in the kernel log in 7 days | The CPU or its power is failing; crashes and wrong results | Critical | ✅ |
 | CPU security flaw not protected | A known CPU flaw is "Vulnerable" | Programs can read other programs' memory | Warning | ✅ |
 

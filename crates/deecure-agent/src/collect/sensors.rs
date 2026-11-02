@@ -30,6 +30,10 @@ const MARGIN: f64 = 5.0;
 const CPU_FALLBACK: (f64, f64) = (100.0, 105.0);
 /// A fan at 0 RPM is a problem only when the CPU is at least this hot.
 const FAN_HOT_C: f64 = 75.0;
+/// A heat slowdown counts toward "the cooling cannot keep up" only when the CPU is this close
+/// to its own limit. Turbo bursts touch the limit for a split second at a cool 55-65 °C; that is
+/// the chip working as designed, not weak cooling.
+const SLOWDOWN_NEAR_LIMIT_C: f64 = 15.0;
 
 /// One `temp` metric per sensor (subject `<chip>/<label>`) with `temp.limit` (where it starts
 /// to be too hot: the sensor's own `max`, or 5 °C under its `crit`), `temp.critical`, and
@@ -42,8 +46,8 @@ pub struct Sensors {
     fan_stopped_hot: f64,
     /// Minutes in a row at the fallback limit, for a CPU without its own.
     cpu_hot_fallback: f64,
-    /// The throttle counter at each reading of the last hour.
-    throttle: VecDeque<(Timestamp, f64)>,
+    /// The throttle counter at each reading of the last hour, and whether the CPU was hot then.
+    throttle: VecDeque<(Timestamp, f64, bool)>,
     last: Option<Timestamp>,
 }
 
@@ -63,6 +67,43 @@ pub fn limits(max: Option<f64>, crit: Option<f64>) -> (Option<f64>, Option<f64>)
     (warn, crit)
 }
 
+impl Sensors {
+    /// `cpu.throttle_minutes_hour`: minutes of the last hour in which the chip slowed itself
+    /// down because of heat while it was hot (`hot`, see [`SLOWDOWN_NEAR_LIMIT_C`]).
+    fn slowdowns(&mut self, sample: &mut Sample, now: Timestamp, count: Option<f64>, hot: bool) {
+        let Some(count) = count else {
+            return;
+        };
+        self.throttle.push_back((now, count, hot));
+        while self
+            .throttle
+            .front()
+            .is_some_and(|(t, ..)| now.as_millis() - t.as_millis() > 60 * 60_000)
+        {
+            self.throttle.pop_front();
+        }
+        // The time between two readings counts when the counter went up (a restart sets it
+        // back to 0) and the CPU was hot at the end of it, at most a minute each, so an extra
+        // reading adds nothing.
+        let slowed: f64 = self
+            .throttle
+            .iter()
+            .zip(self.throttle.iter().skip(1))
+            .filter(|((_, a, _), (_, b, hot))| b > a && *hot)
+            .map(|((ta, ..), (tb, ..))| {
+                ((tb.as_millis() - ta.as_millis()) as f64 / 60_000.0).clamp(0.0, 1.0)
+            })
+            .sum();
+        sample.metrics.push(metric(
+            "cpu.throttle_minutes_hour",
+            None,
+            slowed.round(),
+            Unit::Count,
+            now,
+        ));
+    }
+}
+
 impl Collector for Sensors {
     fn name(&self) -> &'static str {
         "sensors"
@@ -71,43 +112,19 @@ impl Collector for Sensors {
     fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
         let mut sample = Sample::default();
         let step = minutes_since(&mut self.last, now, 1.0);
-        if let Some(count) = read_trimmed(
+        let throttle = read_trimmed(
             &root.path("/sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_count"),
         )
-        .and_then(|v| v.parse::<f64>().ok())
-        {
+        .and_then(|v| v.parse::<f64>().ok());
+        if let Some(count) = throttle {
             sample
                 .metrics
                 .push(metric("cpu.throttle_total", None, count, Unit::Count, now));
-            self.throttle.push_back((now, count));
-            while self
-                .throttle
-                .front()
-                .is_some_and(|(t, _)| now.as_millis() - t.as_millis() > 60 * 60_000)
-            {
-                self.throttle.pop_front();
-            }
-            // The time between two readings counts when the counter went up (a restart sets
-            // it back to 0), at most a minute each, so an extra reading adds nothing.
-            let slowed: f64 = self
-                .throttle
-                .iter()
-                .zip(self.throttle.iter().skip(1))
-                .filter(|((_, a), (_, b))| b > a)
-                .map(|((ta, _), (tb, _))| {
-                    ((tb.as_millis() - ta.as_millis()) as f64 / 60_000.0).clamp(0.0, 1.0)
-                })
-                .sum();
-            sample.metrics.push(metric(
-                "cpu.throttle_minutes_hour",
-                None,
-                slowed.round(),
-                Unit::Count,
-                now,
-            ));
         }
         let dir = root.path("/sys/class/hwmon");
         let Ok(entries) = std::fs::read_dir(&dir) else {
+            // No sensors exposed: every slowdown counts, as the CPU's heat is unknown.
+            self.slowdowns(&mut sample, now, throttle, true);
             return Ok(sample); // no sensors exposed
         };
         let mut chips: Vec<_> = entries.flatten().map(|e| e.path()).collect();
@@ -182,6 +199,10 @@ impl Collector for Sensors {
             });
             preferred.or_else(|| on_chip.clone().next()).cloned()
         });
+        let cpu_hot = cpu.as_ref().map(|(_, _, celsius, limit, _)| {
+            *celsius >= limit.unwrap_or(CPU_FALLBACK.0) - SLOWDOWN_NEAR_LIMIT_C
+        });
+        self.slowdowns(&mut sample, now, throttle, cpu_hot.unwrap_or(true));
         if let Some((chip, label, celsius, limit, critical)) = cpu {
             let mut push = |name: &str, value: f64, unit: Unit| {
                 sample.metrics.push(metric(name, None, value, unit, now));
@@ -305,6 +326,13 @@ mod tests {
         let sample = s.collect(&files("60000\n", "16\n"), minute(4)).unwrap();
         assert_eq!(value(&sample, "temp.cpu_hot_minutes", None), Some(0.0));
         assert_eq!(value(&sample, "fan.stopped_hot_minutes", None), Some(0.0));
+        // Slowdowns at a cool 60 °C (turbo bursts touching the limit) do not count.
+        for n in 5..=9 {
+            let sample = s
+                .collect(&files("60000\n", &format!("{}\n", 20 + n)), minute(n))
+                .unwrap();
+            assert_eq!(value(&sample, "cpu.throttle_minutes_hour", None), Some(2.0));
+        }
     }
 
     #[test]
