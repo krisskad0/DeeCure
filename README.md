@@ -10,11 +10,11 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/krisskad0/DeeCure/badge)](https://securityscorecards.dev/viewer/?uri=github.com/krisskad0/DeeCure)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-beginner-overview-health-dashboard-dark.png">
-  <img src="docs/07-user-guide/images/deecure-beginner-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 85, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
+  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 85, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
 </picture>
 
-*The Overview in the Beginner view, on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. The Expert view goes much deeper: [see the screenshots](#beginner-advanced-and-expert-views).*
+*The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages. [More screenshots](#what-the-expert-view-shows).*
 
 ## Install in one step
 
@@ -93,7 +93,7 @@ It works without a password for looking around. It never changes anything unless
 
 A value DeeCure cannot read is shown as unknown, never guessed.
 
-![DeeCure Hardware page on Linux (Advanced view): machine model, BIOS version, Secure Boot, and the health of the processor, memory, SSD, battery, graphics, fans, peripherals, and firmware](docs/07-user-guide/images/deecure-advanced-hardware-summary.png)
+![DeeCure Hardware page on Linux: machine model, BIOS version, Secure Boot, the health of the processor, memory, SSD, battery, graphics, fans, peripherals, and firmware, and every kind of hardware error with its count](docs/07-user-guide/images/deecure-expert-hardware-summary-errors.png)
 
 ### Optimize: only what your computer actually needs
 
@@ -104,7 +104,7 @@ Improvements are offered **only when a measurement on this computer shows they h
 
 Battery charge limits (presets or your own), charge mode, CPU turbo, the highest CPU speed on battery, PCIe and device power saving, sleep type, lid action, keyboard backlight, and radios. Risky settings are tried for one session first and kept only when you choose **Keep**.
 
-![DeeCure battery page on a Linux laptop (Beginner view): charge level, battery health 84% of design capacity, power draw, charge cycles, a 24-hour charge chart, and a 30-day health trend](docs/07-user-guide/images/deecure-beginner-battery-health.png)
+![DeeCure battery page on a Linux laptop: charge level, battery health 84% of design capacity, power draw, charge cycles, a 24-hour charge chart, a 30-day health trend, voltage and current, charge limits and modes, and what a USB-C charger offers](docs/07-user-guide/images/deecure-expert-battery-health-chargers.png)
 
 ### Safe fixes with undo
 
@@ -116,11 +116,11 @@ Every fix shows its steps and commands first. Untick any step. Admin steps ask f
 - **Disk forecast:** "full in about N days", only when the disk keeps filling, so one big install never causes a false alarm.
 - **Notifications** for critical problems, with quiet hours, and a weekly summary of your computer's health.
 
-![DeeCure Activity timeline: what changed on this Linux computer, with package upgrades, config file changes, USB devices, and boots, filtered by the last 7, 30, or 90 days](docs/07-user-guide/images/deecure-advanced-activity-timeline.png)
+![DeeCure Activity timeline: what changed on this Linux computer, with package upgrades, config file changes, USB devices, and boots, filtered by the last 7, 30, or 90 days](docs/07-user-guide/images/deecure-expert-activity-timeline.png)
 
-![DeeCure Storage page on Ubuntu: used and free disk space, reclaimable space, what fills the disk (home, apps, system), a 30-day usage trend with the low-space line, and mount points](docs/07-user-guide/images/deecure-advanced-storage-disk-space.png)
+![DeeCure Storage page on Ubuntu: used and free disk space, reclaimable space, what fills the disk (home, apps, system), a 30-day usage trend with the low-space line, and mount points](docs/07-user-guide/images/deecure-expert-storage-disk-space.png)
 
-*All screenshots are from a real Dell laptop running Ubuntu 24.04, in the Beginner, Advanced, and Expert views. The computer and user names are replaced.*
+*All screenshots are from a real Dell laptop running Ubuntu 24.04, in the Expert view. The computer and user names are replaced.*
 
 ## Beginner, Advanced, and Expert views
 
