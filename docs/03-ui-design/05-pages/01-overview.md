@@ -175,6 +175,8 @@ Tab count pill: 9 (red).
 | {info:Info} | **Low-battery action not set** · Unclean shutdown at 02:14 today | Power | Today 02:14 | 1 | {off:Open} | [Configure](act:fix:batt) |
 | {info:Info} | **Missed timer run** · e2scrub_all.timer · Sun 03:10 | Scheduled Jobs | Sun 03:10 | 1 | {off:Open} | [View](go:jobs/timers) |
 
+The issues are cards, two per row on wide screens (one on narrow ones), most serious first. Each card has a colored left edge (red critical, orange warning, blue info), the level badge, the sub-page that shows it ("Security › Overview"), how long ago it was first seen, the title, the explanation, "How to fix" (folded), and at the bottom the rule ID (Expert), Open (that sub-page), and Fix when the rule has one.
+
 ## Overview › Health Score: `overview/score`
 
 1. **Line chart**: "Health score trend" · span 8
