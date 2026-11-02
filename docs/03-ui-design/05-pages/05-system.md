@@ -114,6 +114,8 @@ Tab count pill: 12.
 | Tue 18:40 | 6 | Software Updater | {ok:Success} |
 | Thu 06:24 | 2 | unattended-upgrades | {ok:Success} |
 
+"Pending updates" shows chips per origin, a note when a new kernel waits (restart after installing), and up to 8 rows (security fixes first) with the version change. The table, with its search, is under "Show all".
+
 ## System › Kernel: `system/kernel`
 
 1. **Running kernel** · span 5

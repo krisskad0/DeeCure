@@ -91,7 +91,8 @@ describe("System pages", () => {
   it("updates list security first and show history", async () => {
     updates = { data: { pending: [{ name: "openssl", installed: "1", candidate: "2", origin: "noble-security", security: true }], lists_updated_at: at - 7_200_000, automatic_security: true } };
     render(<SystemUpdates />);
-    await waitFor(() => expect(screen.getByText("openssl")).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText("openssl").length).toBeGreaterThan(0));
+    expect(screen.getAllByText("Security").length).toBeGreaterThan(0);
     expect(screen.getByText("2 h ago")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("unattended-upgrades")).toBeTruthy());
   });

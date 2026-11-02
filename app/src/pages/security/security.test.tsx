@@ -83,7 +83,7 @@ describe("Accounts", () => {
     await shows(AccountsUsers, "Administrator");
     await shows(AccountsGroups, "Root-equivalent (Docker)");
     await shows(AccountsSessions, "seat0");
-    await shows(AccountsLogins, "1 failed sudo attempts in 30 days.");
+    await shows(AccountsLogins, "Run with sudo most");
     await shows(AccountsSsh, "SSH allows password sign-in");
   });
 });

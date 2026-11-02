@@ -12,7 +12,7 @@ import { Panel } from "../../components/Panel";
 import { BarList } from "../../components/charts/BarList";
 import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
-import { bytes } from "../../metrics";
+import { bytes, countBy } from "../../metrics";
 import { perSecond, useLiveWithPrevious } from "../../useLive";
 import { NoData } from "../NoData";
 
@@ -50,13 +50,6 @@ const CORE_COLUMNS: Column<CoreRow>[] = [
   { key: "throttles", label: "Heat slowdowns", text: (r) => (r.throttles === undefined ? "-" : r.throttles.toLocaleString()), numeric: true },
   { key: "throttlesNow", label: "Per second now", text: (r) => rateText(r.throttlesNow), numeric: true },
 ];
-
-/** How often each value appears, in first-seen order. */
-function countBy(values: string[]): Map<string, number> {
-  const m = new Map<string, number>();
-  for (const v of values) m.set(v, (m.get(v) ?? 0) + 1);
-  return m;
-}
 
 /** The device at the end of an interrupt line, after its trigger type (`0-edge iwlwifi`). */
 export function irqDevice(text: string): string {

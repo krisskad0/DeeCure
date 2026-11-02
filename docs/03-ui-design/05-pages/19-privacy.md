@@ -40,6 +40,8 @@
 | firefox | ✓ | ✓ | ✓ | ✓ | ✓ |
 | com.spotify.Client | - | - | - | - | ✓ |
 
+Above the table: one row per permission (camera, microphone, location, your files, network), most private first, with the apps that have it and how many of all apps.
+
 ## Privacy › Privacy Settings: `privacy/settings`
 
 1. **Settings form (field rows, [Form controls](../03-components/21-form-controls.md))**: "Settings" · span 8

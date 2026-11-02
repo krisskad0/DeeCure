@@ -15,6 +15,7 @@ import { Icon } from "../../components/Icon";
 import { InlineMeter } from "../../components/InlineMeter";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { type Allocation, AllocationBar } from "../../components/charts/AllocationBar";
 import { BarList } from "../../components/charts/BarList";
@@ -227,8 +228,23 @@ export function StorageUsage() {
         <BarList rows={scan.system.slice(0, 10).map((s) => ({ label: s.path, value: s.size, display: bytes(s.size), mono: true }))} />
         {scan.unreadable > 0 && <p className="muted">{scan.unreadable} folders could not be read (they belong to other users or root), so system sizes are lower than the real ones.</p>}
       </Panel>
-      <Panel title="Largest files" subtitle={`in home · scanned ${when(scan.scanned_at)}${usage?.scanning ? " · rescanning" : ""}`} span={12} flush>
-        <DataTable rows={scan.files} columns={files} rowKey={(f) => f.path} search={{ placeholder: "Filter files" }} empty="No files over 50 MB" />
+      <Panel title="Largest files" subtitle={`in home · scanned ${when(scan.scanned_at)}${usage?.scanning ? " · rescanning" : ""}`} span={12}>
+        {scan.files.length === 0 ? (
+          <div className="empty muted">No files over 50 MB</div>
+        ) : (
+          <>
+            <BarList
+              rows={scan.files.slice(0, 8).map((f) => {
+                const path = home(f.path);
+                const cut = path.lastIndexOf("/");
+                return { id: f.path, label: path.slice(cut + 1), hint: `in ${path.slice(0, cut) || "/"}${f.modified ? ` · changed ${when(f.modified)}` : ""}`, value: f.size, display: bytes(f.size), mono: true };
+              })}
+            />
+            <ShowAll label={`Show all ${scan.files.length} files as a table`}>
+              <DataTable rows={scan.files} columns={files} rowKey={(f) => f.path} search={{ placeholder: "Filter files" }} empty="No files over 50 MB" />
+            </ShowAll>
+          </>
+        )}
       </Panel>
     </>
   );

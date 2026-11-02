@@ -75,6 +75,8 @@ Tab count pill: 3.
 | Docker group membership | {warn:Review} | riya | docker group equals root access |
 | Disk encryption | {warn:Fail} | None | Enable LUKS at next reinstall |
 
+The panel shows a pass bar, one green line when every check passed (else the checks not passed, with the value now and the advice), and the table under "Show all".
+
 ## Security › File Integrity: `security/integrity`
 
 1. **KPI row** · span 12

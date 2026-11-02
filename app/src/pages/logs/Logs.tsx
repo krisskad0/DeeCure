@@ -9,7 +9,7 @@ import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { BarChart } from "../../components/charts/BarChart";
 import { BarList } from "../../components/charts/BarList";
 import { Heatmap } from "../../components/charts/Heatmap";
-import { duration, heatRows, unescapeUnit, when } from "../../metrics";
+import { duration, heatRows, topCounts, unescapeUnit, when } from "../../metrics";
 import { kbError, useKb } from "../../kb";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
@@ -45,16 +45,6 @@ const ENTRIES: Column<LogEntry>[] = [
   { key: "message", label: "Message", text: (e) => e.message, render: (e) => <code className="wrap-anywhere">{e.message}</code>, wrap: true },
 ];
 
-/** How often each value appears, most first. */
-export function topCounts(values: string[], limit = 5): { label: string; count: number }[] {
-  const m = new Map<string, number>();
-  for (const v of values) m.set(v, (m.get(v) ?? 0) + 1);
-  return [...m.entries()]
-    .map(([label, count]) => ({ label, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, limit);
-}
-
 /** Who writes the most lines, and the messages that repeat, over the lines shown below. */
 function LogSummary({ lines, sourceTitle }: { lines: { source: string; message: string }[]; sourceTitle: string }) {
   if (lines.length < 10) return null;
@@ -62,7 +52,7 @@ function LogSummary({ lines, sourceTitle }: { lines: { source: string; message: 
   const repeats = topCounts(lines.map((l) => l.message)).filter((r) => r.count > 1);
   const bars = (rows: { label: string; count: number }[], mono: boolean) => <BarList rows={rows.map((r) => ({ id: r.label, label: r.label, value: r.count, display: `${r.count}×`, mono }))} />;
   return (
-    <div className="panel-pad log-summary">
+    <div className="panel-pad log-summary ruled">
       <div>
         <div className="kn-head">{sourceTitle}</div>
         {bars(sources, false)}

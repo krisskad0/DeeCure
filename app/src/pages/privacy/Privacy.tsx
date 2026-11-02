@@ -54,11 +54,40 @@ const PERMS: Column<App>[] = [
   { key: "network", label: "Network", text: (a) => (a.network ? "Yes" : "No"), render: (a) => yes(a.network) },
 ];
 
+/** Each permission with its name, most private first. */
+const SENSITIVE: [keyof Pick<App, "camera" | "microphone" | "location" | "files" | "network">, string][] = [
+  ["camera", "Camera"],
+  ["microphone", "Microphone"],
+  ["location", "Location"],
+  ["files", "Your files"],
+  ["network", "Network"],
+];
+
 export function PrivacyPermissions() {
   const { data: p, error } = useLive(loadPrivacy, 60_000);
   if (!p) return <Waiting title="Permissions by app" error={error} />;
   return (
     <Panel title="Permissions by app" subtitle="snap and Flatpak apps; other apps can use everything you can" source="snap connections · flatpak info" span={12} flush>
+      {p.apps.length > 0 && (
+        <div className="panel-pad">
+          <ul className="src-list" style={{ marginTop: 0 }}>
+            {SENSITIVE.map(([key, label]) => {
+              const apps = p.apps.filter((a) => a[key]);
+              return (
+                <li key={key}>
+                  <span className="src-main">
+                    <b>{label}</b>
+                    <span className="muted">{apps.length ? apps.map((a) => a.app).join(", ") : "no app"}</span>
+                  </span>
+                  <span className="src-tags">
+                    <StatusBadge variant={apps.length ? (key === "files" || key === "network" ? "off" : "info") : "ok"} label={`${apps.length} of ${p.apps.length} apps`} />
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
       <DataTable rows={p.apps} columns={PERMS} rowKey={(a) => `${a.kind}|${a.app}`} search={{ placeholder: "Filter apps" }} filter={{ column: "kind", options: ["snap", "flatpak"] }} pageSize={15} empty="No snap or Flatpak apps" />
     </Panel>
   );

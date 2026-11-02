@@ -122,6 +122,8 @@ Width of each segment = GB / 238. The legend repeats each name with its bold GB 
 | `~/Videos/meeting-recording-0918.mkv` | 1.8 GB | Video | 1 month ago |
 | `~/Documents/thesis-backup.tar.gz` | 1.2 GB | Archive | 6 months ago |
 
+"Largest files" is ranked bars of the 8 largest: the file name, with its folder and when it changed as a hint. The table, with its search, is under "Show all".
+
 ## Storage › Cleanup: `storage/cleanup`
 
 Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Refresh.

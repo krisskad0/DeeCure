@@ -10,7 +10,8 @@ import { Panel } from "../../components/Panel";
 import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { BarChart } from "../../components/charts/BarChart";
-import { when } from "../../metrics";
+import { BarList } from "../../components/charts/BarList";
+import { topCounts, when } from "../../metrics";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 import { SshServerPanel, SudoRulesPanel } from "./AdminAccounts";
@@ -172,11 +173,30 @@ export function AccountsLogins() {
     return { label: new Date(start + 43_200_000).toLocaleDateString(undefined, { weekday: "short" }), value: a.events.filter((e) => e.event === "sign-in" && e.at >= start && e.at < start + 86_400_000).length };
   });
   const failed = a.events.filter((e) => !e.success).length;
+  // The program each sudo use ran, without its path or arguments.
+  const sudoBy = topCounts(a.events.filter((e) => e.event === "sudo").map((e) => e.source.split(/\s+/)[0].split("/").pop() ?? e.source), 3);
   return (
     <>
       <Panel title="Sign-ins per day" subtitle="last 7 days" span={5}>
         <BarChart bars={bars} height={180} />
-        {failed > 0 && <p className="muted">{failed} failed sudo attempts in 30 days.</p>}
+        <div className="kn-chips" style={{ marginTop: 10 }}>
+          {[
+            ["sign-ins", a.events.filter((e) => e.event === "sign-in").length],
+            ["sudo uses", a.events.filter((e) => e.event === "sudo").length],
+            ["failed", failed],
+          ].map(([label, n]) => (
+            <span key={label} className="kn-chip">
+              {label} <b>{n}</b>
+            </span>
+          ))}
+          <span className="muted">in 30 days</span>
+        </div>
+        {sudoBy.length > 0 && (
+          <>
+            <div className="kn-head" style={{ marginTop: 12 }}>Run with sudo most</div>
+            <BarList rows={sudoBy.map((r) => ({ id: r.label, label: r.label, value: r.count, display: `${r.count}×`, mono: true }))} />
+          </>
+        )}
       </Panel>
       <Panel title="Events" subtitle="last 30 days" source="last · journal (sudo)" span={7} flush>
         <DataTable rows={a.events} columns={EVENTS} rowKey={(e) => `${e.at}|${e.event}|${e.source}`} pageSize={10} empty="No sign-ins or sudo use recorded" />

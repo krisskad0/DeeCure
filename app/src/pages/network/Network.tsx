@@ -12,9 +12,10 @@ import { InlineMeter } from "../../components/InlineMeter";
 import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { BarList } from "../../components/charts/BarList";
 import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
-import { bytes } from "../../metrics";
+import { bytes, topCounts } from "../../metrics";
 import { useLive } from "../../useLive";
 import { kbPort, useKb } from "../../kb";
 import { Button } from "../../components/Button";
@@ -161,8 +162,38 @@ const SOCKETS: Column<SocketInfo>[] = [
 export function NetworkConnections() {
   const { data: sockets, error } = useLive(loadSockets, 10_000);
   if (!sockets) return <Waiting title="Active connections" error={error} />;
+  const open = sockets.filter((x) => x.state === "ESTAB");
+  const byProgram = topCounts(open.map((x) => x.process ?? "other users' programs"));
+  // The far end without its port; connections inside this computer are left out.
+  const host = (addr: string) => addr.slice(0, addr.lastIndexOf(":")).replace(/^\[|\]$/g, "");
+  const byRemote = topCounts(open.map((x) => host(x.remote)).filter((h) => h && !/^(127\.|::1$|::ffff:127\.)/.test(h)));
   return (
     <Panel title="Active connections" source="/proc/net/{tcp,udp}" span={12} flush>
+      {sockets.length > 0 && (
+        <div className="panel-pad">
+          <div className="kn-chips">
+            {[
+              ["open (ESTAB)", sockets.filter((x) => x.state === "ESTAB").length],
+              ["waiting (LISTEN)", sockets.filter((x) => x.state === "LISTEN").length],
+              ["other", sockets.filter((x) => x.state !== "ESTAB" && x.state !== "LISTEN").length],
+            ].map(([label, n]) => (
+              <span key={label} className="kn-chip">
+                {label} <b>{n}</b>
+              </span>
+            ))}
+          </div>
+          <div className="log-summary" style={{ marginTop: 10 }}>
+            <div>
+              <div className="kn-head">Programs with the most open connections</div>
+              {byProgram.length ? <BarList rows={byProgram.map((r) => ({ id: r.label, label: r.label, value: r.count, display: String(r.count) }))} /> : <div className="muted">No open connections.</div>}
+            </div>
+            <div>
+              <div className="kn-head">Talking to most</div>
+              {byRemote.length ? <BarList rows={byRemote.map((r) => ({ id: r.label, label: r.label, value: r.count, display: String(r.count), mono: true }))} /> : <div className="muted">Nothing outside this computer.</div>}
+            </div>
+          </div>
+        </div>
+      )}
       <DataTable rows={sockets} columns={SOCKETS} rowKey={(s) => `${s.proto}|${s.local}|${s.remote}|${s.state}`} search={{ placeholder: "Filter connections" }} filter={{ column: "state", options: ["ESTAB", "LISTEN", "UNCONN"] }} pageSize={12} total={sockets.length} />
     </Panel>
   );
@@ -217,8 +248,60 @@ export function NetworkPorts() {
           { label: "Reachable from networks", value: String(exposed.length), status: exposed.length && !fw?.enabled ? "warn" : "ok" },
         ]}
       />
-      <Panel title="Listening ports" source="/proc/net/{tcp,udp}" span={12} flush>
-        <DataTable rows={ports} columns={columns} rowKey={(s) => `${s.proto}|${s.local_port}|${s.exposure}`} empty="Nothing is listening" />
+      <Panel title="Listening ports" source="/proc/net/{tcp,udp}" span={12}>
+        {exposed.length ? (
+          <>
+            <div className="kn-head">Reachable from other computers</div>
+            <ul className="src-list">
+              {exposed.map((p) => (
+                <li key={`${p.proto}|${p.local_port}|${p.exposure}`}>
+                  <span className="src-main">
+                    <b>
+                      {p.proto.toUpperCase()} {p.local_port}
+                      {kbPort(kb, p.local_port, p.proto) && ` · ${kbPort(kb, p.local_port, p.proto)?.name}`}
+                    </b>
+                    <span className="muted">
+                      {p.process ?? "system process (needs Full access)"} · on <code>{p.local.slice(0, p.local.lastIndexOf(":"))}</code>
+                    </span>
+                  </span>
+                  <span className="src-tags">
+                    <StatusBadge variant={EXPOSURE[p.exposure][0]} label={EXPOSURE[p.exposure][1]} />
+                    {fw?.enabled ? <StatusBadge variant="ok" label="Filtered" /> : <StatusBadge variant="warn" label="Not filtered" />}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          ports.length > 0 && (
+            <div className="kn-verdict">
+              <StatusBadge variant="ok" label="Private" />
+              <span>Every listening port is for this computer only. Other computers cannot reach them.</span>
+            </div>
+          )
+        )}
+        {ports.length > exposed.length && (
+          <>
+            <div className="kn-head" style={{ marginTop: 12 }}>For this computer only</div>
+            <div className="kn-chips">
+              {ports
+                // One chip per port, though it may listen on several local addresses.
+                .filter((p, i, all) => p.exposure === "local" && all.findIndex((q) => q.exposure === "local" && q.proto === p.proto && q.local_port === p.local_port) === i)
+                .map((p) => (
+                  <span key={`${p.proto}|${p.local_port}`} className="kn-chip" title={p.local}>
+                    {p.local_port} <b>{kbPort(kb, p.local_port, p.proto)?.name ?? p.process ?? p.proto.toUpperCase()}</b>
+                  </span>
+                ))}
+            </div>
+          </>
+        )}
+        {ports.length === 0 ? (
+          <div className="empty muted">Nothing is listening</div>
+        ) : (
+          <ShowAll label={`Show all ${ports.length} ports as a table`}>
+            <DataTable rows={ports} columns={columns} rowKey={(s) => `${s.proto}|${s.local_port}|${s.exposure}`} empty="Nothing is listening" />
+          </ShowAll>
+        )}
       </Panel>
       <AlertBanner tone="info" title="Reachability from the internet is not tested" text="Whether your router forwards a port can only be checked from outside your network." />
     </>

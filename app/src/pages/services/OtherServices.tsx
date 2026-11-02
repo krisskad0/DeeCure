@@ -55,7 +55,28 @@ export function ServicesStartup() {
   ];
   return (
     <Panel title="Started at login" source="~/.config/autostart · /etc/xdg/autostart" span={12} flush>
-      {apps ? <DataTable rows={apps} columns={columns} rowKey={(a) => a.id} filter={{ column: "scope", options: ["User", "System"] }} empty="No startup applications" /> : <NoData error={error} waiting="Loading…" />}
+      {apps ? (
+        <>
+          {apps.length > 0 && (
+            <div className="panel-pad">
+              <div className="kn-chips">
+                {[
+                  ["start at login", apps.filter((a) => a.enabled).length],
+                  ["turned off", apps.filter((a) => !a.enabled).length],
+                  ["added by you", apps.filter((a) => a.scope === "User").length],
+                ].map(([label, n]) => (
+                  <span key={label} className="kn-chip">
+                    {label} <b>{n}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <DataTable rows={apps} columns={columns} rowKey={(a) => a.id} filter={{ column: "scope", options: ["User", "System"] }} empty="No startup applications" />
+        </>
+      ) : (
+        <NoData error={error} waiting="Loading…" />
+      )}
     </Panel>
   );
 }

@@ -14,6 +14,7 @@ import { type Column, DataTable } from "../../components/DataTable";
 import { Icon } from "../../components/Icon";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Donut } from "../../components/charts/Donut";
 import { href } from "../../route";
@@ -136,9 +137,42 @@ const HARD: Column<Hard>[] = [
 export function SecurityHardening() {
   const { data: sec, error } = useLive(loadSecurity, 300_000);
   if (!sec) return <Waiting title="Hardening checks" error={error} />;
+  const passed = sec.hardening.filter((h) => h.result === "pass").length;
+  const open = sec.hardening.filter((h) => h.result !== "pass");
   return (
-    <Panel title="Hardening checks" source="/proc/sys" span={12} flush>
-      <DataTable rows={sec.hardening} columns={HARD} rowKey={(h) => h.name} pageSize={20} />
+    <Panel title="Hardening checks" subtitle={`${passed} of ${sec.hardening.length} passed`} source="/proc/sys" span={12}>
+      <div className="sc-bar" role="img" aria-label={`${passed} of ${sec.hardening.length} passed`}>
+        <span style={{ width: `${sec.hardening.length ? (passed / sec.hardening.length) * 100 : 0}%` }} />
+      </div>
+      {open.length === 0 ? (
+        <div className="kn-verdict svc-verdict">
+          <StatusBadge variant="ok" label="All passed" />
+          <span>Every kernel safety setting DeeCure checks is at a safe value.</span>
+        </div>
+      ) : (
+        <>
+          <div className="kn-head svc-head">Not passed</div>
+          <ul className="src-list">
+            {open.map((h) => (
+              <li key={h.name}>
+                <span className="src-main">
+                  <b>{h.name}</b>
+                  <span className="muted">
+                    now <code>{h.value}</code>
+                    {h.recommendation && ` · ${h.recommendation}`}
+                  </span>
+                </span>
+                <span className="src-tags">
+                  <StatusBadge variant={h.result === "fail" ? "warn" : "off"} label={h.result === "fail" ? "Could be safer" : "Not available"} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <ShowAll label={`Show all ${sec.hardening.length} checks`}>
+        <DataTable rows={sec.hardening} columns={HARD} rowKey={(h) => h.name} pageSize={20} />
+      </ShowAll>
     </Panel>
   );
 }

@@ -99,6 +99,8 @@ Expert adds, below the units list (visual summaries first, full tables under **S
 | GNOME Software | System | `gnome-software --gapplication-service` | [meter:ok 29% "0.6 s"] | [toggle:on] |
 | Snap user daemon | System | `snap userd --autostart` | [meter:ok 10% "0.2 s"] | [toggle:on] |
 
+Above the table: chips for apps that start at login, turned off, and added by you.
+
 ---
 
 ← Previous: [Processes](09-processes.md) · [Index](README.md) · Next: [Scheduled Jobs](11-jobs.md) →

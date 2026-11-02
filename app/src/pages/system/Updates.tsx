@@ -6,10 +6,12 @@ import { type AptRun, type UpdatesInfo, getInventory, getSnapshot } from "../../
 import { type Column, DataTable } from "../../components/DataTable";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
+import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useLive } from "../../useLive";
 import { Button } from "../../components/Button";
 import { useFix } from "../../shell/FixDrawer";
+import { countBy } from "../../metrics";
 import { ago } from "../../time";
 import { NoData } from "../NoData";
 
@@ -34,7 +36,7 @@ const HISTORY: Column<AptRun>[] = [
   { key: "date", label: "Date", text: (r) => r.start, render: (r) => new Date(aptTime(r.start)).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) },
   { key: "packages", label: "Packages", text: (r) => String(r.packages), numeric: true },
   { key: "changes", label: "Changes", text: (r) => r.changes.join(", "), render: (r) => r.changes.slice(0, 4).join(", ") + (r.changes.length > 4 ? ` +${r.changes.length - 4} more` : ""), wrap: true },
-  { key: "source", label: "Source", text: (r) => r.source },
+  { key: "source", label: "Source", text: (r) => r.source, wrap: true },
   { key: "result", label: "Result", text: (r) => (r.failed ? "Failed" : "Success"), render: (r) => <StatusBadge variant={r.failed ? "crit" : "ok"} label={r.failed ? "Failed" : "Success"} /> },
 ];
 
@@ -52,6 +54,9 @@ export function SystemUpdates() {
     );
   }
   const security = info.pending.filter((p) => p.security).length;
+  // Security fixes first; the rest in apt's order. The full list is in the table.
+  const first = [...info.pending].sort((a, b) => Number(b.security) - Number(a.security)).slice(0, 8);
+  const kernel = info.pending.find((p) => /^linux-image-/.test(p.name));
   return (
     <>
       <KpiRow
@@ -76,9 +81,46 @@ export function SystemUpdates() {
           )
         }
         span={12}
-        flush
       >
-        <DataTable rows={info.pending} columns={PENDING} rowKey={(p) => p.name} search={{ placeholder: "Search packages" }} empty="Everything is up to date" />
+        {info.pending.length === 0 ? (
+          <div className="kn-verdict">
+            <StatusBadge variant="ok" label="Up to date" />
+            <span>Everything is up to date</span>
+          </div>
+        ) : (
+          <>
+            <div className="kn-chips">
+              {[...countBy(info.pending.map((p) => p.origin))].map(([origin, n]) => (
+                <span key={origin} className="kn-chip">
+                  {origin} <b>{n}</b>
+                </span>
+              ))}
+            </div>
+            {kernel && (
+              <ul className="kn-notable svc-verdict">
+                <li>
+                  <StatusBadge variant="info" label="New kernel" /> Linux <code>{kernel.candidate}</code> is waiting. Restart after installing to use it.
+                </li>
+              </ul>
+            )}
+            <ul className="src-list">
+              {first.map((p) => (
+                <li key={p.name}>
+                  <span className="src-main">
+                    <b>{p.name}</b>
+                    <span className="muted">
+                      <code>{p.installed}</code> → <code>{p.candidate}</code>
+                    </span>
+                  </span>
+                  <span className="src-tags">{p.security ? <StatusBadge variant="warn" label="Security" /> : <span className="muted">{p.origin}</span>}</span>
+                </li>
+              ))}
+            </ul>
+            <ShowAll label={`Show all ${info.pending.length} as a table`}>
+              <DataTable rows={info.pending} columns={PENDING} rowKey={(p) => p.name} search={{ placeholder: "Search packages" }} empty="Everything is up to date" />
+            </ShowAll>
+          </>
+        )}
       </Panel>
       <Panel title="Update history" source="/var/log/apt/history.log" span={12} flush>
         {history ? <DataTable rows={history} columns={HISTORY} rowKey={(r) => r.start} pageSize={8} empty="No apt runs in the current log" /> : <div className="empty muted">Loading…</div>}

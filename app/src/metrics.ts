@@ -107,3 +107,19 @@ export function aptTime(start: string): number {
   return new Date(start.replace(/\s+/, "T")).getTime();
 }
 
+/** How often each value appears, most first. */
+export function topCounts(values: string[], limit = 5): { label: string; count: number }[] {
+  const m = new Map<string, number>();
+  for (const v of values) m.set(v, (m.get(v) ?? 0) + 1);
+  return [...m.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+/** How often each value appears, in first-seen order. */
+export function countBy(values: string[]): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const v of values) m.set(v, (m.get(v) ?? 0) + 1);
+  return m;
+}

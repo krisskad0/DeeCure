@@ -63,6 +63,8 @@ The panel shows chips (connected, not connected, virtual), then a tile per hardw
 | udp | `0.0.0.0:5353` | `*:*` | {off:UNCONN} | avahi-daemon |
 | tcp | `192.168.1.24:51900` | `185.125.190.20:443` | {off:TIME-WAIT} | - |
 
+Above the table: chips per state (open, waiting, other), and two columns of ranked bars, "Programs with the most open connections" and "Talking to most" (far ends outside this computer).
+
 ## Network › Open Ports: `network/ports`
 
 1. **KPI row** · span 12
@@ -87,6 +89,8 @@ The panel shows chips (connected, not connected, virtual), then a tile per hardw
 
 3. **Alert banner**: "External reachability is not tested" · span 12
 - State: `info` · Title: "External reachability is not tested" · Text: "Whether the router forwards a port can only be checked from outside your network." · Buttons: [Run external test](act:toast:Opt-in: this sends your public IP to a test server. Off in the prototype.)
+
+The panel lists ports reachable from other computers first (protocol, port, what it is, the process, the address, exposure, and whether the firewall filters it), or one green line when none is; ports for this computer only are chips, one per port. The table is under "Show all".
 
 ## Network › Firewall: `network/firewall`
 

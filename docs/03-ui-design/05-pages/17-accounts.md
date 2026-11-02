@@ -77,6 +77,8 @@ The panel lists the groups that give extra power first (members and what the gro
 | Sat 10:13 | riya | Sign-in | gdm-password | {warn:Failed ×1} |
 | 30 Sep | guest | Sign-in | gdm-password | {ok:Success} |
 
+Under the sign-ins chart: chips for sign-ins, sudo uses, and failures in 30 days, and ranked bars of the programs run with sudo most.
+
 ## Accounts › SSH Keys: `accounts/ssh`
 
 1. **KPI row** · span 12
