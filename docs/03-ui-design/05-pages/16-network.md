@@ -150,7 +150,7 @@ Expert: "Routes" shows the internet route (device and gateway) as one row, chips
 
 2. **Line chart and ranked bars**: "Download by app over time", then "Upload by app over time" · span 12 each, at every level
 - The same layout as Performance › CPU "CPU use by app over time": a dropdown (Last 24 hours, Last 7 days, Last 30 days), the 5 biggest apps as lines in KB/s, a "TCP only" line, then "Most in all" with the bytes; every one is under "Show all"
-- TCP only for now: QUIC and other UDP traffic (video sites, Google) and very short connections are not counted, so the info tooltip says real use is higher. Exact numbers for all traffic come with eBPF in the admin helper (Full access)
+- TCP only: QUIC and other UDP traffic (video sites, Google) and very short connections are not counted, so the info tooltip says real use is higher. Exact counting of all traffic would need eBPF in the admin helper, which the owner chose not to build (2026-11-03).
 
 ---
 
