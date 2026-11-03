@@ -4,10 +4,11 @@
 //! Used for things that change too fast to keep, or are cheap to read again.
 
 mod accounts;
+mod app_battery;
 mod audio;
 pub(crate) mod backups;
 mod bluetooth;
-mod cgroups;
+pub(crate) mod cgroups;
 pub(crate) mod command;
 mod containers;
 mod cpu_detail;
@@ -16,7 +17,7 @@ mod diagnostics;
 mod display;
 mod firmware;
 mod gpu;
-mod gpu_detail;
+pub(crate) mod gpu_detail;
 mod hardware;
 mod history;
 mod hw_errors;
@@ -80,6 +81,7 @@ pub const KINDS: &[&str] = &[
     "net_deep",
     "tcp_traffic",
     "power_detail",
+    "app_battery",
     "optimize",
     "thermal",
     "boot_detail",
@@ -180,6 +182,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
             (detail.lid.running_battery, detail.lid.running_power) = logind::running(agent).await;
             serde_json::to_value(detail)
         }
+        "app_battery" => serde_json::to_value(app_battery::read(agent)),
         "optimize" => serde_json::to_value(optimize::read(agent).await),
         "thermal" => serde_json::to_value(thermal::read(&agent.root)),
         "boot_detail" => serde_json::to_value(services_detail::read_boot().await),

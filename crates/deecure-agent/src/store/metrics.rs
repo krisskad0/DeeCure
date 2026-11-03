@@ -114,6 +114,33 @@ impl Store {
         .collect()
     }
 
+    /// The sum of every reading of `name` with a point from `since` to `until` (both
+    /// included), per subject, biggest first. For metrics where each reading is an amount
+    /// (such as energy used since the last reading), not a level. Roll-ups keep
+    /// `value × samples`, so the sum stays exact for older points too.
+    pub fn metric_sums(
+        &self,
+        name: &str,
+        since: Timestamp,
+        until: Timestamp,
+    ) -> Result<Vec<(Option<String>, f64)>> {
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT s.subject, sum(m.value * m.samples) AS total
+             FROM series AS s JOIN metric AS m ON m.series = s.id
+             WHERE s.name = ?1 AND m.resolution IN (60, 900, 86400) AND m.at BETWEEN ?2 AND ?3
+             GROUP BY s.subject
+             ORDER BY total DESC, s.subject",
+        )?;
+        let rows = stmt.query_map(params![name, since.as_millis(), until.as_millis()], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+        })?;
+        rows.map(|row| {
+            let (subject, total) = row?;
+            Ok((subject_from_db(subject), total))
+        })
+        .collect()
+    }
+
     /// Points for one metric from `since` to `until` (both included), oldest first.
     ///
     /// Recent points are one minute apart. Older points are 15-minute or daily
@@ -244,6 +271,41 @@ mod tests {
                 ("cpu.usage".to_owned(), None, 20.0),
                 ("disk.used_percent".to_owned(), Some("/".to_owned()), 94.0)
             ]
+        );
+    }
+
+    #[test]
+    fn sums_add_up_every_reading_per_subject() {
+        let store = Store::open_in_memory().unwrap();
+        let used = |subject: &str, at: i64, value: f64| Metric {
+            name: "app.battery_mwh".into(),
+            subject: Some(subject.into()),
+            value,
+            unit: Unit::Count,
+            at: Timestamp(at),
+        };
+        // Two readings in one minute (an extra check) both count.
+        store
+            .add_metrics(&[
+                used("app:Files", 0, 2.0),
+                used("app:Files", 30_000, 1.0),
+                used("app:Files", 60_000, 4.0),
+                used("rest", 60_000, 10.0),
+                used("app:Files", 600_000, 50.0),
+            ])
+            .unwrap();
+        let sums = store
+            .metric_sums("app.battery_mwh", Timestamp(0), Timestamp(120_000))
+            .unwrap();
+        assert_eq!(
+            sums,
+            [(Some("rest".into()), 10.0), (Some("app:Files".into()), 7.0)]
+        );
+        assert!(
+            store
+                .metric_sums("nothing", Timestamp(0), Timestamp(1))
+                .unwrap()
+                .is_empty()
         );
     }
 

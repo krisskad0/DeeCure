@@ -35,7 +35,7 @@ Last updated: 2026-11-02: released `v0.1.0-alpha.8`: updating DeeCure from the a
 2. **Owner decisions** before a stable release (section 5): contact emails (#11), app ID (#6), signing key (#12, also turns on the APT repository and signed commits and tags), supported systems (#9), health points (#15).
 3. **People and machines** (section 6): the 47 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.
 4. **Public beta:** fix the findings, release `v0.1.0-beta.1`, then `v0.1.0` ([how to release](#7-how-to-release)). When contributors arrive: admin bypass on `main` to "pull requests only", and CodeQL and Dependencies as required checks.
-5. **Next features, on the owner's word:** Phase 4 (assistant; un-hide it in `app/src/visible.ts`), use per app (disk I/O, power, and network traffic; their panels are designed but hidden until a collector exists), "optimize everything", Phase 5 (bring back "Add a machine"), coverage-guided fuzzing.
+5. **Next features, on the owner's word:** Phase 4 (assistant; un-hide it in `app/src/visible.ts`), use per app (✅ battery use per app, an estimate, built 2026-11-03 on Power › Battery; left: disk I/O and exact network traffic per app (eBPF, section 2 item 0.6); their panels are designed but hidden until a collector exists), "optimize everything", Phase 5 (bring back "Add a machine"), coverage-guided fuzzing.
 
 **Known dependency alert:** Dependabot alert 1 (moderate): `glib` 0.18 `VariantStrIter` unsoundness, fixed in 0.20. It comes only through Tauri's GTK 3 stack (window, tray); DeeCure's own code does not use the affected function. It goes away when Tauri moves its Linux stack to `glib` 0.20 or later; check after each Tauri update.
 

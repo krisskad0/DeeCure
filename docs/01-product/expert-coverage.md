@@ -117,7 +117,7 @@ Power gets three Expert sections: **Battery**, **Sleep and wake-ups**, and **Pow
 | Charger: connected or not, its watts, and USB-C Power Delivery details | A weak charger charges slowly or not at all under load | `/sys/class/power_supply/ucsi-source-psy-*`, `/sys/class/usb_power_delivery/*/source-capabilities` | You | ✅ Built |
 | Time on mains power against time on battery, last 14 days | Decides if a charge limit makes sense | stored readings of `/sys/class/power_supply/AC*/online` | You | New |
 | Measured chip power (section 1) next to battery drain | Splits CPU power from the rest of the laptop | powercap | Admin | New |
-| **Not shown: watts per app.** | Linux has no exact per-app power meter. Expert shows each app's CPU time, graphics time, and wake-ups instead | - | - | - |
+| Battery use per app, by day (an estimate, at every level) | Answers "what is draining my battery?". Linux has no exact per-app power meter, so the measured drain is split: the usual low drain to the screen and the system at rest, the rest by each app's CPU and graphics time | stored battery drain, cgroup `cpu.stat`, DRM `fdinfo` | You | ✅ Built (Power › Battery: today, yesterday, last 7 days; wake-ups are not part of it, they need Admin) |
 
 ### 7b. Sleep and wake-ups
 

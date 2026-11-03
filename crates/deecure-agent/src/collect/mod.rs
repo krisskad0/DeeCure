@@ -7,6 +7,7 @@
 //! Metric names and units: `docs/02-architecture/collectors.md`.
 
 mod accounts;
+pub(crate) mod app_battery;
 mod backup;
 mod battery;
 mod boot;
@@ -34,6 +35,7 @@ use tokio::time::{MissedTickBehavior, interval};
 use crate::store::{self, SharedStore, Store};
 
 pub use accounts::Accounts;
+pub use app_battery::AppBattery;
 pub use backup::Backups;
 pub use battery::Battery;
 pub use boot::{Boot, BootInfo};
@@ -130,6 +132,7 @@ pub async fn run(
         Box::new(Cpu::default()),
         Box::new(Memory::default()),
         Box::new(Battery::default()),
+        Box::new(AppBattery::default()),
         Box::new(Filesystems::real()),
         Box::new(Network::default()),
         Box::new(DiskIo::default()),

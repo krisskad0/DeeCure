@@ -265,6 +265,16 @@ pub fn parse_fdinfo(text: &str) -> Option<FdClient> {
     })
 }
 
+/// Graphics engine time since start, in nanoseconds, of each of the user's processes that
+/// uses the graphics card (all engines and cards together).
+pub fn engine_ns_by_pid(root: &SystemRoot) -> std::collections::HashMap<u32, u64> {
+    let mut out = std::collections::HashMap::new();
+    for c in clients(root) {
+        *out.entry(c.pid).or_insert(0) += c.engines.values().sum::<u64>();
+    }
+    out
+}
+
 /// Every graphics client of the user's processes, each client once.
 fn clients(root: &SystemRoot) -> Vec<GpuClient> {
     let pids: Vec<u32> = std::fs::read_dir(root.path("/proc"))

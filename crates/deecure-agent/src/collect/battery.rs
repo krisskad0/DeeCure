@@ -192,6 +192,34 @@ fn time_left(supply: &Path) -> Option<f64> {
     Some(hours * 3600.0)
 }
 
+/// The drain of all system batteries together, in watts, only while the computer runs on
+/// battery: no charger online and at least one battery discharging. `None` otherwise.
+pub(super) fn on_battery_watts(root: &SystemRoot) -> Option<f64> {
+    let mut entries: Vec<_> = std::fs::read_dir(root.path("/sys/class/power_supply"))
+        .ok()?
+        .flatten()
+        .collect();
+    entries.sort_by_key(|entry| entry.file_name());
+    let mut watts = None;
+    for entry in entries {
+        let supply = entry.path();
+        let text = |file: &str| read_trimmed(&supply.join(file));
+        if text("scope").as_deref() == Some("Device") {
+            continue;
+        }
+        match text("type").as_deref() {
+            Some("Mains" | "USB") if text("online").as_deref() == Some("1") => return None,
+            Some("Battery") if text("status").as_deref() == Some("Discharging") => {
+                if let Some(w) = power(&supply) {
+                    watts = Some(watts.unwrap_or(0.0) + w.abs());
+                }
+            }
+            _ => {}
+        }
+    }
+    watts
+}
+
 /// Power going in or out right now, in watts.
 fn power(supply: &Path) -> Option<f64> {
     if let Some(microwatts) = number(supply, "power_now") {

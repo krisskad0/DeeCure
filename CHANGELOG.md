@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- Power › Battery › **Battery use by app**: which apps used the battery today, yesterday, or in the last 7 days, as a share of a full charge and in watt hours, like a phone's battery screen. It is an estimate (Linux has no power meter per app): each minute on battery, the usual low drain goes to "Screen and system at rest", and the drain above it is split by the CPU and graphics time each app and service used. No password needed; nothing is counted while charging.
 - Before an update, Settings › About shows everything that is new in it, grouped (New, Fixed), not one line. After an update, the app says "DeeCure was updated to X" once, with its main change and a link to everything new; Settings › About keeps the notes of the version you have. The "update available" notification names the main change too.
 - Every GitHub release carries its real notes from this changelog (it said only "See CHANGELOG.md" before); a release without notes is refused. The notes of 0.1.0-alpha.6, alpha.7, and alpha.8 were filled in.
 - `make update-systemd-test`: the in-app update, the automatic update, the repair, and the helper's sandbox, tested with systemd running as on a desktop.

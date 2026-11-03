@@ -334,6 +334,19 @@ export interface Choice {
 }
 
 /** Power in depth (Expert). */
+/** Battery use per app, an estimate, by local day (`app_battery`). */
+export interface AppBatteryUse {
+  /** `app`, `service`, `user-service`, `other` (small ones together), or `rest` (screen, Wi-Fi, and the system at rest). */
+  kind: string;
+  name: string;
+  /** Energy from the battery, in milliwatt hours. */
+  mwh: number;
+}
+export interface AppBatteryInfo {
+  /** Today first, then the 7 days before; each day's uses biggest first. */
+  days: { start: number; uses: AppBatteryUse[] }[];
+}
+
 export interface PowerDetail {
   batteries: { name: string; volts?: number; volts_min_design?: number; amps?: number; watts?: number; status?: string; temp_c?: number; health?: string; made?: string; serial?: string; charge_start?: number; charge_stop?: number; charge_mode?: Choice; charge_behaviour?: Choice }[];
   chargers: { name: string; kind: string; online: boolean; usb_type?: Choice; max_watts?: number }[];
@@ -1162,6 +1175,7 @@ export function getInventory(kind: "graphics_stack"): Promise<GraphicsStack>;
 export function getInventory(kind: "net_deep"): Promise<NetDeep>;
 export function getInventory(kind: "tcp_traffic"): Promise<TcpTraffic>;
 export function getInventory(kind: "power_detail"): Promise<PowerDetail>;
+export function getInventory(kind: "app_battery"): Promise<AppBatteryInfo>;
 export function getInventory(kind: "optimize"): Promise<OptimizeCheck[]>;
 export function getInventory(kind: "thermal"): Promise<ThermalInfo>;
 export function getInventory(kind: "boot_detail"): Promise<BootDetail>;

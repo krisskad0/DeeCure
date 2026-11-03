@@ -5,6 +5,7 @@
 import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
 import { CpuSleepStates } from "../performance/CpuExpert";
+import { AppBatteryPanel } from "./AppBattery";
 import { BatteryExpertSections, WakeExpertSections } from "./PowerExpert";
 import { LowPowerPanel, WakeupsPanel } from "./AdminMeasures";
 import { PowerControls } from "./PowerControls";
@@ -85,13 +86,14 @@ export function PowerBattery() {
           </>
         )}
       </Panel>
-      <Panel title="Health trend" subtitle="30 days" span={12}>
+      <Panel title="Health trend" subtitle="30 days" span={6}>
         {trend.length >= 2 ? (
           <LineChart series={[{ name: "Health", data: trend.map((p) => p.value), slot: 1 }]} x={{ kind: "time", times: trend.map((p) => p.at), range: "30d" }} height={180} min={Math.max(0, Math.floor(Math.min(...trend.map((p) => p.value)) / 10) * 10 - 10)} max={100} unit="%" />
         ) : (
           <div className="chart-empty muted">The trend fills in as DeeCure keeps measuring.</div>
         )}
       </Panel>
+      <Guard><AppBatteryPanel fullWh={battery.full_wh} /></Guard>
       {atLeast(mode, "expert") && <Guard><BatteryExpertSections /></Guard>}
     </>
   );

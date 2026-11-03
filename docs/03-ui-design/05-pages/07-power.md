@@ -35,19 +35,20 @@
 - Series: Health (slot 1, data [83,82,81,80,79,78,77,76,75,74,72,71])
 - X labels: Nov, Dec, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct
 
-5. **Data table**: "Top power consumers" · span 6 (the Health trend takes the full width until then)
-- **Not in this version:** this needs a per-process collector that DeeCure does not have yet, so the panel is hidden rather than shown empty ([pending work](../../05-roadmap/pending.md)).
-- Subtitle: "estimate"
-- Source chip (Expert): `powertop`
-- Empty text: "Requires Full access"
+5. **Bar list**: "Battery use by app" · span 6, next to the Health trend, at every level
+- Subtitle: "estimate" · Info tooltip: how the estimate is made (the usual low drain goes to the screen and the system at rest; the drain above it is split by each app's CPU and graphics time)
+- Source chip (Expert): `cgroup cpu.stat · DRM fdinfo · /sys/class/power_supply`
+- Dropdown in the header: Today (default), Yesterday, Last 7 days
+- First line: "On battery today: used 30% · 15.0 Wh of a full charge."
+- Then the 8 biggest as bars, each with its kind as a hint (App, System service, Background service, "Screen, Wi-Fi, and the computer idle", "Many small ones together") and its share of a full charge with the watt hours; every one is in a table under "Show all" (App or part, Kind, Used, Share)
+- Empty text: "Nothing counted today. DeeCure counts battery use each minute while the laptop runs on battery, not while it charges."
 
-| Process | Power [n] | Share [n] |
-| --- | --- | --- |
-| chrome | 2.9 W | [meter 35%] |
-| Display backlight | 1.9 W | [meter 23%] |
-| gnome-shell | 1.4 W | [meter 17%] |
-| code | 0.8 W | [meter 10%] |
-| Wi-Fi | 0.7 W | [meter 8%] |
+| App or part | Used |
+| --- | --- |
+| Google Chrome | 18% · 9.0 Wh |
+| Screen and system at rest | 12% · 6.0 Wh |
+| Visual Studio Code | 4% · 2.1 Wh |
+| Other apps and services | <1% · 0.30 Wh |
 
 Expert: "Battery used while suspended" starts with one line on the usual loss per hour while asleep (normal at 2% or less, a warning above), or says no charge readings exist yet; then bars of how long each recent suspend lasted, with the charge before and after as a hint. The table is under "Show all".
 
