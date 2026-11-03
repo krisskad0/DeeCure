@@ -103,6 +103,9 @@ pub struct UpdateStatus {
     /// What the last automatic update did, from `/run/deecure/update-result.json`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_auto: Option<String>,
+    /// The release notes of the version installed now ("What is new in this version").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_notes: Option<String>,
 }
 
 /// A version such as `0.1.0` or `0.1.0-alpha.3`: three numbers, then an optional pre-release
@@ -178,6 +181,43 @@ pub fn deb_version(v: &str) -> String {
     format!("{}-1", v.replacen('-', "~", 1))
 }
 
+/// Release notes are shown in full up to this many characters.
+const NOTES_MAX: usize = 8000;
+
+/// A release's notes from the list, cut at [`NOTES_MAX`].
+fn body(r: &serde_json::Value) -> String {
+    r.get("body")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or("")
+        .chars()
+        .take(NOTES_MAX)
+        .collect()
+}
+
+/// The notes of one version (such as the one installed now) from GitHub's release list.
+pub fn notes_for(list: &serde_json::Value, version: &str) -> Option<String> {
+    list.as_array()?
+        .iter()
+        .find(|r| {
+            r.get("tag_name").and_then(serde_json::Value::as_str) == Some(&format!("v{version}"))
+        })
+        .map(body)
+        .filter(|n| !n.trim().is_empty())
+}
+
+/// The first point of release notes, for a notification: the first "- " line, without
+/// Markdown marks. `None` when there is none.
+pub fn headline(notes: &str) -> Option<String> {
+    let line = notes.lines().find_map(|l| l.trim().strip_prefix("- "))?;
+    let plain: String = line.chars().filter(|c| !matches!(c, '`' | '*')).collect();
+    let short: String = plain.chars().take(160).collect();
+    Some(if plain.chars().count() > 160 {
+        format!("{}…", short.trim_end())
+    } else {
+        short
+    })
+}
+
 /// The newest release for the channel from GitHub's release list (`/releases` JSON): not a
 /// draft, a valid version, with the packages and checksums attached.
 pub fn newest(list: &serde_json::Value, channel: Channel) -> Option<Release> {
@@ -217,12 +257,7 @@ pub fn newest(list: &serde_json::Value, channel: Channel) -> Option<Release> {
         {
             continue;
         }
-        let notes: String = get("body")
-            .and_then(serde_json::Value::as_str)
-            .unwrap_or("")
-            .chars()
-            .take(2000)
-            .collect();
+        let notes = body(r);
         best = Some(Release {
             version: version.to_owned(),
             prerelease,
@@ -240,6 +275,29 @@ pub fn newest(list: &serde_json::Value, channel: Channel) -> Option<Release> {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn notes_for_a_version_and_their_headline() {
+        let list = json!([
+            {"tag_name": "v0.1.0-alpha.8", "body": "### Fixed\n\n- Updating from the app no longer stops `half way`.\n- Other."},
+            {"tag_name": "v0.1.0-alpha.7", "body": "  "}
+        ]);
+        let notes = notes_for(&list, "0.1.0-alpha.8").unwrap();
+        assert!(notes.starts_with("### Fixed"));
+        assert_eq!(
+            notes_for(&list, "0.1.0-alpha.7"),
+            None,
+            "empty notes are none"
+        );
+        assert_eq!(notes_for(&list, "0.1.0-alpha.1"), None);
+        assert_eq!(
+            headline(&notes).as_deref(),
+            Some("Updating from the app no longer stops half way.")
+        );
+        assert_eq!(headline("See CHANGELOG.md"), None);
+        let long = format!("- {}", "word ".repeat(60));
+        assert!(headline(&long).unwrap().ends_with('…'));
+    }
 
     #[test]
     fn versions_follow_semantic_order() {

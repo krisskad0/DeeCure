@@ -509,3 +509,10 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .log-summary.ruled { border-bottom: 1px solid var(--line); }
 @media (max-width: 860px) { .log-summary { grid-template-columns: 1fr; } }
 .user-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+/* Release notes ("What is new"). */
+.rn-box { margin: 4px 0 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel-2); }
+.rn-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.rn-title a { color: var(--accent); font-size: 12.5px; }
+.release-notes .rn-group + .rn-group { margin-top: 8px; }
+.release-notes ul { margin: 0; padding-left: 18px; list-style: disc; display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+.release-notes p { margin: 6px 0 0; font-size: 12.5px; }

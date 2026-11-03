@@ -906,6 +906,8 @@ export interface UpdateStatus {
   auto_ready: boolean;
   /** What the last automatic update did. */
   last_auto?: string;
+  /** The release notes of the version installed now. */
+  current_notes?: string;
 }
 
 export function getUpdateStatus(): Promise<UpdateStatus> {

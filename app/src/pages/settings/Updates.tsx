@@ -10,6 +10,8 @@ import { AlertBanner } from "../../components/AlertBanner";
 import { Button } from "../../components/Button";
 import { FieldRow, Select } from "../../components/FormControls";
 import { Panel } from "../../components/Panel";
+import { ReleaseNotes, noteGroups } from "../../components/ReleaseNotes";
+import { ShowAll } from "../../components/ShowAll";
 import { when } from "../../metrics";
 import { useFix } from "../../shell/FixDrawer";
 import { useToast } from "../../shell/Toast";
@@ -100,11 +102,25 @@ export function Updates() {
         </span>
       </FieldRow>
       {s.available && s.latest && (
-        <FieldRow label="What is new" description={s.latest.notes.split("\n").find((l) => l.trim()) ?? "See the release page."}>
-          <a href={s.latest.url} target="_blank" rel="noreferrer">
-            Release page
-          </a>
-        </FieldRow>
+        <div className="rn-box">
+          <div className="rn-title">
+            <b>What is new in {s.latest.version}</b>
+            <a href={s.latest.url} target="_blank" rel="noreferrer">
+              Release page
+            </a>
+          </div>
+          <ReleaseNotes notes={s.latest.notes} max={6} />
+          {noteGroups(s.latest.notes).reduce((n, g) => n + g.points.length, 0) > 6 && (
+            <ShowAll label="All notes">
+              <ReleaseNotes notes={s.latest.notes} />
+            </ShowAll>
+          )}
+        </div>
+      )}
+      {s.current_notes && (
+        <ShowAll label={`What is new in ${s.current}, the version you have`}>
+          <ReleaseNotes notes={s.current_notes} />
+        </ShowAll>
       )}
       <FieldRow label="Check for updates" description="Daily is the default. Never means DeeCure does not contact the internet at all.">
         <Select value={st.check} options={CHECK} onChange={(v) => void save({ ...st, check: v, auto: v === "off" ? false : st.auto })} label="Check for updates" />

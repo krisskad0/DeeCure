@@ -20,8 +20,14 @@ How DeeCure finds and installs its own new releases. The user sets it in **Setti
 
 1. When a check is due (a day or a week after the last one; an hour after a failed one), it fetches `https://api.github.com/repos/krisskad0/DeeCure/releases` with `curl`, or `wget` when curl is missing (Ubuntu Desktop has wget, not always curl), HTTPS only, with a time limit.
 2. It picks the newest release for the channel by version order (`0.1.0-alpha.3` < `0.1.0-alpha.10` < `0.1.0-beta.1` < `0.1.0`), leaving out drafts and releases without `SHA256SUMS` and a `deecure_*_amd64.deb` (`deecure_core::update::newest`).
-3. When it is newer than the running version, the user gets one notification per version ("DeeCure X is available"), outside quiet hours. Not when automatic updates are on, or when DeeCure comes from an APT repository (then Software Updater brings updates).
-4. After an update, the first run of the new agent says "DeeCure was updated to X" once.
+3. When it is newer than the running version, the user gets one notification per version ("DeeCure X is available", with the first point of its release notes), outside quiet hours; in quiet hours it waits. Not when automatic updates are on, or when DeeCure comes from an APT repository (then Software Updater brings updates).
+4. After an update, the first run of the new agent says "DeeCure was updated to X" once, and checks right away (when checks are on) so the new version's notes are there.
+
+**Release notes.** Every GitHub release carries its version's section of `CHANGELOG.md` (`scripts/release-notes.sh`, used by the release workflow, which fails when the section is missing), then how to update and how to check a file. The agent keeps up to 8000 characters of the newest release's notes and of the installed version's (`current_notes` in `update_status`; `deecure_core::update::notes_for`). The app shows them as a list ("### Added" as New, "### Fixed" as Fixed, each "- " line as a point; "How to update" and what follows left out):
+
+- Settings › About › Updates, before installing: "What is new in X" with the first 6 points, the rest under "All notes", and the release page.
+- The same place after updating: "What is new in X, the version you have", folded.
+- Once after an update, at the top of the app: "DeeCure was updated to X", its first point, **What is new** (opens Settings › About), and **Dismiss** (`seenVersion` in the app's settings). The first start after installing shows nothing.
 
 Requests: `update_status`, `set_update_settings`, `check_updates` ([protocol](ipc-protocol.md)).
 

@@ -41,7 +41,7 @@ The `~` makes a pre-release sort **before** the final release, so apt upgrades f
    7. Updates the APT repository, only when the `APT_SIGNING_KEY` secret exists (not yet).
 7. Check: `gh release view v0.3.0`, then `make clean-install-test` (the real one-command install from GitHub on clean 24.04 and 26.04 containers) and `make update-systemd-test OLD=<release before>` (the in-app and automatic update, a repair with `install.sh`, and the helper's sandbox, with systemd running as on a desktop; the other container tests cannot see a package that stops a running service). Before a stable release, also smoke test on real 24.04 and 26.04 VMs: install, open the app, run `deecure status`, upgrade from the last version.
 8. Publish the GitHub Release (stable only). Later: promote to the `main` APT component, upload to the PPA.
-9. Post the release notes.
+9. Post the release notes. The GitHub release already carries them (`scripts/release-notes.sh` copies the version's section of `CHANGELOG.md`; the release fails without one), and the app shows them before and after an update, so write the changelog entries for users: what they will notice, in plain words.
 
 Planned for the release workflow: `piuparts` and `autopkgtest` ([pending work](../05-roadmap/pending.md)).
 

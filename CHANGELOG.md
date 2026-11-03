@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- Before an update, Settings › About shows everything that is new in it, grouped (New, Fixed), not one line. After an update, the app says "DeeCure was updated to X" once, with its main change and a link to everything new; Settings › About keeps the notes of the version you have. The "update available" notification names the main change too.
+- Every GitHub release carries its real notes from this changelog (it said only "See CHANGELOG.md" before); a release without notes is refused. The notes of 0.1.0-alpha.6, alpha.7, and alpha.8 were filled in.
+- `make update-systemd-test`: the in-app update, the automatic update, the repair, and the helper's sandbox, tested with systemd running as on a desktop.
+
 ### Fixed
 
 - Dropdowns open DeeCure's own list, in the app's style (rounded card, highlight, a check on the chosen option), instead of the system's list, which could not be styled. Keyboard use works as before: arrows, Enter, Escape, and a letter to jump.
@@ -16,9 +22,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - The one-command install (`install.sh`) repairs a DeeCure update that stopped half way: apt refuses a half-installed package ("needs to be reinstalled"), so the installer puts the new packages in place with dpkg first. `install.sh` is served from `main`, so this works without a release.
 
-### Added
-
-- `make update-systemd-test`: the in-app update, the automatic update, the repair, and the helper's sandbox, tested with systemd running as on a desktop.
 
 ## [0.1.0-alpha.8] - 2026-11-02
 

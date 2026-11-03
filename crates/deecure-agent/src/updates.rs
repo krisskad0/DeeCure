@@ -37,6 +37,8 @@ struct LastCheck {
     at: Option<Timestamp>,
     latest: Option<update::Release>,
     error: Option<String>,
+    /// The notes of the version that was installed at that check, and that version.
+    current: Option<(String, String)>,
 }
 
 fn release_list_url() -> String {
@@ -135,6 +137,7 @@ pub fn status(agent: &Agent) -> store::Result<UpdateStatus> {
         from_apt,
         auto_ready,
         last_auto,
+        current_notes: last.current.filter(|(v, _)| v == VERSION).map(|(_, n)| n),
     })
 }
 
@@ -147,6 +150,7 @@ pub async fn check_now(agent: &Agent) -> store::Result<UpdateStatus> {
             at: Some(Timestamp::now()),
             latest: update::newest(&list, channel),
             error: None,
+            current: update::notes_for(&list, VERSION).map(|n| (VERSION.to_owned(), n)),
         },
         Err(e) => {
             let before: LastCheck = store::lock(&agent.store)
@@ -156,6 +160,7 @@ pub async fn check_now(agent: &Agent) -> store::Result<UpdateStatus> {
                 at: Some(Timestamp::now()),
                 latest: before.latest,
                 error: Some(e),
+                current: before.current,
             }
         }
     };
@@ -206,7 +211,9 @@ pub async fn tick(agent: &Agent) -> Result<(), String> {
                 agent,
                 "update:installed",
                 &format!("DeeCure was updated to {VERSION}"),
-                &format!("It was {before}. Open the app again if it was open."),
+                &format!(
+                    "It was {before}. Open DeeCure to see what is new (also in Settings › About)."
+                ),
             )
             .await
             .is_err()
@@ -217,6 +224,16 @@ pub async fn tick(agent: &Agent) -> Result<(), String> {
         store::lock(&agent.store)
             .set_setting(SEEN, &VERSION)
             .map_err(|e| e.to_string())?;
+        // Fetch this version's notes now, so "What is new" is there right after an update
+        // (only when the user allows checks).
+        if settings(&store::lock(&agent.store))
+            .map_err(|e| e.to_string())?
+            .check
+            .period_ms()
+            .is_some()
+        {
+            let _ = check_now(agent).await;
+        }
     }
     let (settings, last) = {
         let s = store::lock(&agent.store);
@@ -242,7 +259,13 @@ pub async fn tick(agent: &Agent) -> Result<(), String> {
             agent,
             &format!("update:{}", latest.version),
             &format!("DeeCure {} is available", latest.version),
-            "Open DeeCure, then Settings › About, to see what is new and install it.",
+            &match update::headline(&latest.notes) {
+                Some(h) => {
+                    format!("{h} See everything that is new and install it in Settings › About.")
+                }
+                None => "Open DeeCure, then Settings › About, to see what is new and install it."
+                    .to_owned(),
+            },
         )
         .await
         .is_ok()

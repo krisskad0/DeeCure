@@ -13,7 +13,7 @@ const BASE: UpdateStatus = {
   settings: { check: "daily", channel: "prerelease", auto: false },
   current: "0.1.0-alpha.3",
   checked_at: Date.now() - 3_600_000,
-  latest: { version: "0.1.0-alpha.4", prerelease: true, url: "https://github.com/krisskad0/DeeCure/releases/tag/v0.1.0-alpha.4", notes: "Health warnings and updates.\nMore." },
+  latest: { version: "0.1.0-alpha.4", prerelease: true, url: "https://github.com/krisskad0/DeeCure/releases/tag/v0.1.0-alpha.4", notes: "### Added\n\n- Health warnings and updates.\n\n### Fixed\n\n- The `disk` forecast.\n\n### How to update\n\n- Run the installer." },
   available: true,
   from_apt: false,
   auto_ready: false,
@@ -58,7 +58,12 @@ describe("Updates", () => {
   it("installs through the fix preview, and checks now on request", async () => {
     withFix(<Updates />);
     await waitFor(() => expect(screen.getByText("Install 0.1.0-alpha.4")).toBeTruthy());
+    // What is new, grouped, before installing; "How to update" is left out.
+    expect(screen.getByText("What is new in 0.1.0-alpha.4")).toBeTruthy();
     expect(screen.getByText("Health warnings and updates.")).toBeTruthy();
+    expect(screen.getByText("New")).toBeTruthy();
+    expect(screen.getByText("disk").tagName).toBe("CODE");
+    expect(screen.queryByText("Run the installer.")).toBeNull();
     fireEvent.click(screen.getByText("Install 0.1.0-alpha.4"));
     expect(opened).toEqual([["system.update_deecure", "0.1.0-alpha.4"]]);
     fireEvent.click(screen.getByText("Check now"));

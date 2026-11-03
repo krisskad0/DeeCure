@@ -130,8 +130,11 @@ jobs:
           # someone reads it and presses Publish.
           mode="--draft"
           case "$GITHUB_REF_NAME" in *-*) mode="--prerelease" ;; esac
+          # The notes are this version's section of CHANGELOG.md (the app shows them before and
+          # after an update); the script fails when there is none, so no release goes out without.
+          scripts/release-notes.sh "${GITHUB_REF_NAME#v}" > dist/release-notes.md
           gh release create "$GITHUB_REF_NAME" $mode --title "DeeCure ${GITHUB_REF_NAME#v}" \
-            --notes "See CHANGELOG.md for what changed. Check a file: gh attestation verify <file> --repo $GITHUB_REPOSITORY" \
+            --notes-file dist/release-notes.md \
             dist/deecure_*.deb dist/deecure-desktop_*.deb dist/SHA256SUMS dist/install.sh dist/deecure-sbom.spdx.json
 
       - name: Publish to the APT repository (GitHub Pages)

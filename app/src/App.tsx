@@ -60,6 +60,7 @@ import { Sidebar } from "./shell/Sidebar";
 import { type Range, TopBar } from "./shell/TopBar";
 import { RULE_PANELS, findingsFor, findingsHere, pageStatus, severityVariant, tabStatus } from "./status";
 import { HereFindings } from "./shell/HereFindings";
+import { UpdatedBanner } from "./shell/UpdatedBanner";
 import { FlaggedPanels } from "./components/Panel";
 import type { StatusVariant } from "./components/StatusBadge";
 import { type Mode, UiContext, atLeast } from "./ui";
@@ -305,6 +306,7 @@ export default function App() {
         )}
         <div className="grid">
           {levelNote}
+          {!route.gallery && <UpdatedBanner />}
           {!route.gallery && <HereFindings findings={here} />}
           <FlaggedPanels.Provider value={flagged}>
             <ErrorBoundary what={route.page.label} resetKey={`${route.page.id}/${route.tab.id}/${mode}`}>
