@@ -17,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- The agent read its whole history (600,000 points after a few weeks, and more over time) every time the app refreshed and every minute for the warnings, to find the newest value of each reading: about 30 ms each time. It now jumps to the newest point of each reading: 0.6 ms, with the same answer.
 - A DeeCure window closed to the tray (or minimized) kept reading data every few seconds, using CPU and battery while nobody looked. It now reads nothing while hidden, and reads at once when shown again.
 - The temperature reading took about 35 ms of CPU every minute on Dell laptops: firmware sensors (Dell SMM and WMI, the NVMe drive) are slow, and SMM calls briefly stop every CPU core. Slow sensors are now read every 5 minutes, the battery's duplicate sensor and current readings are skipped, and the CPU temperature is still read every minute (7.5 ms a minute on the test laptop).
 - A line chart that first had too little data (such as Power › Battery › Charge level while it loads) stayed at a fixed 600 pixels and left an empty strip on the right; charts now fill their panel. Power › Battery: "Battery use by app" now has the full width above Health trend, which was stretched with empty space beside it.

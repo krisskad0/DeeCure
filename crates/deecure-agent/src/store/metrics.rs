@@ -44,6 +44,17 @@ fn series_id(conn: &Connection, name: &str, subject: &str, unit: &str) -> Result
     }
 }
 
+/// The newest 1-minute point of each series. CROSS JOIN keeps `series` as the outer loop, so
+/// each series jumps to its newest point. With a plain JOIN, SQLite read every point of the
+/// history instead (600,000 after a few weeks, about 30 ms a call), and this runs on every
+/// refresh of the app and every minute for the rules.
+const LATEST_SQL: &str = "SELECT s.name, s.subject, m.at, m.value, s.unit
+     FROM series AS s CROSS JOIN metric AS m
+       ON m.series = s.id AND m.resolution = 60
+      AND m.at = (SELECT max(at) FROM metric WHERE series = s.id AND resolution = 60)
+     WHERE m.at >= ?1
+     ORDER BY s.name, s.subject";
+
 /// One subject's readings over a time range ([`Store::metric_stats`]).
 #[derive(Debug, Clone, PartialEq)]
 pub struct SubjectStats {
@@ -97,14 +108,7 @@ impl Store {
 
     /// The newest 1-minute point of every metric and subject that has one from `since` on.
     pub fn latest_metrics(&self, since: Timestamp) -> Result<Vec<Metric>> {
-        let mut stmt = self.conn.prepare_cached(
-            "SELECT s.name, s.subject, m.at, m.value, s.unit
-             FROM series AS s JOIN metric AS m
-               ON m.series = s.id AND m.resolution = 60
-              AND m.at = (SELECT max(at) FROM metric WHERE series = s.id AND resolution = 60)
-             WHERE m.at >= ?1
-             ORDER BY s.name, s.subject",
-        )?;
+        let mut stmt = self.conn.prepare_cached(LATEST_SQL)?;
         let rows = stmt.query_map(params![since.as_millis()], |row| {
             Ok((
                 row.get::<_, String>(0)?,
@@ -373,6 +377,23 @@ mod tests {
                 readings: 3,
                 max: 300.0
             }]
+        );
+    }
+
+    #[test]
+    fn latest_never_reads_the_whole_history() {
+        let store = Store::open_in_memory().unwrap();
+        let plan: Vec<String> = store
+            .conn
+            .prepare(&format!("EXPLAIN QUERY PLAN {LATEST_SQL}"))
+            .unwrap()
+            .query_map([0], |r| r.get(3))
+            .unwrap()
+            .collect::<std::result::Result<_, _>>()
+            .unwrap();
+        assert!(
+            plan.iter().all(|step| step != "SCAN m"),
+            "the plan reads every point: {plan:?}"
         );
     }
 
