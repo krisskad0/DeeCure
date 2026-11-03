@@ -148,19 +148,9 @@ Expert: "Routes" shows the internet route (device and gateway) as one row, chips
 - Series: Download (slot 1, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2]); Upload (slot 2, gen[10, 0.2, 0.2, 0.3, 0, 3, 0.3])
 - X axis: time (current range)
 
-2. **Data table**: "Traffic by application" · span 12
-- **Not in this version:** this needs a per-process collector that DeeCure does not have yet, so the panel is hidden rather than shown empty ([pending work](../../05-roadmap/pending.md)).
-- Subtitle: "today"
-- Source chip (Expert): `nethogs (admin)`
-- Empty text: "Requires Full access"
-
-| Application | Downloaded [n] | Uploaded [n] | Share |
-| --- | --- | --- | --- |
-| chrome | 2.6 GB | 210 MB | [meter 62%] |
-| snapd | 620 MB | 4 MB | [meter 15%] |
-| dropbox | 310 MB | 280 MB | [meter 13%] |
-| telegram-desktop | 180 MB | 40 MB | [meter 5%] |
-| code | 90 MB | 12 MB | [meter 2%] |
+2. **Line chart and ranked bars**: "Download by app over time", then "Upload by app over time" · span 12 each, at every level
+- The same layout as Performance › CPU "CPU use by app over time": a dropdown (Last 24 hours, Last 7 days, Last 30 days), the 5 biggest apps as lines in KB/s, a "TCP only" line, then "Most in all" with the bytes; every one is under "Show all"
+- TCP only for now: QUIC and other UDP traffic (video sites, Google) and very short connections are not counted, so the info tooltip says real use is higher. Exact numbers for all traffic come with eBPF in the admin helper (Full access)
 
 ---
 

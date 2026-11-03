@@ -155,7 +155,7 @@ pub fn split(watts: f64, floor: f64, hours: f64, weights: &[(String, f64)]) -> V
 }
 
 /// The systemd unit a process runs in, from `/proc/<pid>/cgroup`.
-fn unit_of(root: &SystemRoot, pid: u32) -> Option<String> {
+pub(crate) fn unit_of(root: &SystemRoot, pid: u32) -> Option<String> {
     let text = root.read(&format!("/proc/{pid}/cgroup")).ok()?;
     let path = text.lines().find_map(|l| l.strip_prefix("0::"))?;
     path.rsplit('/')

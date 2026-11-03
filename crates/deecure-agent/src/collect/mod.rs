@@ -8,6 +8,7 @@
 
 mod accounts;
 pub(crate) mod app_battery;
+pub(crate) mod app_traffic;
 pub(crate) mod app_usage;
 mod backup;
 mod battery;
@@ -37,6 +38,7 @@ use crate::store::{self, SharedStore, Store};
 
 pub use accounts::Accounts;
 pub use app_battery::AppBattery;
+pub use app_traffic::AppTraffic;
 pub use app_usage::AppUsage;
 pub use backup::Backups;
 pub use battery::Battery;
@@ -151,6 +153,7 @@ pub async fn run(
     let mut updates = Updates::default();
     let mut backups = Backups::default();
     let mut containers = Containers;
+    let mut traffic = AppTraffic::default();
     // Collectors that are failing right now, so each failure is logged once, not every minute.
     let mut failing = HashSet::new();
     let mut timer = interval(EVERY);
@@ -184,6 +187,8 @@ pub async fn run(
             let result = health_slow.collect(&root, now).await;
             merge(&mut sample, &mut failing, HealthSlow::NAME, result);
         }
+        let result = traffic.collect(&root, now).await;
+        merge(&mut sample, &mut failing, AppTraffic::NAME, result);
         let result = updates.collect(&root, now).await;
         merge(&mut sample, &mut failing, Updates::NAME, result);
         let result = backups.collect(&root, now).await;

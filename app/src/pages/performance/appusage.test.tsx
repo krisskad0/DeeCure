@@ -4,7 +4,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { AppUsageInfo } from "../../api";
-import { CpuByAppPanel, MemoryByAppPanel, entries, union } from "./AppUsage";
+import { CpuByAppPanel, MemoryByAppPanel, TrafficByAppPanels, entries, union } from "./AppUsage";
 
 const GB = 1024 ** 3;
 const info: AppUsageInfo = {
@@ -17,6 +17,7 @@ const info: AppUsageInfo = {
           { kind: "other", name: "", subject: "other", total: 60, average: 1, peak: 2 },
         ],
         "app.memory": [{ kind: "app", name: "Visual Studio Code", subject: "app:Visual Studio Code", total: 0, average: 1.5 * GB, peak: 2 * GB }],
+        "app.net_rx": [{ kind: "app", name: "Firefox", subject: "app:Firefox", total: 3 * GB, average: GB, peak: 2 * GB }],
       },
     },
     { range: "7d", metrics: { "app.cpu_seconds": [{ kind: "service", name: "snapd", subject: "service:snapd", total: 3600, average: 5, peak: 9 }] } },
@@ -53,5 +54,12 @@ describe("use per app over time", () => {
   it("ranks memory by its average and shows the peak", async () => {
     render(<MemoryByAppPanel />);
     await waitFor(() => expect(screen.getByText("1.5 GB avg · 2.0 GB peak")).toBeTruthy());
+  });
+
+  it("shows download per app, says TCP only, and an empty upload", async () => {
+    render(<TrafficByAppPanels />);
+    await waitFor(() => expect(screen.getByText("3.0 GB")).toBeTruthy());
+    expect(screen.getAllByText("TCP only").length).toBe(1);
+    expect(screen.getByText(/Nothing recorded in the last 24 hours/)).toBeTruthy();
   });
 });

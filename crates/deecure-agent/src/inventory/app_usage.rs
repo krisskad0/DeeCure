@@ -9,12 +9,13 @@ use deecure_core::Timestamp;
 use serde::Serialize;
 
 use super::app_battery::parse;
+use crate::collect::app_traffic::{RX, TX};
 use crate::collect::app_usage::{CPU, MEMORY};
 use crate::context::Agent;
 use crate::store::{self, SubjectStats};
 
 /// The metrics answered, each per app.
-pub const METRICS: &[&str] = &[CPU, MEMORY];
+pub const METRICS: &[&str] = &[CPU, MEMORY, RX, TX];
 /// The time windows: name and length.
 const WINDOWS: &[(&str, i64)] = &[
     ("24h", 86_400_000),

@@ -29,7 +29,7 @@ mod logind;
 pub(crate) mod logs;
 mod memory_detail;
 pub(crate) mod net;
-mod net_deep;
+pub(crate) mod net_deep;
 mod network;
 mod optimize;
 mod os;

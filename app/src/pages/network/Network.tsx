@@ -24,6 +24,7 @@ import { AdminRead } from "../../components/AdminRead";
 import { LogLine } from "../../components/CodeBlock";
 import { MB, TimeChart, useHistory } from "../performance/shared";
 import { NoData } from "../NoData";
+import { TrafficByAppPanels } from "../performance/AppUsage";
 
 const loadDetails = () => getInventory("net_details");
 const loadInterfaces = () => getInventory("network");
@@ -384,6 +385,7 @@ export function NetworkTraffic() {
       <Panel title="Throughput" source="/proc/net/dev" span={12}>
         <TimeChart history={history} names={["Download", "Upload"]} unit="MB/s" scale={(v) => v / MB} />
       </Panel>
+      <Guard><TrafficByAppPanels /></Guard>
       {atLeast(mode, "expert") && <Guard><TrafficExpert /></Guard>}
     </>
   );

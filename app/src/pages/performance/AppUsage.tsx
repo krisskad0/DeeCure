@@ -167,3 +167,31 @@ export function MemoryByAppPanel() {
     />
   );
 }
+
+const TCP_NOTE = "TCP only: QUIC and other UDP traffic (video sites, Google) and very short connections are not counted, so real use is higher.";
+
+/** Download and upload per app, one under the other, from one answer. */
+export function TrafficByAppPanels() {
+  const usage = useAppUsage();
+  const panel = (title: string, metric: string, what: string) => (
+    <AppUsagePanel
+      title={title}
+      info={`Bytes each app ${what} over TCP, counted every minute and saved every 5 minutes. ${TCP_NOTE}`}
+      source="ss -tinp"
+      metric={metric}
+      rank="total"
+      display={(e) => bytes(e.total)}
+      unit="KB/s"
+      scale={(v) => v / 300 / 1024}
+      columns={[{ key: "total", label: "In all", text: (e) => bytes(e.total), numeric: true }]}
+      usage={usage}
+      note="TCP only"
+    />
+  );
+  return (
+    <>
+      {panel("Download by app over time", "app.net_rx", "received")}
+      {panel("Upload by app over time", "app.net_tx", "sent")}
+    </>
+  );
+}
