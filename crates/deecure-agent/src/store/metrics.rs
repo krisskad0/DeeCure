@@ -44,6 +44,19 @@ fn series_id(conn: &Connection, name: &str, subject: &str, unit: &str) -> Result
     }
 }
 
+/// One subject's readings over a time range ([`Store::metric_stats`]).
+#[derive(Debug, Clone, PartialEq)]
+pub struct SubjectStats {
+    /// The subject, or `None` for a metric without one.
+    pub subject: Option<String>,
+    /// Every reading added up.
+    pub sum: f64,
+    /// How many readings the sum covers.
+    pub readings: i64,
+    /// The highest point (an average itself once old points are rolled up).
+    pub max: f64,
+}
+
 fn insert_metric(conn: &Connection, metric: &Metric) -> Result<()> {
     let series = series_id(
         conn,
@@ -139,6 +152,33 @@ impl Store {
             Ok((subject_from_db(subject), total))
         })
         .collect()
+    }
+
+    /// Per subject of `name`, from `since` to `until` (both included): the sum of every
+    /// reading, how many readings, and the highest point, biggest sum first. The sum suits
+    /// amounts (CPU seconds); sum over count gives the average of a level (memory).
+    pub fn metric_stats(
+        &self,
+        name: &str,
+        since: Timestamp,
+        until: Timestamp,
+    ) -> Result<Vec<SubjectStats>> {
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT s.subject, sum(m.value * m.samples) AS total, sum(m.samples), max(m.value)
+             FROM series AS s JOIN metric AS m ON m.series = s.id
+             WHERE s.name = ?1 AND m.resolution IN (60, 900, 86400) AND m.at BETWEEN ?2 AND ?3
+             GROUP BY s.subject
+             ORDER BY total DESC, s.subject",
+        )?;
+        let rows = stmt.query_map(params![name, since.as_millis(), until.as_millis()], |row| {
+            Ok(SubjectStats {
+                subject: subject_from_db(row.get::<_, String>(0)?),
+                sum: row.get(1)?,
+                readings: row.get(2)?,
+                max: row.get(3)?,
+            })
+        })?;
+        Ok(rows.collect::<std::result::Result<_, _>>()?)
     }
 
     /// Points for one metric from `since` to `until` (both included), oldest first.
@@ -306,6 +346,33 @@ mod tests {
                 .metric_sums("nothing", Timestamp(0), Timestamp(1))
                 .unwrap()
                 .is_empty()
+        );
+    }
+
+    #[test]
+    fn stats_give_sum_count_and_peak() {
+        let store = Store::open_in_memory().unwrap();
+        let mem = |at: i64, value: f64| Metric {
+            name: "app.memory".into(),
+            subject: Some("app:Files".into()),
+            value,
+            unit: Unit::Bytes,
+            at: Timestamp(at),
+        };
+        store
+            .add_metrics(&[mem(0, 100.0), mem(300_000, 300.0), mem(600_000, 200.0)])
+            .unwrap();
+        let stats = store
+            .metric_stats("app.memory", Timestamp(0), Timestamp(600_000))
+            .unwrap();
+        assert_eq!(
+            stats,
+            [SubjectStats {
+                subject: Some("app:Files".into()),
+                sum: 600.0,
+                readings: 3,
+                max: 300.0
+            }]
         );
     }
 

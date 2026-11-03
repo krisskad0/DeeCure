@@ -27,6 +27,7 @@ use serde_json::Value;
 
 pub use error::StoreError;
 pub use files::WatchedFile;
+pub use metrics::SubjectStats;
 pub use retention::{DATA_SETTING, RetentionReport};
 
 /// A short name for results in this module.

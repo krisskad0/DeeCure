@@ -11,6 +11,7 @@ import { BarList } from "../../components/charts/BarList";
 import { bytes, pick } from "../../metrics";
 import { atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
+import { MemoryByAppPanel } from "./AppUsage";
 import { MemoryExpertSections } from "./MemoryExpert";
 import { MemoryMap } from "./MemoryMap";
 import { GB, TimeChart, spark, useHistory, useLatest } from "./shared";
@@ -87,6 +88,7 @@ export function PerformanceMemory() {
           )}
         </Panel>
       )}
+      <Guard><MemoryByAppPanel /></Guard>
       {expert && <Guard><MemoryExpertSections /></Guard>}
     </>
   );

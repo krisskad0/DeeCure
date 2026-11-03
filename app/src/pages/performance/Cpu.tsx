@@ -12,6 +12,7 @@ import { BarChart } from "../../components/charts/BarChart";
 import { pick, pickAll } from "../../metrics";
 import { atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
+import { CpuByAppPanel } from "./AppUsage";
 import { CpuExpertSections } from "./CpuExpert";
 import { PowerMetersPanel } from "../power/AdminMeasures";
 import { TimeChart, compact, spark, useHistory, useLatest } from "./shared";
@@ -81,6 +82,7 @@ export function PerformanceCpu() {
       <Panel title="Top CPU consumers" subtitle="% of one CPU" source="/proc/[pid]/stat" span={6} flush>
         {processes ? <DataTable rows={processes.slice(0, 7)} columns={COLUMNS} rowKey={(p) => String(p.pid)} pageSize={7} /> : <div className="empty muted">Loading…</div>}
       </Panel>
+      <Guard><CpuByAppPanel /></Guard>
       {atLeast(mode, "expert") && <Guard><CpuExpertSections waitingForDisk={processes?.filter((p) => p.state === "D").map((p) => p.name)} /></Guard>}
       {atLeast(mode, "expert") && <Guard><PowerMetersPanel /></Guard>}
     </>

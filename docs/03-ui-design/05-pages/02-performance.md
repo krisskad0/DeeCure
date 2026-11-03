@@ -44,6 +44,12 @@
 | pipewire | 1702 | riya | [meter 3% "0.5%"] |
 | telegram-desktop | 2230 | riya | [meter 2% "0.4%"] |
 
+5. **Line chart and ranked bars**: "CPU use by app over time" · span 12, at every level
+- Dropdown in the header: Last 24 hours (default), Last 7 days, Last 30 days
+- A line chart of the 5 busiest apps and services, as a share of the whole CPU (each point is 5 minutes)
+- Then "Most in all": the 8 with the most CPU time, each with its kind as a hint and "2 h 24 m · 3% avg"; every one is in a table under "Show all"
+- Empty text: "Nothing recorded in the last 24 hours yet. DeeCure saves use per app every 5 minutes while it runs."
+
 Expert adds, below the page:
 
 - "Speed policy per core": chips for the speed policy (with how many cores use it), the allowed range, and the preferred cores; a small tile per core with its speed now as a bar of its hardware maximum and its heat slowdowns; one line on heat slowdowns ("Cool" when none, else how many cores slowed and any slowing now). The full table is under "Show all".
@@ -77,6 +83,9 @@ Expert adds, below the page:
 
 4. **Ranked bars**: "Biggest memory users" · span 12 (Beginner and Advanced; Expert shows "Real memory per process" instead)
 - The 8 biggest processes by resident memory: name, a second line with the user and share of memory, a bar, and the size. Processes with the same name are separate rows.
+
+5. **Line chart and ranked bars**: "Memory use by app over time" · span 12, at every level
+- The same layout as "CPU use by app over time": the 5 biggest apps by own memory as lines in GB, then "Most on average" with "1.5 GB avg · 2.0 GB peak". The average counts only the times the app was open.
 
 Expert adds, below the page:
 - **KPI row:** hard page faults, swapped in and out, waits while memory was freed, out-of-memory kills.

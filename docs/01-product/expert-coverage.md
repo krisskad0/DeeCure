@@ -35,6 +35,7 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 | Full breakdown: apps, file cache, shared memory, kernel caches (can be freed or not), page tables, kernel stacks, data waiting to be written | Where RAM really goes, kernel included | `/proc/meminfo` | You | ✅ Built |
 | Real memory per process: shared memory split fairly (PSS) and memory only it uses (USS) | "Resident" counts shared memory many times; PSS does not | `/proc/<pid>/smaps_rollup` | You (own) | ✅ Built |
 | Memory, peak memory, swap, and memory pressure per app and per service | An app's 40 processes count as one app | cgroup `memory.current`, `memory.peak`, `memory.swap.current`, `memory.pressure` | You | ✅ Built |
+| CPU time and own memory per app and service over time (last 24 hours, 7 days, 30 days), at every level | "Which app was slow or heavy yesterday?" after it is closed | cgroup `cpu.stat`, `memory.stat`, saved every 5 minutes (the 15 biggest, the rest as "other") | You | ✅ Built (Performance › CPU and Memory) |
 | Hard page faults per second, system-wide and per process | The real sign that RAM is too small | `/proc/vmstat` `pgmajfault`, `/proc/<pid>/stat` | You | ✅ Built |
 | Swap in and swap out per second | Using swap is fine; swapping all the time is slow | `/proc/vmstat` `pswpin`, `pswpout` | You | ✅ Built |
 | Compressed swap (zswap, zram): on or off, size, how much it saves | Shows what RAM compression gives | `/sys/module/zswap/parameters`, `/sys/block/zram*/mm_stat`; zswap totals need Admin | You | ✅ Built (zswap totals: Admin, later) |

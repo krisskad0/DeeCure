@@ -5,6 +5,7 @@
 
 mod accounts;
 mod app_battery;
+mod app_usage;
 mod audio;
 pub(crate) mod backups;
 mod bluetooth;
@@ -82,6 +83,7 @@ pub const KINDS: &[&str] = &[
     "tcp_traffic",
     "power_detail",
     "app_battery",
+    "app_usage",
     "optimize",
     "thermal",
     "boot_detail",
@@ -183,6 +185,7 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
             serde_json::to_value(detail)
         }
         "app_battery" => serde_json::to_value(app_battery::read(agent)),
+        "app_usage" => serde_json::to_value(app_usage::read(agent)),
         "optimize" => serde_json::to_value(optimize::read(agent).await),
         "thermal" => serde_json::to_value(thermal::read(&agent.root)),
         "boot_detail" => serde_json::to_value(services_detail::read_boot().await),

@@ -334,6 +334,24 @@ export interface Choice {
 }
 
 /** Power in depth (Expert). */
+/** Use per app over time (`app_usage`). */
+export interface AppUsageEntry {
+  /** `app`, `service`, `user-service`, or `other`. */
+  kind: string;
+  name: string;
+  /** The stored subject, to ask for its history. */
+  subject: string;
+  /** All readings added up (CPU seconds, bytes of traffic). */
+  total: number;
+  /** The average and highest reading (memory in bytes). */
+  average: number;
+  peak: number;
+}
+export interface AppUsageInfo {
+  /** `24h`, `7d`, and `30d`; per metric name (`app.cpu_seconds`, `app.memory`, …), biggest first. */
+  windows: { range: "24h" | "7d" | "30d"; metrics: Record<string, AppUsageEntry[]> }[];
+}
+
 /** Battery use per app, an estimate, by local day (`app_battery`). */
 export interface AppBatteryUse {
   /** `app`, `service`, `user-service`, `other` (small ones together), or `rest` (screen, Wi-Fi, and the system at rest). */
@@ -1176,6 +1194,7 @@ export function getInventory(kind: "net_deep"): Promise<NetDeep>;
 export function getInventory(kind: "tcp_traffic"): Promise<TcpTraffic>;
 export function getInventory(kind: "power_detail"): Promise<PowerDetail>;
 export function getInventory(kind: "app_battery"): Promise<AppBatteryInfo>;
+export function getInventory(kind: "app_usage"): Promise<AppUsageInfo>;
 export function getInventory(kind: "optimize"): Promise<OptimizeCheck[]>;
 export function getInventory(kind: "thermal"): Promise<ThermalInfo>;
 export function getInventory(kind: "boot_detail"): Promise<BootDetail>;

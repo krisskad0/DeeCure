@@ -18,7 +18,7 @@ use std::io;
 
 use deecure_core::{Timestamp, Unit};
 
-use super::{Collector, Sample, SystemRoot, battery, metric};
+use super::{Collector, Sample, SystemRoot, app_usage, battery, metric};
 use crate::inventory::{cgroups, gpu_detail};
 
 /// The metric name.
@@ -85,7 +85,7 @@ impl Collector for AppBattery {
         let mut weights: HashMap<String, f64> = HashMap::new();
         let subject_of: HashMap<&str, String> = groups
             .iter()
-            .map(|g| (g.unit.as_str(), format!("{}:{}", g.kind, friendly(&g.name))))
+            .map(|g| (g.unit.as_str(), app_usage::subject(g.kind, &g.name)))
             .collect();
         for (unit, &usec) in &self.cpu {
             if let (Some(&before), Some(subject)) =
@@ -152,14 +152,6 @@ pub fn split(watts: f64, floor: f64, hours: f64, weights: &[(String, f64)]) -> V
     out.push(("rest".to_owned(), total - active));
     out.retain(|(_, mwh)| *mwh > 0.0);
     out
-}
-
-/// Clearer names for the desktop's own parts.
-fn friendly(name: &str) -> &str {
-    match name.split('@').next().unwrap_or(name) {
-        "org.gnome.Shell" => "Desktop (GNOME Shell)",
-        _ => name,
-    }
 }
 
 /// The systemd unit a process runs in, from `/proc/<pid>/cgroup`.
@@ -310,6 +302,5 @@ mod tests {
             Some("app-gnome-firefox-9.scope")
         );
         assert_eq!(unit_of(&root, 8), None);
-        assert_eq!(friendly("org.gnome.Shell@wayland"), "Desktop (GNOME Shell)");
     }
 }
