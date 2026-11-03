@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { BarChart } from "./BarChart";
 import { Donut } from "./Donut";
 import { Gauge } from "./Gauge";
@@ -96,5 +96,29 @@ describe("charts", () => {
   it("heatmap cells get a level and a readable tooltip", () => {
     render(<Heatmap unit="events" rows={[{ label: "Wed", values: [0, 9, ...Array(22).fill(0)] }]} />);
     expect(screen.getByLabelText("Wed 01:00 · 9 events").className).toContain("h5");
+  });
+});
+
+describe("chart width", () => {
+  it("measures a chart that first had too little data to draw", () => {
+    const observed: Element[] = [];
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private cb: (e: { contentRect: { width: number } }[]) => void) {}
+        observe(el: Element) {
+          observed.push(el);
+          this.cb([{ contentRect: { width: 900 } }]);
+        }
+        disconnect() {}
+      },
+    );
+    const x = { kind: "labels" as const, labels: ["a", "b"] };
+    const { container, rerender } = render(<LineChart series={[{ name: "Charge", data: [50], slot: 1 }]} x={x} />);
+    expect(screen.getByText("Not enough data yet")).toBeTruthy();
+    rerender(<LineChart series={[{ name: "Charge", data: [50, 49], slot: 1 }]} x={x} />);
+    expect(observed.length).toBe(1);
+    expect(container.querySelector("svg")?.getAttribute("width")).toBe("900");
+    vi.unstubAllGlobals();
   });
 });

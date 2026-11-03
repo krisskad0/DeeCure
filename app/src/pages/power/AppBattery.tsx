@@ -71,7 +71,7 @@ export function AppBatteryPanel({ fullWh }: { fullWh?: number }) {
       info="Linux has no power meter per app, so this is an estimate. Each minute on battery, DeeCure takes the drain it measures. The usual low drain goes to the screen and the system at rest. The drain above it is split between apps by the CPU and graphics time each one used."
       source="cgroup cpu.stat · DRM fdinfo · /sys/class/power_supply"
       actions={<Select value={range} options={RANGES} onChange={setRange} label="Time" />}
-      span={6}
+      span={12}
     >
       {!data ? (
         <NoData error={error} waiting="Loading…" />

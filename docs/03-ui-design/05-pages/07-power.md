@@ -35,7 +35,7 @@
 - Series: Health (slot 1, data [83,82,81,80,79,78,77,76,75,74,72,71])
 - X labels: Nov, Dec, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct
 
-5. **Bar list**: "Battery use by app" · span 6, next to the Health trend, at every level
+5. **Bar list**: "Battery use by app" · span 12, above the Health trend (side by side, the shorter panel was stretched with empty space), at every level
 - Subtitle: "estimate" · Info tooltip: how the estimate is made (the usual low drain goes to the screen and the system at rest; the drain above it is split by each app's CPU and graphics time)
 - Source chip (Expert): `cgroup cpu.stat · DRM fdinfo · /sys/class/power_supply`
 - Dropdown in the header: Today (default), Yesterday, Last 7 days
