@@ -17,6 +17,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- A DeeCure window closed to the tray (or minimized) kept reading data every few seconds, using CPU and battery while nobody looked. It now reads nothing while hidden, and reads at once when shown again.
+- The temperature reading took about 35 ms of CPU every minute on Dell laptops: firmware sensors (Dell SMM and WMI, the NVMe drive) are slow, and SMM calls briefly stop every CPU core. Slow sensors are now read every 5 minutes, the battery's duplicate sensor and current readings are skipped, and the CPU temperature is still read every minute (7.5 ms a minute on the test laptop).
 - A line chart that first had too little data (such as Power › Battery › Charge level while it loads) stayed at a fixed 600 pixels and left an empty strip on the right; charts now fill their panel. Power › Battery: "Battery use by app" now has the full width above Health trend, which was stretched with empty space beside it.
 - Dropdowns open DeeCure's own list, in the app's style (rounded card, highlight, a check on the chosen option), instead of the system's list, which could not be styled. Keyboard use works as before: arrows, Enter, Escape, and a letter to jump.
 - Number boxes (warning limits, charge limits), table search boxes, and checkboxes now match the buttons and dropdowns: the same height, border, corners, and focus ring, without the system spin arrows.

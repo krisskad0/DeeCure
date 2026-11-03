@@ -469,7 +469,7 @@ fn main() {
                 && tray::ACTIVE.load(std::sync::atomic::Ordering::SeqCst)
             {
                 api.prevent_close();
-                let _ = window.hide();
+                tray::hide(window);
             }
         })
         .invoke_handler(tauri::generate_handler![

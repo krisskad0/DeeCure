@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { type AppError, toAppError } from "./api";
 import { usePref } from "./prefs";
 import { REFRESH_EVENT, type RefreshChoice, refreshMs } from "./units";
+import { useWindowShown } from "./windowShown";
 
 /** Panels that update this often or faster follow Settings › General › Refresh interval. */
 const LIVE_MS = 15_000;
@@ -12,14 +13,17 @@ const LIVE_MS = 15_000;
 /**
  * `key`: load again at once when it changes, such as the time range. Live panels
  * (every 15 s or faster) use the chosen refresh interval instead, and none at all in
- * Manual mode. The Refresh button reloads every panel.
+ * Manual mode. The Refresh button reloads every panel. Nothing is read while the window is
+ * hidden in the tray or minimized; it reads at once when shown again.
  */
 export function useLive<T>(load: () => Promise<T>, everyMs = 10_000, key = ""): { data: T | undefined; error: AppError | null } {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<AppError | null>(null);
   const [choice] = usePref<RefreshChoice>("refresh", "5s");
   const interval = everyMs <= LIVE_MS ? refreshMs(choice) : everyMs;
+  const shown = useWindowShown();
   useEffect(() => {
+    if (!shown) return;
     let alive = true;
     const run = () =>
       load().then(
@@ -36,7 +40,7 @@ export function useLive<T>(load: () => Promise<T>, everyMs = 10_000, key = ""): 
       window.removeEventListener(REFRESH_EVENT, onRefresh);
     };
     // `load` may be a new closure on every render; `key` names what it depends on.
-  }, [interval, key]);
+  }, [interval, key, shown]);
   return { data, error };
 }
 

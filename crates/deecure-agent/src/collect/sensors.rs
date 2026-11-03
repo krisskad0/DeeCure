@@ -5,9 +5,17 @@
 //! Health warnings (docs/01-product/health-warnings.md) need a problem to last, so this
 //! collector also counts minutes in a row: near a sensor's own limit, and a fan stopped while
 //! the CPU is hot. It keeps the last hour of heat slowdowns, too.
+//!
+//! Some chips are read through the firmware (ACPI, Dell's System Management Mode, the drive),
+//! which can take tens of milliseconds and briefly stop every CPU core. A chip that takes more
+//! than [`SLOW_CHIP`] to read is read every [`SLOW_EVERY_MS`] instead, with its last values
+//! used in between. The CPU's own chip is always read every minute. Chips of a battery or
+//! charger are skipped: the battery collector reads the same temperature.
 
 use std::collections::{HashMap, VecDeque};
 use std::io;
+use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use deecure_core::{Timestamp, Unit};
 
@@ -34,6 +42,10 @@ const FAN_HOT_C: f64 = 75.0;
 /// to its own limit. Turbo bursts touch the limit for a split second at a cool 55-65 °C; that is
 /// the chip working as designed, not weak cooling.
 const SLOWDOWN_NEAR_LIMIT_C: f64 = 15.0;
+/// A chip that takes longer than this to read is a slow (firmware) chip.
+const SLOW_CHIP: Duration = Duration::from_millis(5);
+/// How often a slow chip is read. A little early still counts, so timer jitter never skips one.
+const SLOW_EVERY_MS: i64 = 5 * 60_000 - 5_000;
 
 /// One `temp` metric per sensor (subject `<chip>/<label>`) with `temp.limit` (where it starts
 /// to be too hot: the sensor's own `max`, or 5 °C under its `crit`), `temp.critical`, and
@@ -49,6 +61,62 @@ pub struct Sensors {
     /// The throttle counter at each reading of the last hour, and whether the CPU was hot then.
     throttle: VecDeque<(Timestamp, f64, bool)>,
     last: Option<Timestamp>,
+    /// Slow chips: when they were read, and what.
+    slow: HashMap<PathBuf, (Timestamp, Chip)>,
+}
+
+/// What one chip reported: its name, and per temperature or fan `(prefix, label, raw value,
+/// max, crit)` (max and crit in °C, for temperatures).
+type Chip = (String, Vec<(String, String, f64, Option<f64>, Option<f64>)>);
+
+/// Reads one chip's temperatures and fans. `None` for a chip without a name.
+fn read_chip(chip: &Path) -> Option<Chip> {
+    let name = read_trimmed(&chip.join("name"))?;
+    let mut files: Vec<String> = std::fs::read_dir(chip)
+        .map(|d| {
+            d.flatten()
+                .filter_map(|e| e.file_name().into_string().ok())
+                .collect()
+        })
+        .unwrap_or_default();
+    files.sort();
+    let mut out = Vec::new();
+    for file in files {
+        // Only temperatures and fans: other inputs (current, voltage) can be slow to read.
+        let Some(prefix) = file
+            .strip_suffix("_input")
+            .filter(|p| p.starts_with("temp") || p.starts_with("fan"))
+        else {
+            continue;
+        };
+        let Some(raw) = read_trimmed(&chip.join(&file)).and_then(|v| v.parse::<f64>().ok()) else {
+            continue;
+        };
+        let label = read_trimmed(&chip.join(format!("{prefix}_label")))
+            .unwrap_or_else(|| prefix.to_owned());
+        let milli = |end: &str| {
+            read_trimmed(&chip.join(format!("{prefix}_{end}")))
+                .and_then(|v| v.parse::<f64>().ok())
+                .map(|v| v / 1000.0)
+        };
+        let (max, crit) = if prefix.starts_with("temp") {
+            (milli("max"), milli("crit"))
+        } else {
+            (None, None)
+        };
+        out.push((prefix.to_owned(), label, raw, max, crit));
+    }
+    Some((name, out))
+}
+
+/// True for the chip of a battery or charger (`…/power_supply/BAT0/hwmon1`).
+fn of_power_supply(chip: &Path) -> bool {
+    std::fs::canonicalize(chip).is_ok_and(|real| {
+        real.parent()
+            .and_then(Path::parent)
+            .and_then(Path::file_name)
+            .is_some_and(|n| n == "power_supply")
+    })
 }
 
 /// One temperature: chip, label, °C, where it starts to be too hot, and its critical limit.
@@ -132,37 +200,35 @@ impl Collector for Sensors {
         let mut readings: Vec<Reading> = Vec::new();
         let mut fans: Vec<f64> = Vec::new();
         let mut seen_hot = Vec::new();
+        let at = now.as_millis();
+        self.slow.retain(|path, _| chips.contains(path));
         for chip in &chips {
-            let Some(chip_name) = read_trimmed(&chip.join("name")) else {
+            if of_power_supply(chip) {
                 continue;
+            }
+            let (chip_name, entries) = match self.slow.get(chip) {
+                Some((read_at, cached)) if at - read_at.as_millis() < SLOW_EVERY_MS => {
+                    cached.clone()
+                }
+                _ => {
+                    let started = Instant::now();
+                    let Some(read) = read_chip(chip) else {
+                        continue;
+                    };
+                    let is_cpu = CPU_CHIPS.iter().any(|(c, _)| *c == read.0);
+                    // Once slow, it stays slow: some drivers keep values for a while, so a
+                    // single fast read says little.
+                    if !is_cpu && (started.elapsed() > SLOW_CHIP || self.slow.contains_key(chip)) {
+                        self.slow.insert(chip.clone(), (now, read.clone()));
+                    }
+                    read
+                }
             };
-            let mut files: Vec<String> = std::fs::read_dir(chip)
-                .map(|d| {
-                    d.flatten()
-                        .filter_map(|e| e.file_name().into_string().ok())
-                        .collect()
-                })
-                .unwrap_or_default();
-            files.sort();
-            for file in files {
-                let Some(prefix) = file.strip_suffix("_input") else {
-                    continue;
-                };
-                let label = read_trimmed(&chip.join(format!("{prefix}_label")))
-                    .unwrap_or_else(|| prefix.to_owned());
-                let Some(raw) = read_trimmed(&chip.join(&file)).and_then(|v| v.parse::<f64>().ok())
-                else {
-                    continue;
-                };
+            for (prefix, label, raw, max, crit) in entries {
                 let subject = format!("{chip_name}/{label}");
                 if prefix.starts_with("temp") {
                     let celsius = raw / 1000.0;
-                    let milli = |end: &str| {
-                        read_trimmed(&chip.join(format!("{prefix}_{end}")))
-                            .and_then(|v| v.parse::<f64>().ok())
-                            .map(|v| v / 1000.0)
-                    };
-                    let (limit, critical) = limits(milli("max"), milli("crit"));
+                    let (limit, critical) = limits(max, crit);
                     let at = |name: &str, value: f64, unit: Unit| {
                         metric(name, Some(&subject), value, unit, now)
                     };
@@ -180,7 +246,7 @@ impl Collector for Sensors {
                         sample.metrics.push(at("temp.critical", c, Unit::Celsius));
                     }
                     readings.push((chip_name.clone(), label, celsius, limit, critical));
-                } else if prefix.starts_with("fan") {
+                } else {
                     sample
                         .metrics
                         .push(metric("fan", Some(&subject), raw, Unit::Count, now));
@@ -279,6 +345,51 @@ mod tests {
         // A critical of 0 is nonsense, so that core has no limit.
         assert_eq!(value(&sample, "temp.limit", Some("coretemp/Core 0")), None);
         assert_eq!(value(&sample, "fan.stopped_hot_minutes", None), Some(0.0));
+    }
+
+    #[test]
+    fn a_slow_chip_is_read_every_five_minutes_and_battery_chips_are_skipped() {
+        let root = fixture_root(
+            "sensors-slow",
+            &[
+                ("/sys/class/hwmon/hwmon4/name", "dell_ddv\n"),
+                ("/sys/class/hwmon/hwmon4/temp1_input", "47000\n"),
+                ("/sys/devices/BAT0/power_supply/BAT0/hwmon1/name", "BAT0\n"),
+                (
+                    "/sys/devices/BAT0/power_supply/BAT0/hwmon1/temp1_input",
+                    "30000\n",
+                ),
+            ],
+        );
+        std::os::unix::fs::symlink(
+            root.path("/sys/devices/BAT0/power_supply/BAT0/hwmon1"),
+            root.path("/sys/class/hwmon/hwmon1"),
+        )
+        .unwrap();
+        let chip = root.path("/sys/class/hwmon/hwmon4");
+        let mut s = Sensors::default();
+        // As if the firmware chip had been slow at its last reading, a minute ago.
+        let old = (
+            "dell_ddv".to_owned(),
+            vec![("temp1".to_owned(), "temp1".to_owned(), 45000.0, None, None)],
+        );
+        s.slow.insert(chip.clone(), (Timestamp(0), old));
+        let sample = s.collect(&root, Timestamp(60_000)).unwrap();
+        assert_eq!(
+            value(&sample, "temp", Some("dell_ddv/temp1")),
+            Some(45.0),
+            "the last values"
+        );
+        assert_eq!(
+            value(&sample, "temp", Some("BAT0/temp1")),
+            None,
+            "the battery collector reads it"
+        );
+        // Five minutes after it was read: read again, and still slow (a fast read can be the
+        // driver's own cache).
+        let sample = s.collect(&root, Timestamp(300_000)).unwrap();
+        assert_eq!(value(&sample, "temp", Some("dell_ddv/temp1")), Some(47.0));
+        assert_eq!(s.slow[&chip].0, Timestamp(300_000));
     }
 
     #[test]

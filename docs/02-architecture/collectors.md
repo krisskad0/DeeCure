@@ -39,7 +39,7 @@ The code is in `crates/deecure-agent/src/collect/`. Every file collector reads t
 | Boot | systemd over D-Bus (`Manager` and unit timestamps) | Once per boot, after it finished | Phase times and the 15 slowest units, like `systemd-analyze`. Saves `boot.time` at the moment of boot, so the history shows one point per boot. |
 | Updates | `apt list --upgradable` | Every hour; the last answer is repeated every minute | Read-only: no admin rights, no lock, changes nothing. Also reads `/etc/apt/apt.conf.d/20auto-upgrades` and `/run/reboot-required`. |
 | Backups | Déjà Dup settings (`gsettings`), `/etc/timeshift/timeshift.json`, Timeshift snapshot folders | Every hour; repeated every minute | Whether backups run on a schedule, and the age of the newest backup or snapshot |
-| Sensors | `/sys/class/hwmon/*` | Every minute | Every temperature and fan the kernel exposes. `temp.cpu` comes from the best CPU sensor (`coretemp` package, `k10temp`, …). |
+| Sensors | `/sys/class/hwmon/*` | Every minute | Every temperature and fan the kernel exposes. `temp.cpu` comes from the best CPU sensor (`coretemp` package, `k10temp`, …).. Only `temp*` and `fan*` inputs are read. Chips of a battery or charger are skipped (the battery collector reads the same temperature). A chip that takes more than 5 ms to read (firmware chips such as `dell_smm`, `dell_ddv`, `nvme`) is read every 5 minutes, its last values used in between; the CPU chip is always read every minute. On the test laptop this cut the reading from 34.5 ms to 7.5 ms of CPU a minute. |
 
 ### Live inventories
 

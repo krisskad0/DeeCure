@@ -70,6 +70,7 @@ import { AlertBanner } from "./components/AlertBanner";
 import { Button } from "./components/Button";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Gallery } from "./dev/Gallery";
+import { useWindowShown } from "./windowShown";
 
 const REFRESH_MS = 10_000;
 
@@ -157,11 +158,14 @@ export default function App() {
     setNow(Date.now());
   }, []);
 
+  // Not while the window is hidden in the tray or minimized.
+  const shown = useWindowShown();
   useEffect(() => {
+    if (!shown) return;
     void refresh();
     const timer = setInterval(() => void refresh(), REFRESH_MS);
     return () => clearInterval(timer);
-  }, [refresh]);
+  }, [refresh, shown]);
 
   useEffect(() => {
     getMachine().then(setMachine, () => setMachine(null));

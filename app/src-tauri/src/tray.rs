@@ -21,7 +21,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use serde::{Deserialize, Serialize};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 /// True while the tray icon is shown, so closing the window only hides it.
 pub static ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -102,13 +102,24 @@ pub async fn host_available() -> bool {
         .unwrap_or(false)
 }
 
+/// Tells the page when the window is hidden in the tray or shown again (a bool), so it stops
+/// reading data nobody sees.
+pub const SHOWN_EVENT: &str = "window-shown";
+
 /// Shows and focuses the main window.
 pub fn show(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
         let _ = window.show();
         let _ = window.set_focus();
+        let _ = app.emit(SHOWN_EVENT, true);
     }
+}
+
+/// Hides the main window in the tray.
+pub fn hide(window: &tauri::Window) {
+    let _ = window.hide();
+    let _ = window.emit(SHOWN_EVENT, false);
 }
 
 /// Puts the tray icon up.
