@@ -40,6 +40,8 @@ jobs:
 
       - name: Install tools
         run: |
+          # No man page index rebuild after each install: nothing reads man pages here.
+          sudo rm -f /var/lib/man-db/auto-update
           sudo apt-get $APT_OPTIONS update
           sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
             build-essential libsqlite3-dev libwebkit2gtk-4.1-dev debhelper devscripts lintian pkgconf
@@ -90,9 +92,43 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # The tag may be pushed right after its commit: the build above runs meanwhile, and
+  # nothing is published until the CI workflow passed on this exact commit.
+  ci-green:
+    name: CI passed on this commit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      actions: read
+    steps:
+      - name: Wait for the CI workflow on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          # 55 minutes at most. A rerun keeps its run, so a passed rerun counts.
+          for _ in $(seq 1 110); do
+            runs="$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA" \
+              --jq '[.workflow_runs[] | {status, conclusion}]')" || runs="[]"
+            if [ "$(echo "$runs" | jq '[.[] | select(.conclusion == "success")] | length')" -gt 0 ]; then
+              echo "CI passed on $SHA"
+              exit 0
+            fi
+            running="$(echo "$runs" | jq '[.[] | select(.status != "completed")] | length')"
+            if [ "$(echo "$runs" | jq length)" -gt 0 ] && [ "$running" -eq 0 ]; then
+              echo "CI did not pass on $SHA: $runs"
+              exit 1
+            fi
+            echo "waiting for CI on $SHA: $runs"
+            sleep 30
+          done
+          echo "CI did not finish on $SHA in time (push the commit to main before or with the tag)"
+          exit 1
+
   publish:
     name: Sign and publish
-    needs: build
+    needs: [build, ci-green]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:

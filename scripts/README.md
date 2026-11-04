@@ -10,6 +10,7 @@ Developer scripts. Run each script with `--help`, or without arguments, to see h
 | `build-deb.sh` | Build the `.deb` into `target/deb/` and run `lintian` (used by `make deb`) |
 | `perf-check.sh` | Check the agent against the performance budget (used by `make perf` and CI) |
 | `test-deb.sh` | Install, use, and purge the `.deb` on a throwaway system (used by `make deb-test` and CI) |
-| `bump-version.sh` *(planned)* | Set one version in every manifest |
+| `bump-version.sh` | Set one version in every manifest |
+| `run-parallel.sh` | Run independent checks at the same time, one log each, and say which passed and how long each took (used by `make clean-install-test`, `release-check`, and `after-release-test`) |
 | `dev-install-helper.sh` *(planned)* | Install dev copies of the helper's D-Bus and polkit files |
 | `dev-uninstall-helper.sh` *(planned)* | Remove them again |

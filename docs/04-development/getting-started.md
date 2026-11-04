@@ -71,7 +71,9 @@ The `Makefile` gives short names to the real commands:
 | `make helper-test` | Tests the root helper with real D-Bus and polkit in a container (needs Docker) |
 | `make install-test` | Tests `install.sh` against a signed throwaway APT repository in a container (needs Docker) |
 | `make update-systemd-test` | With systemd running in a container, as on a desktop: the in-app update (the Install button over D-Bus), the automatic update, repairing an update that stopped half way with `install.sh`, and a package that writes `/lib/modules` and installs a setuid program through the helper (needs Docker and internet; `OLD=`, `NEW=`, `BROKEN=` versions) |
-| `make clean-install-test` | The real one-command install from the newest GitHub release on clean Ubuntu 24.04 (curl) and 26.04 (wget), then update and uninstall (needs Docker and internet) |
+| `make clean-install-test` | The real one-command install from the newest GitHub release on clean Ubuntu 24.04 (curl) and 26.04 (wget), both at once, then update and uninstall; fails when it does not get the newest tag (needs Docker and internet) |
+| `make release-check` | Before tagging a release: builds the packages once, then the upgrade from the newest release and `ui-real`, at the same time (needs Docker and internet) |
+| `make after-release-test` | After a release is published: both clean installs, the in-app update from the release before, and `update-systemd-test`, all at the same time, one log each under `target/parallel-*` (needs Docker and internet) |
 | `make help` | Lists all commands |
 
 **Long tests take minutes** (`make deb`, the container tests, `make perf`). Run them in a second terminal or in the background. Build `make deb` once; each container test target builds it again first. Never rebuild while a container test is running.

@@ -60,6 +60,8 @@ jobs:
 
       - name: Install system libraries (SQLite, and WebKitGTK for the desktop app)
         run: |
+          # No man page index rebuild after each install: nothing reads man pages here.
+          sudo rm -f /var/lib/man-db/auto-update
           sudo apt-get $APT_OPTIONS update
           sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
             libsqlite3-dev libwebkit2gtk-4.1-dev libxdo-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev
@@ -121,6 +123,8 @@ jobs:
       - name: Install system libraries
         run: |
           dpkg -s libsqlite3-dev >/dev/null 2>&1 || {
+            # No man page index rebuild after each install: nothing reads man pages here.
+            sudo rm -f /var/lib/man-db/auto-update
             sudo apt-get $APT_OPTIONS update
             sudo apt-get $APT_OPTIONS install -y --no-install-recommends libsqlite3-dev
           }
@@ -149,6 +153,8 @@ jobs:
 
       - name: Install packaging tools
         run: |
+          # No man page index rebuild after each install: nothing reads man pages here.
+          sudo rm -f /var/lib/man-db/auto-update
           sudo apt-get $APT_OPTIONS update
           sudo apt-get $APT_OPTIONS install -y --no-install-recommends \
             build-essential libsqlite3-dev libwebkit2gtk-4.1-dev debhelper devscripts lintian pkgconf
