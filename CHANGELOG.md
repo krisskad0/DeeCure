@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Fixed
 
 - After a fix, Optimize could show the fixed item for up to 2 more minutes. It now checks again right after the fix.
+- Optimize always failed on some laptops with "the agent did not answer within 10 seconds": its checks took 10.6 s. The desktop now waits up to 60 seconds for the Optimize checks, and keeps 10 seconds for everything else.
 
 ## [0.1.0-alpha.9] - 2026-11-04
 

@@ -16,6 +16,20 @@ use serde_json::Value;
 
 /// How long to wait for the agent before giving up.
 const TIMEOUT: Duration = Duration::from_secs(10);
+/// Inventory kinds that run many system tools, and how long they may take: the Optimize checks
+/// took 10.6 s on a laptop, so the usual limit failed them every time.
+const SLOW_KINDS: [&str; 1] = ["optimize"];
+const SLOW_TIMEOUT: Duration = Duration::from_secs(60);
+
+/// The time limit for one call: longer for SLOW_KINDS, so a stuck agent is still found fast.
+fn timeout_for(method: &str, params: Option<&Value>) -> Duration {
+    let kind = params.and_then(|p| p.get("kind")).and_then(Value::as_str);
+    if method == crate::rpc::method::INVENTORY && kind.is_some_and(|k| SLOW_KINDS.contains(&k)) {
+        SLOW_TIMEOUT
+    } else {
+        TIMEOUT
+    }
+}
 
 /// Why a call to the agent failed.
 #[derive(Debug)]
@@ -24,6 +38,8 @@ pub enum ClientError {
     NotRunning(PathBuf),
     /// Reading or writing the socket failed.
     Io(io::Error),
+    /// The agent did not answer within this time.
+    TimedOut(Duration),
     /// The agent sent something that is not a valid answer.
     BadReply(String),
     /// The agent answered with an error.
@@ -40,15 +56,11 @@ impl fmt::Display for ClientError {
                  In a source checkout:   make agent",
                 path.display()
             ),
-            ClientError::Io(e)
-                if e.kind() == io::ErrorKind::WouldBlock || e.kind() == io::ErrorKind::TimedOut =>
-            {
-                write!(
-                    f,
-                    "the agent did not answer within {} seconds",
-                    TIMEOUT.as_secs()
-                )
-            }
+            ClientError::TimedOut(limit) => write!(
+                f,
+                "the agent did not answer within {} seconds",
+                limit.as_secs()
+            ),
             ClientError::Io(e) => write!(f, "could not talk to the agent: {e}"),
             ClientError::BadReply(why) => write!(
                 f,
@@ -159,16 +171,23 @@ fn call_once<T: DeserializeOwned>(
         }
         _ => ClientError::Io(e),
     })?;
-    stream.set_read_timeout(Some(TIMEOUT))?;
-    stream.set_write_timeout(Some(TIMEOUT))?;
+    let limit = timeout_for(method, params.as_ref());
+    stream.set_read_timeout(Some(limit))?;
+    stream.set_write_timeout(Some(limit))?;
+    let timed_out = |e: io::Error| match e.kind() {
+        io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut => ClientError::TimedOut(limit),
+        _ => ClientError::Io(e),
+    };
 
     let mut line =
         serde_json::to_vec(&Request::new(1, method, params)).map_err(io::Error::other)?;
     line.push(b'\n');
-    (&stream).write_all(&line)?;
+    (&stream).write_all(&line).map_err(timed_out)?;
 
     let mut reply = String::new();
-    BufReader::new((&stream).take(MAX_MESSAGE_BYTES as u64 + 1)).read_line(&mut reply)?;
+    BufReader::new((&stream).take(MAX_MESSAGE_BYTES as u64 + 1))
+        .read_line(&mut reply)
+        .map_err(timed_out)?;
     if reply.is_empty() {
         return Err(ClientError::BadReply(
             "the agent closed the connection without answering".into(),
@@ -181,5 +200,25 @@ fn call_once<T: DeserializeOwned>(
             serde_json::from_value(value).map_err(|e| ClientError::BadReply(e.to_string()))
         }
         Outcome::Failure(error) => Err(ClientError::Agent(error)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn only_slow_kinds_get_the_long_limit() {
+        let optimize = json!({ "kind": "optimize" });
+        let system = json!({ "kind": "system" });
+        assert_eq!(timeout_for("inventory", Some(&optimize)), SLOW_TIMEOUT);
+        assert_eq!(timeout_for("inventory", Some(&system)), TIMEOUT);
+        assert_eq!(timeout_for("status", None), TIMEOUT);
+        // The error names the limit that was used.
+        assert_eq!(
+            ClientError::TimedOut(SLOW_TIMEOUT).to_string(),
+            "the agent did not answer within 60 seconds"
+        );
     }
 }
