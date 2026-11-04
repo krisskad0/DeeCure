@@ -1,17 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0
-// Optimize lists only what was measured as needed, fixes open the preview, and every other
-// check shows what it measured.
+// Optimize lists only what was measured as needed, fixes open the preview, the path counts what
+// was looked at, every other check shows what it measured, and one scan serves every view.
 
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { OptimizeCheck } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
-import { OptimizeAll, offered } from "./Optimize";
+import { OptimizeStrip } from "../overview/OptimizeStrip";
+import { OptimizeAll, areaOf, offered, resetSeen } from "./Optimize";
+import { resetOptimizeScan } from "./scan";
 
 let checks: OptimizeCheck[] = [];
+let scans = 0;
+let release: (() => void) | null = null;
 
 vi.mock("../../api", () => ({
-  getInventory: () => Promise.resolve(checks),
+  getInventory: () => {
+    scans += 1;
+    return release === null ? Promise.resolve(checks) : new Promise((done) => (release = () => done(checks)));
+  },
   toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
 }));
 
@@ -21,6 +28,10 @@ const withFix = (ui: React.ReactNode) => render(<FixContext.Provider value={(a, 
 afterEach(() => {
   cleanup();
   opened.length = 0;
+  scans = 0;
+  release = null;
+  resetOptimizeScan();
+  resetSeen();
 });
 
 const WAIT: OptimizeCheck = {
@@ -42,6 +53,7 @@ describe("Optimize", () => {
     expect(offered(checks).map((c) => c.id)).toEqual(["boot.wait_online", "hardware.heat"]);
     withFix(<OptimizeAll />);
     await waitFor(() => expect(screen.getByText(WAIT.title)).toBeTruthy());
+    expect(screen.getByText("2 improvements for this computer")).toBeTruthy();
     expect(screen.getByText(WAIT.measured)).toBeTruthy();
     expect(screen.getByText("Needs your password")).toBeTruthy();
     expect(screen.getByText("Dust in the fan or vents is the usual cause.")).toBeTruthy();
@@ -53,10 +65,54 @@ describe("Optimize", () => {
     expect(screen.getByText(TRIM.measured)).toBeTruthy();
   });
 
+  it("walks through every item and counts what was looked at", async () => {
+    checks = [WAIT, HEAT];
+    withFix(<OptimizeAll />);
+    await waitFor(() => expect(screen.getByText("0 of 2")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText("1 of 2")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Got it" }));
+    expect(screen.getByText("You went through every item")).toBeTruthy();
+    // The last card has nothing left to step to.
+    expect(screen.queryByRole("button", { name: "Got it" })).toBeNull();
+  });
+
+  it("filters by area when items come from more than one", async () => {
+    checks = [WAIT, HEAT];
+    withFix(<OptimizeAll />);
+    await waitFor(() => expect(screen.getByRole("button", { name: /Hardware/ })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: /Hardware/ }));
+    expect(screen.queryByText(WAIT.title)).toBeNull();
+    expect(screen.getByText(HEAT.title)).toBeTruthy();
+  });
+
   it("says so when nothing is needed", async () => {
     checks = [TRIM];
     withFix(<OptimizeAll />);
     await waitFor(() => expect(screen.getByText("Nothing to improve now")).toBeTruthy());
     expect(screen.queryByRole("button", { name: "Preview" })).toBeNull();
+    expect(screen.queryByText(/Your path/)).toBeNull();
+  });
+
+  it("shows what it checks while it checks, and the page and the Overview share one scan", async () => {
+    checks = [WAIT];
+    release = () => undefined;
+    withFix(
+      <>
+        <OptimizeAll />
+        <OptimizeStrip />
+      </>,
+    );
+    expect(screen.getByText("Checking this computer")).toBeTruthy();
+    expect(screen.getByText("Checking this computer for improvements…")).toBeTruthy();
+    expect(screen.getByRole("list", { name: "Areas being checked" })).toBeTruthy();
+    release?.();
+    await waitFor(() => expect(screen.getByText("improvement ready")).toBeTruthy());
+    expect(scans).toBe(1);
+  });
+
+  it("puts an ID it does not know under Other", () => {
+    expect(areaOf({ ...TRIM, id: "new.thing:x" }).label).toBe("Other");
+    expect(areaOf({ ...TRIM, id: "power.device_saving:usb1" }).label).toBe("Power");
   });
 });

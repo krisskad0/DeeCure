@@ -7,6 +7,7 @@ import type { Metric, StatusReport } from "../../api";
 import { OverviewScore } from "./HealthScore";
 import { OverviewIssues } from "./Issues";
 import { OverviewSummary } from "./Summary";
+import { UiContext } from "../../ui";
 
 const at = Date.now();
 const metric = (name: string, value: number, unit: Metric["unit"], subject?: string): Metric => ({ name, subject, value, unit, at });
@@ -79,6 +80,20 @@ describe("Overview pages", () => {
     expect(screen.getByText("Fair")).toBeTruthy();
     expect(screen.getByText("Fix these to get back 20 points.")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Computer started")).toBeTruthy());
+  });
+
+  it("summary links to Optimize in Expert only, with what the scan found", async () => {
+    render(<OverviewSummary report={REPORT} error={null} now={at} />);
+    expect(screen.queryByText("Open Optimize")).toBeNull();
+    cleanup();
+    render(
+      <UiContext.Provider value={{ mode: "expert", range: "24h" }}>
+        <OverviewSummary report={REPORT} error={null} now={at} />
+      </UiContext.Provider>,
+    );
+    expect(screen.getByText("Open Optimize").getAttribute("href")).toBe("#/optimize/all");
+    // This agent answer has no checks, and the strip says so instead of "all passed".
+    await waitFor(() => expect(screen.getByText(/No checks ran/)).toBeTruthy());
   });
 
   it("issues counts findings by severity", () => {

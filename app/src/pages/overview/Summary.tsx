@@ -22,6 +22,7 @@ import { type Range, useUi } from "../../ui";
 import { useLive } from "../../useLive";
 import { IssuesPanel } from "../IssuesPanel";
 import { NoData } from "../NoData";
+import { OptimizeStrip } from "./OptimizeStrip";
 import { ScoreCard } from "./ScoreCard";
 import { type PageProps, areaLabel, plural, worst } from "./shared";
 
@@ -67,7 +68,7 @@ function split(text: string): { value: string; unit: string } {
 }
 
 export function OverviewSummary({ report, error, now }: PageProps) {
-  const { range } = useUi();
+  const { range, mode } = useUi();
   const latest = useLive(loadLatest, 15_000).data;
   const system = useLive(loadSystem, 60_000).data;
   const processes = useLive(loadProcesses, 10_000).data;
@@ -88,6 +89,7 @@ export function OverviewSummary({ report, error, now }: PageProps) {
   return (
     <>
       <KpiRow tiles={kpis(latest, system, history, findings, gpus)} />
+      {mode === "expert" && <OptimizeStrip />}
       <Panel
         title={gpuSeries(history, gpus).length ? "CPU, GPU, and memory utilization" : "CPU and memory utilization"}
         info="How busy the processor, the graphics, and memory were. Change the time range at the top to zoom out."

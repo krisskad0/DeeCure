@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Changed
+
+- **Optimize** has a new look. While it checks, a radar animation shows the areas being checked and how long it has run. The result shows how many checks passed and how many items wait, with fixes, advice, and password needs counted. Each item is a card with what was measured and what to do, and a path bar with **Next** walks you through them one by one. Items can be filtered by area, and **Check again** runs the checks at once.
+- Overview › Summary shows how many Optimize items wait now, with the first ones and a link straight to Optimize (Expert level, like the Optimize page).
+
+### Fixed
+
+- After a fix, Optimize could show the fixed item for up to 2 more minutes. It now checks again right after the fix.
+
 ## [0.1.0-alpha.9] - 2026-11-04
 
 ### Added

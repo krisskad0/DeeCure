@@ -7,7 +7,7 @@
 
 ## Overview › Summary: `overview/summary`
 
-**Layout, row by row** (panels in one row share its height, so their edges line up): KPI row; chart (8) and Health score (4); Active issues (8) and Disks (4); Subsystems (12); Top processes (6) and Recent activity (6); System (6) and Errors by hour (6). The numbered sections below describe each panel.
+**Layout, row by row** (panels in one row share its height, so their edges line up): KPI row; Optimize (12, Expert only); chart (8) and Health score (4); Active issues (8) and Disks (4); Subsystems (12); Top processes (6) and Recent activity (6); System (6) and Errors by hour (6). The numbered sections below describe each panel.
 
 1. **KPI row** · span 12
 
@@ -23,6 +23,12 @@
 The health score is not a tile: the "Health score" panel (gauge and what takes points off) sits next to the chart instead, so it shows once.
 
 The GPU tile shows only when the computer has a graphics card. Without a reading it shows "-" and why: "Measuring…" (Intel needs two readings), "The NVIDIA driver does not report busy time", or "Its driver does not report busy time".
+
+**Optimize strip**: "Optimize" · span 12 · Expert only, like the Optimize page ([View levels](../../01-product/view-levels.md)). Subtitle "N checks on this computer"; action "Open Optimize" (`optimize/all`).
+- Items waiting: the count in a round badge with "improvements ready" and "N fixes · N advice", then up to 3 item titles as chips (area icon, title, the measurement as a tooltip) and "+N more". Each opens Optimize.
+- Nothing waiting: "Nothing to improve now. All N checks passed."
+- While the first scan runs: a small radar and "Checking this computer for improvements… This takes about 10 seconds."
+- It reads the same scan as the Optimize page (`pages/optimize/scan.ts`), so the computer is never checked twice at once; the scan runs again when the answer is older than 2 minutes, and right after a fix.
 
 2. **Line chart**: "CPU, GPU, and memory utilization" ("CPU and memory utilization" without GPU readings) · span 8
 - Info tooltip: "How busy the processor and memory were. Change the time range at the top to zoom out."

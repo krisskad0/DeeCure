@@ -23,6 +23,7 @@ import { PackagesCleanup, PackagesInstalled, PackagesPermissions, PackagesSource
 import { AssistantChat } from "./pages/assistant/Assistant";
 import { DiagnosticsHardware, DiagnosticsNetwork, DiagnosticsPerformance } from "./pages/diagnostics/Diagnostics";
 import { OptimizeAll } from "./pages/optimize/Optimize";
+import { optimizeChanged } from "./pages/optimize/scan";
 import { SettingsAbout, SettingsAccess, SettingsAssistant, SettingsData, SettingsGeneral, SettingsNotifications } from "./pages/settings/Settings";
 import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "./pages/activity/Activity";
 import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
@@ -263,7 +264,17 @@ export default function App() {
         onMachine={(anchor) => setPopover({ kind: "machine", anchor })}
       />
       {palette && <CommandPalette onClose={() => setPalette(false)} />}
-      {fix && <FixDrawer action={fix.action} subject={fix.subject} onClose={() => setFix(null)} onDone={() => void refresh()} />}
+      {fix && (
+        <FixDrawer
+          action={fix.action}
+          subject={fix.subject}
+          onClose={() => setFix(null)}
+          onDone={() => {
+            void refresh();
+            optimizeChanged();
+          }}
+        />
+      )}
       {popover?.kind === "bell" && (
         <NotificationsPopover anchor={popover.anchor} findings={all} now={now} onClose={() => setPopover(null)} />
       )}
