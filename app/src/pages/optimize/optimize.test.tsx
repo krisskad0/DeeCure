@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Optimize lists only what was measured as needed, fixes open the preview, the path counts what
-// was looked at, every other check shows what it measured, and one scan serves every view.
+// was looked at, every other check shows what it measured, a scan shows each part live, and one
+// scan serves every view. DeeCure checks by itself only once a day.
 
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -8,18 +9,25 @@ import type { OptimizeCheck } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
 import { OptimizeStrip } from "../overview/OptimizeStrip";
 import { OptimizeAll, areaOf, offered, resetSeen } from "./Optimize";
-import { resetOptimizeScan } from "./scan";
+import { optimizeChanged, resetOptimizeScan } from "./scan";
 
 let checks: OptimizeCheck[] = [];
-let scans = 0;
+const calls: string[] = [];
+/** A part kind whose answer waits until `release` is called. */
+let hold: string | null = null;
 let release: (() => void) | null = null;
+let fail: Record<string, unknown> = {};
 
 vi.mock("../../api", () => ({
-  getInventory: () => {
-    scans += 1;
-    return release === null ? Promise.resolve(checks) : new Promise((done) => (release = () => done(checks)));
+  getInventory: (kind: string) => {
+    calls.push(kind);
+    if (fail[kind]) return Promise.reject(fail[kind]);
+    // Every check comes from the first part; the other parts find nothing.
+    const answer = kind === "optimize" || kind === "optimize_boot" ? checks : [];
+    if (kind === hold) return new Promise((done) => (release = () => done(answer)));
+    return Promise.resolve(answer);
   },
-  toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
+  toAppError: (e: unknown) => (typeof e === "object" && e !== null && "kind" in e ? e : { kind: "other", message: String(e) }),
 }));
 
 const opened: [string, string | undefined][] = [];
@@ -28,8 +36,10 @@ const withFix = (ui: React.ReactNode) => render(<FixContext.Provider value={(a, 
 afterEach(() => {
   cleanup();
   opened.length = 0;
-  scans = 0;
+  calls.length = 0;
+  hold = null;
   release = null;
+  fail = {};
   resetOptimizeScan();
   resetSeen();
 });
@@ -46,6 +56,8 @@ const WAIT: OptimizeCheck = {
 };
 const HEAT: OptimizeCheck = { id: "hardware.heat", kind: "advice", title: "Clean the fans, or check the cooling", measured: "The CPU slowed down from heat 40 times in the last 24 hours.", offered: true, advice: "Dust in the fan or vents is the usual cause." };
 const TRIM: OptimizeCheck = { id: "storage.trim", kind: "fix", title: "Turn on the weekly TRIM", measured: "fstrim.timer is enabled: nvme0n1 get TRIM every week.", offered: false, access: "admin" };
+
+const keep = (kept: OptimizeCheck[], at: number) => window.localStorage.setItem("deecure.optimize", JSON.stringify({ checks: kept, at }));
 
 describe("Optimize", () => {
   it("offers measured fixes first, then advice, and opens the preview", async () => {
@@ -94,21 +106,68 @@ describe("Optimize", () => {
     expect(screen.queryByText(/Your path/)).toBeNull();
   });
 
-  it("shows what it checks while it checks, and the page and the Overview share one scan", async () => {
+  it("shows each part live, and the page and the Overview share one scan", async () => {
     checks = [WAIT];
-    release = () => undefined;
+    hold = "optimize_disks";
     withFix(
       <>
         <OptimizeAll />
         <OptimizeStrip />
       </>,
     );
-    expect(screen.getByText("Checking this computer")).toBeTruthy();
-    expect(screen.getByText("Checking for improvements…")).toBeTruthy();
-    expect(screen.getByRole("list", { name: "Areas being checked" })).toBeTruthy();
+    await waitFor(() => expect(screen.getAllByText("Part 2 of 8: Disks")).toHaveLength(2));
+    expect(screen.getByRole("list", { name: "Parts of the check" })).toBeTruthy();
+    // The first part is done and says what it found; the found item shows at once.
+    expect(screen.getByText("1 to improve")).toBeTruthy();
+    expect(screen.getByText(/found 1 improvement so far/)).toBeTruthy();
+    expect(screen.getByText(WAIT.title)).toBeTruthy();
+    expect(screen.getAllByText("Waiting")).toHaveLength(6);
     release?.();
-    await waitFor(() => expect(screen.getByText("improvement ready")).toBeTruthy());
-    expect(scans).toBe(1);
+    await waitFor(() => expect(screen.getByText("1 improvement for this computer")).toBeTruthy());
+    expect(screen.getByText(/improvement ready · 1 fix/)).toBeTruthy();
+    expect(calls.filter((k) => k === "optimize_boot")).toHaveLength(1);
+    expect(calls).toHaveLength(8);
+  });
+
+  it("asks an older agent for everything in one call", async () => {
+    checks = [WAIT];
+    fail = { optimize_boot: { kind: "agent_outdated", message: "older" } };
+    withFix(<OptimizeAll />);
+    await waitFor(() => expect(screen.getByText(WAIT.title)).toBeTruthy());
+    expect(calls).toEqual(["optimize_boot", "optimize"]);
+  });
+
+  it("says which part could not be checked, and shows the rest", async () => {
+    checks = [WAIT];
+    fail = { optimize_drivers: { kind: "other", message: "fwupd did not answer" } };
+    withFix(<OptimizeAll />);
+    await waitFor(() => expect(screen.getByText("1 part could not be checked")).toBeTruthy());
+    expect(screen.getByText("Drivers and firmware: fwupd did not answer")).toBeTruthy();
+    expect(screen.getByText(WAIT.title)).toBeTruthy();
+  });
+
+  it("does not check by itself when the kept answer is less than a day old", async () => {
+    keep([WAIT], Date.now() - 3_600_000);
+    resetOptimizeScan(true);
+    withFix(<OptimizeAll />);
+    expect(screen.getByText(WAIT.title)).toBeTruthy();
+    expect(calls).toEqual([]);
+    // After a fix, it says the list may be out of date, and still does not check.
+    optimizeChanged();
+    await waitFor(() => expect(screen.getByText("A fix ran after this check")).toBeTruthy());
+    expect(calls).toEqual([]);
+    // The button checks now.
+    fireEvent.click(screen.getByRole("button", { name: "Check again" }));
+    await waitFor(() => expect(calls).toHaveLength(8));
+  });
+
+  it("checks by itself when the kept answer is a day old", async () => {
+    checks = [HEAT];
+    keep([WAIT], Date.now() - 86_400_000 - 1000);
+    resetOptimizeScan(true);
+    withFix(<OptimizeAll />);
+    await waitFor(() => expect(screen.getByText(HEAT.title)).toBeTruthy());
+    expect(calls).toHaveLength(8);
   });
 
   it("puts an ID it does not know under Other", () => {
@@ -116,3 +175,4 @@ describe("Optimize", () => {
     expect(areaOf({ ...TRIM, id: "power.device_saving:usb1" }).label).toBe("Power");
   });
 });
+

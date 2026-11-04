@@ -1,65 +1,57 @@
 // SPDX-License-Identifier: Apache-2.0
-// Overview › Summary, at the bottom of the Health score card: how many Optimize items wait now,
-// in one row that opens Optimize; kept short so the card stays as tall as the chart beside it. Expert only, like the Optimize page itself
-// (docs/01-product/view-levels.md). It reads the same scan as the Optimize page, so opening both
-// never checks the computer twice.
+// Overview › Summary, at the bottom of the Health score card: how many items wait now, and one big
+// "Optimize now" button that opens Optimize and starts a scan there. Expert only,
+// like the Optimize page itself (docs/01-product/view-levels.md). It reads the same scan as the
+// Optimize page, so the computer is never checked twice at once.
 
 import { Icon } from "../../components/Icon";
+import { when } from "../../metrics";
 import { href } from "../../route";
-import { Radar, offered } from "../optimize/Optimize";
-import { SCAN_USUAL_MS, useOptimizeScan } from "../optimize/scan";
+import { offered } from "../optimize/Optimize";
+import { PARTS, scanOptimize, useOptimizeScan } from "../optimize/scan";
 import { plural } from "./shared";
 
 export function OptimizeStrip() {
-  const { checks, error, startedAt } = useOptimizeScan();
+  const { checks, at, error, startedAt, parts } = useOptimizeScan();
+  const scanning = startedAt !== undefined;
   const todo = checks ? offered(checks) : [];
   const fixes = todo.filter((c) => c.kind === "fix").length;
-  const open = href("optimize", "all");
+  const finished = parts?.filter((p) => p.status === "done" || p.status === "failed").length ?? 0;
+  const current = parts?.find((p) => p.status === "running");
+
+  const status = scanning
+    ? current
+      ? `Part ${finished + 1} of ${parts?.length}: ${PARTS.find((p) => p.id === current.id)?.label}`
+      : "Checking this computer…"
+    : !checks
+      ? error
+        ? `Could not check: ${error.message}`
+        : "Not checked yet"
+      : checks.length === 0
+        ? "No checks ran"
+        : todo.length === 0
+          ? `Nothing to improve · all ${plural(checks.length, "check")} passed`
+          : `${todo.length === 1 ? "improvement" : "improvements"} ready · ${[fixes && plural(fixes, "fix", "fixes"), todo.length - fixes && `${todo.length - fixes} advice`].filter(Boolean).join(" · ")}`;
+
   return (
     <section className="sc-opt" aria-label="Optimize">
       <div className="sc-opt-head">
         <span className="sc-head">Optimize</span>
-        <a className="btn btn-link btn-sm" href={open} aria-label="Open Optimize">
-          Open
-        </a>
+        {at !== undefined && <span className="sc-opt-when muted">Checked {when(at)}</span>}
       </div>
-      {!checks ? (
-        error && startedAt === undefined ? (
-          <p className="sc-hint muted">Could not check for improvements: {error.message}</p>
-        ) : (
-          <div className="sc-opt-row" role="status">
-            <Radar small />
-            <span>
-              Checking for improvements…
-              <span className="muted"> about {SCAN_USUAL_MS / 1000} s</span>
-            </span>
-          </div>
-        )
-      ) : checks.length === 0 ? (
-        <p className="sc-hint muted">No checks ran. Restart the agent, then check again on the Optimize page.</p>
-      ) : todo.length === 0 ? (
-        <a className="sc-opt-row sc-opt-link" href={open}>
-          <span className="sc-opt-n ok">
-            <Icon name="check" size={16} strokeWidth={2.6} />
+      <p className="sc-opt-status" title={status}>
+        {!scanning && todo.length > 0 && <span className="sc-opt-count">{todo.length}</span>}
+        <span>{status}</span>
+      </p>
+      <a className="btn btn-primary sc-opt-go" href={href("optimize", "all")} onClick={() => void scanOptimize()}>
+        {scanning ? <span className="sc-opt-spin" aria-hidden="true" /> : <Icon name="bolt" size={16} strokeWidth={2.2} />}
+        {scanning ? "Checking… see progress" : "Optimize now"}
+        {scanning && parts && (
+          <span className="sc-opt-bar" aria-hidden="true">
+            <span style={{ width: `${(finished / parts.length) * 100}%` }} />
           </span>
-          <span>
-            <strong>Nothing to improve</strong>
-            <span className="muted"> · all {plural(checks.length, "check")} passed</span>
-          </span>
-        </a>
-      ) : (
-        <a className="sc-opt-row sc-opt-link" href={open} aria-label={`${plural(todo.length, "improvement")} ready. Open Optimize`}>
-          <span className="sc-opt-n">{todo.length}</span>
-          <span className="sc-opt-sum">
-            <strong>{todo.length === 1 ? "improvement ready" : "improvements ready"}</strong>
-            <span className="muted">
-              {[fixes && plural(fixes, "fix", "fixes"), todo.length - fixes && `${todo.length - fixes} advice`].filter(Boolean).join(" · ")}
-              {startedAt !== undefined && " · checking again"}
-            </span>
-          </span>
-          <Icon name="chev" size={14} />
-        </a>
-      )}
+        )}
+      </a>
     </section>
   );
 }

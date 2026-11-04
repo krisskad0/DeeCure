@@ -26,6 +26,7 @@ const NEW_KINDS = new Set([
   "cpu_detail", "memory_detail", "process_memory", "cgroups", "storage_detail", "process_io", "pci_detail", "gpu_detail", "graphics_stack",
   "net_deep", "tcp_traffic", "power_detail", "thermal", "boot_detail", "unit_files", "service_security", "kernel_detail", "platform_detail",
   "devices_detail", "hw_errors", "software_health", "security_detail", "package_verify", "package_verify_run", "optimize", "app_battery", "app_usage",
+  "optimize_boot", "optimize_disks", "optimize_kernels", "optimize_devices", "optimize_hardware", "optimize_cleanup", "optimize_history", "optimize_drivers",
 ]);
 
 let scenario: "real" | "down" | "older" = "down";

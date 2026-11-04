@@ -318,24 +318,44 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 
 /* First scan */
 .opt-stage { display: flex; gap: 28px; align-items: flex-start; padding: 12px 4px 4px; }
-.opt-stage-text { flex: 1; min-width: 0; display: grid; gap: 8px; }
+.opt-stage-text { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .opt-stage-text h3 { margin: 0; font-size: 17px; font-weight: 650; }
 .opt-stage-text p { margin: 0; }
 .opt-elapsed { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .opt-progress { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; position: relative; }
 .opt-progress span { position: absolute; top: 0; bottom: 0; width: 35%; border-radius: 3px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: opt-slide 1.4s ease-in-out infinite; }
 @keyframes opt-slide { from { left: -35%; } to { left: 100%; } }
-@media (prefers-reduced-motion: reduce) { .opt-progress span { left: 0; width: 100%; background: var(--accent-soft); } }
+@media (prefers-reduced-motion: reduce) { .opt-progress:not(.exact) span { left: 0; width: 100%; background: var(--accent-soft); } }
+.opt-progress.exact span { left: 0; width: 0; background: var(--accent); animation: none; transition: width 0.4s ease; }
+.opt-parts { display: grid; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+.opt-part { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel-2); min-width: 0; transition: border-color 0.2s, background 0.2s; }
+.opt-part.waiting { opacity: 0.6; }
+.opt-part.running { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+.opt-part.failed { border-color: color-mix(in srgb, var(--crit) 40%, var(--line)); }
+.opt-part-text { flex: 1; min-width: 0; display: grid; gap: 1px; font-size: 12.5px; }
+.opt-part-text > span { overflow-wrap: anywhere; }
+.opt-part-state { flex: none; display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.opt-part-time { font-size: 12px; }
+.opt-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--track); border-top-color: var(--accent); animation: opt-turn 0.8s linear infinite; }
+.opt-found { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: 4px; min-width: 0; }
+.opt-found ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.opt-found li { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; padding: 3px 10px; border-radius: 999px; background: var(--warn-soft); color: var(--warn-ink); font-size: 12.5px; animation: opt-in 0.3s ease; }
+.opt-found li .icon { flex: none; }
+.opt-found li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .opt-areas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 6px; }
 .opt-areas li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel-2); min-width: 0; animation: opt-glow 3.3s ease-in-out infinite; animation-delay: calc(var(--i) * 0.3s); }
 .opt-areas li > span:last-child { display: grid; gap: 1px; min-width: 0; font-size: 12.5px; overflow-wrap: anywhere; }
 .opt-area-icon { width: 26px; height: 26px; flex: none; border-radius: 6px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
 @keyframes opt-glow { 0%, 70%, 100% { border-color: var(--line); } 15% { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); } }
 
-/* Checking again, with the last answer still shown */
-.opt-rescan { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 8px 12px; border-radius: var(--r); background: var(--info-soft); color: var(--info-ink); font-size: 12.5px; }
-.opt-rescan-bar { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--info-ink) 25%, transparent); border-top-color: var(--info-ink); animation: opt-turn 0.8s linear infinite; }
-.panel-body > .alert + .opt-summary { margin-top: 12px; }
+/* Notes over the result; not checked yet */
+.opt-notes { display: grid; gap: 8px; }
+.opt-notes:not(:empty) { margin-bottom: 12px; }
+.opt-idle { display: grid; justify-items: center; gap: 8px; padding: 28px 16px; text-align: center; }
+.opt-idle h3 { margin: 0; font-size: 17px; font-weight: 650; }
+.opt-idle p { margin: 0 0 6px; max-width: 520px; }
+.opt-idle-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.opt-again { padding: 0 14px 14px; }
 
 /* Summary ring and numbers */
 .opt-summary { display: flex; gap: 22px; align-items: center; }
@@ -403,8 +423,11 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .opt-badges { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 
 @media (max-width: 640px) {
-  .opt-stage, .opt-summary { flex-direction: column; align-items: center; text-align: center; }
-  .opt-stage-text, .opt-summary-text { width: 100%; }
+  .opt-stage, .opt-summary { flex-direction: column; align-items: center; }
+  .opt-summary { text-align: center; }
+  .opt-stage-text, .opt-summary-text { width: 100%; min-width: 0; }
+  .opt-part { flex-wrap: wrap; }
+  .opt-part-state { flex-basis: 100%; flex-wrap: wrap; padding-left: 36px; }
   .opt-stats { justify-content: center; }
   .opt-areas { text-align: left; }
   .opt-radar { --size: 120px; }
@@ -522,15 +545,16 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .panel-body:has(> .sc) { flex: 1; display: flex; flex-direction: column; }
 .sc { flex: 1; min-width: 0; }
 .sc-opt { min-width: 0; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
-.sc-opt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: -4px; }
-.sc-opt-row { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 12.5px; }
-.sc-opt-link { padding: 4px 8px; margin: 0 -8px; border-radius: 8px; color: inherit; }
-.sc-opt-link:hover { background: var(--track); }
-.sc-opt-link > .icon { flex: none; color: var(--muted); }
-.sc-opt-n { min-width: 34px; height: 34px; padding: 0 8px; flex: none; border-radius: 17px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn-ink); font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.sc-opt-n.ok { background: var(--good-soft); color: var(--good-ink); }
-.sc-opt-sum { display: grid; flex: 1; min-width: 0; }
-.sc-opt-sum > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-opt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sc-opt-when { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sc-opt-status { margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 12.5px; color: var(--ink-2); }
+.sc-opt-status > span:last-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-opt-count { flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn-ink); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+/* A real primary button, full width and taller than the usual one. */
+.sc-opt-go { position: relative; overflow: hidden; width: 100%; height: 40px; font-size: 14px; font-weight: 600; gap: 8px; }
+.sc-opt-spin { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 35%, transparent); border-top-color: currentColor; animation: opt-turn 0.8s linear infinite; }
+.sc-opt-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: color-mix(in srgb, currentColor 25%, transparent); }
+.sc-opt-bar span { display: block; height: 100%; background: currentColor; transition: width 0.4s ease; }
 
 .sc .gauge { max-width: 190px; margin: 0 auto; }
 .sc-level { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: -6px; }

@@ -9,11 +9,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Changed
 
 - **Optimize** has a new look. While it checks, a radar animation shows the areas being checked and how long it has run. The result shows how many checks passed and how many items wait, with fixes, advice, and password needs counted. Each item is a card with what was measured and what to do, and a path bar with **Next** walks you through them one by one. Items can be filtered by area, and **Check again** runs the checks at once.
-- Overview › Summary shows how many Optimize items wait now at the bottom of the Health score card, with a link straight to Optimize (Expert level, like the Optimize page).
+- Optimize shows the check live: each of its 8 parts (start-up, disks, old kernels, devices, hardware health, space, packages, and updates, usage history, drivers and firmware) says when it waits, runs, and what it found, and found items appear as soon as their part finishes.
+- Optimize checks by itself only once a day, and keeps its last result after the app restarts. Otherwise it checks only when you click **Check again** or **Optimize now**. The Refresh button no longer starts it.
+- Overview › Summary shows how many Optimize items wait now at the bottom of the Health score card, with a big **Optimize now** button that opens Optimize and starts the live check (Expert level, like the Optimize page).
 
 ### Fixed
 
-- After a fix, Optimize could show the fixed item for up to 2 more minutes. It now checks again right after the fix.
+- After a fix, Optimize says the list may be out of date, so a fixed item is not taken as still needed.
 - Optimize always failed on some laptops with "the agent did not answer within 10 seconds": its checks took 10.6 s. The desktop now waits up to 60 seconds for the Optimize checks, and keeps 10 seconds for everything else.
 
 ## [0.1.0-alpha.9] - 2026-11-04

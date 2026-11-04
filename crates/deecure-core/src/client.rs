@@ -17,14 +17,20 @@ use serde_json::Value;
 /// How long to wait for the agent before giving up.
 const TIMEOUT: Duration = Duration::from_secs(10);
 /// Inventory kinds that run many system tools, and how long they may take: the Optimize checks
-/// took 10.6 s on a laptop, so the usual limit failed them every time.
+/// took 10.6 s on a laptop, so the usual limit failed them every time. A kind counts when it is
+/// one of these or starts with one and `_` (the parts of the Optimize checks, `optimize_boot`).
 const SLOW_KINDS: [&str; 1] = ["optimize"];
 const SLOW_TIMEOUT: Duration = Duration::from_secs(60);
 
 /// The time limit for one call: longer for SLOW_KINDS, so a stuck agent is still found fast.
 fn timeout_for(method: &str, params: Option<&Value>) -> Duration {
     let kind = params.and_then(|p| p.get("kind")).and_then(Value::as_str);
-    if method == crate::rpc::method::INVENTORY && kind.is_some_and(|k| SLOW_KINDS.contains(&k)) {
+    let slow = |k: &str| {
+        SLOW_KINDS
+            .iter()
+            .any(|s| k == *s || k.strip_prefix(s).is_some_and(|rest| rest.starts_with('_')))
+    };
+    if method == crate::rpc::method::INVENTORY && kind.is_some_and(slow) {
         SLOW_TIMEOUT
     } else {
         TIMEOUT
@@ -211,8 +217,10 @@ mod tests {
     #[test]
     fn only_slow_kinds_get_the_long_limit() {
         let optimize = json!({ "kind": "optimize" });
+        let part = json!({ "kind": "optimize_drivers" });
         let system = json!({ "kind": "system" });
         assert_eq!(timeout_for("inventory", Some(&optimize)), SLOW_TIMEOUT);
+        assert_eq!(timeout_for("inventory", Some(&part)), SLOW_TIMEOUT);
         assert_eq!(timeout_for("inventory", Some(&system)), TIMEOUT);
         assert_eq!(timeout_for("status", None), TIMEOUT);
         // The error names the limit that was used.

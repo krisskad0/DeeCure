@@ -605,26 +605,49 @@ async fn memory_errors(root: &SystemRoot) -> Check {
     )
 }
 
+/// The parts of the checks, in the order the page runs them one by one, so it can show which
+/// part runs now and what each found. The inventory kind of a part is `optimize_<part>`.
+pub const PARTS: [&str; 8] = [
+    "boot", "disks", "kernels", "devices", "hardware", "cleanup", "history", "drivers",
+];
+
+/// The checks of one part, offered ones first; nothing for a part that does not exist.
+pub async fn read_part(agent: &Agent, part: &str) -> Vec<Check> {
+    let root = &agent.root;
+    let mut checks = match part {
+        "boot" => vec![boot_wait_online(root).await],
+        "disks" => vec![trim(root).await],
+        "kernels" => vec![old_kernels(root)],
+        "devices" => {
+            let power = power_detail::read(root);
+            let mut checks = device_saving(root, &power);
+            checks.extend(pcie(root));
+            checks.extend(usb_speed(root));
+            checks
+        }
+        "hardware" => {
+            let cpu = cpu_detail::read(root);
+            let mut checks = vec![heat(agent, &cpu)];
+            checks.extend(battery_health(root));
+            checks.push(restart_needed(root, &cpu));
+            checks.push(memory_errors(root).await);
+            checks
+        }
+        "cleanup" => cleanup::checks(agent).await,
+        "history" => history::checks(agent).await,
+        "drivers" => drivers::checks(agent).await,
+        _ => Vec::new(),
+    };
+    checks.sort_by_key(|c| !c.offered);
+    checks
+}
+
 /// Every check, offered ones first.
 pub async fn read(agent: &Agent) -> Vec<Check> {
-    let root = &agent.root;
-    let power = power_detail::read(root);
-    let cpu = cpu_detail::read(root);
-    let mut checks = vec![
-        boot_wait_online(root).await,
-        trim(root).await,
-        old_kernels(root),
-    ];
-    checks.extend(device_saving(root, &power));
-    checks.push(heat(agent, &cpu));
-    checks.extend(pcie(root));
-    checks.extend(usb_speed(root));
-    checks.extend(battery_health(root));
-    checks.push(restart_needed(root, &cpu));
-    checks.push(memory_errors(root).await);
-    checks.extend(cleanup::checks(agent).await);
-    checks.extend(history::checks(agent).await);
-    checks.extend(drivers::checks(agent).await);
+    let mut checks = Vec::new();
+    for part in PARTS {
+        checks.extend(read_part(agent, part).await);
+    }
     checks.sort_by_key(|c| !c.offered);
     checks
 }
@@ -632,6 +655,14 @@ pub async fn read(agent: &Agent) -> Vec<Check> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn every_part_is_an_inventory_kind() {
+        for part in PARTS {
+            let kind = format!("optimize_{part}");
+            assert!(super::super::KINDS.contains(&kind.as_str()), "{kind}");
+        }
+    }
 
     #[test]
     fn network_mounts_come_from_type_or_netdev() {

@@ -75,11 +75,10 @@ From top to bottom:
 - Three counters: critical, warnings, info (tinted when above 0).
 - "What takes points off": one row per area with a deduction, most first: area icon and name, its worst problem's title (one line), and "−5" in the problem's color. Each row opens the area. Then "Fix these to get back N points." Without deductions: "Nothing takes points off. DeeCure keeps checking every minute."
 
-- **Optimize** (Expert only, like the Optimize page, [View levels](../../01-product/view-levels.md)): the last part of the card, in the free space at its bottom, so the card stays as tall as the chart. Heading "Optimize" with **Open** (`optimize/all`), then one row that opens Optimize:
-  - Items waiting: the count in a round badge, "improvements ready", and "N fixes · N advice".
-  - Nothing waiting: a check mark, "Nothing to improve · all N checks passed".
-  - First scan running: a small radar and "Checking for improvements… about 10 s". No answer: "Could not check for improvements" with the reason.
-  - It reads the same scan as the Optimize page (`pages/optimize/scan.ts`), so the computer is never checked twice at once; the scan runs again when the answer is older than 2 minutes, and right after a fix.
+- **Optimize** (Expert only, like the Optimize page, [View levels](../../01-product/view-levels.md)): the last part of the card, in the free space at its bottom. Heading "Optimize" with "Checked Today 10:42" on the right, one status line, and one big button:
+  - Status line: the count in an amber badge with "improvements ready · N fixes · N advice"; "Nothing to improve · all N checks passed"; "Not checked yet"; "Could not check: <reason>"; or, while a scan runs, "Part N of 8: <part>".
+  - **Optimize now**: a primary button (the app's blue, full width, 40px high, bolt icon). It opens `optimize/all` and starts a scan there, so the user sees each part live. While a scan runs it says "Checking… see progress" with a spinner and a thin bar along its bottom that fills as parts finish.
+  - It reads the same scan as the Optimize page (`pages/optimize/scan.ts`), so the computer is never checked twice at once. It checks by itself only when the kept answer is missing or older than 24 hours; otherwise only on the button.
 
 6. **Disk meters**: "Disks" · span 4 (one meter per measured disk, `/` first: mount point, "N free of M", and the share used, coloured by that disk's open warnings. It replaced the donut, which repeated the Disk tile.)
 - Subtitle: "238 GB"

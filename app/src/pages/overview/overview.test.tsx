@@ -84,19 +84,20 @@ describe("Overview pages", () => {
 
   it("summary links to Optimize in Expert only, with what the scan found", async () => {
     render(<OverviewSummary report={REPORT} error={null} now={at} />);
-    expect(screen.queryByRole("link", { name: "Open Optimize" })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Optimize now/ })).toBeNull();
     cleanup();
     render(
       <UiContext.Provider value={{ mode: "expert", range: "24h" }}>
         <OverviewSummary report={REPORT} error={null} now={at} />
       </UiContext.Provider>,
     );
-    // Inside the Health score card, not a panel of its own.
-    const open = screen.getByRole("link", { name: "Open Optimize" });
+    // With no kept answer it checks at once; this agent answer has no checks, and the card says
+    // so instead of "all passed".
+    await waitFor(() => expect(screen.getByText(/No checks ran/)).toBeTruthy());
+    // One big button inside the Health score card, not a panel of its own.
+    const open = screen.getByRole("link", { name: /Optimize now/ });
     expect(open.getAttribute("href")).toBe("#/optimize/all");
     expect(open.closest("[data-panel]")?.getAttribute("data-panel")).toBe("Health score");
-    // This agent answer has no checks, and the strip says so instead of "all passed".
-    await waitFor(() => expect(screen.getByText(/No checks ran/)).toBeTruthy());
   });
 
   it("issues counts findings by severity", () => {

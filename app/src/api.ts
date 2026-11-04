@@ -1196,6 +1196,8 @@ export function getInventory(kind: "power_detail"): Promise<PowerDetail>;
 export function getInventory(kind: "app_battery"): Promise<AppBatteryInfo>;
 export function getInventory(kind: "app_usage"): Promise<AppUsageInfo>;
 export function getInventory(kind: "optimize"): Promise<OptimizeCheck[]>;
+/** One part of the Optimize checks, such as `optimize_boot` (agent 0.1.0-alpha.10 and newer). */
+export function getInventory(kind: `optimize_${string}`): Promise<OptimizeCheck[]>;
 export function getInventory(kind: "thermal"): Promise<ThermalInfo>;
 export function getInventory(kind: "boot_detail"): Promise<BootDetail>;
 export function getInventory(kind: "unit_files"): Promise<UnitFile[]>;

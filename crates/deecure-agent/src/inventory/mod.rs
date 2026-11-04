@@ -85,6 +85,15 @@ pub const KINDS: &[&str] = &[
     "app_battery",
     "app_usage",
     "optimize",
+    // One part of the Optimize checks each (optimize::PARTS), for the live scan.
+    "optimize_boot",
+    "optimize_disks",
+    "optimize_kernels",
+    "optimize_devices",
+    "optimize_hardware",
+    "optimize_cleanup",
+    "optimize_history",
+    "optimize_drivers",
     "thermal",
     "boot_detail",
     "unit_files",
@@ -187,6 +196,12 @@ pub async fn read(kind: &str, agent: &Agent) -> Result<Value, String> {
         "app_battery" => serde_json::to_value(app_battery::read(agent)),
         "app_usage" => serde_json::to_value(app_usage::read(agent)),
         "optimize" => serde_json::to_value(optimize::read(agent).await),
+        part if part
+            .strip_prefix("optimize_")
+            .is_some_and(|p| optimize::PARTS.contains(&p)) =>
+        {
+            serde_json::to_value(optimize::read_part(agent, &part["optimize_".len()..]).await)
+        }
         "thermal" => serde_json::to_value(thermal::read(&agent.root)),
         "boot_detail" => serde_json::to_value(services_detail::read_boot().await),
         "unit_files" => serde_json::to_value(services_detail::read_units().await),

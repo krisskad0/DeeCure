@@ -5,6 +5,7 @@
 //
 // The page walks the user through the items one by one: a step bar shows how many they have
 // looked at, and "Next" moves to the next card. What was looked at is kept until the app closes.
+// A scan shows each part live (scan.ts); DeeCure checks by itself once a day, else on the button.
 
 import { type CSSProperties, useEffect, useState, useSyncExternalStore } from "react";
 import type { OptimizeCheck } from "../../api";
@@ -19,7 +20,7 @@ import { useFix } from "../../shell/FixDrawer";
 import type { IconName } from "../../spec/icons";
 import { NoData } from "../NoData";
 import { plural } from "../overview/shared";
-import { SCAN_USUAL_MS, scanOptimize, useOptimizeScan } from "./scan";
+import { PARTS, type PartState, SCAN_USUAL_MS, scanOptimize, useOptimizeScan } from "./scan";
 
 /** The areas checks belong to, by the first part of their ID, in the order shown. */
 export const AREAS: { id: string; label: string; icon: IconName; what: string }[] = [
@@ -92,15 +93,30 @@ function elapsed(startedAt: number | undefined, now: number): string {
 }
 
 export function OptimizeAll() {
-  const { checks, at, error, startedAt } = useOptimizeScan();
+  const { checks, at, error, startedAt, parts, found, changedAt } = useOptimizeScan();
   const scanning = startedAt !== undefined;
   const now = useSecond(scanning);
   const [area, setArea] = useState("all");
+  const last = at !== undefined && <span className="panel-sub opt-last">Last checked {when(at, now)}</span>;
 
+  if (scanning) {
+    return (
+      <Panel title="Improvements" actions={last} span={12}>
+        <ScanStage startedAt={startedAt} parts={parts} found={found ?? []} now={now} />
+      </Panel>
+    );
+  }
   if (!checks) {
     return (
       <Panel title="Improvements" span={12}>
-        {error && !scanning ? <NoData error={error} waiting="" /> : <ScanStage startedAt={startedAt} now={now} />}
+        {error ? <NoData error={error} waiting="" /> : <NotChecked />}
+        {error && (
+          <div className="opt-again">
+            <Button variant="primary" icon="bolt" onClick={() => void scanOptimize()}>
+              Check now
+            </Button>
+          </div>
+        )}
       </Panel>
     );
   }
@@ -111,29 +127,34 @@ export function OptimizeAll() {
   // A filter whose items were all fixed falls back to every item.
   const shownArea = areas.some((a) => a.id === area) ? area : "all";
   const shown = shownArea === "all" ? todo : todo.filter((c) => areaOf(c).id === shownArea);
+  const failed = (parts ?? []).filter((p) => p.status === "failed");
 
   return (
     <>
       <Panel
         title="Improvements"
-        info="Offered only when a measurement on this computer shows it is needed. Each fix shows a preview first, and can be undone where undo is possible."
+        info="Offered only when a measurement on this computer shows it is needed. Each fix shows a preview first, and can be undone where undo is possible. DeeCure checks by itself once a day; Check again checks now."
         actions={
           <>
-            {at !== undefined && <span className="panel-sub opt-last">Last checked {when(at, now)}</span>}
-            <Button small icon="ref" onClick={() => void scanOptimize()} disabled={scanning}>
-              {scanning ? "Checking…" : "Check again"}
+            {last}
+            <Button small icon="ref" onClick={() => void scanOptimize()}>
+              Check again
             </Button>
           </>
         }
         span={12}
       >
-        {scanning && (
-          <div className="opt-rescan" role="status">
-            <span className="opt-rescan-bar" aria-hidden="true" />
-            <span>Checking again: {elapsed(startedAt, now)}. The list below is from the last check.</span>
-          </div>
-        )}
-        {error && !scanning && <AlertBanner tone="warn" title="Could not check again" text={`${error.message} The list below is from the last check.`} />}
+        <div className="opt-notes">
+          {error && <AlertBanner tone="warn" title="Could not check again" text={`${error.message} The list below is from the last check.`} />}
+          {changedAt !== undefined && changedAt > (at ?? 0) && <AlertBanner tone="info" title="A fix ran after this check" text="Check again to see what is left." />}
+          {failed.length > 0 && (
+            <AlertBanner
+              tone="warn"
+              title={`${plural(failed.length, "part")} could not be checked`}
+              text={failed.map((p) => `${partLabel(p.id)}: ${p.error ?? "no answer"}`).join(" · ")}
+            />
+          )}
+        </div>
         <Summary checks={checks} todo={todo} />
       </Panel>
       {todo.length > 0 && (
@@ -170,33 +191,118 @@ export function OptimizeAll() {
   );
 }
 
-/** The first scan: what DeeCure is checking, while it checks. */
-function ScanStage({ startedAt, now }: { startedAt: number | undefined; now: number }) {
+const partLabel = (id: string) => PARTS.find((p) => p.id === id)?.label ?? id;
+
+/** No answer yet, and no scan runs (the window was hidden, or the last try failed). */
+function NotChecked() {
   return (
-    <div className="opt-stage" role="status" aria-live="polite">
+    <div className="opt-idle">
+      <span className="opt-idle-icon">
+        <Icon name="bolt" size={26} strokeWidth={2} />
+      </span>
+      <h3>Not checked yet</h3>
+      <p className="muted">DeeCure looks for improvements that a measurement on this computer shows are needed. It takes about {SCAN_USUAL_MS / 1000} seconds, and nothing is changed while it checks.</p>
+      <Button variant="primary" icon="bolt" onClick={() => void scanOptimize()}>
+        Check now
+      </Button>
+    </div>
+  );
+}
+
+/** A scan running: each part with what it checks, live, and what was found so far. */
+function ScanStage({ startedAt, parts, found, now }: { startedAt: number | undefined; parts: PartState[] | undefined; found: OptimizeCheck[]; now: number }) {
+  const finished = parts?.filter((p) => p.status === "done" || p.status === "failed").length ?? 0;
+  const current = parts?.find((p) => p.status === "running");
+  return (
+    <div className="opt-stage">
       <Radar />
       <div className="opt-stage-text">
         <h3>Checking this computer</h3>
-        <p className="muted">DeeCure runs real system tools and reads this computer's history. Nothing is changed while it checks.</p>
-        <div className="opt-progress" aria-hidden="true">
-          <span />
+        <p className="muted" role="status" aria-live="polite">
+          {!parts ? "DeeCure runs real system tools and reads this computer's history. Nothing is changed while it checks." : current ? `Part ${finished + 1} of ${parts.length}: ${partLabel(current.id)}` : "Starting…"}
+        </p>
+        <div className={`opt-progress${parts ? " exact" : ""}`} aria-hidden="true">
+          <span style={parts ? { width: `${(finished / parts.length) * 100}%` } : undefined} />
         </div>
-        <p className="opt-elapsed">{elapsed(startedAt, now)}</p>
-        <ul className="opt-areas" aria-label="Areas being checked">
-          {AREAS.map((a, i) => (
-            <li key={a.id} style={{ "--i": i } as CSSProperties}>
-              <span className="opt-area-icon">
-                <Icon name={a.icon} size={15} />
-              </span>
-              <span>
-                <strong>{a.label}</strong>
-                <span className="muted">{a.what}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
+        <p className="opt-elapsed">
+          {elapsed(startedAt, now)}
+          {parts && ` · ${found.length ? `found ${plural(found.length, "improvement")} so far` : "nothing found yet"}`}
+        </p>
+        {parts ? (
+          <ol className="opt-parts" aria-label="Parts of the check">
+            {parts.map((p) => (
+              <PartRow key={p.id} part={p} now={now} />
+            ))}
+          </ol>
+        ) : (
+          <ul className="opt-areas" aria-label="Areas being checked">
+            {AREAS.map((a, i) => (
+              <li key={a.id} style={{ "--i": i } as CSSProperties}>
+                <span className="opt-area-icon">
+                  <Icon name={a.icon} size={15} />
+                </span>
+                <span>
+                  <strong>{a.label}</strong>
+                  <span className="muted">{a.what}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {found.length > 0 && (
+          <div className="opt-found">
+            <span className="opt-label">Found so far</span>
+            <ul>
+              {found.map((c) => (
+                <li key={c.id}>
+                  <Icon name={areaOf(c).icon} size={13} />
+                  <span>{c.title}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function PartRow({ part, now }: { part: PartState; now: number }) {
+  const info = PARTS.find((p) => p.id === part.id);
+  const seconds = (ms: number) => `${(ms / 1000).toFixed(1)} s`;
+  return (
+    <li className={`opt-part ${part.status}`}>
+      <span className="opt-area-icon">{info && <Icon name={info.icon} size={15} />}</span>
+      <span className="opt-part-text">
+        <strong>{info?.label ?? part.id}</strong>
+        <span className="muted">{info?.what}</span>
+      </span>
+      <span className="opt-part-state">
+        {part.status === "waiting" && <span className="muted">Waiting</span>}
+        {part.status === "running" && (
+          <>
+            <span className="opt-spin" aria-hidden="true" />
+            Checking… {Math.max(0, Math.round((now - (part.startedAt ?? now)) / 1000))} s
+          </>
+        )}
+        {part.status === "done" &&
+          (part.found ? (
+            <StatusBadge variant="warn" label={`${part.found} to improve`} />
+          ) : (
+            <StatusBadge variant="ok" label="Nothing needed" />
+          ))}
+        {part.status === "done" && (
+          <span className="muted opt-part-time">
+            {plural(part.checked ?? 0, "check")} · {seconds(part.ms ?? 0)}
+          </span>
+        )}
+        {part.status === "failed" && (
+          <span title={part.error}>
+            <StatusBadge variant="crit" label="Could not check" />
+          </span>
+        )}
+      </span>
+    </li>
   );
 }
 
@@ -245,7 +351,7 @@ function Summary({ checks, todo }: { checks: OptimizeCheck[]; todo: OptimizeChec
         {todo.length === 0 ? (
           <>
             <h3>Nothing to improve now</h3>
-            <p className="muted">Every check passed. DeeCure checks again every 2 minutes while this page is open.</p>
+            <p className="muted">Every check passed. DeeCure checks by itself once a day; Check again checks now.</p>
           </>
         ) : (
           <>
