@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeeCure: Linux system monitor, health check, and optimizer for Ubuntu</title>
+  <meta name="description" content="DeeCure is a free, open-source app that checks the health of your Ubuntu computer, warns before something breaks, explains it in plain English, and fixes it safely with undo. No account, no cloud.">
+  <link rel="canonical" href="https://krisskad0.github.io/DeeCure/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#2563c9">
+  <meta name="color-scheme" content="light dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DeeCure">
+  <meta property="og:title" content="DeeCure: know your Linux computer, fix it safely">
+  <meta property="og:description" content="Health score, early warnings on each part's own limits, plain-English explanations, and safe fixes with undo for Ubuntu 24.04 and 26.04. Free and open source.">
+  <meta property="og:url" content="https://krisskad0.github.io/DeeCure/">
+  <meta property="og:image" content="https://krisskad0.github.io/DeeCure/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="DeeCure on Ubuntu: the Overview with health score 95, CPU, GPU, memory, disk, network, and battery">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DeeCure: know your Linux computer, fix it safely">
+  <meta name="twitter:description" content="A free, open-source health check, monitor, and optimizer for Ubuntu. No account, no cloud.">
+  <meta name="twitter:image" content="https://krisskad0.github.io/DeeCure/assets/og-image.png">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/ubuntu-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "DeeCure",
+    "description": "A free, open-source system monitor, health checker, and optimizer for Ubuntu. It shows how healthy the computer is, warns early on each part's own limits, explains problems in plain English, and fixes them safely with undo.",
+    "applicationCategory": "UtilitiesApplication",
+    "applicationSubCategory": "System monitor",
+    "operatingSystem": "Ubuntu 24.04 LTS, Ubuntu 26.04 LTS",
+    "url": "https://krisskad0.github.io/DeeCure/",
+    "downloadUrl": "https://github.com/krisskad0/DeeCure/releases",
+    "installUrl": "https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/install.md",
+    "softwareHelp": "https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/using-deecure.md",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "image": "https://krisskad0.github.io/DeeCure/assets/og-image.png",
+    "screenshot": [
+      "https://krisskad0.github.io/DeeCure/assets/screens/deecure-expert-overview-health-dashboard.png",
+      "https://krisskad0.github.io/DeeCure/assets/screens/deecure-expert-optimize-improvements.png",
+      "https://krisskad0.github.io/DeeCure/assets/screens/deecure-expert-battery-health-chargers.png"
+    ],
+    "featureList": [
+      "Health score with the problems behind it",
+      "55 health warnings judged on each part's own limits",
+      "47 safe fixes with a preview and undo",
+      "Over 130 plain-English explanations",
+      "Battery charge limits and power controls",
+      "Optimize: a live scan that offers only measured improvements",
+      "Timeline of package, config, and device changes",
+      "Works offline, no account, no telemetry"
+    ],
+    "codeRepository": "https://github.com/krisskad0/DeeCure",
+    "author": { "@type": "Organization", "name": "DeeCure maintainers", "url": "https://github.com/krisskad0/DeeCure" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Is DeeCure free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. DeeCure is free and open source under the Apache-2.0 license. There is no paid version and no account." } },
+      { "@type": "Question", "name": "Which Linux versions does DeeCure support?", "acceptedAnswer": { "@type": "Answer", "text": "Ubuntu 24.04 LTS and Ubuntu 26.04 LTS on 64-bit PCs. On a server without a desktop, install only the agent and the deecure command with the --server option." } },
+      { "@type": "Question", "name": "Does DeeCure send my data anywhere?", "acceptedAnswer": { "@type": "Answer", "text": "No. Everything stays on your computer. The only connection is a check for DeeCure updates on GitHub, which sends nothing about your computer and can be turned off." } },
+      { "@type": "Question", "name": "Can DeeCure break my system?", "acceptedAnswer": { "@type": "Answer", "text": "DeeCure only reads unless you ask for a fix. Every fix shows its steps first, asks for your password only for admin steps, checks the result, and keeps an undo where undo is possible. Guard rails refuse changes that would remove the desktop, the network, sudo, or the running kernel." } },
+      { "@type": "Question", "name": "How do I install DeeCure?", "acceptedAnswer": { "@type": "Answer", "text": "Open the Terminal on Ubuntu and run: curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh. Then open DeeCure from the app menu. It keeps itself up to date after that." } },
+      { "@type": "Question", "name": "How much does DeeCure slow my computer?", "acceptedAnswer": { "@type": "Answer", "text": "Very little: about 0.1% CPU and about 21 MB of memory when idle. Two years of history fit in under 200 MB." } }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav" id="top">
+    <div class="wrap nav-in">
+      <a class="brand" href="#top" aria-label="DeeCure home">
+        <img src="assets/icon-192.png" alt="" width="32" height="32">
+        <span>DeeCure</span>
+      </a>
+      <nav aria-label="Main">
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#who">Who it is for</a></li>
+          <li><a href="#screens">Screenshots</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn ghost small" href="https://github.com/krisskad0/DeeCure" rel="noopener">
+          <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          GitHub
+        </a>
+        <a class="btn primary small" href="#download">Download</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap hero-in">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Free and open source · Ubuntu 24.04 and 26.04</p>
+          <h1>Know your Linux computer. <span class="grad">Fix it safely.</span></h1>
+          <p class="lead">DeeCure checks the health of your whole Ubuntu computer, warns you before something breaks, explains it in plain English, and fixes it with a preview first and undo after.</p>
+          <div class="install" id="hero-install">
+            <span class="install-label">Install in one command</span>
+            <div class="cmd">
+              <code id="cmd-main">curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh</code>
+              <button class="copy" type="button" data-copy="cmd-main" aria-label="Copy the install command">Copy</button>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <a class="btn primary" href="#download">Download options</a>
+            <a class="btn ghost" href="#screens">See it in action</a>
+          </div>
+          <p class="hero-note"><span class="release" data-release>Latest release on GitHub</span> · No account · No cloud · No tracking</p>
+        </div>
+        <figure class="hero-shot">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="assets/screens/deecure-expert-overview-health-dashboard-dark.png">
+            <img src="assets/screens/deecure-expert-overview-health-dashboard.png" width="1440" height="1150" fetchpriority="high" alt="DeeCure Overview on Ubuntu: health score 95, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour usage chart, the problems to look at, and 13 improvements ready to scan">
+          </picture>
+        </figure>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="DeeCure in numbers">
+      <div class="wrap stats-in">
+        <div><strong>55</strong><span>health warnings, each on the part's own limits</span></div>
+        <div><strong>47</strong><span>safe fixes with a preview and undo</span></div>
+        <div><strong>130+</strong><span>plain-English explanations</span></div>
+        <div><strong>~21 MB</strong><span>memory when idle, about 0.1% CPU</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="wrap">
+        <p class="kicker">What it does</p>
+        <h2>One app that looks after your whole computer</h2>
+        <div class="cards five">
+          <article class="card">
+            <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+            <h3>Shows how it is doing</h3>
+            <p>A health score from 0 to 100, the problems behind it, and how busy the CPU, graphics, memory, disk, and network are, on one screen.</p>
+          </article>
+          <article class="card">
+            <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg></div>
+            <h3>Warns early, without noise</h3>
+            <p>Heat, a wearing SSD, a failing battery, a disk that keeps filling, updates that stopped. Each part is judged on its own limits. A busy CPU is normal and never warns.</p>
+          </article>
+          <article class="card">
+            <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4V5Z"/><path d="M8 9h8M8 12h5"/></svg></div>
+            <h3>Explains in plain English</h3>
+            <p>What a service does, what a log error means, why the computer is slow. Answers are built in, right where you need them.</p>
+          </article>
+          <article class="card">
+            <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4 2.6-2.6Z"/></svg></div>
+            <h3>Fixes safely, with undo</h3>
+            <p>Every fix shows its exact steps first. Your password only for admin steps. The result is checked, and undo is kept.</p>
+          </article>
+          <article class="card">
+            <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M6 12h12"/></svg></div>
+            <h3>Optimizes only what needs it</h3>
+            <p>Click <strong>Scan</strong> and watch each part checked live. An improvement is offered only when a measurement on your computer shows it helps.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="problems">
+      <div class="wrap">
+        <p class="kicker">Problems it solves</p>
+        <h2>Real answers to everyday questions</h2>
+        <div class="qa">
+          <div><h3>Why is my Ubuntu computer slow?</h3><p>The real cause (CPU, memory, disk, or heat) and the app behind it, from stall measurements, not guesses.</p></div>
+          <div><h3>Why is my laptop overheating?</h3><p>Each part's temperature against its own limit, how long it stayed there, heat slowdowns, and fan checks.</p></div>
+          <div><h3>How do I free up disk space?</h3><p>What fills the disk, when it will really be full, and one-click clean-ups of caches, old kernels, old snaps, and logs.</p></div>
+          <div><h3>How do I make my battery last longer?</h3><p>Battery health, which apps used it, and charge limits such as 80%, kept after a restart.</p></div>
+          <div><h3>Is my SSD failing?</h3><p>Drive health from SMART and NVMe: life used, bad sectors, errors, and self-test results, checked every day.</p></div>
+          <div><h3>What changed after an update?</h3><p>A timeline of every package, kernel, config file, device, and crash, with line-by-line config differences.</p></div>
+          <div><h3>Is my computer secure?</h3><p>Updates and whether automatic updates really install, the firewall, open ports, AppArmor, Secure Boot, and SSH.</p></div>
+          <div><h3>Why does my laptop wake up in my bag?</h3><p>Every device allowed to wake it, which one did, and how much battery each sleep used.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="who">
+      <div class="wrap">
+        <p class="kicker">Who it is for</p>
+        <h2>Made for every kind of Linux user</h2>
+        <p class="sub">Beginner, Advanced, and Expert views show the same truth at the depth you want. Switch any time.</p>
+        <div class="roles">
+          <a class="role" href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/01-new-to-linux.md"><h3>New to Linux</h3><p>Home users, students, and families. Calm pages, plain answers, safe fixes.</p><span>Read more</span></a>
+          <a class="role" href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/02-laptop-owners.md"><h3>Laptop owners</h3><p>Battery health and limits, cool and quiet, sleep that does not drain.</p><span>Read more</span></a>
+          <a class="role" href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/03-developers.md"><h3>Developers and data scientists</h3><p>Memory per app, containers, ports, services, and the kernel in one place.</p><span>Read more</span></a>
+          <a class="role" href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/04-gamers-and-creators.md"><h3>Gamers and creators</h3><p>The right graphics drivers, video on the GPU, full PCIe speed, cool temperatures.</p><span>Read more</span></a>
+          <a class="role" href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/05-looking-after-other-pcs.md"><h3>Family and office helpers</h3><p>Early warnings, what changed, backups checked, and fixes you can undo.</p><span>Read more</span></a>
+          <a class="role" href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/06-sysadmins-and-servers.md"><h3>Sysadmins and servers</h3><p>Health, history, reports, and fixes from the terminal, with JSON for scripts.</p><span>Read more</span></a>
+          <a class="role" href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/07-security-and-privacy.md"><h3>Security and privacy minded</h3><p>Updates that install, a working firewall, nothing exposed, nothing sent away.</p><span>Read more</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="screens">
+      <div class="wrap">
+        <p class="kicker">Screenshots</p>
+        <h2>See it on a real Ubuntu laptop</h2>
+        <div class="tabs" role="tablist" aria-label="Screenshots">
+          <button role="tab" aria-selected="true" aria-controls="shot" data-shot="deecure-expert-optimize-improvements" data-alt="DeeCure Optimize page: a ring of 13 improvements and 20 passed checks, a round Scan button, and the improvements one by one" data-cap="Optimize: scan live, then go through only what this computer measurably needs.">Optimize</button>
+          <button role="tab" aria-selected="false" aria-controls="shot" data-shot="deecure-expert-open-issues" data-alt="DeeCure open issues: each problem as a card with its severity, a plain explanation, how to fix it, and Open and Fix buttons" data-cap="Issues: every problem as a card, most serious first, with how to fix it.">Issues</button>
+          <button role="tab" aria-selected="false" aria-controls="shot" data-shot="deecure-expert-battery-health-chargers" data-alt="DeeCure battery page: battery health 84%, power draw, cycles, a 30-day health trend, charge limits, and USB-C chargers" data-cap="Battery: health, apps that used it, charge limits, and chargers.">Battery</button>
+          <button role="tab" aria-selected="false" aria-controls="shot" data-shot="deecure-expert-temperature-sensors-fans" data-alt="DeeCure sensors: CPU, SSD, and battery temperatures against their own limits, fan speeds, and thermal zones" data-cap="Sensors: every temperature against its own limit, and the fans.">Sensors</button>
+          <button role="tab" aria-selected="false" aria-controls="shot" data-shot="deecure-expert-activity-timeline" data-alt="DeeCure activity timeline: package upgrades, config file changes, USB devices, and boots over 7, 30, or 90 days" data-cap="Timeline: what changed, and when.">Timeline</button>
+          <button role="tab" aria-selected="false" aria-controls="shot" data-shot="deecure-expert-memory-map" data-alt="DeeCure memory page: what fills RAM with cache shown apart, a verdict, and the apps using the most memory" data-cap="Memory: what really fills RAM, and who uses it.">Memory</button>
+        </div>
+        <figure class="shot-frame" id="shot" role="tabpanel">
+          <img id="shot-img" src="assets/screens/deecure-expert-optimize-improvements.png" width="1440" height="1000" loading="lazy" alt="DeeCure Optimize page: a ring of 13 improvements and 20 passed checks, a round Scan button, and the improvements one by one">
+          <figcaption id="shot-cap">Optimize: scan live, then go through only what this computer measurably needs.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" id="privacy">
+      <div class="wrap split">
+        <div>
+          <p class="kicker">Private and safe by design</p>
+          <h2>Your computer's data stays on your computer</h2>
+          <ul class="checks">
+            <li><strong>No account, no cloud, no telemetry.</strong> The only connection is a check for DeeCure updates, which sends nothing about you and can be turned off.</li>
+            <li><strong>Read-only by default.</strong> About 80% of DeeCure needs no password. Nothing changes unless you ask.</li>
+            <li><strong>A small, strict admin helper.</strong> A fixed list of actions, a password prompt for each, input checks, no shell, and an audit log.</li>
+            <li><strong>Guard rails.</strong> Updates never remove other packages. A clean-up that would remove the desktop, the network, sudo, or the running kernel is refused.</li>
+            <li><strong>Checked releases.</strong> Every update is verified against its checksums. Releases carry signed build provenance and a software bill of materials.</li>
+          </ul>
+        </div>
+        <div class="levels">
+          <h3>Three views, one app</h3>
+          <dl>
+            <div><dt>Beginner</dt><dd>8 calm pages in plain words. The default.</dd></div>
+            <div><dt>Advanced</dt><dd>Every page: logs, services, jobs, containers, network, accounts.</dd></div>
+            <div><dt>Expert</dt><dd>Also data sources, exact commands, deep hardware data, and Optimize.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="terminal">
+      <div class="wrap split">
+        <div>
+          <p class="kicker">Also in the terminal</p>
+          <h2>Works on servers too</h2>
+          <p class="sub">Everything also works without a desktop. Add <code>--json</code> for your own scripts and monitoring.</p>
+        </div>
+        <pre class="term" aria-label="deecure command examples"><code><span class="c"># health score and problems, in plain English</span>
+deecure status
+<span class="c"># what changed in the last 2 days</span>
+deecure history --since 2d
+<span class="c"># a 7-day report to share</span>
+deecure report --html report.html
+<span class="c"># preview a fix, then run it after you say yes</span>
+deecure fix storage.free_space</code></pre>
+      </div>
+    </section>
+
+    <section class="section download" id="download">
+      <div class="wrap">
+        <p class="kicker">Download</p>
+        <h2>Get DeeCure</h2>
+        <p class="sub">For <strong>Ubuntu 24.04 LTS</strong> and <strong>26.04 LTS</strong> on 64-bit PCs. <span data-release-long>See the newest release on GitHub.</span></p>
+        <div class="dl-grid">
+          <div class="dl-card best">
+            <span class="badge">Recommended</span>
+            <h3>One command</h3>
+            <p>Open the Terminal (<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>), paste this, and press Enter. Then open DeeCure from the app menu. It keeps itself up to date.</p>
+            <div class="cmd">
+              <code id="cmd-dl">curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh</code>
+              <button class="copy" type="button" data-copy="cmd-dl" aria-label="Copy the install command">Copy</button>
+            </div>
+          </div>
+          <div class="dl-card">
+            <h3>Server, no desktop</h3>
+            <p>Only the background agent and the <code>deecure</code> command.</p>
+            <div class="cmd">
+              <code id="cmd-server">curl -fsSL https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh | sudo sh -s -- --server</code>
+              <button class="copy" type="button" data-copy="cmd-server" aria-label="Copy the server install command">Copy</button>
+            </div>
+          </div>
+          <div class="dl-card">
+            <h3>Download the packages</h3>
+            <p>Download both, then run <code>sudo apt install ./deecure*.deb</code> in that folder.</p>
+            <ul class="files" data-files>
+              <li><a class="btn ghost small" href="https://github.com/krisskad0/DeeCure/releases" rel="noopener">All releases on GitHub</a></li>
+            </ul>
+          </div>
+        </div>
+        <p class="fine">DeeCure is in pre-release. <a href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/install.md">Install guide</a>, including how to update and uninstall.</p>
+      </div>
+    </section>
+
+    <section class="section alt" id="faq">
+      <div class="wrap narrow">
+        <p class="kicker">FAQ</p>
+        <h2>Questions people ask</h2>
+        <details><summary>Is DeeCure free?</summary><p>Yes. It is free and open source under the Apache-2.0 license. There is no paid version and no account.</p></details>
+        <details><summary>Which Linux versions does it support?</summary><p>Ubuntu 24.04 LTS and Ubuntu 26.04 LTS on 64-bit PCs. On a server without a desktop, install only the agent and the <code>deecure</code> command with <code>--server</code>.</p></details>
+        <details><summary>Does it send my data anywhere?</summary><p>No. Everything stays on your computer. The only connection is a check for DeeCure updates on GitHub, which sends nothing about your computer and can be turned off.</p></details>
+        <details><summary>Can it break my system?</summary><p>DeeCure only reads unless you ask for a fix. Every fix shows its steps first, asks for your password only for admin steps, checks the result, and keeps an undo where undo is possible. Guard rails refuse changes that would remove the desktop, the network, sudo, or the running kernel.</p></details>
+        <details><summary>How much does it slow my computer?</summary><p>Very little: about 0.1% CPU and about 21 MB of memory when idle. Two years of history fit in under 200 MB.</p></details>
+        <details><summary>How is it different from a task manager?</summary><p>A task manager shows numbers. DeeCure tells you which numbers are a problem on your hardware, explains them in plain English, keeps a history of what changed, and fixes problems safely with undo.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-in">
+      <div class="brand">
+        <img src="assets/icon-192.png" alt="" width="28" height="28" loading="lazy">
+        <span>DeeCure</span>
+      </div>
+      <nav aria-label="Footer">
+        <a href="https://github.com/krisskad0/DeeCure">Source code</a>
+        <a href="https://github.com/krisskad0/DeeCure/tree/main/docs">Documentation</a>
+        <a href="https://github.com/krisskad0/DeeCure/blob/main/docs/07-user-guide/use-cases/README.md">Who it is for</a>
+        <a href="https://github.com/krisskad0/DeeCure/blob/main/SECURITY.md">Security</a>
+        <a href="https://github.com/krisskad0/DeeCure/blob/main/CONTRIBUTING.md">Contribute</a>
+        <a href="https://github.com/krisskad0/DeeCure/blob/main/CHANGELOG.md">Changelog</a>
+      </nav>
+      <p>Free and open source under Apache-2.0. This page uses no cookies and no tracking.</p>
+    </div>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
