@@ -1,4 +1,4 @@
-// DeeCure landing page: copy buttons, screenshot tabs, and download links for the newest release.
+// DeeCure landing page: copy buttons, and download links for the newest release.
 // The page works without this script; it only adds comfort and the exact file links.
 (() => {
   "use strict";
@@ -26,40 +26,6 @@
       }, 2000);
     });
   }
-
-  // Screenshot tabs, with arrow keys between them.
-  const tabs = [...document.querySelectorAll(".tabs [role=tab]")];
-  const img = document.getElementById("shot-img");
-  const cap = document.getElementById("shot-cap");
-  const show = (tab) => {
-    for (const t of tabs) {
-      t.setAttribute("aria-selected", String(t === tab));
-      t.tabIndex = t === tab ? 0 : -1;
-    }
-    img.style.opacity = "0.3";
-    const next = new Image();
-    next.onload = next.onerror = () => {
-      img.src = next.src;
-      img.width = next.naturalWidth || img.width;
-      img.height = next.naturalHeight || img.height;
-      img.alt = tab.dataset.alt;
-      img.style.opacity = "1";
-    };
-    next.src = `assets/screens/${tab.dataset.shot}.png`;
-    cap.textContent = tab.dataset.cap;
-  };
-  tabs.forEach((tab, i) => {
-    tab.tabIndex = i === 0 ? 0 : -1;
-    tab.addEventListener("click", () => show(tab));
-    tab.addEventListener("keydown", (e) => {
-      const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-      if (!step) return;
-      e.preventDefault();
-      const next = tabs[(i + step + tabs.length) % tabs.length];
-      next.focus();
-      show(next);
-    });
-  });
 
   // The newest release: the highest version, not the first in GitHub's list (it once listed
   // 0.1.0-alpha.9 before 0.1.0-alpha.10). Same order as install.sh and the in-app updater.
