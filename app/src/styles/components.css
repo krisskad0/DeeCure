@@ -402,24 +402,6 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .opt-card-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
 .opt-badges { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 
-/* Overview strip */
-.opt-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; min-width: 0; }
-.opt-strip-link { border-radius: 6px; }
-.opt-strip-link:hover strong { color: var(--accent); }
-.opt-strip-icon { width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
-.opt-strip-icon.ok { background: var(--good-soft); color: var(--good-ink); }
-.opt-strip-count { display: flex; align-items: center; gap: 12px; flex: none; }
-.opt-strip-count > span:last-child { display: grid; }
-.opt-strip-count:hover strong { color: var(--accent); }
-.opt-strip-n { min-width: 44px; height: 44px; padding: 0 10px; border-radius: 22px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn-ink); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.opt-strip-items { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
-.opt-strip-items li { min-width: 0; max-width: 100%; }
-.opt-strip-items a { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink-2); font-size: 12.5px; }
-.opt-strip-items a svg { flex: none; }
-.opt-strip-items a span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.opt-strip-items a:hover { border-color: var(--accent); color: var(--accent); }
-.opt-strip-more { font-weight: 600; }
-
 @media (max-width: 640px) {
   .opt-stage, .opt-summary { flex-direction: column; align-items: center; text-align: center; }
   .opt-stage-text, .opt-summary-text { width: 100%; }
@@ -430,7 +412,6 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
   .opt-card { padding: 10px 12px; gap: 10px; }
   .opt-card-foot { flex-direction: column; align-items: flex-start; }
   .opt-last { display: none; }
-  .opt-strip-items { flex-basis: 100%; }
 }
 
 /* 23 Diagnostics runner */
@@ -537,6 +518,20 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 
 /* Overview › Summary: the health score card */
 .sc { display: flex; flex-direction: column; gap: 10px; }
+/* The card fills its row; the Optimize summary (Expert) sits in the space at the bottom. */
+.panel-body:has(> .sc) { flex: 1; display: flex; flex-direction: column; }
+.sc { flex: 1; min-width: 0; }
+.sc-opt { min-width: 0; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.sc-opt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: -4px; }
+.sc-opt-row { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 12.5px; }
+.sc-opt-link { padding: 4px 8px; margin: 0 -8px; border-radius: 8px; color: inherit; }
+.sc-opt-link:hover { background: var(--track); }
+.sc-opt-link > .icon { flex: none; color: var(--muted); }
+.sc-opt-n { min-width: 34px; height: 34px; padding: 0 8px; flex: none; border-radius: 17px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn-ink); font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sc-opt-n.ok { background: var(--good-soft); color: var(--good-ink); }
+.sc-opt-sum { display: grid; flex: 1; min-width: 0; }
+.sc-opt-sum > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .sc .gauge { max-width: 190px; margin: 0 auto; }
 .sc-level { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: -6px; }
 .sc-word { font-size: 16px; font-weight: 700; }

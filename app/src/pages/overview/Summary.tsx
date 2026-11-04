@@ -89,7 +89,6 @@ export function OverviewSummary({ report, error, now }: PageProps) {
   return (
     <>
       <KpiRow tiles={kpis(latest, system, history, findings, gpus)} />
-      {mode === "expert" && <OptimizeStrip />}
       <Panel
         title={gpuSeries(history, gpus).length ? "CPU, GPU, and memory utilization" : "CPU and memory utilization"}
         info="How busy the processor, the graphics, and memory were. Change the time range at the top to zoom out."
@@ -98,7 +97,7 @@ export function OverviewSummary({ report, error, now }: PageProps) {
       >
         <UsageChart history={history} range={range} gpus={gpus} />
       </Panel>
-      <ScoreCard report={report} />
+      <ScoreCard report={report}>{mode === "expert" && <OptimizeStrip />}</ScoreCard>
       <IssuesPanel
         title="Active issues"
         subtitle={`${findings.length} open`}

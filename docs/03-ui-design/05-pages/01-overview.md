@@ -7,7 +7,7 @@
 
 ## Overview › Summary: `overview/summary`
 
-**Layout, row by row** (panels in one row share its height, so their edges line up): KPI row; Optimize (12, Expert only); chart (8) and Health score (4); Active issues (8) and Disks (4); Subsystems (12); Top processes (6) and Recent activity (6); System (6) and Errors by hour (6). The numbered sections below describe each panel.
+**Layout, row by row** (panels in one row share its height, so their edges line up): KPI row; chart (8) and Health score (4); Active issues (8) and Disks (4); Subsystems (12); Top processes (6) and Recent activity (6); System (6) and Errors by hour (6). The numbered sections below describe each panel.
 
 1. **KPI row** · span 12
 
@@ -23,12 +23,6 @@
 The health score is not a tile: the "Health score" panel (gauge and what takes points off) sits next to the chart instead, so it shows once.
 
 The GPU tile shows only when the computer has a graphics card. Without a reading it shows "-" and why: "Measuring…" (Intel needs two readings), "The NVIDIA driver does not report busy time", or "Its driver does not report busy time".
-
-**Optimize strip**: "Optimize" · span 12 · Expert only, like the Optimize page ([View levels](../../01-product/view-levels.md)). Subtitle "N checks on this computer"; action "Open Optimize" (`optimize/all`).
-- Items waiting: the count in a round badge with "improvements ready" and "N fixes · N advice", then up to 3 item titles as chips (area icon, title, the measurement as a tooltip) and "+N more". Each opens Optimize.
-- Nothing waiting: "Nothing to improve now. All N checks passed."
-- While the first scan runs: a small radar and "Checking this computer for improvements… This takes about 10 seconds."
-- It reads the same scan as the Optimize page (`pages/optimize/scan.ts`), so the computer is never checked twice at once; the scan runs again when the answer is older than 2 minutes, and right after a fix.
 
 2. **Line chart**: "CPU, GPU, and memory utilization" ("CPU and memory utilization" without GPU readings) · span 8
 - Info tooltip: "How busy the processor and memory were. Change the time range at the top to zoom out."
@@ -80,6 +74,12 @@ From top to bottom:
 - A 7-day sparkline of the score on a fixed 70 to 100 scale, so small changes stay small.
 - Three counters: critical, warnings, info (tinted when above 0).
 - "What takes points off": one row per area with a deduction, most first: area icon and name, its worst problem's title (one line), and "−5" in the problem's color. Each row opens the area. Then "Fix these to get back N points." Without deductions: "Nothing takes points off. DeeCure keeps checking every minute."
+
+- **Optimize** (Expert only, like the Optimize page, [View levels](../../01-product/view-levels.md)): the last part of the card, in the free space at its bottom, so the card stays as tall as the chart. Heading "Optimize" with **Open** (`optimize/all`), then one row that opens Optimize:
+  - Items waiting: the count in a round badge, "improvements ready", and "N fixes · N advice".
+  - Nothing waiting: a check mark, "Nothing to improve · all N checks passed".
+  - First scan running: a small radar and "Checking for improvements… about 10 s". No answer: "Could not check for improvements" with the reason.
+  - It reads the same scan as the Optimize page (`pages/optimize/scan.ts`), so the computer is never checked twice at once; the scan runs again when the answer is older than 2 minutes, and right after a fix.
 
 6. **Disk meters**: "Disks" · span 4 (one meter per measured disk, `/` first: mount point, "N free of M", and the share used, coloured by that disk's open warnings. It replaced the donut, which repeated the Disk tile.)
 - Subtitle: "238 GB"

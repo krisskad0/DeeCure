@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // The "Health score" card on Overview › Summary: the score with its level and how it moved
 // this week, problem counts by level, and what takes points off, each opening its area.
+// `children` (the Optimize summary in Expert) sits at the bottom of the card.
 
+import type { ReactNode } from "react";
 import { type Finding, getMetrics } from "../../api";
 import { LinkButton } from "../../components/Button";
 import { Icon } from "../../components/Icon";
@@ -30,14 +32,17 @@ export function weekChange(points: { value: number }[], score: number): number |
 
 const RANK: Record<Finding["severity"], number> = { critical: 0, warning: 1, info: 2 };
 
-export function ScoreCard({ report }: { report: PageProps["report"] }) {
+export function ScoreCard({ report, children }: { report: PageProps["report"]; children?: ReactNode }) {
   const week = useLive(loadWeek, 300_000).data ?? [];
   const score = report?.score;
   const action = <LinkButton to={href("overview", "score")}>Details</LinkButton>;
   if (score === undefined || !report) {
     return (
       <Panel title="Health score" actions={action} span={4}>
-        <div className="empty muted">The score appears after DeeCure's first check.</div>
+        <div className="sc">
+          <div className="empty muted">The score appears after DeeCure's first check.</div>
+          {children}
+        </div>
       </Panel>
     );
   }
@@ -100,6 +105,7 @@ export function ScoreCard({ report }: { report: PageProps["report"] }) {
         ) : (
           <p className="sc-hint muted">Nothing takes points off. DeeCure keeps checking every minute.</p>
         )}
+        {children}
       </div>
     </Panel>
   );

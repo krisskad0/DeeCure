@@ -9,7 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Changed
 
 - **Optimize** has a new look. While it checks, a radar animation shows the areas being checked and how long it has run. The result shows how many checks passed and how many items wait, with fixes, advice, and password needs counted. Each item is a card with what was measured and what to do, and a path bar with **Next** walks you through them one by one. Items can be filtered by area, and **Check again** runs the checks at once.
-- Overview › Summary shows how many Optimize items wait now, with the first ones and a link straight to Optimize (Expert level, like the Optimize page).
+- Overview › Summary shows how many Optimize items wait now at the bottom of the Health score card, with a link straight to Optimize (Expert level, like the Optimize page).
 
 ### Fixed
 

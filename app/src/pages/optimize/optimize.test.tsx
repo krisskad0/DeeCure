@@ -104,7 +104,7 @@ describe("Optimize", () => {
       </>,
     );
     expect(screen.getByText("Checking this computer")).toBeTruthy();
-    expect(screen.getByText("Checking this computer for improvements…")).toBeTruthy();
+    expect(screen.getByText("Checking for improvements…")).toBeTruthy();
     expect(screen.getByRole("list", { name: "Areas being checked" })).toBeTruthy();
     release?.();
     await waitFor(() => expect(screen.getByText("improvement ready")).toBeTruthy());
