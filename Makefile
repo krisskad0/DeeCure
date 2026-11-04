@@ -60,8 +60,8 @@ update-systemd-test: ## After a release: the in-app update, automatic update, re
 	scripts/systemd-container.sh ubuntu:24.04 scripts/test-update-systemd.sh --throwaway $(or $(BROKEN),0.1.0-alpha.6) $(or $(OLD),0.1.0-alpha.7) $(or $(NEW),$(patsubst v%,%,$(shell git describe --tags --abbrev=0)))
 
 clean-install-test: ## The real one-command install from GitHub on clean Ubuntu 24.04 (curl) and 26.04 (wget) containers (needs Docker)
-	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash /src/scripts/test-clean-install.sh --throwaway curl
-	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:26.04 bash /src/scripts/test-clean-install.sh --throwaway wget
+	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:24.04 bash /src/scripts/test-clean-install.sh --throwaway curl $(patsubst v%,%,$(shell git describe --tags --abbrev=0))
+	docker run --rm -v "$(CURDIR):/src:ro" ubuntu:26.04 bash /src/scripts/test-clean-install.sh --throwaway wget $(patsubst v%,%,$(shell git describe --tags --abbrev=0))
 
 clean: ## Remove build output
 	$(CARGO) clean

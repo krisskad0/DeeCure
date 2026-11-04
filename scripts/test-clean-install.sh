@@ -6,8 +6,10 @@
 #
 #   make clean-install-test        # Ubuntu 24.04 with curl, and 26.04 with wget
 set -euo pipefail
-[ "${1:-}" = "--throwaway" ] || { echo "Usage: $0 --throwaway [curl|wget]   (only in a container)" >&2; exit 2; }
+[ "${1:-}" = "--throwaway" ] || { echo "Usage: $0 --throwaway [curl|wget] [expected version, such as 0.1.0-alpha.10]   (only in a container)" >&2; exit 2; }
 tool="${2:-curl}"
+# The newest release; install.sh once took an older one (GitHub listed alpha.9 before alpha.10).
+expected="${3:-}"
 url="https://raw.githubusercontent.com/krisskad0/DeeCure/main/packaging/install.sh"
 export DEBIAN_FRONTEND=noninteractive
 fail() { echo "FAIL: $*" >&2; exit 1; }
@@ -28,6 +30,15 @@ get | sh 2>&1 | tail -n 12
 dpkg-query -W -f='${Package} ${Version} ${Status}\n' deecure deecure-desktop
 [ "$(dpkg-query -W -f='${Status}' deecure)" = "install ok installed" ] || fail "deecure is not installed"
 [ "$(dpkg-query -W -f='${Status}' deecure-desktop)" = "install ok installed" ] || fail "deecure-desktop is not installed"
+if [ -n "$expected" ]; then
+  # 0.1.0-alpha.10 is packaged as 0.1.0~alpha.10-1.
+  want="${expected/-/\~}-1"
+  for p in deecure deecure-desktop; do
+    got="$(dpkg-query -W -f='${Version}' "$p")"
+    [ "$got" = "$want" ] || fail "$p is $got, not the newest release $want"
+  done
+  echo "ok: the newest release, $want"
+fi
 
 echo "== it works"
 deecure --version

@@ -160,6 +160,8 @@ LIST="$(fetch "$RELEASES")" || fail "could not reach GitHub ($RELEASES); check t
 
 # The newest release that is not a draft; a stable one unless --beta. While there is
 # no stable release yet, the newest pre-release is used, and that is said below.
+# "Newest" is the highest version, not the first in GitHub's list: GitHub listed
+# v0.1.0-alpha.9 before v0.1.0-alpha.10. Same order as deecure_core::update::compare.
 CHOICE="$(printf '%s' "$LIST" | python3 -c '
 import json, sys
 beta = sys.argv[1] == "yes"
@@ -167,11 +169,23 @@ try:
     releases = [r for r in json.load(sys.stdin) if not r.get("draft")]
 except Exception:
     sys.exit(3)
+
+def version(r):
+    core, _, pre = str(r.get("tag_name", "")).lstrip("v").partition("-")
+    try:
+        numbers = tuple(int(x) for x in core.split("."))
+    except ValueError:
+        return ((), 0, ())
+    if not pre:
+        return (numbers, 1, ())
+    # Number parts compare as numbers and come before word parts.
+    return (numbers, 0, tuple((0, int(p), "") if p.isdigit() else (1, 0, p) for p in pre.split(".")))
+
 stable = [r for r in releases if not r.get("prerelease")]
-pick = (releases if beta else stable or releases)[:1]
+pick = releases if beta else stable or releases
 if not pick:
     sys.exit(4)
-r = pick[0]
+r = max(pick, key=version)
 urls = {a["name"]: a["browser_download_url"] for a in r.get("assets", [])}
 print(r["tag_name"], "pre-release" if r.get("prerelease") else "release")
 for name, url in sorted(urls.items()):
