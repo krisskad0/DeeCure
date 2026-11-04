@@ -129,6 +129,10 @@ jobs:
   publish:
     name: Sign and publish
     needs: [build, ci-green]
+    # It may push the APT repository to gh-pages; the landing page (pages.yml) pushes there too.
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:

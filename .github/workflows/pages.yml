@@ -1,0 +1,53 @@
+# Publishes the landing page (site/) and the screenshots to the gh-pages branch, which GitHub
+# Pages serves at https://krisskad0.github.io/DeeCure/. The APT repository lives in apt/ on the
+# same branch (release.yml) and is never touched here.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", "docs/07-user-guide/images/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One writer of gh-pages at a time; the release job uses the same group.
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish the landing page
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write   # push the gh-pages branch
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Copy the site and the screenshots onto gh-pages
+        run: |
+          git fetch --depth=1 origin gh-pages || true
+          if git rev-parse --verify -q origin/gh-pages >/dev/null; then
+            git worktree add pages origin/gh-pages
+          else
+            git worktree add --orphan -b gh-pages pages
+          fi
+          # Replace everything except the APT repository and its database.
+          find pages -mindepth 1 -maxdepth 1 ! -name .git ! -name apt ! -name .reprepro -exec rm -rf {} +
+          cp -r site/. pages/
+          rm -f pages/.gitignore
+          mkdir -p pages/assets/screens
+          cp docs/07-user-guide/images/*.png pages/assets/screens/
+          # Serve the files as they are (no Jekyll).
+          touch pages/.nojekyll
+          cd pages
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing changed"
+            exit 0
+          fi
+          git -c user.name="DeeCure site" -c user.email="krisskad0@users.noreply.github.com" commit -m "Landing page from ${GITHUB_SHA::7}"
+          git push origin HEAD:gh-pages

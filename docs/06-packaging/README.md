@@ -58,3 +58,4 @@ Where each file is installed: [Files on disk](../02-architecture/overview.md#fil
 | [debian-package.md](debian-package.md) | How the `.deb` is built and checked |
 | [apt-repository.md](apt-repository.md) | The signed APT repository, the install script, and the PPA |
 | [release-process.md](release-process.md) | Version numbers and the release checklist |
+| [website.md](website.md) | The landing page on GitHub Pages: where it lives, how it is published, search and sharing |

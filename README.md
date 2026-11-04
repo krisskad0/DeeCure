@@ -16,6 +16,8 @@
 
 *The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages. [More screenshots](#what-the-expert-view-shows).*
 
+**Website:** [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): features, screenshots, and downloads on one page.
+
 ## Install in one step
 
 On **Ubuntu 24.04 LTS or 26.04 LTS**, open the Terminal (`Ctrl` + `Alt` + `T`) and paste:
