@@ -73,6 +73,8 @@ It works without a password for looking around. It never changes anything unless
 - **Power users and developers** who want every detail: PCIe link speeds, kernel settings and the file that set them, real memory per app, service sandboxing.
 - **People who look after a family or office PC** and want early warnings instead of surprises.
 
+**[Read how DeeCure helps your role and your field](docs/07-user-guide/use-cases/README.md)**: new to Linux, laptop owners, developers and data scientists, gamers and creators, people who look after other PCs, sysadmins, and security and privacy minded people.
+
 ## Features
 
 ### Health warnings that respect how you use your computer

@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Who DeeCure is for** ([docs/07-user-guide/use-cases](docs/07-user-guide/use-cases/README.md)): one short page per role (new to Linux, laptop owners, developers and data scientists, gamers and creators, people who look after other PCs, sysadmins, security and privacy minded people) and a table per field, each with the everyday problems DeeCure solves and where to click.
+
 ### Fixed
 
 - The one-command install could install an older pre-release: it took the first release in GitHub's list, and GitHub listed 0.1.0-alpha.9 before 0.1.0-alpha.10. It now picks the highest version, as the in-app updater does. The install script comes from the main branch, so this fix reaches everyone at once.
