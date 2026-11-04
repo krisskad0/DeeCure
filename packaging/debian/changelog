@@ -1,3 +1,12 @@
+deecure (0.1.0~alpha.9-1) noble; urgency=medium
+
+  * Use per app over time: battery, CPU, memory, and internet (TCP
+    only).
+  * Lighter: no reading while the window is hidden; faster newest
+    readings; slow sensors read every 5 minutes.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Wed, 04 Nov 2026 14:31:10 +0530
+
 deecure (0.1.0~alpha.8-1) noble; urgency=medium
 
   * Fix updates from the app and automatic updates: no DeeCure service

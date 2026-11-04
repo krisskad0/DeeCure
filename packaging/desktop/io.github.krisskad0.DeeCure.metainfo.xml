@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.9" date="2026-11-04" type="development">
+      <description>
+        <p>Shows which apps used the battery, CPU, memory, and internet over time, and makes DeeCure lighter: nothing is read while its window is hidden, and the newest readings and the temperature sensors cost far less.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.8" date="2026-11-02" type="development">
       <description>
         <p>Fixes updating DeeCure from the app and automatic updates, which stopped half way because the new package stopped the service installing it.</p>
