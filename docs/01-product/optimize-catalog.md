@@ -11,6 +11,7 @@ Every item follows the fix engine's rules: a preview of each step, your OK first
 - **Access:** "You" needs no password; "Admin" needs Full access.
 - **Today:** "✅ On Optimize" is checked and offered on the page now; "Exists" is a fix the app already has (on Issues and its own page) that Optimize does not list yet; "New" is not built yet.
 - Every check is listed on the page, also when nothing is needed, with what it measured.
+- **When the checks run:** only when the user clicks **Scan** on the page, or by themselves once a day while Optimize or the Overview is open. The last result is kept. The scan runs in 8 parts and shows each one live ([Optimize page](../03-ui-design/05-pages/23-optimize.md)).
 
 ## Offered when measured
 

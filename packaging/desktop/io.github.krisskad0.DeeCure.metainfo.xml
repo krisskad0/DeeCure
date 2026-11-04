@@ -20,7 +20,7 @@
       <li>Health warnings judged against each part's own limits: CPU, drives, graphics, battery, memory, disks, network, and security; never about normal use, and you can change every limit</li>
       <li>Deep hardware details: sensors and their limits, drives and their links, graphics, firmware, USB and PCIe, screens, and every wake-up source</li>
       <li>Battery and power controls: charge limits, charge mode, turbo, CPU speed on battery, sleep type, lid action, and device power saving, kept after restart</li>
-      <li>An Optimize page that offers only what this computer measurably needs</li>
+      <li>An Optimize page that scans this computer live and offers only what it measurably needs</li>
       <li>Safe fixes with a preview of every step, a check that they worked, and undo</li>
       <li>A timeline of what changed: updates, config files, devices, crashes, and hardware errors</li>
       <li>Notifications for serious problems, quiet hours, and a weekly summary</li>
@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.10" date="2026-11-04" type="development">
+      <description>
+        <p>A new Optimize page: a round Scan button checks this computer live, part by part, a ring shows what passed and what needs something, and the improvements come one by one with what was measured. It checks by itself only once a day, and the Overview shows how many improvements wait.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.9" date="2026-11-04" type="development">
       <description>
         <p>Shows which apps used the battery, CPU, memory, and internet over time, and makes DeeCure lighter: nothing is read while its window is hidden, and the newest readings and the temperature sensors cost far less.</p>

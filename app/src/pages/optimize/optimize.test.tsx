@@ -125,6 +125,8 @@ describe("Optimize", () => {
     release?.();
     await waitFor(() => expect(screen.getByText("1 improvement for this computer")).toBeTruthy());
     expect(screen.getByText(/improvement ready · 1 fix/)).toBeTruthy();
+    // The Overview button only opens the page.
+    expect(screen.getByRole("link", { name: /^Scan\. / }).getAttribute("href")).toBe("#/optimize/all");
     expect(calls.filter((k) => k === "optimize_boot")).toHaveLength(1);
     expect(calls).toHaveLength(8);
   });
@@ -157,7 +159,7 @@ describe("Optimize", () => {
     await waitFor(() => expect(screen.getByText("A fix ran after this check")).toBeTruthy());
     expect(calls).toEqual([]);
     // The button checks now.
-    fireEvent.click(screen.getByRole("button", { name: "Check again" }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan again/ }));
     await waitFor(() => expect(calls).toHaveLength(8));
   });
 

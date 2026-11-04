@@ -11,7 +11,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
-  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 95, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and subsystem status">
+  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 95 with the Optimize scan button and 13 improvements ready, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and disks">
 </picture>
 
 *The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages. [More screenshots](#what-the-expert-view-shows).*
@@ -106,7 +106,7 @@ A value DeeCure cannot read is shown as unknown, never guessed.
 
 ### Optimize: only what your computer actually needs
 
-Improvements are offered **only when a measurement on this computer shows they help**, with the numbers behind each one: unused packages, a log size cap, compressed swap when swapping stays high, a charge limit when the laptop is mostly plugged in, the right hardware video driver, firmware updates. Popular "speed-up tips" that do not help on Ubuntu are never offered. [Optimize catalog](docs/01-product/optimize-catalog.md)
+Improvements are offered **only when a measurement on this computer shows they help**, with the numbers behind each one: unused packages, a log size cap, compressed swap when swapping stays high, a charge limit when the laptop is mostly plugged in, the right hardware video driver, firmware updates. Click **Scan** and watch each part of the check run live, then go through the items one by one. Popular "speed-up tips" that do not help on Ubuntu are never offered. [Optimize catalog](docs/01-product/optimize-catalog.md)
 
 
 ### Battery and power controls
@@ -154,7 +154,7 @@ Switch at any time from the top bar. [View levels](docs/01-product/view-levels.m
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png"><img src="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png" alt="DeeCure Linux kernel page: running kernel, command line, installed kernels with the fallback, loaded kernel modules, file watches, open files, kernel lockdown, and clock offset"></a><br><b>Kernel:</b> installed kernels, loaded modules, limits, and settings with the file that set them.</td>
-    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: device power saving, Docker and snap cleanup, emptying the trash, and the APT cache, each with the measured space or reason and a Preview button"></a><br><b>Optimize:</b> only the improvements this computer measurably needs.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: a ring of 13 improvements and 20 passed checks, a round Scan button, and the improvements one by one, such as removing old kernels and device power saving, each with what was measured and a Preview button"></a><br><b>Optimize:</b> scan live, then only the improvements this computer measurably needs.</td>
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-memory-map.png"><img src="docs/07-user-guide/images/deecure-expert-memory-map.png" alt="DeeCure memory page on Linux: what fills RAM as one bar with cache striped, a plain-language verdict, memory usage over 24 hours, where memory goes in detail, and the apps, services, and processes using the most memory"></a><br><b>Memory:</b> what really fills RAM, what can be freed, and who uses it.</td>

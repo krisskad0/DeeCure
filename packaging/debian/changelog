@@ -1,3 +1,13 @@
+deecure (0.1.0~alpha.10-1) noble; urgency=medium
+
+  * New Optimize page: a live scan part by part, a result ring, and the
+    improvements one by one.
+  * Optimize checks by itself once a day, else on the Scan button; the
+    Overview shows how many improvements wait.
+  * Fix: the Optimize checks no longer time out after 10 seconds.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Wed, 04 Nov 2026 16:57:44 +0530
+
 deecure (0.1.0~alpha.9-1) noble; urgency=medium
 
   * Use per app over time: battery, CPU, memory, and internet (TCP

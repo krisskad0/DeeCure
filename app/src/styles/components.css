@@ -348,23 +348,71 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .opt-area-icon { width: 26px; height: 26px; flex: none; border-radius: 6px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
 @keyframes opt-glow { 0%, 70%, 100% { border-color: var(--line); } 15% { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); } }
 
+/* The Improvements panel: the result or the live scan on the left, the big Scan button on the right. */
+.opt-head { display: flex; align-items: center; gap: 24px; }
+.opt-head-main { flex: 1; min-width: 0; }
+
+/* The round scanner: a ring, a viewfinder with a scan line, a dashed ring and a filling ring while busy. */
+.scanner { --size: 132px; position: relative; display: grid; place-items: center; flex: none; width: var(--size); height: var(--size); }
+.scanner-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.scanner-ring circle { fill: none; }
+.scanner-track { stroke: var(--line-2); stroke-width: 2; }
+.scanner-dash { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 3 7; opacity: 0; transform-origin: 50% 50%; transition: opacity 0.2s; }
+.scanner-fill { stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; transition: stroke-dasharray 0.4s ease; }
+.scanner-face { position: relative; width: 80%; height: 80%; border-radius: 50%; display: grid; place-content: center; justify-items: center; gap: 4px; background: var(--panel); border: 1px solid var(--line-2); box-shadow: var(--btn-shadow), inset 0 -8px 16px -12px color-mix(in srgb, var(--accent) 40%, transparent); color: var(--accent); transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
+.scanner-glyph { width: 36%; min-width: 22px; height: auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.scanner-line { stroke-width: 2.2; transform-box: fill-box; transform-origin: center; }
+.scanner-label { font-size: 13.5px; font-weight: 650; color: var(--ink); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+.scanner.busy .scanner-face { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 10%, transparent); }
+.scanner.busy .scanner-dash { opacity: 0.7; animation: opt-turn 6s linear infinite; }
+.scanner.busy .scanner-line { animation: scan-sweep 1.4s ease-in-out infinite; }
+.scanner.busy .scanner-label { color: var(--accent); }
+@keyframes scan-sweep { 0%, 100% { transform: translateY(-5px); } 50% { transform: translateY(5px); } }
+.scan-btn, .scan-row { -webkit-tap-highlight-color: transparent; }
+.scan-btn { padding: 0; border: 0; background: none; border-radius: 50%; }
+.scan-btn:disabled { cursor: progress; }
+.scan-btn:not(:disabled):hover .scanner-face, .scan-row:hover .scanner-face { border-color: var(--accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent); }
+.scan-btn:not(:disabled):hover .scanner-line, .scan-row:hover .scanner-line { animation: scan-sweep 1.4s ease-in-out infinite; }
+.scan-btn:not(:disabled):hover .scanner-track, .scan-row:hover .scanner-track { stroke: var(--accent); }
+.scan-btn:not(:disabled):active .scanner-face { transform: scale(0.97); }
+.scan-btn:focus-visible { outline: none; }
+.scan-btn:focus-visible .scanner-face { box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 4px var(--accent); }
+.scan-cta { flex: none; display: grid; justify-items: center; gap: 8px; width: 170px; }
+.scan-caption { font-size: 12px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.opt-head:has(.scanner.busy) { align-items: flex-start; }
+/* Overview: a small scanner with "Scan" and the status beside it; the whole row opens Optimize. */
+.scan-row { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 6px 8px; margin: 0 -8px; border-radius: 10px; color: inherit; }
+.scan-row:hover { background: var(--panel-2); }
+.scan-row:focus-visible .scanner-face { box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 4px var(--accent); }
+.scan-row .scanner { --size: 58px; }
+.scan-row .scanner-glyph { width: 46%; }
+.scan-row-text { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.scan-row-text strong { font-size: 15px; font-weight: 650; }
+.scan-row:hover .scan-row-text strong { color: var(--accent); }
+.scan-row > .icon { flex: none; color: var(--muted); }
+
 /* Notes over the result; not checked yet */
 .opt-notes { display: grid; gap: 8px; }
 .opt-notes:not(:empty) { margin-bottom: 12px; }
-.opt-idle { display: grid; justify-items: center; gap: 8px; padding: 28px 16px; text-align: center; }
+.opt-idle { display: grid; justify-items: start; gap: 8px; padding: 12px 4px; }
 .opt-idle h3 { margin: 0; font-size: 17px; font-weight: 650; }
 .opt-idle p { margin: 0 0 6px; max-width: 520px; }
 .opt-idle-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
-.opt-again { padding: 0 14px 14px; }
 
 /* Summary ring and numbers */
 .opt-summary { display: flex; gap: 22px; align-items: center; }
-.opt-ring { flex: none; }
-.opt-ring circle { fill: none; stroke-width: 9; }
-.opt-ring-ok { stroke: var(--good); }
-.opt-ring-todo { stroke: var(--warn); stroke-linecap: butt; transition: stroke-dasharray 0.6s ease; }
-.opt-ring-n { font-size: 22px; font-weight: 700; fill: var(--ink); font-variant-numeric: tabular-nums; }
-.opt-ring-l { font-size: 8.5px; fill: var(--muted); }
+.opt-donut { position: relative; flex: none; width: 112px; height: 112px; }
+.opt-donut svg { width: 100%; height: 100%; display: block; }
+.opt-donut circle { fill: none; stroke-width: 10; }
+.opt-donut-track { stroke: var(--track); }
+.opt-donut-seg { stroke-linecap: round; animation: opt-donut-in 0.7s ease both; }
+.opt-donut-seg.ok { stroke: var(--good); }
+.opt-donut-seg.todo { stroke: var(--warn); }
+@keyframes opt-donut-in { from { stroke-dasharray: 0.01 400; } }
+.opt-donut-center { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 1px; text-align: center; }
+.opt-donut-n { font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; color: var(--warn-ink); font-variant-numeric: tabular-nums; }
+.opt-donut-l { font-size: 11px; color: var(--muted); }
+.opt-donut-ok { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--good-soft); color: var(--good-ink); margin-bottom: 2px; }
 .opt-summary-text { flex: 1; min-width: 0; display: grid; gap: 6px; }
 .opt-summary-text h3 { margin: 0; font-size: 17px; font-weight: 650; }
 .opt-summary-text p { margin: 0; }
@@ -435,6 +483,8 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
   .opt-card { padding: 10px 12px; gap: 10px; }
   .opt-card-foot { flex-direction: column; align-items: flex-start; }
   .opt-last { display: none; }
+  .opt-head { flex-direction: column; align-items: stretch; }
+  .scan-cta { align-self: center; }
 }
 
 /* 23 Diagnostics runner */
@@ -547,14 +597,10 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .sc-opt { min-width: 0; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
 .sc-opt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .sc-opt-when { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.sc-opt-status { margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 12.5px; color: var(--ink-2); }
+.sc-opt-status { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 12.5px; color: var(--ink-2); }
 .sc-opt-status > span:last-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sc-opt-count { flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn-ink); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
-/* A real primary button, full width and taller than the usual one. */
-.sc-opt-go { position: relative; overflow: hidden; width: 100%; height: 40px; font-size: 14px; font-weight: 600; gap: 8px; }
-.sc-opt-spin { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 35%, transparent); border-top-color: currentColor; animation: opt-turn 0.8s linear infinite; }
-.sc-opt-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: color-mix(in srgb, currentColor 25%, transparent); }
-.sc-opt-bar span { display: block; height: 100%; background: currentColor; transition: width 0.4s ease; }
+/* The app's own button, full width and taller than the usual one. */
 
 .sc .gauge { max-width: 190px; margin: 0 auto; }
 .sc-level { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: -6px; }

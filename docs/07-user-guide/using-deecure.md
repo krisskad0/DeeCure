@@ -33,6 +33,7 @@ Then a first check runs. Each area turns green, yellow, or red as it finishes. Y
 **Overview › Summary** shows:
 
 - **Health score** (0-100): 90 or more is healthy, 75-89 is fair, below 75 needs attention. Each problem takes points off its area.
+- **Optimize** (Expert, at the bottom of the Health score card): how many improvements wait now, and a round **Scan** button that opens Optimize.
 - **Subsystems:** all 13 areas (hardware, power, storage, network, security, and more), each with a number and a status. Click a row to open its page.
 - **Active issues:** the problems, most serious first. Each has a button to fix or look.
 
@@ -119,7 +120,13 @@ In **Power › Sleep**: stop a device waking the computer, and let devices save 
 
 ## 9. Optimize
 
-**Tools › Optimize** (Expert) lists improvements only when a measurement on this computer shows they are needed, each with its numbers and a **Preview** button. At the bottom, **Checked, nothing needed** shows every check that passed and what it measured. Some checks need history first, such as 14 days of readings for a charge limit; they say how many days they have so far.
+**Tools › Optimize** (Expert) lists improvements only when a measurement on this computer shows they are needed, each with its numbers and a **Preview** button.
+
+- **Scan:** click the round **Scan** button on the right. The scan takes about 15 seconds and changes nothing. It runs in 8 parts (start-up, disks, old kernels, devices, hardware health, space, packages, and updates, usage history, drivers and firmware), and you see each part wait, run, and say what it found. Items found appear at once under **Found so far**.
+- **When it scans by itself:** once a day, when Optimize or the Overview is open. The last result is kept, also after a restart. The Refresh button does not start a scan. After you apply a fix, the page says the list may be out of date; scan again to see what is left.
+- **The result:** a ring shows how many checks passed (green) and how many need something (amber), with counts of fixes, advice, and the ones that need your password.
+- **Your path:** the items one by one, fixes first. Each card says what was measured and, for advice, what to do. **Next** marks an item as looked at and moves to the next one; the bar on top shows how many you have looked at. Filter by area with the chips.
+- **Checked, nothing needed** at the bottom shows every check that passed and what it measured. Some checks need history first, such as 14 days of readings for a charge limit; they say how many days they have so far.
 
 ## 10. Updates
 

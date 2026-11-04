@@ -6,12 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.10] - 2026-11-04
+
 ### Changed
 
-- **Optimize** has a new look. While it checks, a radar animation shows the areas being checked and how long it has run. The result shows how many checks passed and how many items wait, with fixes, advice, and password needs counted. Each item is a card with what was measured and what to do, and a path bar with **Next** walks you through them one by one. Items can be filtered by area, and **Check again** runs the checks at once.
+- **Optimize** has a new look. While it checks, a radar animation shows the areas being checked and how long it has run. The result shows how many checks passed and how many items wait, with fixes, advice, and password needs counted. Each item is a card with what was measured and what to do, and a path bar with **Next** walks you through them one by one. Items can be filtered by area, and a round **Scan** button runs the checks at once.
 - Optimize shows the check live: each of its 8 parts (start-up, disks, old kernels, devices, hardware health, space, packages, and updates, usage history, drivers and firmware) says when it waits, runs, and what it found, and found items appear as soon as their part finishes.
-- Optimize checks by itself only once a day, and keeps its last result after the app restarts. Otherwise it checks only when you click **Check again** or **Optimize now**. The Refresh button no longer starts it.
-- Overview › Summary shows how many Optimize items wait now at the bottom of the Health score card, with a big **Optimize now** button that opens Optimize and starts the live check (Expert level, like the Optimize page).
+- Optimize checks by itself only once a day, and keeps its last result after the app restarts. Otherwise it checks only when you click **Scan** on the Optimize page. The Refresh button no longer starts it.
+- Overview › Summary shows how many Optimize items wait now at the bottom of the Health score card, with a round **Scan** button that opens Optimize, where a big round Scan button starts the live check (Expert level, like the Optimize page).
 
 ### Fixed
 

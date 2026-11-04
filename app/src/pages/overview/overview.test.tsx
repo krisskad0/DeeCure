@@ -84,7 +84,7 @@ describe("Overview pages", () => {
 
   it("summary links to Optimize in Expert only, with what the scan found", async () => {
     render(<OverviewSummary report={REPORT} error={null} now={at} />);
-    expect(screen.queryByRole("link", { name: /Optimize now/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /^Scan\. / })).toBeNull();
     cleanup();
     render(
       <UiContext.Provider value={{ mode: "expert", range: "24h" }}>
@@ -95,7 +95,7 @@ describe("Overview pages", () => {
     // so instead of "all passed".
     await waitFor(() => expect(screen.getByText(/No checks ran/)).toBeTruthy());
     // One big button inside the Health score card, not a panel of its own.
-    const open = screen.getByRole("link", { name: /Optimize now/ });
+    const open = screen.getByRole("link", { name: /^Scan\. / });
     expect(open.getAttribute("href")).toBe("#/optimize/all");
     expect(open.closest("[data-panel]")?.getAttribute("data-panel")).toBe("Health score");
   });

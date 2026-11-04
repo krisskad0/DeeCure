@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// Overview › Summary, at the bottom of the Health score card: how many items wait now, and one big
-// "Optimize now" button that opens Optimize and starts a scan there. Expert only,
+// Overview › Summary, at the bottom of the Health score card: a round scanner with "Scan" and how
+// many items wait now; the row opens the Optimize page, where the user starts the scan. Expert only,
 // like the Optimize page itself (docs/01-product/view-levels.md). It reads the same scan as the
 // Optimize page, so the computer is never checked twice at once.
 
@@ -8,7 +8,8 @@ import { Icon } from "../../components/Icon";
 import { when } from "../../metrics";
 import { href } from "../../route";
 import { offered } from "../optimize/Optimize";
-import { PARTS, scanOptimize, useOptimizeScan } from "../optimize/scan";
+import { Scanner } from "../optimize/ScanButton";
+import { PARTS, useOptimizeScan } from "../optimize/scan";
 import { plural } from "./shared";
 
 export function OptimizeStrip() {
@@ -39,18 +40,16 @@ export function OptimizeStrip() {
         <span className="sc-head">Optimize</span>
         {at !== undefined && <span className="sc-opt-when muted">Checked {when(at)}</span>}
       </div>
-      <p className="sc-opt-status" title={status}>
-        {!scanning && todo.length > 0 && <span className="sc-opt-count">{todo.length}</span>}
-        <span>{status}</span>
-      </p>
-      <a className="btn btn-primary sc-opt-go" href={href("optimize", "all")} onClick={() => void scanOptimize()}>
-        {scanning ? <span className="sc-opt-spin" aria-hidden="true" /> : <Icon name="bolt" size={16} strokeWidth={2.2} />}
-        {scanning ? "Checking… see progress" : "Optimize now"}
-        {scanning && parts && (
-          <span className="sc-opt-bar" aria-hidden="true">
-            <span style={{ width: `${(finished / parts.length) * 100}%` }} />
+      <a className="scan-row" href={href("optimize", "all")} aria-label={`Scan. ${status}. Opens Optimize`}>
+        <Scanner busy={scanning} progress={scanning && parts ? finished / parts.length : undefined} />
+        <span className="scan-row-text">
+          <strong>Scan</strong>
+          <span className="sc-opt-status" title={status}>
+            {!scanning && todo.length > 0 && <span className="sc-opt-count">{todo.length}</span>}
+            <span>{status}</span>
           </span>
-        )}
+        </span>
+        <Icon name="chev" size={16} />
       </a>
     </section>
   );

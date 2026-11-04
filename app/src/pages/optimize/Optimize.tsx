@@ -20,6 +20,7 @@ import { useFix } from "../../shell/FixDrawer";
 import type { IconName } from "../../spec/icons";
 import { NoData } from "../NoData";
 import { plural } from "../overview/shared";
+import { ScanButton } from "./ScanButton";
 import { PARTS, type PartState, SCAN_USUAL_MS, scanOptimize, useOptimizeScan } from "./scan";
 
 /** The areas checks belong to, by the first part of their ID, in the order shown. */
@@ -98,66 +99,62 @@ export function OptimizeAll() {
   const now = useSecond(scanning);
   const [area, setArea] = useState("all");
   const last = at !== undefined && <span className="panel-sub opt-last">Last checked {when(at, now)}</span>;
+  const finished = parts?.filter((p) => p.status === "done" || p.status === "failed").length ?? 0;
 
-  if (scanning) {
-    return (
-      <Panel title="Improvements" actions={last} span={12}>
-        <ScanStage startedAt={startedAt} parts={parts} found={found ?? []} now={now} />
-      </Panel>
-    );
-  }
-  if (!checks) {
-    return (
-      <Panel title="Improvements" span={12}>
-        {error ? <NoData error={error} waiting="" /> : <NotChecked />}
-        {error && (
-          <div className="opt-again">
-            <Button variant="primary" icon="bolt" onClick={() => void scanOptimize()}>
-              Check now
-            </Button>
-          </div>
-        )}
-      </Panel>
-    );
-  }
-
-  const todo = offered(checks);
-  const fine = checks.filter((c) => !c.offered);
+  const todo = checks ? offered(checks) : [];
+  const fine = checks ? checks.filter((c) => !c.offered) : [];
   const areas = AREAS.concat(OTHER).filter((a) => todo.some((c) => areaOf(c).id === a.id));
   // A filter whose items were all fixed falls back to every item.
   const shownArea = areas.some((a) => a.id === area) ? area : "all";
   const shown = shownArea === "all" ? todo : todo.filter((c) => areaOf(c).id === shownArea);
   const failed = (parts ?? []).filter((p) => p.status === "failed");
+  const results = checks && !scanning;
 
   return (
     <>
       <Panel
         title="Improvements"
-        info="Offered only when a measurement on this computer shows it is needed. Each fix shows a preview first, and can be undone where undo is possible. DeeCure checks by itself once a day; Check again checks now."
-        actions={
-          <>
-            {last}
-            <Button small icon="ref" onClick={() => void scanOptimize()}>
-              Check again
-            </Button>
-          </>
-        }
+        info="Offered only when a measurement on this computer shows it is needed. Each fix shows a preview first, and can be undone where undo is possible. DeeCure checks by itself once a day; Scan now checks at once."
+        actions={last}
         span={12}
       >
-        <div className="opt-notes">
-          {error && <AlertBanner tone="warn" title="Could not check again" text={`${error.message} The list below is from the last check.`} />}
-          {changedAt !== undefined && changedAt > (at ?? 0) && <AlertBanner tone="info" title="A fix ran after this check" text="Check again to see what is left." />}
-          {failed.length > 0 && (
-            <AlertBanner
-              tone="warn"
-              title={`${plural(failed.length, "part")} could not be checked`}
-              text={failed.map((p) => `${partLabel(p.id)}: ${p.error ?? "no answer"}`).join(" · ")}
-            />
-          )}
+        <div className="opt-head">
+          <div className="opt-head-main">
+            {scanning ? (
+              <ScanStage startedAt={startedAt} parts={parts} found={found ?? []} now={now} />
+            ) : !checks ? (
+              error ? (
+                <NoData error={error} waiting="" />
+              ) : (
+                <NotChecked />
+              )
+            ) : (
+              <>
+                <div className="opt-notes">
+                  {error && <AlertBanner tone="warn" title="Could not check again" text={`${error.message} The list below is from the last check.`} />}
+                  {changedAt !== undefined && changedAt > (at ?? 0) && <AlertBanner tone="info" title="A fix ran after this check" text="Scan again to see what is left." />}
+                  {failed.length > 0 && (
+                    <AlertBanner
+                      tone="warn"
+                      title={`${plural(failed.length, "part")} could not be checked`}
+                      text={failed.map((p) => `${partLabel(p.id)}: ${p.error ?? "no answer"}`).join(" · ")}
+                    />
+                  )}
+                </div>
+                <Summary checks={checks} todo={todo} />
+              </>
+            )}
+          </div>
+          <ScanButton
+            busy={scanning}
+            progress={scanning && parts ? finished / parts.length : undefined}
+            label={scanning ? (parts ? `${finished}/${parts.length}` : "Scanning") : checks ? "Scan again" : "Scan"}
+            caption={scanning ? (parts ? `Scanning… ${finished} of ${parts.length} parts done` : "Scanning…") : `About ${SCAN_USUAL_MS / 1000} seconds`}
+            onClick={() => void scanOptimize()}
+          />
         </div>
-        <Summary checks={checks} todo={todo} />
       </Panel>
-      {todo.length > 0 && (
+      {results && todo.length > 0 && (
         <Panel title={`Your path (${todo.length})`} info="Go through the items one by one. Each one says what DeeCure measured, and why it is offered." span={12}>
           <Path todo={todo} />
           {areas.length > 1 && (
@@ -181,12 +178,14 @@ export function OptimizeAll() {
           </ol>
         </Panel>
       )}
-      <Panel title={`Checked, nothing needed (${fine.length})`} span={12} flush>
-        <details>
-          <summary className="optimize-summary">Show what was checked and measured</summary>
-          <DataTable rows={fine} columns={CHECKED} rowKey={(c) => c.id} empty="No other checks" />
-        </details>
-      </Panel>
+      {results && (
+        <Panel title={`Checked, nothing needed (${fine.length})`} span={12} flush>
+          <details>
+            <summary className="optimize-summary">Show what was checked and measured</summary>
+            <DataTable rows={fine} columns={CHECKED} rowKey={(c) => c.id} empty="No other checks" />
+          </details>
+        </Panel>
+      )}
     </>
   );
 }
@@ -201,10 +200,7 @@ function NotChecked() {
         <Icon name="bolt" size={26} strokeWidth={2} />
       </span>
       <h3>Not checked yet</h3>
-      <p className="muted">DeeCure looks for improvements that a measurement on this computer shows are needed. It takes about {SCAN_USUAL_MS / 1000} seconds, and nothing is changed while it checks.</p>
-      <Button variant="primary" icon="bolt" onClick={() => void scanOptimize()}>
-        Check now
-      </Button>
+      <p className="muted">DeeCure looks for improvements that a measurement on this computer shows are needed. Nothing is changed while it scans.</p>
     </div>
   );
 }
@@ -332,26 +328,14 @@ function Summary({ checks, todo }: { checks: OptimizeCheck[]; todo: OptimizeChec
   const fixes = todo.filter((c) => c.kind === "fix");
   const admin = fixes.filter((c) => c.access === "admin").length;
   const passed = checks.length - todo.length;
-  const r = 34;
-  const length = 2 * Math.PI * r;
-  const share = todo.length / checks.length;
   return (
     <div className="opt-summary">
-      <svg className="opt-ring" viewBox="0 0 84 84" width="96" height="96" role="img" aria-label={`${passed} of ${checks.length} checks passed`}>
-        <circle cx="42" cy="42" r={r} className="opt-ring-ok" />
-        {todo.length > 0 && <circle cx="42" cy="42" r={r} className="opt-ring-todo" strokeDasharray={`${share * length} ${length}`} transform="rotate(-90 42 42)" />}
-        <text x="42" y="40" textAnchor="middle" className="opt-ring-n">
-          {todo.length || "✓"}
-        </text>
-        <text x="42" y="56" textAnchor="middle" className="opt-ring-l">
-          {todo.length ? "to improve" : "all good"}
-        </text>
-      </svg>
+      <Donut todo={todo.length} passed={passed} />
       <div className="opt-summary-text">
         {todo.length === 0 ? (
           <>
             <h3>Nothing to improve now</h3>
-            <p className="muted">Every check passed. DeeCure checks by itself once a day; Check again checks now.</p>
+            <p className="muted">Every check passed. DeeCure checks by itself once a day.</p>
           </>
         ) : (
           <>
@@ -368,6 +352,53 @@ function Summary({ checks, todo }: { checks: OptimizeCheck[]; todo: OptimizeChec
           <Stat n={passed} label="passed" tone="ok" />
         </ul>
       </div>
+    </div>
+  );
+}
+
+const RING_R = 50;
+const RING_W = 10;
+const RING_C = 2 * Math.PI * RING_R;
+/** Space between the two segments, besides the round ends (in ring units). */
+const RING_GAP = 5;
+
+/** One arc of the ring from `start` for `size`, both as shares of the whole, with round ends. */
+function arc(start: number, size: number, split: boolean) {
+  // Round ends reach half the ring width past each end, so a split takes that much off both ends.
+  const trim = split ? RING_GAP + RING_W : 0;
+  const length = Math.max(size * RING_C - trim, 0.01);
+  return { strokeDasharray: `${length} ${RING_C}`, strokeDashoffset: -(start * RING_C + trim / 2) };
+}
+
+/** Checks that need something (amber) and checks that passed (green), with the count in the middle. */
+function Donut({ todo, passed }: { todo: number; passed: number }) {
+  const total = todo + passed;
+  const split = todo > 0 && passed > 0;
+  const share = todo / total;
+  return (
+    <div className="opt-donut" role="img" aria-label={`${todo} to improve, ${passed} of ${total} checks passed`}>
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle className="opt-donut-track" cx="60" cy="60" r={RING_R} />
+        <g transform="rotate(-90 60 60)">
+          {passed > 0 && <circle className="opt-donut-seg ok" cx="60" cy="60" r={RING_R} style={arc(share, 1 - share, split)} />}
+          {todo > 0 && <circle className="opt-donut-seg todo" cx="60" cy="60" r={RING_R} style={arc(0, share, split)} />}
+        </g>
+      </svg>
+      <span className="opt-donut-center">
+        {todo > 0 ? (
+          <>
+            <span className="opt-donut-n">{todo}</span>
+            <span className="opt-donut-l">to improve</span>
+          </>
+        ) : (
+          <>
+            <span className="opt-donut-ok">
+              <Icon name="check" size={22} strokeWidth={2.8} />
+            </span>
+            <span className="opt-donut-l">all passed</span>
+          </>
+        )}
+      </span>
     </div>
   );
 }
