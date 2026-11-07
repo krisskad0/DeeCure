@@ -1,0 +1,5 @@
+port: 23
+proto: "tcp"
+name: "Telnet"
+plain: "Old remote sign-in. Everything, including passwords, is sent in the clear."
+risk_if_open: "high"
