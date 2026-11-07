@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **A website** at [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): what DeeCure does, who it is for, screenshots, privacy, an FAQ, and the one-command install and package downloads for the newest release. No tracking and no cookies.
 - **Who DeeCure is for** ([docs/07-user-guide/use-cases](docs/07-user-guide/use-cases/README.md)): one short page per role (new to Linux, laptop owners, developers and data scientists, gamers and creators, people who look after other PCs, sysadmins, security and privacy minded people) and a table per field, each with the everyday problems DeeCure solves and where to click.
+- **42 more plain-English explanations** (contributed by painbaba): 18 services (web servers, databases, Ollama, VPNs, laptop power and memory tools, and Ubuntu desktop services like systemd-oomd and fprintd), 12 ports (including risky ones: the Docker API without TLS, Telnet, FTP, Elasticsearch, Ollama, and Jupyter, and VPN, Cockpit, and mail ports), 6 kernel log errors (soft lockups, hung tasks, SATA link resets, AMD and Intel GPU hangs, and Bluetooth timeouts), and 6 packages (TLP, Google Chrome, Visual Studio Code, VirtualBox, Wine, and GNOME Tweaks).
 
 ### Fixed
 

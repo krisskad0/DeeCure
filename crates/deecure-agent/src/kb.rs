@@ -237,6 +237,97 @@ mod tests {
         assert!(errors.is_empty(), "{errors:?}");
     }
 
+    /// The writing rules from docs/04-development/writing-rules-and-kb.md that a computer
+    /// can check, so a contributor sees a broken one in CI, not in review.
+    #[test]
+    fn shipped_entries_follow_the_writing_rules() {
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../kb");
+        let mut bad = Vec::new();
+        let stem = |f: &Path| f.file_stem().unwrap().to_string_lossy().into_owned();
+        let sentence = |bad: &mut Vec<String>, f: &Path, field: &str, text: &str| {
+            if !text.ends_with('.') {
+                bad.push(format!(
+                    "{}: {field} must be a full sentence ending in a full stop",
+                    f.display()
+                ));
+            }
+        };
+        for f in yaml_files(&dir) {
+            let text = std::fs::read_to_string(&f).unwrap();
+            if text.contains(['\u{2013}', '\u{2014}']) {
+                bad.push(format!(
+                    "{}: use a colon, comma, or full stop instead of a long dash",
+                    f.display()
+                ));
+            }
+        }
+        let mut errors = Vec::new();
+        for (f, s) in load::<Service>(&dir.join("services"), &mut errors) {
+            if s.name != format!("{}.service", stem(&f)) {
+                bad.push(format!(
+                    "{}: name must be \"{}.service\"",
+                    f.display(),
+                    stem(&f)
+                ));
+            }
+            sentence(&mut bad, &f, "plain", &s.plain);
+            for (field, v) in [
+                ("safe_to_disable", &s.safe_to_disable),
+                ("if_failed", &s.if_failed),
+            ] {
+                if let Some(v) = v {
+                    sentence(&mut bad, &f, field, v);
+                }
+            }
+        }
+        for (f, p) in load::<Port>(&dir.join("ports"), &mut errors) {
+            if stem(&f) != format!("{}-{}", p.port, p.proto) {
+                bad.push(format!(
+                    "{}: file name must be \"{}-{}.yaml\"",
+                    f.display(),
+                    p.port,
+                    p.proto
+                ));
+            }
+            if !["tcp", "udp"].contains(&p.proto.as_str()) {
+                bad.push(format!("{}: proto must be tcp or udp", f.display()));
+            }
+            if !["low", "medium", "high"].contains(&p.risk_if_open.as_str()) {
+                bad.push(format!(
+                    "{}: risk_if_open must be low, medium, or high",
+                    f.display()
+                ));
+            }
+            sentence(&mut bad, &f, "plain", &p.plain);
+        }
+        let mut matches = BTreeMap::new();
+        for (f, e) in load::<ErrorPattern>(&dir.join("errors"), &mut errors) {
+            if !["info", "warning", "critical"].contains(&e.severity.as_str()) {
+                bad.push(format!(
+                    "{}: severity must be info, warning, or critical",
+                    f.display()
+                ));
+            }
+            if let Some(other) = matches.insert(e.pattern.clone(), f.clone()) {
+                bad.push(format!(
+                    "{}: same match as {}",
+                    f.display(),
+                    other.display()
+                ));
+            }
+            sentence(&mut bad, &f, "plain", &e.plain);
+            sentence(&mut bad, &f, "next_step", &e.next_step);
+        }
+        for (f, p) in load::<Package>(&dir.join("packages"), &mut errors) {
+            if p.name != stem(&f) {
+                bad.push(format!("{}: name must be \"{}\"", f.display(), stem(&f)));
+            }
+            sentence(&mut bad, &f, "plain", &p.plain);
+        }
+        assert!(errors.is_empty(), "{errors:?}");
+        assert!(bad.is_empty(), "\n{}", bad.join("\n"));
+    }
+
     #[test]
     fn finds_the_folder_beside_the_rules() {
         assert_eq!(

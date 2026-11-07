@@ -22,6 +22,13 @@ This is the easiest way to help DeeCure. You need YAML and Linux knowledge, not 
 
 The file name must match the last part of the `id`.
 
+`cargo test -p deecure-agent kb` checks every KB file, so CI tells you before a reviewer does:
+
+- A service's `name` is the file name plus `.service`, and a package's `name` is the file name.
+- A port's file name is `<port>-<proto>.yaml`, `proto` is `tcp` or `udp`, and `risk_if_open` is `low`, `medium`, or `high`.
+- An error's `severity` is `info`, `warning`, or `critical`, and no two errors have the same `match`.
+- No long dashes, and every `plain`, `safe_to_disable`, `if_failed`, and `next_step` ends with a full stop.
+
 ## Writing style
 
 - Say three things: what it means, why it matters, and what to do.
@@ -29,6 +36,7 @@ The file name must match the last part of the `id`.
 - If a technical word is needed, explain it in the same sentence.
 - Be honest. If DeeCure cannot check something, say so. Never guess a value.
 - Use the user's numbers: "only 13 GB left", not "low disk space".
+- No long dashes (the em dash or the en dash): use a colon, a comma, or a full stop. Every sentence ends with a full stop.
 - Warn about harm, not use ([Health warnings](../01-product/health-warnings.md)): a busy CPU or full RAM cache is never a problem. Use the hardware's own limits when it reports them, and make the problem last (a `*_minutes` reading) so a spike never warns.
 - Give every number a user could disagree with a `limits` entry (`limit.<name>` in the condition), with a safe `min` and `max`, and a short `name` for Settings. Every rule needs a `learn_more` page (a test checks it).
 
