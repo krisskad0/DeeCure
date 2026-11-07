@@ -106,3 +106,96 @@
       // Offline or rate-limited: the "All releases on GitHub" link stays.
     });
 })();
+
+// The animated tour in "What it does": plays the five steps while it is on screen, and the
+// step list below it doubles as its chapters. CSS draws and animates; this only picks the step.
+(() => {
+  "use strict";
+  const demo = document.querySelector(".demo");
+  const flow = document.querySelector("#features .flow");
+  if (!demo || !flow) return;
+  const items = [...flow.children];
+  const num = demo.querySelector("[data-score]");
+  const pause = demo.querySelector(".demo-pause");
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Per step: how long it shows, and the health score [from, to, when it moves].
+  const steps = [
+    { ms: 4200, score: [0, 86, 300] },
+    { ms: 4400, score: [86, 86, 0] },
+    { ms: 4600, score: [86, 86, 0] },
+    { ms: 5400, score: [86, 94, 3100] },
+    { ms: 4600, score: [94, 94, 0] },
+  ];
+  let current = 3, timer = 0, frame = 0, playing = !still, seen = false, started = false;
+
+  const setScore = (v) => {
+    num.textContent = Math.round(v);
+    demo.style.setProperty("--s", v.toFixed(1));
+  };
+  const moveScore = ([from, to, delay]) => {
+    cancelAnimationFrame(frame);
+    setScore(from);
+    if (from === to || still) return setScore(to);
+    const start = performance.now() + delay;
+    const tick = (now) => {
+      const t = Math.min(1, Math.max(0, (now - start) / 1100));
+      setScore(from + (to - from) * (1 - (1 - t) ** 3));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+  };
+  const run = () => playing && seen && !document.hidden;
+  const show = (i) => {
+    current = i;
+    clearTimeout(timer);
+    // Restart the CSS animations, even when the same step is picked again.
+    demo.removeAttribute("data-step");
+    items.forEach((li) => li.classList.remove("on"));
+    void demo.offsetWidth;
+    demo.dataset.step = String(i + 1);
+    demo.style.setProperty("--dur", `${steps[i].ms}ms`);
+    demo.classList.toggle("paused", !run());
+    flow.style.setProperty("--dur", `${steps[i].ms}ms`);
+    items.forEach((li, k) => {
+      li.classList.toggle("on", k === i);
+      li.setAttribute("aria-current", k === i ? "step" : "false");
+    });
+    moveScore(steps[i].score);
+    if (run()) timer = setTimeout(() => show((i + 1) % steps.length), steps[i].ms);
+  };
+
+  flow.classList.add("tour");
+  items.forEach((li, k) => {
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+    li.addEventListener("click", () => show(k));
+    li.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        show(k);
+      }
+    });
+  });
+  pause.hidden = still;
+  pause.addEventListener("click", () => {
+    playing = !playing;
+    pause.setAttribute("aria-pressed", String(!playing));
+    pause.setAttribute("aria-label", playing ? "Pause the animation" : "Play the animation");
+    show(current);
+  });
+  // Only play while the tour is on screen and the tab is open.
+  new IntersectionObserver(([entry]) => {
+    const was = seen;
+    seen = entry.isIntersecting;
+    if (seen && !was) {
+      // The first time from step 1; after scrolling away and back, where it was.
+      show(started || still ? current : 0);
+      started = true;
+    } else if (!seen) {
+      clearTimeout(timer);
+      demo.classList.add("paused");
+    }
+  }, { threshold: 0.35 }).observe(demo);
+  document.addEventListener("visibilitychange", () => (document.hidden ? (clearTimeout(timer), demo.classList.add("paused")) : seen && show(current)));
+  show(current);
+})();

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DeeCure: Linux system monitor, health check, and optimizer for Ubuntu</title>
-  <meta name="description" content="Every Linux system hides problems. DeeCure is a free, open-source app that checks every layer of your Ubuntu desktop, laptop, or server, explains what it finds in plain English, and fixes problems with one click, with undo. No account, no cloud.">
+  <meta name="description" content="Every Linux system has hidden problems. DeeCure is a free, open-source app that checks every layer of your Ubuntu desktop, laptop, or server, explains what it finds in plain English, and fixes problems with one click, with undo. No account, no cloud.">
   <link rel="canonical" href="https://krisskad0.github.io/DeeCure/">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="theme-color" content="#2563c9">
@@ -12,15 +12,15 @@
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="DeeCure">
-  <meta property="og:title" content="Every Linux system hides problems. DeeCure finds them.">
+  <meta property="og:title" content="Every Linux system has hidden problems. DeeCure finds them.">
   <meta property="og:description" content="Deep insight into every layer, hardware and software, on desktops, laptops, and servers, with one-click fixes you can undo. Free and open source, for Ubuntu 24.04 and 26.04.">
   <meta property="og:url" content="https://krisskad0.github.io/DeeCure/">
   <meta property="og:image" content="https://krisskad0.github.io/DeeCure/assets/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Every Linux system hides problems. DeeCure finds them. Beside it, the DeeCure Overview on Ubuntu with health score 95.">
+  <meta property="og:image:alt" content="Every Linux system has hidden problems. DeeCure finds them. Beside it, the DeeCure Overview on Ubuntu with health score 95.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Every Linux system hides problems. DeeCure finds them.">
+  <meta name="twitter:title" content="Every Linux system has hidden problems. DeeCure finds them.">
   <meta name="twitter:description" content="A free, open-source tool that finds hidden problems on Ubuntu desktops, laptops, and servers, and fixes them with undo. No account, no cloud.">
   <meta name="twitter:image" content="https://krisskad0.github.io/DeeCure/assets/og-image.png">
 
@@ -56,7 +56,7 @@
       "Health score with the problems behind it",
       "55 health warnings judged on each part's own limits",
       "47 safe fixes with a preview and undo",
-      "Over 130 plain-English explanations",
+      "Over 190 plain-English explanations",
       "Battery charge limits and power controls",
       "Optimize: a live scan that offers only measured improvements",
       "Timeline of package, config, and device changes",
@@ -114,7 +114,7 @@
       <div class="wrap hero-in">
         <div class="hero-copy">
           <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Free and open source · Ubuntu 24.04 and 26.04</p>
-          <h1>Every Linux system hides problems. <span class="grad">DeeCure finds them.</span></h1>
+          <h1>Every Linux system has hidden problems. <span class="grad">DeeCure finds them.</span></h1>
           <p class="lead">Every Linux computer, desktop or server, has some issue in the hardware or the software that you cannot see and that is hard to investigate. DeeCure checks every layer deeply, explains what it finds in plain English, and fixes problems with one click. Every fix can be undone.</p>
           <div class="install" id="hero-install">
             <span class="install-label">Install in one command</span>
@@ -142,7 +142,7 @@
       <div class="wrap stats-in">
         <div><strong>55</strong><span>smart warnings</span></div>
         <div><strong>47</strong><span>safe fixes</span></div>
-        <div><strong>130+</strong><span>plain answers</span></div>
+        <div><strong>190+</strong><span>plain answers</span></div>
         <div><strong>21 MB</strong><span>light on memory</span></div>
       </div>
     </section>
@@ -151,6 +151,74 @@
       <div class="wrap">
         <p class="kicker">What it does</p>
         <h2>From "what is wrong?" to fixed, in five steps</h2>
+        <!-- An animated tour of the five steps below. Drawn in HTML and CSS; app.js plays it. -->
+        <div class="demo" data-step="4" style="--s: 94">
+          <div class="dw" role="img" aria-label="Animation of DeeCure: it checks every layer of the computer and shows a health score, warns that the main disk will be full in about 12 days and that the firewall is off, explains the firewall in plain English, turns it on with the exact command shown and an undo button, and finds three improvements to make the computer faster">
+            <div class="dw-bar"><span class="dw-dots"><i></i><i></i><i></i></span><b>DeeCure</b><span class="dw-live"><i></i>Live</span></div>
+            <div class="dw-body">
+              <div class="dw-side">
+                <div class="dw-score">
+                  <svg viewBox="0 0 100 100"><circle class="dw-track" cx="50" cy="50" r="42"/><circle class="dw-arc" cx="50" cy="50" r="42" pathLength="100"/></svg>
+                  <span class="dw-num" data-score>94</span><small>Health score</small>
+                </div>
+                <ul class="dw-layers">
+                  <li><span>Hardware</span><i></i></li>
+                  <li><span>Power and battery</span><i></i></li>
+                  <li class="dw-l-disk"><span>Storage</span><i></i></li>
+                  <li><span>System and updates</span><i></i></li>
+                  <li><span>Services</span><i></i></li>
+                  <li class="dw-l-net"><span>Network and security</span><i></i></li>
+                </ul>
+              </div>
+              <div class="dw-main">
+                <div class="dw-pane dw-p1">
+                  <p class="dw-h">Checking every layer<span class="dw-dotdot"></span></p>
+                  <div class="dw-tiles">
+                    <div><small>CPU</small><b>7 %</b><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,24 12,22 22,25 32,14 40,20 52,18 62,8 70,19 82,16 92,21 100,17"/></svg></div>
+                    <div><small>Memory</small><b>41 %</b><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,18 15,17 28,16 40,17 52,14 64,15 76,13 88,14 100,12"/></svg></div>
+                    <div><small>Disk</small><b>80 %</b><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,20 20,19 40,17 60,15 80,12 100,9"/></svg></div>
+                    <div><small>Temperature</small><b>54 °C</b><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,20 10,18 20,21 30,12 40,16 50,19 60,11 70,15 80,18 90,13 100,16"/></svg></div>
+                  </div>
+                </div>
+                <div class="dw-pane dw-p2">
+                  <p class="dw-h">2 things need a look</p>
+                  <div class="dw-card dw-warn"><span class="dw-tag">Warning</span><b>Main disk full in about 12 days</b><small>Storage · from 14 days of use</small></div>
+                  <div class="dw-card dw-info"><span class="dw-tag">Info</span><b>The firewall is off</b><small>Network and security</small></div>
+                  <div class="dw-toast"><b>DeeCure</b>Main disk full in about 12 days</div>
+                </div>
+                <div class="dw-pane dw-p3">
+                  <div class="dw-card dw-info dw-big">
+                    <b>The firewall is off</b>
+                    <p class="dw-type">Other computers on the same Wi-Fi can reach programs that listen on this one.</p>
+                    <p class="dw-type">Turning the firewall on blocks them. Your own apps keep working.</p>
+                    <p class="dw-howto">How to fix</p>
+                    <ol><li>Run <code>sudo ufw enable</code></li><li>Outgoing connections stay allowed</li></ol>
+                  </div>
+                </div>
+                <div class="dw-pane dw-p4">
+                  <p class="dw-h">Turn on the firewall</p>
+                  <div class="dw-step">
+                    <span class="dw-check"></span>
+                    <div><b>Turn on the ufw firewall</b><span class="dw-badges"><em class="dw-ok">Reversible</em><em>Admin</em></span><code>sudo ufw enable</code></div>
+                  </div>
+                  <div class="dw-run"><span class="dw-progress"><i></i></span><button class="dw-apply" tabindex="-1">Apply</button></div>
+                  <div class="dw-done"><span class="dw-tick"></span><div><b>Done</b><small>DeeCure checked again: the issue is gone.</small></div><button class="dw-undo" tabindex="-1">Undo</button></div>
+                  <span class="dw-cursor dw-c4"></span>
+                </div>
+                <div class="dw-pane dw-p5">
+                  <div class="dw-scanrow"><button class="dw-scan" tabindex="-1">Scan</button><p class="dw-h">3 improvements ready</p></div>
+                  <ul class="dw-opt">
+                    <li><b>Start up 9 s faster</b><small>Skip waiting for the network at boot</small></li>
+                    <li><b>Weekly TRIM for the SSD</b><small>Keeps it fast as it fills up</small></li>
+                    <li><b>Remove 2 old kernels</b><small>Frees 600 MB</small></li>
+                  </ul>
+                  <span class="dw-cursor dw-c5"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="demo-pause" type="button" aria-label="Pause the animation" aria-pressed="false"><span aria-hidden="true"></span></button>
+        </div>
         <ol class="flow">
           <li>
             <span class="flow-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
@@ -201,8 +269,11 @@
         </article>
 
         <article class="show flip">
-          <div class="crop" style="--x:262;--y:268;--w:1156;--h:462;--iw:1440">
-            <img src="assets/screens/deecure-expert-open-issues.png" width="1440" height="1100" loading="lazy" alt="DeeCure issue cards: a warning about a container open to every network, the firewall off, and updates ready, each with How to fix and a Fix button">
+          <div class="crop" style="--x:262;--y:268;--w:1156;--h:512;--iw:1440">
+            <picture>
+              <source media="(prefers-color-scheme: dark)" srcset="assets/screens/deecure-expert-open-issues-dark.png">
+              <img src="assets/screens/deecure-expert-open-issues.png" width="1440" height="1100" loading="lazy" alt="DeeCure issue cards: the firewall turned off, updates ready to install, and a restart to finish updates, each with how serious it is, How to fix, and Open and Fix buttons">
+            </picture>
           </div>
           <div class="show-text">
             <h3>Problems, explained</h3>
@@ -212,8 +283,11 @@
         </article>
 
         <article class="show">
-          <div class="crop" style="--x:255;--y:145;--w:1170;--h:555;--iw:1440">
-            <img src="assets/screens/deecure-expert-optimize-improvements.png" width="1440" height="1000" loading="lazy" alt="DeeCure Optimize: a ring of 13 improvements and 20 passed checks, a round Scan button, and the first improvements with Preview and Next">
+          <div class="crop" style="--x:255;--y:145;--w:1170;--h:565;--iw:1440">
+            <picture>
+              <source media="(prefers-color-scheme: dark)" srcset="assets/screens/deecure-expert-optimize-improvements-dark.png">
+              <img src="assets/screens/deecure-expert-optimize-improvements.png" width="1440" height="1000" loading="lazy" alt="DeeCure Optimize: a ring of 12 improvements and 22 passed checks, a round Scan button, and the first improvements with Preview and Next">
+            </picture>
           </div>
           <div class="show-text">
             <h3>One scan to optimize</h3>
@@ -223,8 +297,11 @@
         </article>
 
         <article class="show flip">
-          <div class="crop" style="--x:255;--y:135;--w:1175;--h:345;--iw:1440">
-            <img src="assets/screens/deecure-expert-battery-health-chargers.png" width="1440" height="1300" loading="lazy" alt="DeeCure battery: charge 55%, health 84%, 3 hours left, power draw, a 24-hour charge chart, and a battery health gauge">
+          <div class="crop" style="--x:255;--y:135;--w:1175;--h:487;--iw:1440">
+            <picture>
+              <source media="(prefers-color-scheme: dark)" srcset="assets/screens/deecure-expert-battery-health-chargers-dark.png">
+              <img src="assets/screens/deecure-expert-battery-health-chargers.png" width="1440" height="1300" loading="lazy" alt="DeeCure battery: charge 37% and charging, health 84%, power draw 17.7 W, 320 cycles, a 24-hour charge chart, and a battery health gauge">
+            </picture>
           </div>
           <div class="show-text">
             <h3>A battery that lasts</h3>
@@ -235,7 +312,10 @@
 
         <article class="show">
           <div class="crop" style="--x:255;--y:190;--w:1175;--h:510;--iw:1440">
-            <img src="assets/screens/deecure-expert-activity-timeline.png" width="1440" height="1000" loading="lazy" alt="DeeCure activity timeline: 52 changes in 7 days, package upgrades, config changes, USB devices, and a chart of changes by type">
+            <picture>
+              <source media="(prefers-color-scheme: dark)" srcset="assets/screens/deecure-expert-activity-timeline-dark.png">
+              <img src="assets/screens/deecure-expert-activity-timeline.png" width="1440" height="1000" loading="lazy" alt="DeeCure activity timeline: 75 changes in 7 days, a note about a new kernel, package upgrades, config file changes, and changes by type">
+            </picture>
           </div>
           <div class="show-text">
             <h3>Know what changed</h3>
