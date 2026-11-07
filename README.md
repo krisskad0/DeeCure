@@ -298,6 +298,7 @@ Everyone is welcome: Linux users, testers, writers, designers, and Rust or React
 
 | You can… | Start here |
 | --- | --- |
+| Test DeeCure on your computer and report what is wrong (no code) | [Test and report problems](docs/07-user-guide/testing-and-reporting.md), then the [testing issues](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3Atesting) |
 | Pick a small, ready task | [Good first issues](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22good+first+issue%22) |
 | Take a bigger task | [Help wanted](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22help+wanted%22) |
 | Explain a service, port, or error in plain English (YAML, no code) | [Suggest a check or an explanation](https://github.com/krisskad0/DeeCure/issues/new?template=check_or_explanation.yml) |

@@ -19,6 +19,7 @@ New here? Pick a [good first issue](https://github.com/krisskad0/DeeCure/issues?
 | Linux, YAML | Add checks and plain-English explanations | [Writing rules and KB entries](docs/04-development/writing-rules-and-kb.md) |
 | Rust | Work on the agent, helper, or CLI | [Getting started](docs/04-development/getting-started.md) |
 | React, TypeScript | Build screens and components | [UI design](docs/03-ui-design/README.md) |
+| How to use a computer | Test DeeCure and report what is wrong, no code needed | [Test and report problems](docs/07-user-guide/testing-and-reporting.md) |
 | Your own laptop | Share test data from your hardware | [Testing › Adding a fixture](docs/04-development/testing.md#adding-a-fixture) |
 | Writing | Improve docs and the user guide | [Docs](docs/README.md) |
 
