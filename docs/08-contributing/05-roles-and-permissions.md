@@ -13,7 +13,7 @@ Who can do what. Rights follow trust that is earned by good work over time; nobo
 | **Reviewer** | Write | Approve pull requests in their areas (listed in CODEOWNERS), push work branches to the main repository | Merge into protected branches, create tags or release branches, change settings |
 | **Maintainer** | Maintain | Merge pull requests, manage milestones, revert a broken change | Change protection rules, delete the repository, manage secrets |
 | **Release manager** | Maintain, listed as a ruleset bypass for tags | Create `v*` tags and `release/*` branches, publish releases | Change protection rules |
-| **Owner** | Admin | Everything, including settings, rulesets, secrets, and the APT signing key | Bypass review on purpose except in an emergency; every bypass is written in the pull request or a commit message |
+| **Owner** | Admin | Everything, including settings, rulesets, secrets, and the APT signing key | Push code straight to `main`. The bypass is only for docs-only pushes and for merging a pull request after every check has passed ([Repository settings](06-repository-settings.md)) |
 
 The current people are in [MAINTAINERS.md](../../MAINTAINERS.md).
 

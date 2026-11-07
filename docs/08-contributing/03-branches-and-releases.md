@@ -8,7 +8,7 @@ DeeCure uses one main branch, short-lived work branches, and release branches on
 
 | Branch | Who writes to it | How | Protected |
 | --- | --- | --- | --- |
-| `main` | Nobody directly | Only through reviewed pull requests, squash merged by a maintainer | Yes: no direct push, no force push, no deletion, CI must pass |
+| `main` | Maintainers, through pull requests. The owner may also push docs-only changes directly | Code: reviewed pull requests, squash merged by a maintainer after CI passes. Docs-only changes (the files CI treats as docs only: `docs/` except `docs/03-ui-design`, and top-level Markdown files): the owner may push them straight to `main` | Yes: no direct push, no force push, no deletion, CI must pass. Only the owner's admin role may bypass ([Repository settings](06-repository-settings.md)) |
 | `release/<major>.<minor>` (such as `release/0.3`) | Nobody directly | Cut from a tag by the release manager; fixes arrive by pull request | Yes: same rules as `main`, and only maintainers create them |
 | Work branches (`feat/…`, `fix/…`) | The person working on it | In your fork. Maintainers may use the main repository. | No. Deleted after merge. |
 

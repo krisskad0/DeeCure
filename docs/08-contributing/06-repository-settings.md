@@ -18,7 +18,12 @@ The rules in this folder are enforced by GitHub settings and **rulesets**. Rules
 | `tag-creation.json` | `v*` tags | Only maintainers and admins may create a release tag (which starts a release) | Admins, maintainers |
 | `tags-locked.json` | `v*` tags | Nobody may move or delete a release tag | Nobody |
 
-**About the admin bypass on `main`:** it lets the owner keep pushing small changes straight to `main` while the project is young (the current way of working). When other people contribute regularly, tighten it: open the ruleset, and in **Bypass list** change the admin role from **Always** to **For pull requests only**. Then the owner also works through pull requests, and can merge their own only in an emergency.
+**About the admin bypass on `main`:** it stays on **Always**, for two uses only (agreed 2026-11-07, when the first outside contributions arrived):
+
+- The owner pushes docs-only changes straight to `main` (the files CI treats as docs only, see [Branches](03-branches-and-releases.md#the-branches)).
+- The owner merges a pull request (their own, or one they pushed fixes to) after every check has passed. With one maintainer, nobody else can approve it.
+
+Code changes never go straight to `main`. `install.sh` is served from `main` and reaches users at once, so CI must pass before the merge, not after the push. When a second maintainer joins, change the admin role in **Bypass list** from **Always** to **For pull requests only**, and let that maintainer approve the owner's pull requests.
 
 **If a tag was made by mistake:** `tags-locked.json` has no bypass on purpose. To remove a tag, the owner turns that ruleset to **Disabled**, deletes the tag, and turns it back to **Active**, and writes down why in an issue.
 
