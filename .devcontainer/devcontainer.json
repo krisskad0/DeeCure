@@ -1,0 +1,19 @@
+{
+  "name": "DeeCure",
+  "build": { "dockerfile": "Dockerfile" },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "rustup toolchain install && npm ci --prefix app",
+  "hostRequirements": { "cpus": 4, "memory": "8gb", "storage": "32gb" },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  }
+}

@@ -51,6 +51,7 @@
 | Scorecard | Every Wednesday, and when protection rules change | Normal pushes |
 | Dependabot | Monthly: minor and patch updates grouped, each major version alone; security fixes at once | |
 | Release | `v*` tags only | |
+| Stale issues | Every Monday (a few seconds) | Everything except issues labeled `status: needs-info`; never pull requests |
 
 ## Where tests live
 

@@ -48,7 +48,7 @@ Every issue gets one label of each group: type, area, priority, and status. Main
 | Type | `type: bug`, `type: feature`, `type: docs`, `type: security`, `type: chore` | What kind of work |
 | Area | `area: agent`, `area: app`, `area: cli`, `area: helper`, `area: rules-kb`, `area: packaging`, `area: ci`, `area: docs` | Which part of DeeCure |
 | Priority | `priority: critical`, `priority: high`, `priority: normal`, `priority: low` | Critical: data loss, a security hole, or the app does not start; fixed before anything else |
-| Status | `status: needs-triage`, `status: needs-info`, `status: ready`, `status: in-progress`, `status: blocked` | Where it stands |
+| Status | `status: needs-triage`, `status: needs-info`, `status: ready`, `status: in-progress`, `status: blocked`, `status: stale` | Where it stands. `status: stale` is set only by the weekly Stale issues job: a `needs-info` issue with no answer for 23 days gets a warning, and it closes 7 days later unless someone replies |
 | Help | `good first issue`, `help wanted` | Good for newcomers; maintainers would welcome help |
 | Pull requests | `needs-two-reviews`, `breaking-change`, `release-blocker` | Added by maintainers on pull requests that need extra care |
 

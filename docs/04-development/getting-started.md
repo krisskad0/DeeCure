@@ -9,6 +9,13 @@
 - Ubuntu 24.04 LTS or newer (a VM is fine).
 - About 10 GB of free disk space for build files.
 
+**Or: start in a dev container, with nothing to install.** The repo has a dev container (`.devcontainer/`) with everything from steps 2 to 4 ready.
+
+- In the browser: on GitHub, click **Code › Codespaces › Create codespace on main**.
+- On your computer: open the folder in VS Code with the Dev Containers extension, and choose **Reopen in Container**.
+- The first start takes a few minutes. Then `make lint`, `make test`, `make web`, and `make agent` work at once.
+- Two things need a real computer: the desktop window (`make app`) and the container tests (`make deb-test` and the others). CI runs the package and helper tests on every pull request.
+
 ## 2. Install system packages
 
 ```bash

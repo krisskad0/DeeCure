@@ -19,6 +19,7 @@ Last updated: 2026-11-04: released `v0.1.0-alpha.10` (pre-release): a new Optimi
 | Performance | First result 0.8 s, idle CPU 0.12%, peak RAM 20.9 MB (2026-10-24), 2 years of history 124 MB (`make perf`, `make db-size`) |
 | GitHub | Protected by 5 rulesets (applied through the API): pull requests with review and 6 required checks on `main` and `release/*`, squash only, tags locked; owner `krisskad0` has an admin bypass. Security features on. 27 labels. Dependabot monthly. |
 | Docs | Current: architecture, UI, development, packaging, user guide (install, everyday use), contributing guide ([08-contributing](../08-contributing/README.md)) |
+| Contributors | Ready for outside help (2026-11-07): 18 open issues (#12 to #29: 9 good first issues, 9 help wanted), 4 Discussions (#30 to #33), issue forms for checks and explanations and for hardware reports, a dev container for Codespaces, web edits signed off by GitHub, CI approval only on a first pull request, contact email in SECURITY.md and CODE_OF_CONDUCT.md, a weekly job that closes `needs-info` issues after 30 days. Owner still to do: pin Discussion #30, upload the social preview (Settings › Social preview, 1280 by 640) |
 
 ## 2. Recommended order of what is left
 
@@ -36,6 +37,8 @@ Last updated: 2026-11-04: released `v0.1.0-alpha.10` (pre-release): a new Optimi
 3. **People and machines** (section 6): the 47 fixes in real VMs, 5-10 beginner testers, a second maintainer, a full security review of the helper.
 4. **Public beta:** fix the findings, release `v0.1.0-beta.1`, then `v0.1.0` ([how to release](#7-how-to-release)). When contributors arrive: admin bypass on `main` to "pull requests only", and CodeQL and Dependencies as required checks.
 5. **Next features, on the owner's word:** Phase 4 (assistant; un-hide it in `app/src/visible.ts`), use per app (✅ battery use per app, an estimate, built 2026-11-03 on Power › Battery; ✅ CPU and memory per app over time on Performance › CPU and Memory, and download and upload per app over time, TCP only, on Network › Traffic, 2026-11-03; exact traffic with eBPF is not built (owner decision, section 2 item 0.6); left: disk I/O per app over time), "optimize everything", Phase 5 (bring back "Add a machine"), coverage-guided fuzzing.
+
+**Open Dependabot pull requests (#5 to #11, from 2026-11-01), the plan:** apply #5, #6, #7, #8 together in one commit on `main` (test once, including the agent on a copy of the database), and Dependabot closes them by itself. Apply the three Actions majors (#9, #10, #11, used only in `release.yml`) in one commit just before the next release, so the release tests them. Then add an `actions-major` group to `.github/dependabot.yml`, so big Actions updates come as one pull request. Handle them before posting about DeeCure in public: open bot pull requests look like an inactive project.
 
 **Known dependency alert:** Dependabot alert 1 (moderate): `glib` 0.18 `VariantStrIter` unsoundness, fixed in 0.20. It comes only through Tauri's GTK 3 stack (window, tray); DeeCure's own code does not use the affected function. It goes away when Tauri moves its Linux stack to `glib` 0.20 or later; check after each Tauri update.
 

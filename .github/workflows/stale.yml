@@ -1,0 +1,36 @@
+# Closes issues that wait for facts from the reporter (label "status: needs-info") when no
+# answer comes in 30 days, as docs/08-contributing/02-issues-and-labels.md promises.
+# Nothing else is touched: no other issue, and no pull request.
+name: Stale issues
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  needs-info:
+    name: Close needs-info issues with no answer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          only-issue-labels: "status: needs-info"
+          days-before-issue-stale: 23
+          days-before-issue-close: 7
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-label: "status: stale"
+          remove-issue-stale-when-updated: true
+          close-issue-reason: not_planned
+          stale-issue-message: >
+            This issue has waited 23 days for the facts we asked for. If there is no
+            answer in 7 more days, it will be closed. Reply here, and it stays open.
+          close-issue-message: >
+            Closed, because the facts we asked for did not come in 30 days. Reply with
+            them at any time, and a maintainer will open it again.
