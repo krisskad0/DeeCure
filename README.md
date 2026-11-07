@@ -11,9 +11,12 @@
 [![Good first issues](https://img.shields.io/github/issues/krisskad0/DeeCure/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
 [![Contributors welcome](https://img.shields.io/badge/contributors-welcome-brightgreen)](#contributing)
 
-<img src="docs/07-user-guide/images/deecure-demo-find-explain-fix-undo.gif" alt="DeeCure in 19 seconds: the Overview finds that the firewall is off, the issue card explains it in plain English with a how-to, the fix shows its exact command (sudo ufw enable) and is applied, DeeCure checks again and the issue is gone, and the change is undone from the remediation log">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-deep-look-dark.svg">
+  <img src="docs/07-user-guide/images/deecure-deep-look-light.svg" alt="How deep DeeCure looks: eight layers, each nested inside the one above, from apps and processes, services and jobs, packages and updates, network, security and backups, storage, and kernel and firmware down to the hardware. A scan walks down the layers, 117 checks in all, while live readings move. The health score fills to 92, and what the scan found appears as plain sentences, each with its path down the layers: the firewall is off, the main disk will be full in about 12 days, the SSD has 92% of its life left, and battery health is 84%.">
+</picture>
 
-*Find, explain, fix, undo: DeeCure finds that the firewall is off, explains it in plain English, shows the exact command before it runs, checks again after the fix, and undoes it in one click. Recorded with real readings from an Ubuntu 24.04 laptop in the Expert view; the firewall change itself was simulated for the recording. [More screenshots](#what-the-expert-view-shows).*
+*How deep it looks: eight layers, each one inside the one above, from the apps you see down to the chips inside. DeeCure turns 117 checks into one score and a few plain sentences, and each sentence shows the layer and the path where it was found. [See it find, explain, fix, and undo](#see-it-work).*
 
 **Website:** [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): features, screenshots, and downloads on one page.
 
@@ -60,6 +63,12 @@ It works without a password for looking around. It never changes anything unless
 </picture>
 
 *The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages.*
+
+### See it work
+
+<img src="docs/07-user-guide/images/deecure-demo-find-explain-fix-undo.gif" alt="DeeCure in 19 seconds: the Overview finds that the firewall is off, the issue card explains it in plain English with a how-to, the fix shows its exact command (sudo ufw enable) and is applied, DeeCure checks again and the issue is gone, and the change is undone from the remediation log">
+
+*Find, explain, fix, undo: DeeCure finds that the firewall is off, explains it in plain English, shows the exact command before it runs, checks again after the fix, and undoes it in one click. Recorded with real readings from an Ubuntu 24.04 laptop in the Expert view; the firewall change itself was simulated for the recording. [More screenshots](#what-the-expert-view-shows).*
 
 ## Common problems it solves
 
