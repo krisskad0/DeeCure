@@ -1,0 +1,4 @@
+name: "fprintd.service"
+plain: "Reads the fingerprint reader for sign-in."
+safe_to_disable: "Yes, if you never sign in with a fingerprint."
+if_failed: "Fingerprint sign-in does not work."
