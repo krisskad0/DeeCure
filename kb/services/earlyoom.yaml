@@ -1,0 +1,4 @@
+name: "earlyoom.service"
+plain: "Closes a memory-hungry program before the system freezes when memory runs out."
+safe_to_disable: "Mostly. Without it, running out of memory can freeze the whole system."
+if_failed: "The system may freeze when memory runs out."
