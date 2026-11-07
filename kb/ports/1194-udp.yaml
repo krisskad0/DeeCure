@@ -1,0 +1,5 @@
+port: 1194
+proto: "udp"
+name: "OpenVPN"
+plain: "An OpenVPN server. It is meant to be reachable; keep it updated."
+risk_if_open: "low"

@@ -1,0 +1,5 @@
+port: 41641
+proto: "udp"
+name: "Tailscale"
+plain: "Tailscale's default port. Tailscale is a VPN that connects your own devices."
+risk_if_open: "low"

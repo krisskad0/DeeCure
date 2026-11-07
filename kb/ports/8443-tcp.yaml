@@ -1,0 +1,5 @@
+port: 8443
+proto: "tcp"
+name: "Web (HTTPS, alternative)"
+plain: "An encrypted web server on a non-standard port, often a web app or an admin page."
+risk_if_open: "medium"
