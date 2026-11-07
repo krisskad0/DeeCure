@@ -12,7 +12,7 @@ DeeCure follows the [Contributor Covenant, version 2.1](https://www.contributor-
 
 ## Reporting
 
-If someone breaks these rules, email the maintainers at **TODO: add contact email before going public**. We read every report and keep it private.
+If someone breaks these rules, email the maintainers at **[krisskad0@gmail.com](mailto:krisskad0@gmail.com)** with "DeeCure conduct" in the subject. We read every report and keep it private.
 
 ## Enforcement
 

@@ -30,7 +30,7 @@ While DeeCure is on `0.x`, only the latest release gets fixes.
 1. Go to the repository's **Security** tab on GitHub.
 2. Click **Report a vulnerability**. This sends a private report to the maintainers.
 
-If you cannot use GitHub, email **TODO: add security email before going public**.
+If you cannot use GitHub, email **[krisskad0@gmail.com](mailto:krisskad0@gmail.com)** with "DeeCure security" in the subject.
 
 Please include:
 
