@@ -30,7 +30,7 @@ Nobody pushes to `main` directly: every change is a pull request from a fork, re
 2. Fork the repo and create a branch from the newest `main`: `feat/disk-forecast`, `fix/battery-health`, `docs/install-guide`.
 3. Keep pull requests small. One topic per pull request.
 4. If the change affects behavior, update the spec in `docs/` in the same pull request.
-5. Make sure `make lint` and `make test` pass.
+5. Make sure `make lint` and `make test` pass. Only YAML or docs changed? `cargo test -p deecure-agent` is enough for YAML, and nothing is needed for docs: CI checks everything.
 6. Open the pull request and fill in the template.
 
 ## Commit messages

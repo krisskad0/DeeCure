@@ -51,6 +51,8 @@ make test         # Rust tests, including real-machine fixtures
 make web          # UI tests, type-check, and build
 ```
 
+**Only YAML (rules, KB) or docs?** You do not need the full setup. For YAML, `cargo test -p deecure-agent` is enough. For docs, no command is needed. CI runs every check on your pull request anyway. You can even edit the file on the GitHub website: it signs off the commit for you.
+
 Never test fixes or admin actions on your own computer: the container tests do that safely (`make deb-test`, `make helper-test`).
 
 ## 6. Commit with a sign-off

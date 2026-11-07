@@ -16,7 +16,7 @@ Guide: docs/08-contributing/04-pull-requests-and-review.md
 
 - [ ] The title follows Conventional Commits (`type(area): what changed`)
 - [ ] Every commit is signed off (`git commit -s`)
-- [ ] `make lint`, `make test`, and `make web` pass
+- [ ] `make lint`, `make test`, and `make web` pass (only YAML or docs changed? Skip this: CI runs them for you)
 - [ ] Tests added or updated (a bug fix has a test that fails without it)
 - [ ] Docs in `docs/` updated if behavior changed, and a line in `CHANGELOG.md` (Unreleased) if users notice it
 - [ ] User-facing text is plain English and follows the writing style

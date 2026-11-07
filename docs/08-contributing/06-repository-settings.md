@@ -33,13 +33,15 @@ The rules in this folder are enforced by GitHub settings and **rulesets**. Rules
 - [ ] Automatically delete head branches: **on**
 - [ ] Allow auto-merge: **off** (a maintainer merges by hand)
 
+- [ ] Require contributors to sign off on web-based commits: **on** (a file edited on the GitHub website gets the `Signed-off-by` line, so the sign-off check passes)
+
 **Settings › General › Features:** Issues **on**, Discussions **on** (for questions and ideas), Wiki **off** (the docs live in `docs/`), Projects as you like.
 
 ## 3. Actions
 
 **Settings › Actions › General:**
 
-- [ ] Fork pull request workflows from outside collaborators: **Require approval for all outside collaborators** (new contributors' CI runs only after a maintainer looks at the change)
+- [ ] Fork pull request workflows from outside collaborators: **Require approval for first-time contributors** (a new contributor's first CI run waits until a maintainer looks at the change; after that, their pushes run CI at once. Safe, because fork pull requests get no secrets and a read-only token)
 - [ ] Workflow permissions: **Read repository contents and packages permissions** (the release workflow asks for more itself)
 - [ ] Allow GitHub Actions to create and approve pull requests: **off**
 
