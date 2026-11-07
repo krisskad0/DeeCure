@@ -2,4 +2,4 @@ port: 11434
 proto: "tcp"
 name: "Ollama"
 plain: "The Ollama API, which runs AI language models on this computer. No login by default."
-risk_if_open: "medium"
+risk_if_open: "high"
