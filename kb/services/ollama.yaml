@@ -1,4 +1,4 @@
 name: "ollama.service"
 plain: "Runs AI language models on this computer and serves them on port 11434."
-safe_to_disable: "Yes, if you do not run AI models locally — apps that call its API stop working."
+safe_to_disable: "Yes, if you do not run AI models locally. Apps that call its API stop working."
 if_failed: "Local AI models do not run, and apps that use the Ollama API stop working."

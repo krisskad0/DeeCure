@@ -1,4 +1,4 @@
 name: "postgresql.service"
 plain: "PostgreSQL database. Stores data for apps and websites."
-safe_to_disable: "Only if no app or website uses it — those apps stop working."
+safe_to_disable: "Only if no app or website uses it. Those apps stop working."
 if_failed: "Apps that store data in PostgreSQL stop working."

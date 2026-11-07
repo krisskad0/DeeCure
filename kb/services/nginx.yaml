@@ -1,4 +1,4 @@
 name: "nginx.service"
 plain: "Web server. Serves websites and passes requests on to web apps."
-safe_to_disable: "Only if nothing on this computer serves a website — sites that use it go offline."
+safe_to_disable: "Only if nothing on this computer serves a website. Sites that use it go offline."
 if_failed: "Websites behind nginx stop responding."
