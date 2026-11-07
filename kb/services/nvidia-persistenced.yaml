@@ -1,0 +1,4 @@
+name: "nvidia-persistenced.service"
+plain: "Keeps the NVIDIA driver loaded so it starts work faster."
+safe_to_disable: "Yes, if the computer has no NVIDIA graphics card."
+if_failed: "NVIDIA programs may start slower; nothing else breaks."

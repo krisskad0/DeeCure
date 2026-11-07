@@ -1,0 +1,4 @@
+name: "smartd.service"
+plain: "Watches disk health (S.M.A.R.T.) and logs early signs of a failing disk."
+safe_to_disable: "You can, but it is the early warning for a dying disk."
+if_failed: "Disk health is no longer watched."

@@ -1,0 +1,4 @@
+name: "tailscaled.service"
+plain: "Tailscale, a VPN that connects your own devices."
+safe_to_disable: "Only if you do not use Tailscale — your devices lose that connection."
+if_failed: "Tailscale connections do not work."

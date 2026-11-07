@@ -1,0 +1,4 @@
+name: "libvirtd.service"
+plain: "Runs virtual machines (KVM/QEMU) through tools like virt-manager."
+safe_to_disable: "Only if you do not run virtual machines — they stop working."
+if_failed: "Virtual machines do not run."
