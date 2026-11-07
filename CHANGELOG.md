@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- The agent could fail on its very first start with "table series already exists" when two agents opened the new database at the same time. Each schema step now takes the write lock and skips what the other agent already did.
 - The one-command install could install an older pre-release: it took the first release in GitHub's list, and GitHub listed 0.1.0-alpha.9 before 0.1.0-alpha.10. It now picks the highest version, as the in-app updater does. The install script comes from the main branch, so this fix reaches everyone at once.
 
 ## [0.1.0-alpha.10] - 2026-11-04

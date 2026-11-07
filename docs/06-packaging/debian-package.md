@@ -78,7 +78,7 @@ Before the first public release, `copyright` must also list the licenses of the 
 1. `apt install` works and pulls in the dependencies.
 2. The user units are enabled for every user.
 3. `deecure --version`, the agent, and the man page are in place.
-4. As a normal user, the agent starts, loads the installed rules, keeps its database private (mode `0600`), and `deecure status` and `--json` answer.
+4. As a normal user (through `runuser`, which opens no login session, so systemd does not start a second agent for that user), the agent starts, loads the installed rules, keeps its database private (mode `0600`), and `deecure status` and `--json` answer.
 5. `apt purge` removes everything, including the "enabled for every user" links.
 
 ## More checks before the public beta
