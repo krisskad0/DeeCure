@@ -11,7 +11,7 @@ Every change to `main` is a pull request that passes CI, is reviewed, and is squ
 - **The template filled in:** what changed and why, how it was tested, `Closes #123`.
 - **Screenshots** for anything you can see in the app (light and dark), and the terminal output for CLI changes.
 - **Tests** for new behavior and for every bug fix.
-- **Docs** updated in `docs/` when behavior changes. Add a line to the `Unreleased` section of `CHANGELOG.md` for anything users notice.
+- **Docs** updated in `docs/` when behavior changes. Do not edit `CHANGELOG.md`: every pull request would add its line at the same place, so they would conflict with each other. A maintainer adds the line after the merge.
 - **Signed-off commits** (`git commit -s`). CI checks every commit.
 - **Draft** while you are still working; mark it **Ready for review** when it is done.
 
@@ -57,7 +57,8 @@ For the helper, also go through the [helper review checklist](../02-architecture
 
 - **Only maintainers merge**, and only with **Squash and merge**. Merge commits and rebase merges are turned off, so `main` stays a straight line with one commit per pull request.
 - The squash commit keeps the pull request title and number, and the author's name. Its message keeps every `Signed-off-by` line.
-- Breaking changes get the label `breaking-change`, a `!` in the title (`feat(cli)!: …`), and a note in the CHANGELOG.
+- Breaking changes get the label `breaking-change` and a `!` in the title (`feat(cli)!: …`).
+- After the merge, the maintainer adds a line to the `Unreleased` section of `CHANGELOG.md` for anything users notice (a note for every breaking change). Several merges can share one commit.
 - The branch is deleted after the merge.
 
 ## If something goes wrong after a merge

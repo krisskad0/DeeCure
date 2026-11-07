@@ -41,11 +41,13 @@ notes: "DeeCure never deletes personal files except the Trash."
 
 | Type | Entries |
 | --- | --- |
-| `services/` | 59 common Ubuntu services |
-| `ports/` | 26 ports |
-| `errors/` | 20 log and kernel messages |
-| `packages/` | 12 packages |
-| `topics/` | 8 how-to articles, one for each rule |
+| `services/` | Common Ubuntu services, and popular ones people add (web servers, databases, VPNs, power and memory tools) |
+| `ports/` | Common ports, and risky ones (no login, or sent in the clear) |
+| `errors/` | Common log and kernel messages |
+| `packages/` | Common and popular packages |
+| `topics/` | How-to articles, one for each rule |
+
+The folders are the list, so this table has no counts that go out of date. `ls kb/<type> | wc -l` gives the numbers.
 
 - The first release ships with entries for the most common services, errors, and ports on Ubuntu.
 - Contributors can add entries through pull requests.

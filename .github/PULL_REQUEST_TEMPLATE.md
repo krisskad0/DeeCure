@@ -18,7 +18,7 @@ Guide: docs/08-contributing/04-pull-requests-and-review.md
 - [ ] Every commit is signed off (`git commit -s`)
 - [ ] `make lint`, `make test`, and `make web` pass (only YAML or docs changed? Skip this: CI runs them for you)
 - [ ] Tests added or updated (a bug fix has a test that fails without it)
-- [ ] Docs in `docs/` updated if behavior changed, and a line in `CHANGELOG.md` (Unreleased) if users notice it
+- [ ] Docs in `docs/` updated if behavior changed (do not edit `CHANGELOG.md`: a maintainer adds the line after the merge)
 - [ ] User-facing text is plain English and follows the writing style
 - [ ] **Sensitive area** (helper, fix runner, installer, packaging, CI)? Label `needs-two-reviews`; for the helper, the review checklist is pasted below
-- [ ] **Breaking change?** `!` in the title, label `breaking-change`, and a CHANGELOG note
+- [ ] **Breaking change?** `!` in the title, label `breaking-change`, and what users must do, in the description above
