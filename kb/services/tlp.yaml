@@ -1,4 +1,4 @@
 name: "tlp.service"
 plain: "TLP, a laptop power-saving tool. Applies battery-friendly settings on its own."
-safe_to_disable: "Only if you use another power-saving tool — without one, the battery drains faster."
+safe_to_disable: "Only if you use another power-saving tool. Without one, the battery drains faster."
 if_failed: "Power saving does not apply, and the battery drains faster."
