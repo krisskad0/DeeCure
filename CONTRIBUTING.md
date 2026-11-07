@@ -12,6 +12,8 @@ Thank you for helping. This page is the short version; the full guide is in [doc
 
 ## Ways to help
 
+New here? Pick a [good first issue](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22good+first+issue%22). Each one says what to do and which files to open. Comment on it, and a maintainer assigns it to you.
+
 | You know… | You can… | Start here |
 | --- | --- | --- |
 | Linux, YAML | Add checks and plain-English explanations | [Writing rules and KB entries](docs/04-development/writing-rules-and-kb.md) |

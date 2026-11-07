@@ -18,6 +18,8 @@ Use the templates (**New issue** on GitHub); they ask for what is needed.
 | --- | --- | --- |
 | Bug report | Something does not work, or shows wrong data | DeeCure version (`deecure --version`), Ubuntu version, steps, what you expected, what happened, logs if any |
 | Feature request | Something new, or a change in behavior | The situation and the problem, not only the solution you imagine |
+| Suggest a check or an explanation | A problem DeeCure should warn about, or a service, port, error, or package it should explain (no code needed) | What it is, and how to see it on a computer |
+| Hardware report | How DeeCure works on your computer, good or bad | Maker and model, Ubuntu version, DeeCure version, what looked wrong or missing |
 
 ## How an issue moves
 

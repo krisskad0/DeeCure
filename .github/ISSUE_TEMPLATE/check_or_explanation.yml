@@ -1,0 +1,48 @@
+name: Suggest a check or an explanation
+description: A Linux problem DeeCure should warn about, or a service, port, error, or package it should explain. No code needed.
+labels: ["type: feature", "area: rules-kb", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. You do not need to write any code. Tell us what you know, and someone can turn it into a YAML file.
+        If you want to write the YAML yourself, the guide is here: [Writing rules and KB entries](https://github.com/krisskad0/DeeCure/blob/main/docs/04-development/writing-rules-and-kb.md).
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What do you suggest?
+      options:
+        - A new check (DeeCure should warn about a problem)
+        - Explain a service (a systemd unit)
+        - Explain a network port
+        - Explain an error message from the logs
+        - Explain a package
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is it?
+      description: Name it and say what it means, in your own words.
+      placeholder: |
+        Example: The service "irqbalance" spreads hardware interrupts over all CPU cores.
+        Example: My laptop log shows "ata1: hard resetting link" and then the disk is slow.
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: How can someone see it on their computer?
+      description: A command, a file, or a log line that shows it. Remove anything private.
+      render: text
+  - type: textarea
+    id: plain
+    attributes:
+      label: What should a beginner read?
+      description: One or two short sentences. What it means, why it matters, and what to do.
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Do you want to write the YAML file yourself?
+      options:
+        - label: Yes, I would like to open the pull request for this.

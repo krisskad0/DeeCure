@@ -1,0 +1,66 @@
+name: Hardware report
+description: Tell us how DeeCure works on your computer. Reports from many machines make DeeCure correct for everyone.
+labels: ["area: agent", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for testing DeeCure on your machine. Good news and bad news are both useful.
+        Please do not paste serial numbers, user names, or anything else private.
+  - type: input
+    id: model
+    attributes:
+      label: Computer maker and model
+      description: Output of `cat /sys/class/dmi/id/sys_vendor /sys/class/dmi/id/product_name`
+      placeholder: Lenovo ThinkPad T14 Gen 3
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of computer
+      options:
+        - Laptop
+        - Desktop
+        - Mini PC
+        - Virtual machine
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: parts
+    attributes:
+      label: Processor and graphics
+      description: Output of `lscpu | grep 'Model name'` and `lspci | grep -i -E 'vga|3d'`
+      placeholder: AMD Ryzen 7 6850U, AMD Radeon 680M
+  - type: input
+    id: os
+    attributes:
+      label: Ubuntu version and desktop
+      description: Output of `lsb_release -ds`, plus your desktop (GNOME, KDE, and so on)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: DeeCure version
+      description: Output of `deecure --version`
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What looked wrong, empty, or missing?
+      description: Name the page and the panel. A wrong number, a missing sensor, a false warning, or "nothing wrong".
+      placeholder: |
+        Hardware › Sensors: the fan shows 0 RPM, but the fan is running.
+        Power › Battery: correct.
+    validations:
+      required: true
+  - type: checkboxes
+    id: fixture
+    attributes:
+      label: Test data
+      description: A fixture is a copy of what DeeCure reads on your machine, with names and serial numbers removed. It lets us test every change on your hardware. [How to make one](https://github.com/krisskad0/DeeCure/blob/main/docs/04-development/testing.md#adding-a-fixture)
+      options:
+        - label: I can share a fixture from this machine.

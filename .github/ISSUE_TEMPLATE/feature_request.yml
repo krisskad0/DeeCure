@@ -1,12 +1,12 @@
 name: Feature request
 description: Suggest a new check, fix, explanation, or feature.
-labels: [enhancement]
+labels: ["type: feature", "status: needs-triage"]
 body:
   - type: textarea
     id: problem
     attributes:
       label: What problem would this solve?
-      description: Describe the situation. Example: "My laptop gets hot and I don't know why."
+      description: 'Describe the situation. Example: "My laptop gets hot and I don''t know why."'
     validations:
       required: true
   - type: textarea

@@ -8,6 +8,8 @@
 ![Status: in development](https://img.shields.io/badge/status-in%20development-yellow)
 [![Release](https://img.shields.io/github/v/release/krisskad0/DeeCure?include_prereleases&label=pre-release)](https://github.com/krisskad0/DeeCure/releases)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/krisskad0/DeeCure/badge)](https://securityscorecards.dev/viewer/?uri=github.com/krisskad0/DeeCure)
+[![Good first issues](https://img.shields.io/github/issues/krisskad0/DeeCure/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
+[![Contributors welcome](https://img.shields.io/badge/contributors-welcome-brightgreen)](#contributing)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
@@ -292,7 +294,17 @@ Start at [docs/README.md](docs/README.md).
 
 ## Contributing
 
-You can help without writing Rust: add checks and plain-English explanations in simple YAML files, share test data from your laptop, report a bug, or improve the docs. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Everyone is welcome: Linux users, testers, writers, designers, and Rust or React developers. Most help needs no Rust at all.
+
+| You can… | Start here |
+| --- | --- |
+| Pick a small, ready task | [Good first issues](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22good+first+issue%22) |
+| Take a bigger task | [Help wanted](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22help+wanted%22) |
+| Explain a service, port, or error in plain English (YAML, no code) | [Suggest a check or an explanation](https://github.com/krisskad0/DeeCure/issues/new?template=check_or_explanation.yml) |
+| Tell us how DeeCure works on your computer | [Hardware report](https://github.com/krisskad0/DeeCure/issues/new?template=hardware_report.yml) |
+| Ask a question or share an idea | [Discussions](https://github.com/krisskad0/DeeCure/discussions) |
+
+Your first pull request, step by step: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 
