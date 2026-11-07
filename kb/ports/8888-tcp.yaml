@@ -1,0 +1,5 @@
+port: 8888
+proto: "tcp"
+name: "Jupyter"
+plain: "Jupyter notebooks: write and run code in the browser. Anyone who reaches it can run code on this computer."
+risk_if_open: "high"

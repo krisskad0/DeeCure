@@ -1,0 +1,5 @@
+port: 9200
+proto: "tcp"
+name: "Elasticsearch"
+plain: "The Elasticsearch search database. Usually has no login, so anyone who reaches it can read or delete the data."
+risk_if_open: "high"

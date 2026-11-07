@@ -1,0 +1,5 @@
+port: 21
+proto: "tcp"
+name: "FTP"
+plain: "File transfer. Logins and files are sent in the clear."
+risk_if_open: "high"

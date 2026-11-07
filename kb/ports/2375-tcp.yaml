@@ -1,0 +1,5 @@
+port: 2375
+proto: "tcp"
+name: "Docker API (no TLS)"
+plain: "The Docker control API without encryption or a login. Anyone who reaches it can run commands on this computer."
+risk_if_open: "high"
