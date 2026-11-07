@@ -1,0 +1,4 @@
+name: "irqbalance.service"
+plain: "Spreads work from hardware devices across the CPU cores."
+safe_to_disable: "Yes, on most desktops."
+if_failed: "Nothing you would notice on a normal desktop."

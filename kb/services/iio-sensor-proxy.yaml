@@ -1,0 +1,4 @@
+name: "iio-sensor-proxy.service"
+plain: "Passes sensor readings, like screen angle and light level, to the desktop."
+safe_to_disable: "Yes, if you do not use auto-rotation or automatic brightness."
+if_failed: "Automatic screen rotation and brightness do not work."

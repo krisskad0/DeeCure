@@ -1,0 +1,4 @@
+name: "speech-dispatcher.service"
+plain: "Turns text into speech for screen readers and other accessibility tools."
+safe_to_disable: "Yes, if you do not use screen readers or text-to-speech."
+if_failed: "Screen readers and text-to-speech do not work."

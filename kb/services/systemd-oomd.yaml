@@ -1,0 +1,4 @@
+name: "systemd-oomd.service"
+plain: "Closes one program when memory runs out, so the whole system does not freeze."
+safe_to_disable: "Mostly. Without it, running out of memory can freeze the whole desktop."
+if_failed: "The system may freeze when memory runs out."

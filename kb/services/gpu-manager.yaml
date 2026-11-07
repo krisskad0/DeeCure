@@ -1,0 +1,4 @@
+name: "gpu-manager.service"
+plain: "Picks the graphics drivers once at boot, mainly on laptops with NVIDIA and Intel graphics."
+safe_to_disable: "Usually, on computers with one graphics chip. Keep it on NVIDIA hybrid-graphics laptops."
+if_failed: "On some laptops, graphics may not be set up right at boot."
