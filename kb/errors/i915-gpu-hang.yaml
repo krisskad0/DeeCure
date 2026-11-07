@@ -1,0 +1,4 @@
+match: "GPU HANG"
+plain: "The Intel graphics chip hung and the driver reset it."
+severity: "warning"
+next_step: "Update the graphics driver if this happens often."

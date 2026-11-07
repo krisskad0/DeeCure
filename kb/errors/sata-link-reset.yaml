@@ -1,0 +1,4 @@
+match: "hard resetting link"
+plain: "A SATA disk stopped answering and the controller reset the connection."
+severity: "warning"
+next_step: "Check the SATA cable and the disk's SMART health if this happens often."
