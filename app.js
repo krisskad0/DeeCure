@@ -199,3 +199,116 @@
   document.addEventListener("visibilitychange", () => (document.hidden ? (clearTimeout(timer), demo.classList.add("paused")) : seen && show(current)));
   show(current);
 })();
+
+// "How deep it looks": the scan walks down the eight layers. In each layer it lights the checks one
+// by one; a check that leads to a sentence on the card shows that sentence. It plays only while the
+// section is on screen. Without the script, or with reduced motion, the finished scan stays.
+(() => {
+  "use strict";
+  const root = document.querySelector(".dc");
+  if (!root) return;
+  const layers = [...root.querySelectorAll(".dc-layer")];
+  const chips = layers.map((l) => [...l.querySelectorAll(".dc-chips li")]);
+  const finds = [...root.querySelectorAll(".dc-finds li")];
+  const total = chips.flat().length;
+  const count = root.querySelector(".dc-count");
+  const status = root.querySelector(".dc-status-t");
+  const num = root.querySelector(".dc-num");
+  const pause = root.querySelector(".dc-pause");
+  const DONE = status.textContent;
+  // The totals come from the page itself, so they stay right when a check is added.
+  root.querySelectorAll(".dc-total").forEach((el) => (el.textContent = total));
+  count.textContent = total;
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    pause.hidden = true;
+    return;
+  }
+  root.classList.add("anim");
+
+  const SCORE = 92, START = 300, CHIP = 38, LAYER = 420, HOLD = 5000;
+  let timers = [], frame = 0, score = 0, done = 0, playing = true, seen = false;
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const setDone = (v) => {
+    done = v;
+    count.textContent = v;
+    root.style.setProperty("--done", (v / total).toFixed(3));
+  };
+  const setScore = (v) => {
+    score = v;
+    num.textContent = Math.round(v);
+    root.style.setProperty("--score", v.toFixed(1));
+  };
+  const tween = (to, ms) => {
+    cancelAnimationFrame(frame);
+    const from = score, t0 = performance.now();
+    const tick = (now) => {
+      // A frame's time can be a little before t0, so keep t between 0 and 1.
+      const t = Math.max(0, Math.min(1, (now - t0) / ms));
+      setScore(from + (to - from) * (1 - (1 - t) ** 3));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+  };
+  const stop = () => {
+    timers.forEach(clearTimeout);
+    timers = [];
+    cancelAnimationFrame(frame);
+  };
+
+  const cycle = () => {
+    stop();
+    root.classList.remove("ready", "fade");
+    layers.forEach((l) => l.classList.remove("scan", "done"));
+    chips.flat().forEach((c) => c.classList.remove("on"));
+    finds.forEach((f) => f.classList.remove("on"));
+    setDone(0);
+    setScore(0);
+    let t = START;
+    layers.forEach((layer, i) => {
+      const name = layer.querySelector("h3").textContent;
+      at(t, () => {
+        layer.classList.add("scan");
+        status.textContent = `Layer ${i + 1} of ${layers.length}: ${name}`;
+      });
+      chips[i].forEach((chip, j) =>
+        at(t + 150 + j * CHIP, () => {
+          chip.classList.add("on");
+          setDone(done + 1);
+          if (chip.dataset.find) finds[+chip.dataset.find]?.classList.add("on");
+        })
+      );
+      t += 150 + chips[i].length * CHIP + 150;
+      at(t, () => {
+        layer.classList.replace("scan", "done");
+        tween((SCORE * (i + 1)) / layers.length, 450);
+      });
+      t += LAYER - 150;
+    });
+    at(t, () => {
+      root.classList.add("ready");
+      status.textContent = DONE;
+    });
+    at(t + HOLD, () => root.classList.add("fade"));
+    at(t + HOLD + 700, cycle);
+  };
+  const update = () => {
+    const run = playing && seen && !document.hidden;
+    root.classList.toggle("paused", !run);
+    if (run && !timers.length) cycle();
+    if (!run) stop();
+  };
+
+  pause.addEventListener("click", () => {
+    playing = !playing;
+    pause.setAttribute("aria-pressed", String(!playing));
+    pause.setAttribute("aria-label", playing ? "Pause the animation" : "Play the animation");
+    update();
+  });
+  // The section is taller than most screens, so "on screen" means any part of it is in the middle.
+  new IntersectionObserver(([entry]) => {
+    seen = entry.isIntersecting;
+    update();
+  }, { rootMargin: "-20% 0px -20% 0px" }).observe(root);
+  document.addEventListener("visibilitychange", update);
+})();
