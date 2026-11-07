@@ -123,7 +123,7 @@ Improvements are offered **only when a measurement on this computer shows they h
 
 Battery charge limits (presets or your own), charge mode, CPU turbo, the highest CPU speed on battery, PCIe and device power saving, sleep type, lid action, keyboard backlight, and radios. Risky settings are tried for one session first and kept only when you choose **Keep**.
 
-![DeeCure battery page on a Linux laptop: charge level, battery health 84% of design capacity, power draw, charge cycles, a 24-hour charge chart, a 30-day health trend, voltage and current, charge limits and modes, and what a USB-C charger offers](docs/07-user-guide/images/deecure-expert-battery-health-chargers.png)
+![DeeCure battery page on a Linux laptop: charge level, battery health 84% of design capacity, time remaining, power draw, capacity, charge cycles, a 24-hour charge chart, a battery health gauge, battery use by app, and a 30-day health trend](docs/07-user-guide/images/deecure-expert-battery-health-chargers.png)
 
 ### Safe fixes with undo
 
@@ -164,7 +164,7 @@ Switch at any time from the top bar. [View levels](docs/01-product/view-levels.m
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png"><img src="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png" alt="DeeCure Linux kernel page: running kernel, command line, installed kernels with the fallback, loaded kernel modules, file watches, open files, kernel lockdown, and clock offset"></a><br><b>Kernel:</b> installed kernels, loaded modules, limits, and settings with the file that set them.</td>
-    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: a ring of 13 improvements and 20 passed checks, a round Scan button, and the improvements one by one, such as removing old kernels and device power saving, each with what was measured and a Preview button"></a><br><b>Optimize:</b> scan live, then only the improvements this computer measurably needs.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: a ring of 12 improvements and 22 passed checks, a round Scan button, and the improvements one by one, such as device power saving, each with what was measured and a Preview button"></a><br><b>Optimize:</b> scan live, then only the improvements this computer measurably needs.</td>
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-memory-map.png"><img src="docs/07-user-guide/images/deecure-expert-memory-map.png" alt="DeeCure memory page on Linux: what fills RAM as one bar with cache striped, a plain-language verdict, memory usage over 24 hours, where memory goes in detail, and the apps, services, and processes using the most memory"></a><br><b>Memory:</b> what really fills RAM, what can be freed, and who uses it.</td>

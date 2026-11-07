@@ -23,7 +23,7 @@
 | Keep it cool and quiet | **Hardware › Sensors** | Each part's temperature against its own limit, fan speeds, and heat slowdowns over 24 hours |
 | Check a charger | **Power › Battery** (Expert view) | What a USB-C charger offers, and whether it is too weak for the laptop |
 
-![DeeCure battery page on a Linux laptop: charge, battery health 84% of design capacity, power draw, cycles, a 24-hour charge chart, a 30-day health trend, charge limits and modes, and what a USB-C charger offers](../images/deecure-expert-battery-health-chargers.png)
+![DeeCure battery page on a Linux laptop: charge, battery health 84% of design capacity, time remaining, power draw, capacity, cycles, a 24-hour charge chart, a battery health gauge, battery use by app, and a 30-day health trend](../images/deecure-expert-battery-health-chargers.png)
 
 ## Advice that fits how you use your laptop
 
