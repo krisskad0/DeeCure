@@ -11,12 +11,9 @@
 [![Good first issues](https://img.shields.io/github/issues/krisskad0/DeeCure/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
 [![Contributors welcome](https://img.shields.io/badge/contributors-welcome-brightgreen)](#contributing)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
-  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 95 with the Optimize scan button and 13 improvements ready, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and disks">
-</picture>
+<img src="docs/07-user-guide/images/deecure-demo-find-explain-fix-undo.gif" alt="DeeCure in 19 seconds: the Overview finds that the firewall is off, the issue card explains it in plain English with a how-to, the fix shows its exact command (sudo ufw enable) and is applied, DeeCure checks again and the issue is gone, and the change is undone from the remediation log">
 
-*The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages. [More screenshots](#what-the-expert-view-shows).*
+*Find, explain, fix, undo: DeeCure finds that the firewall is off, explains it in plain English, shows the exact command before it runs, checks again after the fix, and undoes it in one click. Recorded with real readings from an Ubuntu 24.04 laptop in the Expert view; the firewall change itself was simulated for the recording. [More screenshots](#what-the-expert-view-shows).*
 
 **Website:** [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): features, screenshots, and downloads on one page.
 
@@ -51,11 +48,18 @@ Then open **DeeCure** from the app menu. It updates itself after that: it tells 
 
 1. **Shows how healthy your computer is**: a health score, the problems behind it, and how busy your CPU, graphics (GPU), memory, disk, and network are, all on one screen.
 2. **Warns you early**: about overheating, a disk that will be full soon, a wearing SSD, a failing battery, memory errors, or security updates that silently stopped. It judges each part against **its own limits**, not one number for every computer.
-3. **Explains everything in plain English**: what a service does, what a log error means, why the computer is slow. Over 130 built-in explanations, right where you need them.
+3. **Explains everything in plain English**: what a service does, what a log error means, why the computer is slow. Over 190 built-in explanations, right where you need them.
 4. **Fixes problems safely**: 47 fixes, each showing its exact steps before it runs, with your password only for admin steps, a check afterwards, and undo.
 5. **Gives you control**: battery charge limits, CPU turbo, power saving, sleep and wake-up, and what closing the lid does, all kept after a restart.
 
 It works without a password for looking around. It never changes anything unless you ask.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
+  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 95 with the Optimize scan button and 13 improvements ready, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and disks">
+</picture>
+
+*The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages.*
 
 ## Common problems it solves
 
