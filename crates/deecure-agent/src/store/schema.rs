@@ -6,7 +6,7 @@
 //! [`MIGRATIONS`] moves the database up one version. Never edit a released
 //! migration: add a new one instead.
 
-use rusqlite::Connection;
+use rusqlite::{Connection, Transaction, TransactionBehavior};
 
 use super::{Result, StoreError};
 
@@ -174,8 +174,18 @@ pub(super) fn migrate(conn: &Connection) -> Result<()> {
         // Must be set before the first table exists. Lets deleted space be given back.
         conn.pragma_update(None, "auto_vacuum", "INCREMENTAL")?;
     }
-    for (done, sql) in MIGRATIONS.iter().enumerate().skip(current as usize) {
-        let tx = conn.unchecked_transaction()?;
+    apply_from(conn, current)
+}
+
+/// Runs the migrations after `seen`, the version read before. Two agents can open the same
+/// new database at once (a user's agent and a test's own), so each step takes the write
+/// lock first and reads the version again: a step the other agent already did is skipped.
+fn apply_from(conn: &Connection, seen: u32) -> Result<()> {
+    for (done, sql) in MIGRATIONS.iter().enumerate().skip(seen as usize) {
+        let tx = Transaction::new_unchecked(conn, TransactionBehavior::Immediate)?;
+        if version(&tx)? as usize > done {
+            continue; // dropping the transaction rolls it back; it changed nothing
+        }
         tx.execute_batch(sql)?;
         tx.pragma_update(None, "user_version", done as u32 + 1)?;
         tx.commit()?;
@@ -275,6 +285,23 @@ mod tests {
         migrate(&conn).unwrap();
         migrate(&conn).unwrap();
         assert_eq!(version(&conn).unwrap(), LATEST);
+    }
+
+    #[test]
+    fn a_second_agent_on_the_same_new_database_skips_done_steps() {
+        let dir = std::env::temp_dir().join(format!("deecure-schema-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("deecure.db");
+        let first = Connection::open(&path).unwrap();
+        let second = Connection::open(&path).unwrap();
+        // The second agent read version 0 before the first one finished every step.
+        let seen = version(&second).unwrap();
+        migrate(&first).unwrap();
+        apply_from(&second, seen).unwrap();
+        assert_eq!(version(&second).unwrap(), LATEST);
+        drop((first, second));
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

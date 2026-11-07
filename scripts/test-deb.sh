@@ -63,7 +63,9 @@ done
 [ -L /etc/systemd/system/timers.target.wants/deecure-health.timer ] || fail "deecure-health.timer is not enabled"
 # Run as a normal user, it refuses to start.
 id deecure-test >/dev/null 2>&1 || useradd -m deecure-test
-if su deecure-test -c /usr/libexec/deecure/deecure-helper 2>/dev/null; then fail "the helper ran without root"; fi
+# runuser, not su: on a machine with systemd (CI), su opens a login session, which starts
+# this user's own agent on the same database as the test's agent below.
+if runuser deecure-test -c /usr/libexec/deecure/deecure-helper 2>/dev/null; then fail "the helper ran without root"; fi
 grep -c '<action id=' /usr/share/polkit-1/actions/io.github.krisskad0.deecure.policy
 echo "ok: helper files in place, not enabled, refuses to run without root"
 
@@ -71,11 +73,14 @@ echo "== commands"
 deecure --version
 /usr/libexec/deecure/deecure-agent --version
 # Check the package, not the disk: minimal container images skip installing man pages.
-dpkg-deb -c "$deb" | grep -q "usr/share/man/man1/deecure.1.gz" || fail "no man page in the package"
+# Read the whole list first: "grep -q" in a pipe stops early, and with pipefail the cut-off
+# dpkg-deb then fails the check although the man page is there.
+contents="$(dpkg-deb -c "$deb")"
+grep -q "usr/share/man/man1/deecure.1.gz" <<<"$contents" || fail "no man page in the package"
 
 echo "== run as a normal user"
 id deecure-test >/dev/null 2>&1 || useradd -m deecure-test
-su deecure-test -c '
+runuser deecure-test -c '
   set -e
   /usr/libexec/deecure/deecure-agent --socket /tmp/deecure-test.sock 2>/tmp/deecure-test.log &
   agent=$!

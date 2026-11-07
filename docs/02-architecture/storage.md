@@ -27,7 +27,7 @@ The code is in `crates/deecure-agent/src/store/`.
 | SQLite | The system library (`libsqlite3`), so Ubuntu security updates cover it. WAL mode, so the app can read while the agent writes. |
 | Times | Milliseconds since 1970-01-01 UTC, the same as in the [IPC protocol](ipc-protocol.md). |
 | Empty subject | Stored as `''`, so it can be part of a primary key. |
-| Schema upgrades | The version lives in SQLite's `user_version`. Each migration moves it up by one, in its own transaction. A database from a newer DeeCure is refused, not damaged. |
+| Schema upgrades | The version lives in SQLite's `user_version`. Each migration moves it up by one, in its own transaction. Each one takes the write lock first and reads the version again, so two agents opening the same new database never run a step twice. A database from a newer DeeCure is refused, not damaged. |
 
 ### How metrics are stored
 
