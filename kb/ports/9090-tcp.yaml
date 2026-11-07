@@ -1,0 +1,5 @@
+port: 9090
+proto: "tcp"
+name: "Cockpit"
+plain: "The Cockpit web console to manage this computer. Anyone who reaches it can try passwords."
+risk_if_open: "high"

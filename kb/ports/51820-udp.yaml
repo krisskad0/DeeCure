@@ -1,0 +1,5 @@
+port: 51820
+proto: "udp"
+name: "WireGuard"
+plain: "The WireGuard VPN. It answers only devices that have the right keys."
+risk_if_open: "low"
