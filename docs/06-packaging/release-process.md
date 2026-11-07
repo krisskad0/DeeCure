@@ -26,7 +26,7 @@ The `~` makes a pre-release sort **before** the final release, so apt upgrades f
 
 ## Release checklist (as used for `v0.1.0-alpha.3`)
 
-1. Run `scripts/bump-version.sh 0.3.0`. It prints the next steps.
+1. First merge any open GitHub Actions major update (Dependabot group `actions-major`): only a release runs `release.yml`, so this release tests it. Then run `scripts/bump-version.sh 0.3.0`. It prints the next steps.
 2. Move the "Unreleased" notes in `CHANGELOG.md` under the new version. Give the AppStream entry the script added in `packaging/desktop/*.metainfo.xml` a description.
 3. Add a `packaging/debian/changelog` entry: in `packaging/`, run `dch -v 0.3.0-1 -D noble "…"` (a pre-release such as `0.1.0-alpha.3` is `0.1.0~alpha.3-1`) with `DEBFULLNAME="DeeCure maintainers"` and `DEBEMAIL="krisskad0@users.noreply.github.com"`.
 4. `make release-check`: builds the packages once, then runs, at the same time, the upgrade from the newest published release to these packages and every page with this computer's real answers (`ui-real`). The install and helper tests are not run here: CI and the release job run them on every build.
