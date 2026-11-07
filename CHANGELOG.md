@@ -10,7 +10,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **A website** at [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): what DeeCure does, who it is for, screenshots, privacy, an FAQ, and the one-command install and package downloads for the newest release. No tracking and no cookies.
 - **Who DeeCure is for** ([docs/07-user-guide/use-cases](docs/07-user-guide/use-cases/README.md)): one short page per role (new to Linux, laptop owners, developers and data scientists, gamers and creators, people who look after other PCs, sysadmins, security and privacy minded people) and a table per field, each with the everyday problems DeeCure solves and where to click.
-- KB explanations for six common kernel log errors: soft lockup, hung tasks, SATA link resets, AMD and Intel GPU hangs, and Bluetooth timeouts.
 
 ### Fixed
 
