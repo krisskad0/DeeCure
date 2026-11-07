@@ -1,0 +1,4 @@
+match: "amdgpu.*ring .* timeout"
+plain: "The AMD graphics chip stopped answering and the driver restarted part of it."
+severity: "warning"
+next_step: "Update the graphics driver if this happens often."

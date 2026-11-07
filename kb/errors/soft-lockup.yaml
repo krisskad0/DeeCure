@@ -1,0 +1,4 @@
+match: "watchdog: BUG: soft lockup"
+plain: "One CPU core was stuck in the kernel for over 20 seconds."
+severity: "warning"
+next_step: "Update the kernel and drivers if this happens often; it is usually a driver or hardware problem."

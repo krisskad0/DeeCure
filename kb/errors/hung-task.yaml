@@ -1,0 +1,4 @@
+match: "blocked for more than .* seconds"
+plain: "A program waited so long for the disk that the kernel reported it as stuck."
+severity: "warning"
+next_step: "Check disk health if this happens often."

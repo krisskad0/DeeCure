@@ -1,0 +1,4 @@
+match: "hci0: command .* tx timeout"
+plain: "The Bluetooth adapter did not answer a command in time."
+severity: "info"
+next_step: "Turn Bluetooth off and on, or re-plug the adapter if it happens often."
