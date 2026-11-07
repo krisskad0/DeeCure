@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  The share poster: site/assets/og-image.png (1200x630) and the GitHub social preview (1280x640).
+  How to render it: docs/06-packaging/website.md, "Share image".
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: "Ubuntu Sans";
+    src: url("../site/assets/fonts/ubuntu-sans-latin-wght-normal.woff2") format("woff2");
+    font-weight: 100 800;
+  }
+  :root { --accent: #5f9df0; --accent-2: #8b85ff; --ink: #f3f5f8; --muted: #aab3c2; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 100vw; height: 100vh; overflow: hidden; }
+  body {
+    font-family: "Ubuntu Sans", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(70% 90% at 95% 10%, #1f3f7a 0%, rgba(31, 63, 122, 0) 70%),
+      linear-gradient(100deg, #0b0d11 0%, #0d1220 45%, #14284f 100%);
+    position: relative;
+  }
+  .copy { position: absolute; left: 5.4vw; top: 0; bottom: 0; width: 45vw; display: flex; flex-direction: column; justify-content: center; }
+  .brand { display: flex; align-items: center; gap: 1.6vw; margin-bottom: 4.2vh; }
+  .brand img { width: 6.2vw; height: 6.2vw; border-radius: 1.3vw; }
+  .brand span { font-size: 5.2vw; font-weight: 600; letter-spacing: -0.02em; }
+  h1 { font-size: 4.25vw; line-height: 1.12; font-weight: 700; letter-spacing: -0.015em; }
+  h1 .grad { background: linear-gradient(100deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  p { margin-top: 3.2vh; font-size: 1.95vw; line-height: 1.4; color: var(--muted); }
+  .pills { display: flex; gap: 1.2vw; margin-top: 4.6vh; }
+  .pills span { font-size: 1.75vw; padding: 0.9vh 1.4vw; border-radius: 99px; background: #1a2740; border: 1px solid #34507e; color: #dbe6f7; }
+  .shot {
+    position: absolute; left: 55vw; top: 15vh; width: 66vw;
+    border-radius: 1.2vw; border: 1px solid #3a4352; overflow: hidden;
+    box-shadow: 0 2vw 5vw rgba(0, 0, 0, 0.55);
+  }
+  .shot img { display: block; width: 100%; }
+</style>
+</head>
+<body>
+  <div class="copy">
+    <div class="brand"><img src="../site/assets/icon-192.png" alt=""><span>DeeCure</span></div>
+    <h1>Every Linux system hides problems. <span class="grad">DeeCure finds them.</span></h1>
+    <p>Deep insight into every layer, hardware and software, on desktops, laptops, and servers, with one-click fixes you can undo.</p>
+    <div class="pills"><span>Free and open source</span><span>No account, no cloud</span></div>
+  </div>
+  <div class="shot"><img src="../site/assets/screens/deecure-expert-overview-health-dashboard-dark.png" alt=""></div>
+</body>
+</html>

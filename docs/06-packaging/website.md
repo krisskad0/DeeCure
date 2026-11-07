@@ -22,7 +22,17 @@ DeeCure's landing page lives at **https://krisskad0.github.io/DeeCure/**. It sho
 ## Search and sharing
 
 - A clear title and description, a canonical URL, and `robots.txt` with the `sitemap.xml`.
-- Open Graph and Twitter cards with `assets/og-image.png` (1200 × 630, made from the dark Overview screenshot).
+- Open Graph and Twitter cards with `assets/og-image.png` (1200 × 630). See "Share image" below.
+
+## Share image
+
+The poster people see when the site or the repo is shared. It says "Every Linux system hides problems. DeeCure finds them." beside the dark Overview screenshot. Its source is [scripts/og-image.html](../../scripts/og-image.html), which uses the site's font, icon, and screenshot.
+
+1. Copy the screenshots into `site/assets/screens/` first (the folder is ignored by git).
+2. Render the site image, from the repo folder:
+   `google-chrome --headless=new --hide-scrollbars --force-device-scale-factor=1 --allow-file-access-from-files --virtual-time-budget=3000 --window-size=1200,630 --screenshot=site/assets/og-image.png "file://$PWD/scripts/og-image.html"`
+3. Render the GitHub social preview the same way with `--window-size=1280,640` and any other output file. Upload it in the repo's **Settings › General › Social preview** (GitHub has no API for it).
+4. Look at both images before you commit.
 - Structured data: `SoftwareApplication` (free, Ubuntu 24.04 and 26.04, features, screenshots) and `FAQPage` (the same questions as the page).
 - Every image has a full description in `alt`, with its width and height.
 

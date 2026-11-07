@@ -1,6 +1,6 @@
 # DeeCure: Linux system monitor, health check, and optimizer for Ubuntu
 
-**DeeCure is a free, open-source app that checks the health of your Linux computer, explains what it finds in plain English, warns you before something breaks, and fixes problems safely with undo.** It covers your CPU, graphics, memory, disks and SSDs, battery, temperatures, firmware, services, updates, and security, in one desktop app and one terminal command. Everything stays on your computer: no account, no cloud, no telemetry.
+**Every Linux system has hidden problems, in the hardware or the software, that are hard to find. DeeCure checks every layer of your desktop, laptop, or server deeply, explains what it finds in plain English, and fixes problems with one click, with undo.** It is free and open source. It covers your CPU, graphics, memory, disks and SSDs, battery, temperatures, firmware, services, updates, and security, in one desktop app and one terminal command. Everything stays on your computer: no account, no cloud, no telemetry.
 
 [![CI](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml/badge.svg)](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
