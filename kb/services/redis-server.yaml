@@ -1,0 +1,4 @@
+name: "redis-server.service"
+plain: "Redis, a fast in-memory data store, often used as a cache."
+safe_to_disable: "Only if no app uses it — those apps slow down or stop working."
+if_failed: "Apps that use Redis for cache or data stop working."

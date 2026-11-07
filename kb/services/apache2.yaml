@@ -1,0 +1,4 @@
+name: "apache2.service"
+plain: "Apache web server. Serves websites and web apps."
+safe_to_disable: "Only if nothing on this computer serves a website — sites that use it go offline."
+if_failed: "Websites behind Apache stop responding."
