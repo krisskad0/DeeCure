@@ -25,7 +25,7 @@ export function sourceText(src: string): string {
   return m ? `${m[1].replace(/^https?:\/\//, "")} ${m[2]}` : src;
 }
 
-// ---------- Packages › Installed (drawer) ----------
+// ---------- Apps & Updates › Installed (drawer) ----------
 
 export function PackageExpertDetail({ name }: { name: string }) {
   const { data: d, error } = useLive(() => getPackageDetail(name), 300_000, name);
@@ -60,7 +60,7 @@ export function PackageExpertDetail({ name }: { name: string }) {
   );
 }
 
-// ---------- Packages › Sources ----------
+// ---------- Apps & Updates › Sources ----------
 
 type Snap = NonNullable<SoftwareHealth["snaps"]>[number];
 

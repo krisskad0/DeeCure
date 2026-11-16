@@ -10,7 +10,7 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { href } from "../../route";
 
 const QUESTIONS: [string, string, string][] = [
-  ["Why did my computer restart last night?", "logs", "boots"],
+  ["Why did my computer restart last night?", "system", "boot"],
   ["Why is a program crashing?", "logs", "crashes"],
   ["Is my disk healthy?", "hardware", "storage"],
   ["What is filling my disk?", "storage", "usage"],

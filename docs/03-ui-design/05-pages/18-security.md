@@ -2,8 +2,8 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Network & Access · Icon: `shield` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Overview, Vulnerabilities, Hardening, File Integrity, Malware Scan
+- Group: Network & Security · Icon: `shield` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
+- Sub-pages: Overview, Vulnerabilities, Hardening, Firewall, File Integrity, Malware Scan
 
 ## Security › Overview: `security/overview`
 
@@ -11,7 +11,7 @@
 
 | Label | Value | Unit | Status badge | Subtext | Visual | Opens |
 | --- | --- | --- | --- | --- | --- | --- |
-| Security updates | 4 |  | {warn:Warning} |   | - | `system/updates` |
+| Security updates | 4 |  | {warn:Warning} |   | - | `packages/updates` |
 | Known vulnerabilities | 3 |  | {warn:Warning} | 2 high · 1 medium | - | - |
 | Firewall | Active |  | - |   | - | - |
 | AppArmor | 112 | profiles | - | enforcing | - | - |
@@ -76,6 +76,32 @@ Tab count pill: 3.
 | Disk encryption | {warn:Fail} | None | Enable LUKS at next reinstall |
 
 The panel shows a pass bar, one green line when every check passed (else the checks not passed, with the value now and the advice), and the table under "Show all".
+
+## Security › Firewall: `security/firewall`
+
+It was Network › Firewall until 2026-11-16. Security › Overview checks "Firewall enabled", so the check and the fix sit together.
+
+1. **KPI row** · span 12
+
+| Label | Value | Unit | Status badge | Subtext | Visual | Opens |
+| --- | --- | --- | --- | --- | --- | --- |
+| Status | Active |  | - | ufw | - | - |
+| Incoming | Deny |  | - | default | - | - |
+| Outgoing | Allow |  | - | default | - | - |
+| Rules | 2 |  | - |   | - | - |
+| Blocked today | 37 |  | - | packets | - | - |
+
+2. **Data table**: "Rules" · span 12
+- Source chip (Expert): `sudo ufw status numbered`
+- Empty text: "Requires Full access"
+
+| # [n] | To | Action | From | Comment |
+| --- | --- | --- | --- | --- |
+| 1 | `5353/udp` | {ok:ALLOW IN} | Anywhere | mDNS |
+| 2 | `1714:1764/tcp` | {ok:ALLOW IN} | `192.168.1.0/24` | GSConnect |
+
+3. **Alert banner**: "Docker rules are not managed by ufw" · span 12
+- State: `warn` · Title: "Docker rules are not managed by ufw" · Text: "Port 5432 (pg-dev) is reachable from the LAN even though ufw denies incoming traffic." · Buttons: [View container](go:containers/containers)
 
 ## Security › File Integrity: `security/integrity`
 

@@ -241,7 +241,7 @@ export function ServicesExpertSections() {
   );
 }
 
-// ---------- System › Boot ----------
+// ---------- Operating System › Boot ----------
 
 export function BootExpertSections() {
   const { data: d, error } = useLive(loadBoot, 600_000);

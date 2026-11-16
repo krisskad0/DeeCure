@@ -2,8 +2,8 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: System · Icon: `chip` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Summary, Processor, Memory, Storage Devices, Graphics, Sensors, Peripherals, Firmware
+- Group: Machine · Icon: `chip` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
+- Sub-pages: Summary, All Parts, Processor, Memory Modules, Drives, Graphics, Sensors, Firmware (Peripherals moved to Devices › Ports & Devices on 2026-11-16)
 
 ## Hardware › Summary: `hardware/summary`
 
@@ -29,10 +29,35 @@
 | `bat` | Battery | 71% of design | {warn:Degraded} | `power/battery` |
 | `mon` | Graphics | Iris Xe · i915 | {ok:Healthy} | `hardware/graphics` |
 | `fan` | Fans | Not reported | {off:Unknown} | `hardware/sensors` |
-| `usb` | Peripherals | 11 devices · 0 missing drivers | {crit:1 unstable} | `hardware/peripherals` |
+| `usb` | Ports & Devices | 11 devices · 0 missing drivers | {crit:1 unstable} | `devices/ports` |
 | `bolt` | Firmware | 1 update available | {info:Update} | `hardware/firmware` |
 
 Expert adds "Hardware errors": one green line ("No errors", with how many sources were checked) or a list of only the kinds with errors (count, last time, one example). The full list of checks is under "Show all". "Drivers Ubuntu offers" is one line when no device needs an extra driver.
+
+## Hardware › All Parts: `hardware/parts`
+
+Every physical part in one place (added 2026-11-16). Each row links to the sub-page with the details. Hardware › Summary › Components has an **All parts** link here.
+
+1. **KPI row** · span 12
+
+| Label | Value | Unit | Status badge | Subtext | Visual | Opens |
+| --- | --- | --- | --- | --- | --- | --- |
+| Parts found | 31 |  | - |   | - | - |
+| Need a driver | 0 |  | {ok:OK} |   | - | - |
+| Connected now | 4 |  | - | USB, USB-C, Thunderbolt, Bluetooth | - | - |
+| SATA ports | 1 of 2 |  | - | in use | - | - |
+
+2. **Data table**: "Every part" · span 12
+- Search box and a filter by group: Inside, Input, Screens and sound, Network, Connected. Every row shows at once (no "Show all").
+- Source chip (Expert): `/sys · /proc · PipeWire · BlueZ · UPower`
+- Columns: Where, Part, Name (with a detail line), Status, and a **Details** link.
+- Rows: processor, memory, each graphics card, each drive, each battery, each fan, the fingerprint reader, each camera; each keyboard (the built-in one is named "Built-in keyboard"), the keyboard light (level and status), each touchpad, touchscreen, pen, and mouse; each screen (built-in or not) and sound card; each network chip (Wi-Fi, Ethernet, mobile data) and the Bluetooth adapter; each USB device (warn "No driver" when it needs one), each USB-C port (In use or Free), each Thunderbolt device, and each Bluetooth device.
+- No new reads: the rows come from the `hardware`, `gpu`, `bluetooth`, `power`, `power_detail`, `platform_detail`, and `devices_detail` answers and the fan readings.
+
+3. **Panel**: "Slots and sockets" · span 12
+- **SATA ports** (no password): one row per port of the disk controllers, from `sata_ports` in the `hardware` answer: the drive on it or "Nothing connected", and the link speed. A note says a controller can have more ports than the case has sockets.
+- **Memory slots, expansion slots, and sockets** (Admin): one button, "Read slots and sockets (asks for your password)", reads `memory_slots` and `slots_ports` from the helper with one password (polkit keeps the approval). It shows the memory slots (as on Memory Modules), the expansion slots (PCIe and M.2: slot, type, In use or Free, bus address), and the sockets (name, type, connector, outside or inside the case).
+- A note says the maker writes this list, and on some computers, laptops most of all, it is missing or not complete.
 
 ## Hardware › Processor: `hardware/processor`
 
@@ -76,7 +101,7 @@ Expert adds "Hardware errors": one green line ("No errors", with how many source
 
 **Cores** is a grid of small tiles, one per CPU thread, grouped into performance and efficient cores: name (P0, E0…), speed, a use bar, use, and temperature; **Show as a table** gives the table. Expert adds: **Power limits** as the limit that applies for each kind (sustained, boost, peak: the lowest enabled one across zones) with all zones under **Show all**; **Caches** by level ("48 KB × 2, each for 2 CPUs"); **CPU security flaws** as a green "None open" line (or the open ones with what the kernel says), the worked-around flaws as chips, and the full list under **Show all**.
 
-## Hardware › Memory: `hardware/memory`
+## Hardware › Memory Modules: `hardware/memory`
 
 1. **Key-value list**: "Modules" · span 6
 - Source chip (Expert): `dmidecode -t memory`
@@ -98,7 +123,7 @@ Expert adds "Hardware errors": one green line ("No errors", with how many source
 | `na` | Error correction (ECC) reporting | Not available on this memory type |   |
 | `na` | Full memory test | Needs a reboot into memtest86+ | [How to run](act:toast:Restart → hold Shift → Memory test (memtest86+).) |
 
-## Hardware › Storage Devices: `hardware/storage`
+## Hardware › Drives: `hardware/storage`
 
 1. **Data table**: "Disks" · span 12
 - Source chip (Expert): `lsblk · smartctl`
@@ -171,39 +196,6 @@ Expert adds "Hardware errors": one green line ("No errors", with how many source
 
 Fans are chips with their speed. Expert: "Thermal zones" shows a bar per zone with a slow-down point (how close it is now, with the degrees left; 5 °C or less is a warning), and the other zones as chips. The table is under "Show all".
 
-## Hardware › Peripherals: `hardware/peripherals`
-
-1. **KPI row** · span 12
-
-| Label | Value | Unit | Status badge | Subtext | Visual | Opens |
-| --- | --- | --- | --- | --- | --- | --- |
-| USB devices | 3 |  | - |   | - | - |
-| PCI devices | 18 |  | - |   | - | - |
-| Bluetooth | 2 |  | - | 1 connected | - | - |
-| Missing drivers | 0 |  | - |   | - | - |
-
-2. **Data table**: "Devices" · span 12
-- Source chip (Expert): `lsusb · lspci -k · bluetoothctl`
-- Search: "Search devices"
-- Filter chips on column 2: All / USB / PCI / Bluetooth / Input
-
-| Device | Bus | Vendor | Driver | Status | Row action |
-| --- | --- | --- | --- | --- | --- |
-| USB mouse | USB | Logitech | `usbhid` | {ok:Connected} |  |
-| Integrated camera | USB | Chicony | `uvcvideo` | {ok:Idle} |  |
-| Bluetooth adapter | USB | Intel | `btusb` | {crit:Unstable} | `bt` |
-| Wi-Fi 6 AX201 | PCI | Intel | `iwlwifi` | {ok:Active} |  |
-| NVMe controller | PCI | Samsung | `nvme` | {ok:Active} |  |
-| Smart Sound audio | PCI | Intel | `snd_hda_intel` | {ok:Active} |  |
-| Thunderbolt 4 controller | PCI | Intel | `thunderbolt` | {ok:Active} |  |
-| Wireless earbuds | Bluetooth | - | `bluez` | {warn:Reconnecting} |  |
-| Phone | Bluetooth | - | `bluez` | {off:Paired} |  |
-| Touchpad | Input | ELAN | `i2c_hid` | {ok:Active} |  |
-| Keyboard | Input | AT Translated | `atkbd` | {ok:Active} |  |
-
-
-Expert **PCIe links** shows chips by verdict (Full speed, Nothing connected, …), a green "All good" line or "Worth a look" with each link slower than it could be or with link errors, and every link under **Show all**.
-
 ## Hardware › Firmware: `hardware/firmware`
 
 1. **Key-value list**: "Platform firmware" · span 5
@@ -229,6 +221,6 @@ Expert **PCIe links** shows chips by verdict (Full speed, Nothing connected, …
 
 ---
 
-← Previous: [System](05-system.md) · [Index](README.md) · Next: [Power](07-power.md) →
+← Previous: [Operating System](05-system.md) · [Index](README.md) · Next: [Power](07-power.md) →
 
 **Firmware updates** shows chips (updates available, up to date, not on LVFS), then the devices with an update (current → available) or a green "Up to date" line; every device is under **Show all**. Expert **Security checks** shows a pass bar ("34 of 37 passed"), the checks that did not pass with their result, and every check under **Show all**.

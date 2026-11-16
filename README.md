@@ -12,11 +12,11 @@
 [![Contributors welcome](https://img.shields.io/badge/contributors-welcome-brightgreen)](#contributing)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
-  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 95 with the Optimize scan button and 13 improvements ready, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and disks">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-deep-look-dark.svg">
+  <img src="docs/07-user-guide/images/deecure-deep-look-light.svg" alt="How deep DeeCure looks: eight layers, each nested inside the one above, from apps and processes, services and jobs, packages and updates, network, security and backups, storage, and kernel and firmware down to the hardware. A scan walks down the layers, 117 checks in all, while live readings move. The health score fills to 92, and what the scan found appears as plain sentences, each with its path down the layers: the firewall is off, the main disk will be full in about 12 days, the SSD has 92% of its life left, and battery health is 84%.">
 </picture>
 
-*The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages. [More screenshots](#what-the-expert-view-shows).*
+*How deep it looks: eight layers, each one inside the one above, from the apps you see down to the chips inside. DeeCure turns 117 checks into one score and a few plain sentences, and each sentence shows the layer and the path where it was found. [See it find, explain, fix, and undo](#see-it-work).*
 
 **Website:** [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): features, screenshots, and downloads on one page.
 
@@ -51,11 +51,24 @@ Then open **DeeCure** from the app menu. It updates itself after that: it tells 
 
 1. **Shows how healthy your computer is**: a health score, the problems behind it, and how busy your CPU, graphics (GPU), memory, disk, and network are, all on one screen.
 2. **Warns you early**: about overheating, a disk that will be full soon, a wearing SSD, a failing battery, memory errors, or security updates that silently stopped. It judges each part against **its own limits**, not one number for every computer.
-3. **Explains everything in plain English**: what a service does, what a log error means, why the computer is slow. Over 130 built-in explanations, right where you need them.
+3. **Explains everything in plain English**: what a service does, what a log error means, why the computer is slow. Over 190 built-in explanations, right where you need them.
 4. **Fixes problems safely**: 47 fixes, each showing its exact steps before it runs, with your password only for admin steps, a check afterwards, and undo.
 5. **Gives you control**: battery charge limits, CPU turbo, power saving, sleep and wake-up, and what closing the lid does, all kept after a restart.
 
 It works without a password for looking around. It never changes anything unless you ask.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-expert-overview-health-dashboard-dark.png">
+  <img src="docs/07-user-guide/images/deecure-expert-overview-health-dashboard.png" alt="DeeCure Overview on Ubuntu: health score 95 with the Optimize scan button and 13 improvements ready, CPU, GPU, memory, disk, network, and battery tiles, a 24-hour CPU, GPU, and memory chart, active issues, and disks">
+</picture>
+
+*The Overview on a real Ubuntu 24.04 laptop: health score, CPU, GPU, memory, disk, network, and battery at a glance, with the problems to look at. Every screenshot here is the Expert view; the Beginner view shows the same in fewer pages.*
+
+### See it work
+
+<img src="docs/07-user-guide/images/deecure-demo-find-explain-fix-undo.gif" alt="DeeCure in 19 seconds: the Overview finds that the firewall is off, the issue card explains it in plain English with a how-to, the fix shows its exact command (sudo ufw enable) and is applied, DeeCure checks again and the issue is gone, and the change is undone from the remediation log">
+
+*Find, explain, fix, undo: DeeCure finds that the firewall is off, explains it in plain English, shows the exact command before it runs, checks again after the fix, and undoes it in one click. Recorded with real readings from an Ubuntu 24.04 laptop in the Expert view; the firewall change itself was simulated for the recording. [More screenshots](#what-the-expert-view-shows).*
 
 ## Common problems it solves
 
@@ -119,7 +132,7 @@ Improvements are offered **only when a measurement on this computer shows they h
 
 Battery charge limits (presets or your own), charge mode, CPU turbo, the highest CPU speed on battery, PCIe and device power saving, sleep type, lid action, keyboard backlight, and radios. Risky settings are tried for one session first and kept only when you choose **Keep**.
 
-![DeeCure battery page on a Linux laptop: charge level, battery health 84% of design capacity, power draw, charge cycles, a 24-hour charge chart, a 30-day health trend, voltage and current, charge limits and modes, and what a USB-C charger offers](docs/07-user-guide/images/deecure-expert-battery-health-chargers.png)
+![DeeCure battery page on a Linux laptop: charge level, battery health 84% of design capacity, time remaining, power draw, capacity, charge cycles, a 24-hour charge chart, a battery health gauge, battery use by app, and a 30-day health trend](docs/07-user-guide/images/deecure-expert-battery-health-chargers.png)
 
 ### Safe fixes with undo
 
@@ -160,7 +173,7 @@ Switch at any time from the top bar. [View levels](docs/01-product/view-levels.m
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png"><img src="docs/07-user-guide/images/deecure-expert-linux-kernel-modules.png" alt="DeeCure Linux kernel page: running kernel, command line, installed kernels with the fallback, loaded kernel modules, file watches, open files, kernel lockdown, and clock offset"></a><br><b>Kernel:</b> installed kernels, loaded modules, limits, and settings with the file that set them.</td>
-    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: a ring of 13 improvements and 20 passed checks, a round Scan button, and the improvements one by one, such as removing old kernels and device power saving, each with what was measured and a Preview button"></a><br><b>Optimize:</b> scan live, then only the improvements this computer measurably needs.</td>
+    <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-optimize-improvements.png"><img src="docs/07-user-guide/images/deecure-expert-optimize-improvements.png" alt="DeeCure Optimize page on Ubuntu: a ring of 12 improvements and 22 passed checks, a round Scan button, and the improvements one by one, such as device power saving, each with what was measured and a Preview button"></a><br><b>Optimize:</b> scan live, then only the improvements this computer measurably needs.</td>
   </tr>
   <tr>
     <td width="50%"><a href="docs/07-user-guide/images/deecure-expert-memory-map.png"><img src="docs/07-user-guide/images/deecure-expert-memory-map.png" alt="DeeCure memory page on Linux: what fills RAM as one bar with cache striped, a plain-language verdict, memory usage over 24 hours, where memory goes in detail, and the apps, services, and processes using the most memory"></a><br><b>Memory:</b> what really fills RAM, what can be freed, and who uses it.</td>
@@ -298,6 +311,7 @@ Everyone is welcome: Linux users, testers, writers, designers, and Rust or React
 
 | You can… | Start here |
 | --- | --- |
+| Test DeeCure on your computer and report what is wrong (no code) | [Test and report problems](docs/07-user-guide/testing-and-reporting.md), then the [testing issues](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3Atesting) |
 | Pick a small, ready task | [Good first issues](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22good+first+issue%22) |
 | Take a bigger task | [Help wanted](https://github.com/krisskad0/DeeCure/issues?q=is%3Aopen+label%3A%22help+wanted%22) |
 | Explain a service, port, or error in plain English (YAML, no code) | [Suggest a check or an explanation](https://github.com/krisskad0/DeeCure/issues/new?template=check_or_explanation.yml) |

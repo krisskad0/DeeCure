@@ -7,4 +7,4 @@ steps:
   - "Choose the line with the older version number. Do not choose \"recovery mode\"."
   - "Check whether the problem is gone. If it is, the new kernel is the cause."
   - "Restarting normally uses the new kernel again. A later kernel update usually fixes the problem; you can also report it with the command ubuntu-bug linux."
-notes: "This changes nothing permanently. DeeCure lists your installed kernels in System › Kernel."
+notes: "This changes nothing permanently. DeeCure lists your installed kernels in Operating System › Kernel."

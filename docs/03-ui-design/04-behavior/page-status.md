@@ -26,7 +26,7 @@ The table above describes the prototype's sample data. The app works it out from
 | Overview | The most serious open finding anywhere. Healthy when there are none. |
 | Any other page with rules | The most serious open finding whose rule starts with the page ID (`storage.…` → Storage). Healthy when there are none. |
 | A page with no rules yet | **Unknown** in the page header, even with no findings, because nothing checks it yet. The agent lists the areas it checks in `status` → `checked`. In Overview › Subsystems the badge says **Not checked** instead, so it does not look like a problem. |
-| Optimize, Diagnostics, Assistant, Settings, and the record and view pages (Logs, Activity, Processes, Display & Audio), which no warning covers | No badge |
+| Optimize, Diagnostics, Assistant, Settings, and the record and view pages (Logs, Activity, Processes), which no warning covers | No badge |
 | Any page while the agent is not reachable or has not checked yet | Unknown |
 
 The sidebar shows a dot only for Warning (yellow) and Critical (red). Overview shows the number of open findings. The sub-page that shows a finding gets the same dot in the page's sub-page list, so it is clear where to look (for example Hardware › Sensors for a hot part). Each rule names its sub-page in the app (`RULE_TAB` in `app/src/status.ts`); a test fails when a rule has none. A notification opens that sub-page too.

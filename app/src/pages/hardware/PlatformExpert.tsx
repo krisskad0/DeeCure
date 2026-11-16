@@ -138,7 +138,7 @@ export function FirmwareExpertSections() {
   );
 }
 
-// ---------- Hardware › Peripherals ----------
+// ---------- Devices › Ports & Devices ----------
 
 export function PortsExpertSections() {
   const { data: d, error } = usePlatform();

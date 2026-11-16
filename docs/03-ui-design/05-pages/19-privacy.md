@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Network & Access · Icon: `eye` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: Network & Security · Icon: `eye` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Device Access, App Permissions, Privacy Settings
 
 ## Privacy › Device Access: `privacy/access`

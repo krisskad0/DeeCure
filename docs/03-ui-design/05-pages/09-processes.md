@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Workloads · Icon: `layers` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: Running · Icon: `layers` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: All Processes, Top Consumers
 
 ## Processes › All Processes: `processes/all`
@@ -84,4 +84,4 @@
 
 ---
 
-← Previous: [Display & Audio](08-display.md) · [Index](README.md) · Next: [Services](10-services.md) →
+← Previous: [Devices](08-devices.md) · [Index](README.md) · Next: [Services](10-services.md) →

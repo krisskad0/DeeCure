@@ -38,7 +38,7 @@ This page and the pages below show how it helps different people. Find yourself 
 
 1. **Shows how the computer is doing.** One health score from 0 to 100, the problems behind it, and how busy the CPU, graphics, memory, disk, and network are.
 2. **Warns early, without false alarms.** It judges each part against its own limits, such as the temperature a drive says it can take. Normal use, like a busy CPU or memory full of cache, never warns. 55 warnings, and you can change any of them.
-3. **Explains in plain English.** What a service does, what an error in the log means, why the computer is slow. Over 130 built-in explanations, shown where you need them.
+3. **Explains in plain English.** What a service does, what an error in the log means, why the computer is slow. Over 190 built-in explanations, shown where you need them.
 4. **Fixes safely.** 47 fixes. Each one shows its steps before it runs, asks for your password only for admin steps, checks the result, and keeps an undo.
 5. **Improves only what needs it.** The Optimize page scans the computer and offers an improvement only when a measurement shows it helps. No "speed-up tips" that do nothing.
 

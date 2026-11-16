@@ -11,6 +11,7 @@ import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { type StatusRow, StatusList } from "../../components/StatusList";
 import { bytes, heatStatus, pick, pickAll } from "../../metrics";
+import { LinkButton } from "../../components/Button";
 import { href } from "../../route";
 import { useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
@@ -48,10 +49,10 @@ export function HardwareSummary() {
     { icon: "fan", label: "Fans", metric: fans.length ? fans.map((f) => `${Math.round(f.value)} RPM`).join(", ") : "Not reported", status: fans.length ? "ok" : "off", href: href("hardware", "sensors") },
     {
       icon: "usb",
-      label: "Peripherals",
+      label: "Ports & Devices",
       metric: `${hw.devices.filter((d) => d.bus === "USB").length + (bluetooth?.devices.length ?? 0)} devices · ${missing} missing drivers`,
       status: missing ? "warn" : "ok",
-      href: href("hardware", "peripherals"),
+      href: href("devices", "ports"),
     },
     { icon: "bolt", label: "Firmware", metric: !firmware ? "Loading…" : !firmware.available ? "fwupd not running" : updates ? `${updates} update${updates === 1 ? "" : "s"} available` : "Up to date", status: !firmware?.available ? "off" : updates ? "info" : "ok", href: href("hardware", "firmware") },
   ];
@@ -69,7 +70,7 @@ export function HardwareSummary() {
           ]}
         />
       </Panel>
-      <Panel title="Components" span={6} flush>
+      <Panel title="Components" actions={<LinkButton to={href("hardware", "parts")}>All parts</LinkButton>} span={6} flush>
         <StatusList rows={rows} />
       </Panel>
       {atLeast(mode, "expert") && <Guard><HardwareErrorsPanel /></Guard>}

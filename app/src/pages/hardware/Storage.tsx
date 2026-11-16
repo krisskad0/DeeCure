@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Hardware › Storage Devices (docs/03-ui-design/05-pages/06-hardware.md), with real data.
+// Hardware › Drives (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // SMART health needs Full access (Phase 2); drive temperature comes from hwmon.
 
 import { Guard } from "../../components/ErrorBoundary";

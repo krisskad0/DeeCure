@@ -23,7 +23,7 @@
 | Keep it cool and quiet | **Hardware › Sensors** | Each part's temperature against its own limit, fan speeds, and heat slowdowns over 24 hours |
 | Check a charger | **Power › Battery** (Expert view) | What a USB-C charger offers, and whether it is too weak for the laptop |
 
-![DeeCure battery page on a Linux laptop: charge, battery health 84% of design capacity, power draw, cycles, a 24-hour charge chart, a 30-day health trend, charge limits and modes, and what a USB-C charger offers](../images/deecure-expert-battery-health-chargers.png)
+![DeeCure battery page on a Linux laptop: charge, battery health 84% of design capacity, time remaining, power draw, capacity, cycles, a 24-hour charge chart, a battery health gauge, battery use by app, and a 30-day health trend](../images/deecure-expert-battery-health-chargers.png)
 
 ## Advice that fits how you use your laptop
 
@@ -32,7 +32,7 @@ DeeCure's **Optimize** page looks at your real history before it suggests anythi
 - **A charge limit** only when the laptop was on the charger most of the last 14 days.
 - **A different power mode** only when Power saver runs on the charger, or Performance runs on battery, for a long time.
 - **Turbo off on battery** only when the CPU often slowed down from heat while on battery.
-- **Power saving for a device** only when that device supports it and has it off. Keyboards, mice, and sound devices are left alone.
+- **Power saving for a device** only when that device supports it and has it off. Keyboards, mice, sound devices, and Bluetooth radios are left alone.
 - **Wake-ups with the lid closed:** when the laptop woke up 3 or more times in a week while closed, DeeCure names the last device that woke it and points to Power › Sleep.
 
 ## Safe to try

@@ -229,7 +229,7 @@ export function WakeExpertSections() {
       <Panel
         title="Devices that could save power but do not"
         subtitle={`${savers.length} found`}
-        info="Power saving is off for these devices, so they stay awake and use power. Turning it on usually saves power; if a device then responds slowly or stops, undo it. Keyboards, mice, sound devices, storage, graphics, and bridges are left out on purpose."
+        info="Power saving is off for these devices, so they stay awake and use power. Turning it on usually saves power; if a device then responds slowly or stops, undo it. Keyboards, mice, sound devices, Bluetooth radios, storage, graphics, and bridges are left out on purpose, and so are devices whose driver keeps them awake anyway."
         source="/sys/bus/pci · /sys/bus/usb (power/control)"
         span={6}
         flush

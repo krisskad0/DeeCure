@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Monitoring · Icon: `grid` · Status badge: {crit:Critical} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: none (Overview comes first, with no group label) · Icon: `grid` · Status badge: {crit:Critical} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Summary, Issues, Health Score
 
 ## Overview › Summary: `overview/summary`
@@ -176,7 +176,7 @@ Tab count pill: 9 (red).
 | {warn:Warning} | **Battery health degraded** · 71% of design capacity | Power | 02 Sep | - | {off:Open} | [View](go:power/battery) |
 | {warn:Warning} | **Backup overdue** · Last successful backup 21 days ago | Backups | 07 Oct | - | {off:Open} | [View](go:backups/jobs) |
 | {warn:Warning} | **Out-of-memory kill** · chrome renderer · Mon 16:12 | Logs | Mon 16:12 | 1 | {off:Open} | [View](go:logs/kernel) |
-| {info:Info} | **Reboot required** · libc6, openssl, sudo updated | System | Today 10:40 | - | {off:Open} | [Details](go:system/updates) |
+| {info:Info} | **Reboot required** · libc6, openssl, sudo updated | System | Today 10:40 | - | {off:Open} | [Details](go:system/overview) |
 | {info:Info} | **Low-battery action not set** · Unclean shutdown at 02:14 today | Power | Today 02:14 | 1 | {off:Open} | [Configure](act:fix:batt) |
 | {info:Info} | **Missed timer run** · e2scrub_all.timer · Sun 03:10 | Scheduled Jobs | Sun 03:10 | 1 | {off:Open} | [View](go:jobs/timers) |
 

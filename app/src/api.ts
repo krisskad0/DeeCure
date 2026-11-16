@@ -272,6 +272,8 @@ export interface PciDevice {
   errors?: { corrected: number; nonfatal: number; fatal: number };
   sys_path?: string;
   power_control?: string;
+  /** Holds that keep it awake: 2 or more with power saving off means the driver never lets it sleep. */
+  runtime_usage?: number;
   power_state?: string;
 }
 
@@ -603,7 +605,8 @@ export interface BootInfo {
 }
 
 export interface UpdatesInfo {
-  pending: { name: string; installed: string; candidate: string; origin: string; security: boolean }[];
+  /** `phased`: Ubuntu rolls it out in stages and has not reached this computer yet; nothing installs it until then. */
+  pending: { name: string; installed: string; candidate: string; origin: string; security: boolean; phased?: boolean }[];
   lists_updated_at?: number | null;
   automatic_security: boolean;
 }
@@ -639,6 +642,8 @@ export interface HardwareInfo {
   disks: { name: string; model?: string; kind: string; size: number; firmware?: string; removable: boolean }[];
   devices: { name: string; bus: string; vendor?: string; drivers: string[]; class?: string; id?: string }[];
   bluetooth_adapters: number;
+  /** The SATA ports, used or not. Older agents do not send it. */
+  sata_ports?: { port: number; speed?: string; disk?: string }[];
 }
 
 export interface PowerInfo {
@@ -1128,6 +1133,8 @@ export interface PackagesInfo {
   packages: PackageInfo[];
   sources: { line: string; kind: "Official" | "PPA" | "Third-party"; signed: boolean; own_key: boolean; enabled: boolean; file: string }[];
   removable: { action: string; title: string; count: number; size: number; names: string[]; undo: "reinstallable" | "irreversible" }[];
+  /** Removed packages whose leftover settings are not offered, each as "name: why" (a purge that is not safe). */
+  purge_kept?: string[];
 }
 
 export interface ContainersInfo {
@@ -1400,7 +1407,7 @@ export function getHelperStatus(): Promise<boolean> {
 }
 
 /** The admin read-outs the helper offers (docs/02-architecture/helper.md). */
-export type HelperRead = "smart" | "self_tests" | "nvme" | "firewall_rules" | "crontabs" | "accounts" | "memory_slots" | "bios_settings" | "serial" | "power_meters" | "low_power" | "wakeups" | "sudo_rules" | "ssh_server";
+export type HelperRead = "smart" | "self_tests" | "nvme" | "firewall_rules" | "crontabs" | "accounts" | "memory_slots" | "slots_ports" | "bios_settings" | "serial" | "power_meters" | "low_power" | "wakeups" | "sudo_rules" | "ssh_server";
 
 export function helperRead(what: HelperRead, arg = ""): Promise<string> {
   return invoke<string>("helper_read", { what, arg });

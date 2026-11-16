@@ -28,7 +28,7 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 | Preferred cores: which cores the firmware marks as the fastest | The system puts heavy work on them first | `/sys/devices/system/cpu/cpu*/acpi_cppc/highest_perf` | You | ✅ Built |
 | CPU family, model, and stepping | Exact chip revision, for known bugs and firmware | `/proc/cpuinfo` | You | ✅ Built |
 
-## 2. Memory (Performance › Memory, Hardware › Memory)
+## 2. Memory (Performance › Memory, Hardware › Memory Modules)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
@@ -43,12 +43,12 @@ What Expert mode adds, page by page. Every item is read from a named source on t
 | Which processes the system would stop first when memory runs out | Shows who is at risk | `/proc/<pid>/oom_score` | You | ✅ Built |
 | Memory error counts (corrected and uncorrected), when the memory controller reports them | Uncorrected errors mean failing RAM | `/sys/devices/system/edac/mc*` | You | ✅ Built |
 | Huge pages: setting and use | Matters for databases and virtual machines | `/sys/kernel/mm/transparent_hugepage`, `/proc/meminfo` | You | ✅ Built |
-| Each memory module: slot, size, type, rated speed against the speed it really runs at | Finds RAM running slower than it can | `dmidecode -t 17` through the helper | Admin | ✅ Built (Hardware › Memory › Memory slots) |
+| Each memory module: slot, size, type, rated speed against the speed it really runs at | Finds RAM running slower than it can | `dmidecode -t 17` through the helper | Admin | ✅ Built (Hardware › Memory Modules › Memory slots) |
 | Free slots, and the maximum memory the board supports | Know before you buy more | `dmidecode -t 16` through the helper | Admin | ✅ Built |
 | Dual-channel or single-channel, from the slots in use | Single-channel halves memory speed, and slows built-in graphics | module bank locations from `dmidecode` | Admin | ✅ Built (warns about one channel, except soldered memory) |
 | Soldered or removable memory | Know if it can be upgraded at all | `dmidecode` form factor | Admin | ✅ Built |
 
-## 3. Drives (Performance › Disk I/O, Hardware › Storage Devices)
+## 3. Drives (Performance › Disk I/O, Hardware › Drives)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
@@ -156,7 +156,7 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | Turbo boost on or off, separately on battery and on mains | `intel_pstate/no_turbo` or `cpufreq/boost` | The CPU has turbo | Yes | Admin | ✅ Built (one setting for both; the highest speed on battery below does the per-source part) |
 | Highest CPU speed on battery | `scaling_max_freq`, applied when the power cable is pulled and lifted when it is plugged in (a udev rule) | A battery and cpufreq are present | Yes | Admin | ✅ Built |
 | Stop a device from waking the computer from suspend | `power/wakeup`, `/proc/acpi/wakeup` | The device can wake the computer. Keyboard, lid, and power button stay on and are not offered | Yes (skipped when a different device is there) | Admin | ✅ Built |
-| Power saving per device (PCI and USB) | `power/control` = `auto` | The device supports it and it is off. Keyboards, mice, and sound cards are not offered | Yes (skipped when a different device is there) | Admin | ✅ Built |
+| Power saving per device (PCI and USB) | `power/control` = `auto` | The device supports it and it is off. Keyboards, mice, sound cards, and Bluetooth radios are not offered, nor a PCI device whose driver keeps it awake anyway | Yes (skipped when a different device is there) | Admin | ✅ Built |
 | Wi-Fi power saving | NetworkManager `wifi.powersave` for the current network | Wi-Fi is in use | Yes | You | ✅ Built |
 | PCIe power saving policy | `pcie_aspm` policy | The kernel allows it. Some hardware freezes with it, so it is applied for this session only until you choose **Keep** | Only after **Keep** | Admin | ✅ Built |
 | Suspend type: light or deep | `/sys/power/mem_sleep`, set again at each start once kept | The laptop offers more than one type (this test laptop offers only `s2idle`, so it is hidden here). Test one suspend before keeping | Only after **Keep** | Admin | ✅ Built |
@@ -187,7 +187,7 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | Sandbox and security: AppArmor profile, capabilities, seccomp, container | Shows how confined it is | `/proc/<pid>/attr/apparmor/current`, `status`, `/proc/<pid>/ns` | You | ✅ Built |
 | Disk, memory (PSS), graphics, and wake-ups for this process | All its costs in one place | sections 2, 3, 5, 7 | You (own) | ✅ Built (wake-ups: Admin, later) |
 
-## 10. Services and startup (Services, System › Boot)
+## 10. Services and startup (Services, Operating System › Boot)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
@@ -195,10 +195,10 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | How locked down each service is (exposure score) | Finds services with too many rights | `systemd-analyze security` | You | ✅ Built |
 | Unit file, local overrides, and what turns it on | Finds local changes and why a service runs | systemd `FragmentPath`, `DropInPaths`, `WantedBy` | You | ✅ Built (local apart from package overrides; who masked it) |
 | What each service waits for at boot (critical chain) | Shows what really delays the desktop | `systemd-analyze critical-chain` | You | ✅ Built |
-| Boot time of every unit, and the boot time trend | See if boots get slower | systemd timestamps, stored boots | You | ✅ Built (trend: Logs › Boots) |
+| Boot time of every unit, and the boot time trend | See if boots get slower | systemd timestamps, stored boots | You | ✅ Built (trend: Operating System › Boot) |
 | Services that restart in a loop, masked services | Hidden problems | systemd `NRestarts`, unit state | You | ✅ Built |
 
-## 11. Kernel and system limits (System › Kernel)
+## 11. Kernel and system limits (Operating System › Kernel)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
@@ -217,7 +217,7 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | Firmware security level, and each check behind it | One clear level instead of many settings | fwupd `HostSecurityAttrs` (D-Bus) | You | ✅ Built |
 | UEFI boot entries and boot order | Find old or broken boot entries | `/sys/firmware/efi/efivars` | You | ✅ Built |
 | Secure Boot keys you added (MOK) | Needed for NVIDIA and DKMS drivers | `mokutil --list-enrolled` | You | ✅ Built |
-| USB devices: speed (USB 2 or 3), power drawn, driver | Finds a fast device on a slow port | `/sys/bus/usb/devices/*/{speed,bMaxPower}` | You | ✅ Built (Hardware › Peripherals) |
+| USB devices: speed (USB 2 or 3), power drawn, driver | Finds a fast device on a slow port | `/sys/bus/usb/devices/*/{speed,bMaxPower}` | You | ✅ Built (Devices › Ports & Devices) |
 | Virtualization: CPU support, turned on in firmware, KVM ready | Why virtual machines are slow or do not start | `/proc/cpuinfo` (`vmx`, `svm`), `/dev/kvm` | You | ✅ Built |
 | Every BIOS setting with its current value and allowed values (122 on this test laptop: battery charge, sleep, camera, virtualization, boot, and more) | See firmware settings without restarting into the BIOS | `/sys/class/firmware-attributes/*` (Dell, Lenovo, HP) through the helper | Admin | ✅ Built (Hardware › Firmware, Expert; read only) |
 | Whether a BIOS admin password is set | Changing BIOS settings from Linux needs it | `/sys/class/firmware-attributes/*/authentication` | Admin | ✅ Built (also the power-on password; the passwords themselves are never read) |
@@ -255,7 +255,7 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | Disk and network use per container | Find the busy container | `docker stats` | You | ✅ Built |
 | Build cache and unused images, with sizes | Free space safely | `docker system df -v` | You | ✅ Built |
 
-## 16. Ports and USB-C (Hardware › Peripherals)
+## 16. Ports and USB-C (Devices › Ports & Devices)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
@@ -265,7 +265,7 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | Thunderbolt and USB4: security level, connected devices, approved or not | Unapproved devices do not work, by design | `boltctl`, `/sys/bus/thunderbolt` | You | ✅ Built |
 | USB tree: hubs, ports, speed per device, power drawn | Finds a slow hub or a device drawing too much | `/sys/bus/usb/devices/*` | You | ✅ Built |
 
-## 17. Built-in devices (Hardware › Peripherals, Privacy)
+## 17. Built-in devices (Devices › Ports & Devices, Privacy)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
@@ -278,7 +278,7 @@ Direct controls, not only suggestions. Each shows its current value, applies at 
 | Batteries of mice, keyboards, headsets | All batteries in one place | UPower devices, BlueZ battery | You | ✅ Built |
 | Printers: queue, state, last error | Find a stuck print job | CUPS (`lpstat`) | You | ✅ Built |
 
-## 18. Display and sound hardware (Display & Audio)
+## 18. Display and sound hardware (Devices › Displays and Audio)
 
 | What Expert shows | Why it helps | Read from | Access | Today |
 | --- | --- | --- | --- | --- |
@@ -296,7 +296,7 @@ One place for every error the hardware itself reports. Each row says how many ti
 | --- | --- | --- | --- | --- |
 | CPU and memory hardware errors (machine checks) | The CPU reports real hardware faults | journal `mce` lines, `/sys/devices/system/machinecheck` | You | ✅ Built |
 | Memory errors (ECC) | See section 2 | `/sys/devices/system/edac/mc*` | You | ✅ Built |
-| PCIe link errors per device (corrected, non-fatal, fatal) | A bad link shows here before a crash | `/sys/bus/pci/devices/*/aer_dev_*` (readable here without a password) | You | ✅ Built (Hardware › Peripherals) |
+| PCIe link errors per device (corrected, non-fatal, fatal) | A bad link shows here before a crash | `/sys/bus/pci/devices/*/aer_dev_*` (readable here without a password) | You | ✅ Built (Devices › Ports & Devices) |
 | Firmware that failed to load | A device works badly or not at all without it | journal `Direct firmware load ... failed` | You | ✅ Built |
 | Driver and firmware crash reports | Wi-Fi and graphics firmware crashes leave a report | `/sys/class/devcoredump`, journal | You | ✅ Built |
 | USB errors (device not accepting address, descriptor errors) | Bad cable, weak port, or a failing device | kernel log | You | ✅ Built |

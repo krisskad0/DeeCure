@@ -31,8 +31,9 @@ const BEGINNER: Record<string, "all" | readonly string[]> = {
   // Pressure (PSI) is a kernel stall measure: Expert only.
   performance: ["cpu", "memory", "disk", "network", "gpu"],
   activity: ["timeline"],
-  system: ["overview", "updates"],
   power: "all",
+  system: ["overview"],
+  packages: ["updates"],
   storage: ["overview", "cleanup"],
   security: ["overview"],
   settings: "all",

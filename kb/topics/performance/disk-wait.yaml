@@ -3,4 +3,4 @@ summary: "All apps stall while the disk catches up: a slow or failing drive, or 
 steps:
   - "Open Performance › Disk I/O to see which app uses the disk."
   - "On a hard disk, Tools › Optimize may offer a better scheduler."
-  - "If it happens with little activity, check the drive health in Hardware › Storage Devices."
+  - "If it happens with little activity, check the drive health in Hardware › Drives."

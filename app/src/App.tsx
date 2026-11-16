@@ -14,27 +14,30 @@ import { PerformanceMemory } from "./pages/performance/Memory";
 import { PerformanceNetwork } from "./pages/performance/Network";
 import { PerformancePressure } from "./pages/performance/Pressure";
 import { AccountsGroups, AccountsLogins, AccountsSessions, AccountsSsh, AccountsUsers } from "./pages/accounts/Accounts";
-import { NetworkConnections, NetworkDns, NetworkFirewall, NetworkInterfaces, NetworkPorts, NetworkTraffic } from "./pages/network/Network";
+import { NetworkConnections, NetworkDns, NetworkInterfaces, NetworkPorts, NetworkTraffic } from "./pages/network/Network";
+import { SecurityFirewall } from "./pages/security/Firewall";
 import { PrivacyAccess, PrivacyPermissions, PrivacySettings } from "./pages/privacy/Privacy";
 import { SecurityHardening, SecurityIntegrity, SecurityMalware, SecurityOverview, SecurityVulns } from "./pages/security/Security";
 import { BackupsJobs, BackupsRestore, BackupsSnapshots } from "./pages/backups/Backups";
 import { ContainersImages, ContainersList, ContainersVms, ContainersVolumes } from "./pages/containers/Containers";
-import { PackagesCleanup, PackagesInstalled, PackagesPermissions, PackagesSources } from "./pages/packages/Packages";
+import { PackagesInstalled, PackagesSources } from "./pages/packages/Packages";
+import { PackagesUpdates } from "./pages/packages/Updates";
 import { AssistantChat } from "./pages/assistant/Assistant";
 import { DiagnosticsHardware, DiagnosticsNetwork, DiagnosticsPerformance } from "./pages/diagnostics/Diagnostics";
 import { OptimizeAll } from "./pages/optimize/Optimize";
 import { optimizeChanged } from "./pages/optimize/scan";
 import { SettingsAbout, SettingsAccess, SettingsAssistant, SettingsData, SettingsGeneral, SettingsNotifications } from "./pages/settings/Settings";
 import { ActivityConfig, ActivityDeeCure, ActivityDevices, ActivityPackages, ActivityTimelinePage } from "./pages/activity/Activity";
-import { DisplayAudio, DisplayDisplays } from "./pages/display/Display";
-import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel } from "./pages/logs/Logs";
+import { DevicesAudio, DevicesDisplays } from "./pages/devices/Display";
+import { DevicesPorts } from "./pages/devices/Ports";
+import { LogsCrashes, LogsErrors, LogsJournal, LogsKernel } from "./pages/logs/Logs";
 import { JobsAnacron, JobsAt, JobsCalendar, JobsCron, JobsTimers } from "./pages/jobs/Jobs";
 import { ServicesStartup, ServicesUser } from "./pages/services/OtherServices";
 import { StorageCleanup, StorageFilesystems, StorageOverview, StorageUsage } from "./pages/storage/Storage";
+import { HardwareAllParts } from "./pages/hardware/AllParts";
 import { HardwareFirmware } from "./pages/hardware/Firmware";
 import { HardwareGraphics } from "./pages/hardware/Graphics";
 import { HardwareMemory } from "./pages/hardware/Memory";
-import { HardwarePeripherals } from "./pages/hardware/Peripherals";
 import { HardwareProcessor } from "./pages/hardware/Processor";
 import { HardwareSensors } from "./pages/hardware/Sensors";
 import { HardwareStorage } from "./pages/hardware/Storage";
@@ -45,7 +48,6 @@ import { SystemBoot } from "./pages/system/Boot";
 import { SystemKernel } from "./pages/system/Kernel";
 import { SystemOverview } from "./pages/system/Overview";
 import { SystemTime } from "./pages/system/Time";
-import { SystemUpdates } from "./pages/system/Updates";
 import { OverviewIssues } from "./pages/overview/Issues";
 import { OverviewSummary } from "./pages/overview/Summary";
 import { SystemServices } from "./pages/services/SystemServices";
@@ -91,34 +93,33 @@ const TABS: Record<string, Record<string, Tab>> = {
   processes: { all: ProcessesAll, top: ProcessesTop },
   hardware: {
     summary: HardwareSummary,
+    parts: HardwareAllParts,
     processor: HardwareProcessor,
     memory: HardwareMemory,
     storage: HardwareStorage,
     graphics: HardwareGraphics,
     sensors: HardwareSensors,
-    peripherals: HardwarePeripherals,
     firmware: HardwareFirmware,
   },
   power: { battery: PowerBattery, profile: PowerProfile, sleep: PowerSleep },
-  display: { displays: DisplayDisplays, audio: DisplayAudio },
+  devices: { ports: DevicesPorts, displays: DevicesDisplays, audio: DevicesAudio },
   logs: {
     journal: stack(["journal", LogsJournal], ["kernel", LogsKernel]),
     errors: stack(["errors", LogsErrors], ["crashes", LogsCrashes]),
-    boots: LogsBoots,
   },
   activity: {
     timeline: stack(["timeline", ActivityTimelinePage], ["packages", ActivityPackages, "advanced"], ["devices", ActivityDevices, "advanced"], ["deecure", ActivityDeeCure, "advanced"]),
     config: ActivityConfig,
   },
-  network: { interfaces: NetworkInterfaces, connections: NetworkConnections, ports: NetworkPorts, firewall: NetworkFirewall, dns: NetworkDns, traffic: NetworkTraffic },
+  network: { interfaces: NetworkInterfaces, connections: NetworkConnections, ports: NetworkPorts, dns: NetworkDns, traffic: NetworkTraffic },
   accounts: {
     users: stack(["users", AccountsUsers], ["groups", AccountsGroups]),
     sessions: stack(["sessions", AccountsSessions], ["logins", AccountsLogins]),
     ssh: AccountsSsh,
   },
-  security: { overview: SecurityOverview, vulns: SecurityVulns, hardening: SecurityHardening, integrity: SecurityIntegrity, malware: SecurityMalware },
+  security: { overview: SecurityOverview, vulns: SecurityVulns, hardening: SecurityHardening, firewall: SecurityFirewall, integrity: SecurityIntegrity, malware: SecurityMalware },
   privacy: { access: PrivacyAccess, perms: PrivacyPermissions, settings: PrivacySettings },
-  packages: { installed: PackagesInstalled, sources: PackagesSources, cleanup: PackagesCleanup, permissions: PackagesPermissions },
+  packages: { updates: PackagesUpdates, installed: PackagesInstalled, sources: PackagesSources },
   containers: { containers: ContainersList, images: stack(["images", ContainersImages], ["volumes", ContainersVolumes]), vms: ContainersVms },
   backups: { jobs: stack(["jobs", BackupsJobs], ["snapshots", BackupsSnapshots]), restore: BackupsRestore },
   optimize: { all: OptimizeAll },
@@ -128,7 +129,7 @@ const TABS: Record<string, Record<string, Tab>> = {
   storage: { overview: StorageOverview, filesystems: StorageFilesystems, usage: StorageUsage, cleanup: StorageCleanup },
   services: { user: ServicesUser, startup: ServicesStartup },
   jobs: { calendar: JobsCalendar, all: stack(["cron", JobsCron], ["timers", JobsTimers], ["anacron", JobsAnacron], ["at", JobsAt]) },
-  system: { overview: SystemOverview, boot: SystemBoot, updates: SystemUpdates, kernel: SystemKernel, time: SystemTime },
+  system: { overview: SystemOverview, boot: SystemBoot, kernel: SystemKernel, time: SystemTime },
 };
 
 export default function App() {

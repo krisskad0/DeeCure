@@ -2,7 +2,7 @@
 // Features that are not built yet stay out of the app.
 
 import { describe, expect, it } from "vitest";
-import { MERGED, href, parseHash } from "./route";
+import { MERGED, MOVED, href, parseHash } from "./route";
 import { PAGES } from "./spec/pages";
 import { type Mode, atLeast } from "./ui";
 import { VISIBLE_PAGES, inBeginner, menuPages } from "./visible";
@@ -26,15 +26,15 @@ describe("visible pages", () => {
     // Advanced shows every page except Optimize, which is Expert only.
     expect(menuPages("advanced").map((p) => p.id)).toEqual(VISIBLE_PAGES.map((p) => p.id).filter((id) => id !== "optimize"));
     const beginner = menuPages("beginner");
-    expect(beginner.map((p) => p.id)).toEqual(["overview", "performance", "activity", "system", "power", "storage", "security", "settings"]);
+    expect(beginner.map((p) => p.id)).toEqual(["overview", "performance", "activity", "power", "system", "packages", "storage", "security", "settings"]);
     expect(beginner.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "disk", "network", "gpu"]);
     expect(beginner.find((p) => p.id === "settings")?.tabs.map((t) => t.id)).not.toContain("assistant");
     expect(beginner.reduce((n, p) => n + p.tabs.length, 0)).toBeLessThan(25);
   });
 
   it("the page the user is on stays in the Beginner menus", () => {
-    const onBoots = menuPages("beginner", { pageId: "logs", tabId: "boots" });
-    expect(onBoots.find((p) => p.id === "logs")?.tabs.map((t) => t.id)).toEqual(["boots"]);
+    const onErrors = menuPages("beginner", { pageId: "logs", tabId: "errors" });
+    expect(onErrors.find((p) => p.id === "logs")?.tabs.map((t) => t.id)).toEqual(["errors"]);
     const onPsi = menuPages("beginner", { pageId: "performance", tabId: "pressure" });
     expect(onPsi.find((p) => p.id === "performance")?.tabs.map((t) => t.id)).toEqual(["cpu", "memory", "disk", "network", "gpu", "pressure"]);
   });
@@ -45,8 +45,9 @@ describe("visible pages", () => {
       "overview/summary", "overview/issues", "overview/score",
       "performance/cpu", "performance/memory", "performance/disk", "performance/network", "performance/gpu",
       "activity/timeline",
-      "system/overview", "system/updates",
       "power/battery", "power/profile", "power/sleep",
+      "system/overview",
+      "packages/updates",
       "storage/overview", "storage/cleanup",
       "security/overview",
       "settings/general", "settings/access", "settings/notifications", "settings/data", "settings/about",
@@ -78,7 +79,33 @@ describe("visible pages", () => {
     }
   });
 
-  it("the full view has 78 sub-pages: 77 after the tab merges, plus Optimize", () => {
-    expect(VISIBLE_PAGES.reduce((n, p) => n + p.tabs.length, 0)).toBe(78);
+  it("the full view has 76 sub-pages: 75 after the tab merges and the sidebar change, plus Optimize", () => {
+    expect(VISIBLE_PAGES.reduce((n, p) => n + p.tabs.length, 0)).toBe(76);
+  });
+
+  it("old links to moved sub-pages open the new place", () => {
+    const at = (hash: string) => {
+      const r = parseHash(hash);
+      return [r.page.id, r.tab.id, r.section];
+    };
+    expect(at("#/hardware/peripherals")).toEqual(["devices", "ports", undefined]);
+    expect(at("#/display/audio")).toEqual(["devices", "audio", undefined]);
+    expect(at("#/display")).toEqual(["devices", "displays", undefined]);
+    expect(at("#/system/updates")).toEqual(["packages", "updates", undefined]);
+    expect(at("#/network/firewall")).toEqual(["security", "firewall", undefined]);
+    expect(at("#/logs/boots")).toEqual(["system", "boot", undefined]);
+    expect(at("#/packages/cleanup")).toEqual(["storage", "cleanup", undefined]);
+    expect(at("#/packages/permissions")).toEqual(["privacy", "perms", undefined]);
+    // A page that still exists keeps its first sub-page for an unknown one.
+    expect(at("#/hardware/nonsense")).toEqual(["hardware", "summary", undefined]);
+    expect(href("system", "updates")).toBe("#/packages/updates");
+    expect(href("hardware", "peripherals")).toBe("#/devices/ports");
+    for (const [old, to] of Object.entries(MOVED)) {
+      const [pageId, tabId] = old.split("/");
+      expect(VISIBLE_PAGES.find((p) => p.id === to.page)?.tabs.map((t) => t.id), old).toContain(to.tab);
+      const oldPage = VISIBLE_PAGES.find((p) => p.id === pageId);
+      if (tabId) expect(oldPage?.tabs.map((t) => t.id) ?? [], old).not.toContain(tabId);
+      else expect(oldPage, old).toBeUndefined();
+    }
   });
 });

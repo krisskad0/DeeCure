@@ -12,8 +12,8 @@
 //! - `/sys/module/zswap/parameters/enabled` and `/sys/block/<hard disk>/queue/scheduler`
 //!
 //! A device path must resolve inside `/sys/devices`. The lid, power and sleep buttons, and
-//! keyboards are never stopped from waking the computer; keyboards, mice, and sound devices never
-//! get power saving (they can miss keys or crackle). Every write returns the call that puts the
+//! keyboards are never stopped from waking the computer; keyboards, mice, sound devices, and
+//! Bluetooth radios never get power saving (they can miss keys, crackle, or drop connections). Every write returns the call that puts the
 //! old value back. All paths go through `root`, so tests use a folder instead of `/sys`.
 
 use std::path::{Path, PathBuf};
@@ -120,8 +120,12 @@ fn must_keep_waking(dir: &Path) -> bool {
 fn must_stay_awake(dir: &Path) -> bool {
     let usb = usb_interfaces(dir);
     let class = read(&dir.join("class")).unwrap_or_default();
-    usb.iter().any(|(c, _)| c == "03" || c == "01")
-        || read(&dir.join("bDeviceClass")).as_deref() == Some("01")
+    // HID (03), audio (01), and Bluetooth radios (e0), which the kernel keeps awake on purpose.
+    usb.iter().any(|(c, _)| c == "03" || c == "01" || c == "e0")
+        || matches!(
+            read(&dir.join("bDeviceClass")).as_deref(),
+            Some("01" | "e0")
+        )
         || class.trim_start_matches("0x").starts_with("04")
 }
 
@@ -249,7 +253,7 @@ pub fn plan(call: &Call, root: &Path) -> Option<Result<(Vec<Write>, Call), Strin
             let file = dir.join("power/control");
             let old = read(&file).ok_or("this device has no power saving")?;
             if *on && must_stay_awake(&dir) {
-                return Err("keyboards, mice, and sound devices stay awake, so they never miss input or crackle".into());
+                return Err("keyboards, mice, sound devices, and Bluetooth radios stay awake, so they never miss input, crackle, or drop connections".into());
             }
             Ok((
                 vec![Write {
@@ -754,6 +758,29 @@ mod tests {
             .unwrap()
             .is_ok()
         );
+    }
+
+    #[test]
+    fn a_bluetooth_radio_never_gets_power_saving() {
+        // A Realtek radio as on the owner's laptop: device and interfaces of class e0.
+        let d = "/sys/devices/pci0000:00/0000:00:14.0/usb3/3-10";
+        let r = root(
+            "bluetooth",
+            &[
+                (&format!("{d}/power/control"), "on\n"),
+                (&format!("{d}/bDeviceClass"), "e0\n"),
+                (&format!("{d}/3-10:1.0/bInterfaceClass"), "e0\n"),
+                (&format!("{d}/3-10:1.0/bInterfaceProtocol"), "01\n"),
+            ],
+        );
+        let call = |on| Call::SetDevicePowerSaving {
+            device: "pci0000:00/0000:00:14.0/usb3/3-10".into(),
+            on,
+        };
+        let err = plan(&call(true), &r).unwrap().unwrap_err();
+        assert!(err.contains("Bluetooth"), "{err}");
+        // Keeping it awake is always allowed.
+        assert!(plan(&call(false), &r).unwrap().is_ok());
     }
 
     #[test]

@@ -51,7 +51,8 @@ export function SecurityOverview() {
   // The agent's own warning, so this list and Overview › Issues always agree.
   const autoStopped = useFinding("security.auto_updates_stopped");
   if (!sec) return <Waiting title="Security posture" error={error} />;
-  const security = updates?.pending.filter((p) => p.security).length;
+  // Phased updates wait for Ubuntu's rollout, as on Apps & Updates › Updates.
+  const security = updates?.pending.filter((p) => p.security && !p.phased).length;
   const failedHardening = sec.hardening.filter((h) => h.result === "fail").length;
   const ssh = accounts?.ssh;
   const checks: Check[] = [];
@@ -59,13 +60,13 @@ export function SecurityOverview() {
     if (ok === undefined) return;
     checks.push({ state: ok ? "pass" : warnOnly ? "warn" : "fail", title: ok ? pass : fail, detail, action: ok ? undefined : action });
   };
-  add(security === undefined ? undefined : security === 0, "Security updates installed", `${security} security updates waiting`, "", false, <LinkButton to={href("system", "updates")}>View</LinkButton>);
+  add(security === undefined ? undefined : security === 0, "Security updates installed", `${security} security updates waiting`, "", false, <LinkButton to={href("packages", "updates")}>View</LinkButton>);
   if (updates?.automatic_security && autoStopped) {
     checks.push({ state: "warn", title: "Automatic security updates are on, but stopped working", detail: "The newest runs stopped or failed (see below), so security fixes do not arrive" });
   } else {
     add(updates?.automatic_security, "Automatic security updates on", "Automatic security updates off", "unattended-upgrades", true);
   }
-  add(net?.firewall.installed ? net.firewall.enabled : undefined, "Firewall enabled", "Firewall off", net?.firewall.enabled ? `ufw · incoming ${net.firewall.incoming === "DROP" ? "denied" : (net?.firewall.incoming ?? "")}` : "ufw is installed but off", true, <LinkButton to={href("network", "firewall")}>View</LinkButton>);
+  add(net?.firewall.installed ? net.firewall.enabled : undefined, "Firewall enabled", "Firewall off", net?.firewall.enabled ? `ufw · incoming ${net.firewall.incoming === "DROP" ? "denied" : (net?.firewall.incoming ?? "")}` : "ufw is installed but off", true, <LinkButton to={href("security", "firewall")}>View</LinkButton>);
   add(hw?.machine.secure_boot, "Secure Boot enabled", "Secure Boot off", "", true);
   add(storage?.encrypted, "Disk encryption on", "Disk encryption off", storage?.encrypted ? "LUKS" : "Files are readable if the computer is stolen", true);
   add(sec.apparmor, "AppArmor enabled", "AppArmor off", "Limits what programs may do");
@@ -79,7 +80,7 @@ export function SecurityOverview() {
     <>
       <KpiRow
         tiles={[
-          { label: "Security updates", value: security === undefined ? "-" : String(security), status: security ? "warn" : "ok", href: href("system", "updates") },
+          { label: "Security updates", value: security === undefined ? "-" : String(security), status: security ? "warn" : "ok", href: href("packages", "updates") },
           { label: "Firewall", value: !net ? "-" : !net.firewall.installed ? "Not installed" : net.firewall.enabled ? "Active" : "Off", status: net?.firewall.installed && !net.firewall.enabled ? "warn" : "ok" },
           { label: "Checks passing", value: `${count("pass")}/${checks.length}` },
         ]}

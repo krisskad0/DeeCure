@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Hardware › Memory (docs/03-ui-design/05-pages/06-hardware.md), with real data.
+// Hardware › Memory Modules (docs/03-ui-design/05-pages/06-hardware.md), with real data.
 // Slots, module type and speed, and the board's limits come from dmidecode through the admin
 // helper (Full access).
 

@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Workloads · Icon: `cog` · Status badge: {crit:Critical} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: Running · Icon: `cog` · Status badge: {crit:Critical} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: System Services, User Services, Startup Applications
 
 ## Services › System Services: `services/system`

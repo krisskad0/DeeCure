@@ -38,7 +38,7 @@ The app opens on a dashboard, not a list of cards. See `deecure-dashboard.html` 
 ```
 ┌ Top bar: DeeCure · machine picker · search (Ctrl K) · 1h/24h/7d/30d · Beginner/Advanced/Expert · bell ┐
 ├──────────┬──────────────────────────────────────────────────────────────────────────────────┤
-│ Sidebar  │ Monitoring › Overview                       [Refresh] [Export]                   │
+│ Sidebar  │ Overview                                    [Refresh] [Export]                   │
 │ (pages + │ Summary | Issues (8) | Health Score                                             │
 │ sub-     ├──────────────────────────────────────────────────────────────────────────────────┤
 │ pages)   │ [Health 82/100] [CPU 12%] [Memory 5.9 GB] [Disk 94%] [Network 1.2 MB/s] [Battery]│

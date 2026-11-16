@@ -26,7 +26,7 @@ DeeCure's landing page lives at **https://krisskad0.github.io/DeeCure/**. It sho
 
 ## Share image
 
-The poster people see when the site or the repo is shared. It says "Every Linux system hides problems. DeeCure finds them." beside the dark Overview screenshot. Its source is [scripts/og-image.html](../../scripts/og-image.html), which uses the site's font, icon, and screenshot.
+The poster people see when the site or the repo is shared. It says "Every Linux system has hidden problems. DeeCure finds them." beside the dark Overview screenshot. Its source is [scripts/og-image.html](../../scripts/og-image.html), which uses the site's font, icon, and screenshot.
 
 1. Copy the screenshots into `site/assets/screens/` first (the folder is ignored by git).
 2. Render the site image, from the repo folder:

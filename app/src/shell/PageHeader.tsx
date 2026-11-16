@@ -35,12 +35,13 @@ export function PageHeader(props: {
   };
   const tabs = menuPages(useUi().mode, { pageId: page.id, tabId: tab.id }).find((p) => p.id === page.id)?.tabs ?? [tab];
   const single = tabs.length === 1;
-  const crumbs = page.group === "Footer" ? [page.label] : [page.group, page.label];
+  // Settings (Footer) and Overview (no group) show no group name.
+  const crumbs = page.group && page.group !== "Footer" ? [page.group, page.label] : [page.label];
   return (
     <div className="page-header">
       <div className="crumbs">
         {crumbs.map((crumb, i) => (
-          // A page can have its group's name (System › System), so the place is the key.
+          // A page can have its group's name, so the place is the key.
           <span key={i} className="crumb">
             {i > 0 && <Icon name="chev" size={12} />}
             {crumb === page.label ? <a href={href(page.id, page.tabs[0].id)}>{crumb}</a> : crumb}

@@ -25,6 +25,7 @@
 - {name: "status: stale", color: "ededed", description: "Set by the weekly job: needs-info with no answer; closes in 7 days"}
 - {name: "good first issue", color: "7057ff", description: "Good for newcomers"}
 - {name: "help wanted", color: "008672", description: "Maintainers would welcome help"}
+- {name: "testing", color: "0e8a16", description: "Try DeeCure on a real computer and report what you find; no code needed"}
 - {name: "needs-two-reviews", color: "e99695", description: "Sensitive area: two maintainer approvals"}
 - {name: "breaking-change", color: "b60205", description: "Changes behavior people rely on"}
 - {name: "release-blocker", color: "b60205", description: "Must be fixed before the next release"}

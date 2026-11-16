@@ -177,7 +177,7 @@ export function MemoryExpertSections() {
   );
 }
 
-/** Memory errors (ECC), for Hardware › Memory. */
+/** Memory errors (ECC), for Hardware › Memory Modules. */
 export function MemoryErrors() {
   const { data: d, error } = useLive(loadDetail, 60_000);
   if (!d) return <Loading title="Memory errors" error={error} />;

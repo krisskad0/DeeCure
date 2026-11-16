@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Monitoring · Icon: `perf` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: Monitor · Icon: `perf` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: CPU, Memory, Disk I/O, Network, GPU, Pressure (PSI). Beginner mode shows all but Pressure (PSI) ([Beginner mode](../02-shell/sidebar.md#beginner-mode)).
 
 ## Performance › CPU: `performance/cpu`
@@ -122,7 +122,7 @@ Expert adds, below the page:
 | `nvme0n1` | SSD (NVMe) | Samsung 980 | 477 GB | 2.4 MB | 0.8 MB | 6% | 0.4 ms |
 | `sda` | Hard disk | ST1000LM035 | 932 GB | 0 | 0 | 0% | 0 ms |
 
-- Whole disks only (no partitions, loop, or RAM disks). Type, Model, and Size come from the hardware inventory (the same as Hardware › Storage Devices): SSD (NVMe), SSD, Hard disk, USB drive, or Memory card. A drive plugged in since the last inventory shows "-" until the next one (within 30 s).
+- Whole disks only (no partitions, loop, or RAM disks). Type, Model, and Size come from the hardware inventory (the same as Hardware › Drives): SSD (NVMe), SSD, Hard disk, USB drive, or Memory card. A drive plugged in since the last inventory shows "-" until the next one (within 30 s).
 
 4. **Data table**: "Top I/O processes" · span 6 (the Devices table takes the full width until then)
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Containers › Containers, Images, Volumes, Virtual Machines
+// Containers & VMs › Containers, Images, Volumes, Virtual Machines
 // (docs/03-ui-design/05-pages/12-containers.md), with real data. Read-only.
 
 import { KeyValueList } from "../../components/KeyValueList";

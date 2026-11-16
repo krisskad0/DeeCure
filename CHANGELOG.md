@@ -11,9 +11,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **A website** at [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): what DeeCure does, who it is for, screenshots, privacy, an FAQ, and the one-command install and package downloads for the newest release. No tracking and no cookies.
 - **Who DeeCure is for** ([docs/07-user-guide/use-cases](docs/07-user-guide/use-cases/README.md)): one short page per role (new to Linux, laptop owners, developers and data scientists, gamers and creators, people who look after other PCs, sysadmins, security and privacy minded people) and a table per field, each with the everyday problems DeeCure solves and where to click.
 - **42 more plain-English explanations** (contributed by painbaba): 18 services (web servers, databases, Ollama, VPNs, laptop power and memory tools, and Ubuntu desktop services like systemd-oomd and fprintd), 12 ports (including risky ones: the Docker API without TLS, Telnet, FTP, Elasticsearch, Ollama, and Jupyter, and VPN, Cockpit, and mail ports), 6 kernel log errors (soft lockups, hung tasks, SATA link resets, AMD and Intel GPU hangs, and Bluetooth timeouts), and 6 packages (TLP, Google Chrome, Visual Studio Code, VirtualBox, Wine, and GNOME Tweaks).
+- **Hardware › All Parts**: every physical part in one table: processor, memory, graphics, drives, battery, fans, cameras, the fingerprint reader, keyboards and the keyboard light, touchpads and mice, screens, sound cards, network chips, USB and USB-C, Thunderbolt, and Bluetooth devices, each with a link to its details. Below it, **Slots and sockets**: the SATA ports with the drive on each, and with your password once, every memory slot, PCIe and M.2 slot (used or free), and socket the maker lists.
+
+### Changed
+
+- **A clearer sidebar.** The pages are now in 7 groups, and each group answers one plain question: Monitor, Machine, Software, Running, Data, Network & Security, and Tools. Overview comes first, with no group.
+- A new **Devices** page has Ports & Devices (it was Hardware › Peripherals), Displays, and Audio. Display & Audio is gone.
+- New names: **Operating System** (was System), **Apps & Updates** (was Packages), **Containers & VMs** (was Containers), and in Hardware, **Memory Modules** and **Drives**.
+- Updates moved to Apps & Updates, and Firewall moved to Security, next to the "Firewall enabled" check.
+- Fewer duplicates: the boot history is on Operating System › Boot (Logs › Boots is gone), Time sync is on Time & Locale, the package cleanup is on Storage › Cleanup, and Network › Traffic links to the throughput chart on Performance › Network instead of showing it twice. Apps & Updates › Permissions is gone, because it was the same table as Privacy › App Permissions.
+- Old links and bookmarks to moved sub-pages open the new place. Saved findings and turned-off warnings keep working, because no rule changed its ID.
 
 ### Fixed
 
+- **Optimize could delete all Docker data.** "Remove leftover settings of removed packages" purged every removed package, and a purge still runs the package's removal script. After moving from Ubuntu's `docker.io` to Docker's `docker-ce`, purging `docker.io` deletes `/var/lib/docker`, with every image, container, and volume. Packages whose removal script deletes data or turns off a service an installed package uses (such as `containerd` next to `containerd.io`) are now left out and named, and the admin helper refuses them too.
+- Optimize no longer removes a snap you turned off: its only version counted as an old version.
+- Optimize and Power › Sleep no longer offer power saving for a device whose driver keeps it awake anyway, where it changed nothing, or for a Bluetooth radio, which the kernel keeps awake on purpose so it does not drop connections.
+- Updates that Ubuntu still rolls out in stages (phased updates) are no longer installed early or counted as waiting. Apps & Updates › Updates shows them as "Waiting for Ubuntu".
+- The advice to clean the fans now looks at how long heat slowed the CPU (1% of the time or more), not how often: thousands of very short slowdowns a day are normal for laptop chips.
 - The agent could fail on its very first start with "table series already exists" when two agents opened the new database at the same time. Each schema step now takes the write lock and skips what the other agent already did.
 - The one-command install could install an older pre-release: it took the first release in GitHub's list, and GitHub listed 0.1.0-alpha.9 before 0.1.0-alpha.10. It now picks the highest version, as the in-app updater does. The install script comes from the main branch, so this fix reaches everyone at once.
 
