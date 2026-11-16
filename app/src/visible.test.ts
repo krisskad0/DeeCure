@@ -79,8 +79,8 @@ describe("visible pages", () => {
     }
   });
 
-  it("the full view has 75 sub-pages: 74 after the tab merges and the sidebar change, plus Optimize", () => {
-    expect(VISIBLE_PAGES.reduce((n, p) => n + p.tabs.length, 0)).toBe(75);
+  it("the full view has 76 sub-pages: 75 after the tab merges and the sidebar change, plus Optimize", () => {
+    expect(VISIBLE_PAGES.reduce((n, p) => n + p.tabs.length, 0)).toBe(76);
   });
 
   it("old links to moved sub-pages open the new place", () => {

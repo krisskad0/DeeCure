@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Shell](README.md)
 
-23 pages and 77 sub-pages. Group order and page order are exactly as listed. Advanced and Expert show all of them; Beginner shows fewer (see [Beginner mode](#beginner-mode)).
+23 pages and 78 sub-pages. Group order and page order are exactly as listed. Advanced and Expert show all of them; Beginner shows fewer (see [Beginner mode](#beginner-mode)).
 
 Each group answers one plain question:
 
@@ -20,7 +20,7 @@ Each group answers one plain question:
 | Monitor | Performance | `performance` | `perf` | {ok:Healthy} | - | `cpu`: CPU · `memory`: Memory · `disk`: Disk I/O · `network`: Network · `gpu`: GPU · `pressure`: Pressure (PSI) |
 | Monitor | Logs | `logs` | `logs` | {warn:Warning} | Yellow dot | `journal`: Journal · `errors`: Errors and crashes (count 37) |
 | Monitor | Activity | `activity` | `hist` | {ok:Healthy} | - | `timeline`: Timeline · `config`: Config Changes |
-| Machine | Hardware | `hardware` | `chip` | {ok:Healthy} | - | `summary`: Summary · `processor`: Processor · `memory`: Memory Modules · `storage`: Drives · `graphics`: Graphics · `sensors`: Sensors · `firmware`: Firmware |
+| Machine | Hardware | `hardware` | `chip` | {ok:Healthy} | - | `summary`: Summary · `parts`: All Parts · `processor`: Processor · `memory`: Memory Modules · `storage`: Drives · `graphics`: Graphics · `sensors`: Sensors · `firmware`: Firmware |
 | Machine | Devices | `devices` | `usb` | {ok:Healthy} | - | `ports`: Ports & Devices · `displays`: Displays · `audio`: Audio |
 | Machine | Power | `power` | `bat` | {warn:Warning} | Yellow dot | `battery`: Battery · `profile`: Power Profile · `sleep`: Sleep |
 | Software | Operating System | `system` | `sys` | {info:Info} | - | `overview`: Overview · `boot`: Boot · `kernel`: Kernel · `time`: Time & Locale |

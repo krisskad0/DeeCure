@@ -126,6 +126,59 @@ pub struct HardwareInfo {
     pub devices: Vec<Device>,
     /// Bluetooth adapters the kernel knows.
     pub bluetooth_adapters: usize,
+    /// The SATA ports of the disk controllers, used or not.
+    pub sata_ports: Vec<SataPort>,
+}
+
+/// One SATA port (`/sys/class/ata_port`). A controller may have more ports than the case
+/// has sockets, so an empty port is not always a free slot.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct SataPort {
+    /// The kernel's number: `ata3` is 3.
+    pub port: u32,
+    /// The link speed, such as "6.0 Gbps"; none when nothing is connected.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub speed: Option<String>,
+    /// The disk on it, such as `sda` (a CD or DVD drive too).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disk: Option<String>,
+}
+
+/// The SATA ports, and which disk sits on each: a disk's sysfs path goes through `ataN`.
+fn sata_ports(root: &SystemRoot) -> Vec<SataPort> {
+    let names = |dir: &str| -> Vec<String> {
+        std::fs::read_dir(root.path(dir))
+            .map(|d| {
+                d.flatten()
+                    .map(|e| e.file_name().to_string_lossy().into_owned())
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    let mut on_port: BTreeMap<u32, String> = BTreeMap::new();
+    for disk in names("/sys/block") {
+        let Ok(path) = std::fs::canonicalize(root.path(&format!("/sys/block/{disk}"))) else {
+            continue;
+        };
+        let port = path
+            .iter()
+            .find_map(|part| part.to_str()?.strip_prefix("ata")?.parse::<u32>().ok());
+        if let Some(port) = port {
+            on_port.entry(port).or_insert(disk);
+        }
+    }
+    let mut ports: Vec<SataPort> = names("/sys/class/ata_port")
+        .iter()
+        .filter_map(|name| name.strip_prefix("ata")?.parse::<u32>().ok())
+        .map(|port| SataPort {
+            port,
+            speed: text(root, &format!("/sys/class/ata_link/link{port}/sata_spd"))
+                .filter(|s| s != "<unknown>"),
+            disk: on_port.get(&port).cloned(),
+        })
+        .collect();
+    ports.sort_by_key(|p| p.port);
+    ports
 }
 
 fn text(root: &SystemRoot, path: &str) -> Option<String> {
@@ -561,6 +614,7 @@ pub fn read(root: &SystemRoot) -> HardwareInfo {
                     .count()
             })
             .unwrap_or(0),
+        sata_ports: sata_ports(root),
     }
 }
 
@@ -568,6 +622,46 @@ pub fn read(root: &SystemRoot) -> HardwareInfo {
 mod tests {
     use super::*;
     use crate::collect::test_support::fixture_root;
+
+    #[test]
+    fn finds_sata_ports_and_the_disk_on_each() {
+        let disk = "/sys/devices/pci0000:00/0000:00:17.0/ata2/host1/target1:0:0/1:0:0:0/block/sda";
+        let root = fixture_root(
+            "sata",
+            &[
+                ("/sys/class/ata_port/ata1/port_no", "1\n"),
+                ("/sys/class/ata_port/ata2/port_no", "1\n"),
+                ("/sys/class/ata_link/link1/sata_spd", "<unknown>\n"),
+                ("/sys/class/ata_link/link2/sata_spd", "6.0 Gbps\n"),
+                (&format!("{disk}/size"), "100\n"),
+                ("/sys/devices/virtual/block/loop0/size", "0\n"),
+            ],
+        );
+        std::fs::create_dir_all(root.path("/sys/block")).unwrap();
+        std::os::unix::fs::symlink(root.path(disk), root.path("/sys/block/sda")).unwrap();
+        std::os::unix::fs::symlink(
+            root.path("/sys/devices/virtual/block/loop0"),
+            root.path("/sys/block/loop0"),
+        )
+        .unwrap();
+        assert_eq!(
+            sata_ports(&root),
+            [
+                SataPort {
+                    port: 1,
+                    speed: None,
+                    disk: None
+                },
+                SataPort {
+                    port: 2,
+                    speed: Some("6.0 Gbps".into()),
+                    disk: Some("sda".into())
+                },
+            ]
+        );
+        // A computer with no SATA controller has no ports.
+        assert!(sata_ports(&fixture_root("no-sata", &[])).is_empty());
+    }
 
     #[test]
     fn reads_cpu_lists() {

@@ -16,7 +16,7 @@ Before the shell, the first launch shows [Onboarding and first scan](00-onboardi
 | 02 | Monitor | [Performance](02-performance.md) | CPU, Memory, Disk I/O, Network, GPU, Pressure (PSI) |
 | 03 | Monitor | [Logs](03-logs.md) | Journal, Errors, Crashes, Kernel |
 | 04 | Monitor | [Activity](04-activity.md) | Timeline, Package History, Config Changes, Device Events, DeeCure Actions |
-| 06 | Machine | [Hardware](06-hardware.md) | Summary, Processor, Memory Modules, Drives, Graphics, Sensors, Firmware |
+| 06 | Machine | [Hardware](06-hardware.md) | Summary, All Parts, Processor, Memory Modules, Drives, Graphics, Sensors, Firmware |
 | 08 | Machine | [Devices](08-devices.md) | Ports & Devices, Displays, Audio |
 | 07 | Machine | [Power](07-power.md) | Battery, Power Profile, Sleep |
 | 05 | Software | [Operating System](05-system.md) | Overview, Boot, Kernel, Time & Locale |
@@ -36,7 +36,7 @@ Before the shell, the first launch shows [Onboarding and first scan](00-onboardi
 | 21 | Tools | [Assistant](21-assistant.md) | Chat |
 | 22 | (footer) | [Settings](22-settings.md) | General, Access, Notifications, Assistant, Data, About |
 
-The rows follow the sidebar order. The file numbers are older, so they are not in order. That is 23 pages and 89 sub-pages in the design. The app joins some of them into one tab, so it shows 77 ([view levels](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)). Old addresses of moved sub-pages still open the new place ([Sidebar › Old links](../02-shell/sidebar.md#old-links)).
+The rows follow the sidebar order. The file numbers are older, so they are not in order. That is 23 pages and 90 sub-pages in the design. The app joins some of them into one tab, so it shows 78 ([view levels](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)). Old addresses of moved sub-pages still open the new place ([Sidebar › Old links](../02-shell/sidebar.md#old-links)).
 
 ## Every page uses the same layout
 

@@ -639,6 +639,8 @@ export interface HardwareInfo {
   disks: { name: string; model?: string; kind: string; size: number; firmware?: string; removable: boolean }[];
   devices: { name: string; bus: string; vendor?: string; drivers: string[]; class?: string; id?: string }[];
   bluetooth_adapters: number;
+  /** The SATA ports, used or not. Older agents do not send it. */
+  sata_ports?: { port: number; speed?: string; disk?: string }[];
 }
 
 export interface PowerInfo {
@@ -1400,7 +1402,7 @@ export function getHelperStatus(): Promise<boolean> {
 }
 
 /** The admin read-outs the helper offers (docs/02-architecture/helper.md). */
-export type HelperRead = "smart" | "self_tests" | "nvme" | "firewall_rules" | "crontabs" | "accounts" | "memory_slots" | "bios_settings" | "serial" | "power_meters" | "low_power" | "wakeups" | "sudo_rules" | "ssh_server";
+export type HelperRead = "smart" | "self_tests" | "nvme" | "firewall_rules" | "crontabs" | "accounts" | "memory_slots" | "slots_ports" | "bios_settings" | "serial" | "power_meters" | "low_power" | "wakeups" | "sudo_rules" | "ssh_server";
 
 export function helperRead(what: HelperRead, arg = ""): Promise<string> {
   return invoke<string>("helper_read", { what, arg });

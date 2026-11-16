@@ -3,7 +3,7 @@
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
 - Group: Machine · Icon: `chip` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Summary, Processor, Memory Modules, Drives, Graphics, Sensors, Firmware (Peripherals moved to Devices › Ports & Devices on 2026-11-16)
+- Sub-pages: Summary, All Parts, Processor, Memory Modules, Drives, Graphics, Sensors, Firmware (Peripherals moved to Devices › Ports & Devices on 2026-11-16)
 
 ## Hardware › Summary: `hardware/summary`
 
@@ -33,6 +33,31 @@
 | `bolt` | Firmware | 1 update available | {info:Update} | `hardware/firmware` |
 
 Expert adds "Hardware errors": one green line ("No errors", with how many sources were checked) or a list of only the kinds with errors (count, last time, one example). The full list of checks is under "Show all". "Drivers Ubuntu offers" is one line when no device needs an extra driver.
+
+## Hardware › All Parts: `hardware/parts`
+
+Every physical part in one place (added 2026-11-16). Each row links to the sub-page with the details. Hardware › Summary › Components has an **All parts** link here.
+
+1. **KPI row** · span 12
+
+| Label | Value | Unit | Status badge | Subtext | Visual | Opens |
+| --- | --- | --- | --- | --- | --- | --- |
+| Parts found | 31 |  | - |   | - | - |
+| Need a driver | 0 |  | {ok:OK} |   | - | - |
+| Connected now | 4 |  | - | USB, USB-C, Thunderbolt, Bluetooth | - | - |
+| SATA ports | 1 of 2 |  | - | in use | - | - |
+
+2. **Data table**: "Every part" · span 12
+- Search box and a filter by group: Inside, Input, Screens and sound, Network, Connected. Every row shows at once (no "Show all").
+- Source chip (Expert): `/sys · /proc · PipeWire · BlueZ · UPower`
+- Columns: Where, Part, Name (with a detail line), Status, and a **Details** link.
+- Rows: processor, memory, each graphics card, each drive, each battery, each fan, the fingerprint reader, each camera; each keyboard (the built-in one is named "Built-in keyboard"), the keyboard light (level and status), each touchpad, touchscreen, pen, and mouse; each screen (built-in or not) and sound card; each network chip (Wi-Fi, Ethernet, mobile data) and the Bluetooth adapter; each USB device (warn "No driver" when it needs one), each USB-C port (In use or Free), each Thunderbolt device, and each Bluetooth device.
+- No new reads: the rows come from the `hardware`, `gpu`, `bluetooth`, `power`, `power_detail`, `platform_detail`, and `devices_detail` answers and the fan readings.
+
+3. **Panel**: "Slots and sockets" · span 12
+- **SATA ports** (no password): one row per port of the disk controllers, from `sata_ports` in the `hardware` answer: the drive on it or "Nothing connected", and the link speed. A note says a controller can have more ports than the case has sockets.
+- **Memory slots, expansion slots, and sockets** (Admin): one button, "Read slots and sockets (asks for your password)", reads `memory_slots` and `slots_ports` from the helper with one password (polkit keeps the approval). It shows the memory slots (as on Memory Modules), the expansion slots (PCIe and M.2: slot, type, In use or Free, bus address), and the sockets (name, type, connector, outside or inside the case).
+- A note says the maker writes this list, and on some computers, laptops most of all, it is missing or not complete.
 
 ## Hardware › Processor: `hardware/processor`
 
