@@ -11,6 +11,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **A website** at [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): what DeeCure does, who it is for, screenshots, privacy, an FAQ, and the one-command install and package downloads for the newest release. No tracking and no cookies.
 - **Who DeeCure is for** ([docs/07-user-guide/use-cases](docs/07-user-guide/use-cases/README.md)): one short page per role (new to Linux, laptop owners, developers and data scientists, gamers and creators, people who look after other PCs, sysadmins, security and privacy minded people) and a table per field, each with the everyday problems DeeCure solves and where to click.
 - **42 more plain-English explanations** (contributed by painbaba): 18 services (web servers, databases, Ollama, VPNs, laptop power and memory tools, and Ubuntu desktop services like systemd-oomd and fprintd), 12 ports (including risky ones: the Docker API without TLS, Telnet, FTP, Elasticsearch, Ollama, and Jupyter, and VPN, Cockpit, and mail ports), 6 kernel log errors (soft lockups, hung tasks, SATA link resets, AMD and Intel GPU hangs, and Bluetooth timeouts), and 6 packages (TLP, Google Chrome, Visual Studio Code, VirtualBox, Wine, and GNOME Tweaks).
+- **Hardware › All Parts**: every physical part in one table: processor, memory, graphics, drives, battery, fans, cameras, the fingerprint reader, keyboards and the keyboard light, touchpads and mice, screens, sound cards, network chips, USB and USB-C, Thunderbolt, and Bluetooth devices, each with a link to its details. Below it, **Slots and sockets**: the SATA ports with the drive on each, and with your password once, every memory slot, PCIe and M.2 slot (used or free), and socket the maker lists.
+
+### Changed
+
+- **A clearer sidebar.** The pages are now in 7 groups, and each group answers one plain question: Monitor, Machine, Software, Running, Data, Network & Security, and Tools. Overview comes first, with no group.
+- A new **Devices** page has Ports & Devices (it was Hardware › Peripherals), Displays, and Audio. Display & Audio is gone.
+- New names: **Operating System** (was System), **Apps & Updates** (was Packages), **Containers & VMs** (was Containers), and in Hardware, **Memory Modules** and **Drives**.
+- Updates moved to Apps & Updates, and Firewall moved to Security, next to the "Firewall enabled" check.
+- Fewer duplicates: the boot history is on Operating System › Boot (Logs › Boots is gone), Time sync is on Time & Locale, the package cleanup is on Storage › Cleanup, and Network › Traffic links to the throughput chart on Performance › Network instead of showing it twice. Apps & Updates › Permissions is gone, because it was the same table as Privacy › App Permissions.
+- Old links and bookmarks to moved sub-pages open the new place. Saved findings and turned-off warnings keep working, because no rule changed its ID.
 
 ### Fixed
 
