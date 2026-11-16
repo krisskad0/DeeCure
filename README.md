@@ -83,6 +83,8 @@ It works without a password for looking around. It never changes anything unless
 | **Is my Linux computer secure?** | Updates and whether automatic updates really install, firewall, open ports, AppArmor, Secure Boot, CPU security flaws, SSH and sudo settings |
 | **Why does my laptop wake up or drain in sleep?** | Every device allowed to wake it, which one did, and whether the chip reaches its deepest sleep |
 
+The full list: **[Ubuntu problems and how to fix them with DeeCure](docs/07-user-guide/problems/README.md)**. It covers more than 60 problems, from battery drain and a full disk to broken apt, NVIDIA drivers after a kernel update, Docker, and SSD health, each with the steps in DeeCure and the command to do it by hand.
+
 ## Who it is for
 
 - **New Linux users** who want their computer explained without learning a dozen commands. The **Beginner** view is short and calm.
