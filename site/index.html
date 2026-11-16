@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DeeCure: Linux system monitor, health check, and optimizer for Ubuntu</title>
-  <meta name="description" content="Every Linux system has hidden problems. DeeCure is a free, open-source app that checks every layer of your Ubuntu desktop, laptop, or server, explains what it finds in plain English, and fixes problems with one click, with undo. No account, no cloud.">
+  <title>DeeCure: deep insight into every layer of your Linux computer</title>
+  <meta name="description" content="Is your Linux computer really healthy? DeeCure is a free, open-source app that checks every layer of your Ubuntu desktop, laptop, or server, explains what it finds in plain English, and fixes problems with one click, with undo. No account, no cloud.">
   <link rel="canonical" href="https://krisskad0.github.io/DeeCure/">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="theme-color" content="#2563c9">
@@ -12,15 +12,15 @@
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="DeeCure">
-  <meta property="og:title" content="Every Linux system has hidden problems. DeeCure finds them.">
+  <meta property="og:title" content="Is your Linux computer really healthy? DeeCure checks every layer.">
   <meta property="og:description" content="Deep insight into every layer, hardware and software, on desktops, laptops, and servers, with one-click fixes you can undo. Free and open source, for Ubuntu 24.04 and 26.04.">
   <meta property="og:url" content="https://krisskad0.github.io/DeeCure/">
   <meta property="og:image" content="https://krisskad0.github.io/DeeCure/assets/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Every Linux system has hidden problems. DeeCure finds them. Beside it, the DeeCure Overview on Ubuntu with health score 95.">
+  <meta property="og:image:alt" content="Is your Linux computer really healthy? DeeCure checks every layer. Beside it, the DeeCure Overview on Ubuntu with health score 95.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Every Linux system has hidden problems. DeeCure finds them.">
+  <meta name="twitter:title" content="Is your Linux computer really healthy? DeeCure checks every layer.">
   <meta name="twitter:description" content="A free, open-source tool that finds hidden problems on Ubuntu desktops, laptops, and servers, and fixes them with undo. No account, no cloud.">
   <meta name="twitter:image" content="https://krisskad0.github.io/DeeCure/assets/og-image.png">
 
@@ -114,8 +114,8 @@
       <div class="wrap hero-in">
         <div class="hero-copy">
           <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Free and open source · Ubuntu 24.04 and 26.04</p>
-          <h1>Every Linux system has hidden problems. <span class="grad">DeeCure finds them.</span></h1>
-          <p class="lead">Every Linux computer, desktop or server, has some issue in the hardware or the software that you cannot see and that is hard to investigate. DeeCure checks every layer deeply, explains what it finds in plain English, and fixes problems with one click. Every fix can be undone.</p>
+          <h1>Is your Linux computer really healthy?<br><span class="grad">DeeCure checks every&nbsp;layer.</span></h1>
+          <p class="lead">On a desktop, laptop, or server, the answer is spread across many layers, tools, and log files, in the hardware and the software. DeeCure checks every layer in one go, explains what it finds in plain English, and fixes problems with one click. Every fix can be undone.</p>
           <div class="install" id="hero-install">
             <span class="install-label">Install in one command</span>
             <div class="cmd">
@@ -151,7 +151,7 @@
       <div class="wrap">
         <p class="kicker center">How deep it looks</p>
         <h2 class="center">From the apps you see to the chips you never see</h2>
-        <p class="lead center deep-lead">A problem can start anywhere in a computer: in an app, a service, a setting, a driver, or the hardware itself. DeeCure reads all eight layers, one under the other, and turns more than a hundred checks into one score and a few plain sentences.</p>
+        <p class="lead center deep-lead">A problem can start anywhere in a computer: in an app, a service, a setting, a driver, or the hardware itself. DeeCure reads all ten layers, one under the other, and turns more than 150 readings and 55 warnings into one score and a few plain sentences.</p>
 
         <!-- The page works without the script: it shows the finished scan. app.js plays the scan
              (layer by layer, check by check) while the section is on screen. -->
@@ -159,8 +159,7 @@
           <div class="dc-core">
             <div class="dc-status">
               <span class="dc-status-dot" aria-hidden="true"></span>
-              <span class="dc-status-t">All 8 layers checked</span>
-              <span class="dc-status-n"><b class="dc-count">117</b> of <span class="dc-total">117</span> checks</span>
+              <span class="dc-status-t">All 10 layers checked</span>
               <button class="demo-pause dc-pause" type="button" aria-label="Pause the animation" aria-pressed="false"><span aria-hidden="true"></span></button>
               <span class="dc-bar" aria-hidden="true"><i></i></span>
             </div>
@@ -172,16 +171,16 @@
                 <div class="dc-body">
                   <div class="dc-head">
                     <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>
-                    <div class="dc-title"><h3>Apps and processes</h3><p>14 checks · 3 warnings</p></div>
+                    <div class="dc-title"><h3>Apps and processes</h3><p>15 readings · 3 warnings</p></div>
                     <span class="dc-res ok">All OK</span>
                   </div>
                   <ul class="dc-chips">
                     <li>CPU per app</li><li>Memory per app</li><li>Battery drain per app</li><li>Network use per app</li>
-                    <li>Graphics time per app</li><li>Real memory (PSS) per process</li><li>Out-of-memory score</li><li>Memory pressure</li>
-                    <li>CPU pressure</li><li>Swap use</li><li>Hard page faults</li><li>Apps stopped for memory</li>
-                    <li>zswap and zram</li><li>Mic, camera, and screen in use</li>
+                    <li>Graphics time per app</li><li>Disk reads and writes per app</li><li>Real memory (PSS) per process</li><li>Out-of-memory score</li>
+                    <li>Memory pressure</li><li>CPU pressure</li><li>Swap use</li><li>Hard page faults</li>
+                    <li>Wake-ups per process</li><li>zswap and zram</li><li>What started each process</li>
                   </ul>
-                  <p class="dc-src"><span>Reads</span> /proc/&lt;pid&gt; · smaps_rollup · cgroup cpu.stat and memory.stat · /proc/pressure · /proc/vmstat · DRM fdinfo · ss · pw-dump</p>
+                  <p class="dc-src"><span>Reads</span> /proc/&lt;pid&gt; · smaps_rollup · /proc/&lt;pid&gt;/io · cgroup cpu.stat and memory.stat · /proc/pressure · /proc/vmstat · DRM fdinfo · ss</p>
                   <details class="dc-more"><summary>What it can warn about (3)</summary>
                     <ul><li>The computer is short of memory</li><li>Swap is almost full</li><li>Apps were stopped because memory ran out</li></ul>
                   </details>
@@ -193,7 +192,7 @@
                 <div class="dc-body">
                   <div class="dc-head">
                     <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
-                    <div class="dc-title"><h3>Services, start-up, and jobs</h3><p>14 checks · 3 warnings</p></div>
+                    <div class="dc-title"><h3>Services, start-up, and jobs</h3><p>14 readings · 3 warnings</p></div>
                     <span class="dc-res ok">All OK</span>
                   </div>
                   <ul class="dc-chips">
@@ -213,8 +212,27 @@
                 <span class="dc-depth" aria-hidden="true">L3</span>
                 <div class="dc-body">
                   <div class="dc-head">
+                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h8v5H3zM13 7h8v5h-8zM8 14h8v5H8zM5 4v3M19 4v3"/></svg>
+                    <div class="dc-title"><h3>Containers and virtual machines</h3><p>8 readings · 1 warning</p></div>
+                    <span class="dc-res ok">All OK</span>
+                  </div>
+                  <ul class="dc-chips">
+                    <li>Running containers</li><li>Ports each container opens</li><li>Containers open to every network</li><li>Disk use per container</li>
+                    <li>Network use per container</li><li>Build cache</li><li>Unused images and their size</li><li>Virtual machines (libvirt)</li>
+                  </ul>
+                  <p class="dc-src"><span>Reads</span> docker ps · docker system df · docker stats · virsh</p>
+                  <details class="dc-more"><summary>What it can warn about (1)</summary>
+                    <ul><li>A container is open to every network</li></ul>
+                  </details>
+                </div>
+              </li>
+
+              <li class="dc-layer" style="--d:3">
+                <span class="dc-depth" aria-hidden="true">L4</span>
+                <div class="dc-body">
+                  <div class="dc-head">
                     <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5zM4 7.5l8 4.5 8-4.5M12 12v9"/></svg>
-                    <div class="dc-title"><h3>Packages and updates</h3><p>14 checks · 5 warnings</p></div>
+                    <div class="dc-title"><h3>Packages and updates</h3><p>14 readings · 5 warnings</p></div>
                     <span class="dc-res ok">All OK</span>
                   </div>
                   <ul class="dc-chips">
@@ -230,44 +248,23 @@
                 </div>
               </li>
 
-              <li class="dc-layer" style="--d:3">
-                <span class="dc-depth" aria-hidden="true">L4</span>
-                <div class="dc-body">
-                  <div class="dc-head">
-                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0M12 19.5v.01"/></svg>
-                    <div class="dc-title"><h3>Network</h3><p>14 checks · 5 warnings</p></div>
-                    <span class="dc-res ok">All OK</span>
-                  </div>
-                  <ul class="dc-chips">
-                    <li>Connected or offline</li><li>Internet answers</li><li>Wi-Fi signal in dBm</li><li>Wi-Fi band and channel</li>
-                    <li>DNS servers and DNSSEC</li><li>VPNs</li><li>Gateway and routes</li><li>Errors and drops per link</li>
-                    <li>Link changes</li><li>TCP bytes sent again</li><li>Every open port</li><li>Who can reach each port</li>
-                    <li>Container ports</li><li>Ethernet speed and cable</li>
-                  </ul>
-                  <p class="dc-src"><span>Reads</span> /proc/net · /sys/class/net · NetworkManager · nmcli · resolvectl · ip route · ethtool · docker ps</p>
-                  <details class="dc-more"><summary>What it can warn about (5)</summary>
-                    <ul><li>Not connected to a network</li><li>Connected, but the internet does not answer</li><li>The Wi-Fi signal is weak</li><li>A network link has errors</li><li>A container is open to every network</li></ul>
-                  </details>
-                </div>
-              </li>
-
               <li class="dc-layer" style="--d:4">
                 <span class="dc-depth" aria-hidden="true">L5</span>
                 <div class="dc-body">
                   <div class="dc-head">
-                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v6c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9V6l-7-3Z"/></svg>
-                    <div class="dc-title"><h3>Security, accounts, and backups</h3><p>14 checks · 7 warnings</p></div>
-                    <span class="dc-res warn">1 to look at</span>
+                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0M12 19.5v.01"/></svg>
+                    <div class="dc-title"><h3>Network</h3><p>14 readings · 4 warnings</p></div>
+                    <span class="dc-res ok">All OK</span>
                   </div>
                   <ul class="dc-chips">
-                    <li class="warn" data-find="0">Firewall</li><li>AppArmor per process</li><li>SSH server settings</li><li>SSH keys</li>
-                    <li>Accounts with admin power</li><li>sudo use, 30 days</li><li>Sign-ins, 30 days</li><li>Kernel hardening settings</li>
-                    <li>SUID programs and their packages</li><li>Malware scanners</li><li>Screen lock</li><li>Snap and Flatpak permissions</li>
-                    <li>Backup schedule</li><li>Age of the last backup</li>
+                    <li>Connected or offline</li><li>Internet answers</li><li>Wi-Fi signal in dBm</li><li>Wi-Fi band and channel</li>
+                    <li>DNS servers and DNSSEC</li><li>DNS answer time</li><li>VPNs</li><li>Gateway and routes</li>
+                    <li>Errors and drops per link</li><li>Link changes</li><li>TCP bytes sent again</li><li>Every open port</li>
+                    <li>Who can reach each port</li><li>Ethernet speed and cable</li>
                   </ul>
-                  <p class="dc-src"><span>Reads</span> /etc/ufw · /etc/ssh/sshd_config · /etc/passwd · /etc/group · AppArmor · /proc/sys · SUID files · Déjà Dup · Timeshift. Never /etc/shadow.</p>
-                  <details class="dc-more"><summary>What it can warn about (7)</summary>
-                    <ul><li>The firewall is off</li><li>AppArmor is off</li><li>SSH lets root sign in with a password</li><li>Another account has full admin power</li><li>No backups are set up</li><li>The last backup is old</li><li>Your list of installed packages is sent to Ubuntu every week</li></ul>
+                  <p class="dc-src"><span>Reads</span> /proc/net · /sys/class/net · NetworkManager · nmcli · resolvectl · ip route · ethtool · ss</p>
+                  <details class="dc-more"><summary>What it can warn about (4)</summary>
+                    <ul><li>Not connected to a network</li><li>Connected, but the internet does not answer</li><li>The Wi-Fi signal is weak</li><li>A network link has errors</li></ul>
                   </details>
                 </div>
               </li>
@@ -276,19 +273,19 @@
                 <span class="dc-depth" aria-hidden="true">L6</span>
                 <div class="dc-body">
                   <div class="dc-head">
-                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3v12c0 1.7-3.6 3-8 3s-8-1.3-8-3zM4 6c0 1.7 3.6 3 8 3s8-1.3 8-3M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
-                    <div class="dc-title"><h3>Storage and filesystems</h3><p>14 checks · 8 warnings</p></div>
+                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v6c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9V6l-7-3Z"/></svg>
+                    <div class="dc-title"><h3>Security, accounts, and privacy</h3><p>14 readings · 5 warnings</p></div>
                     <span class="dc-res warn">1 to look at</span>
                   </div>
                   <ul class="dc-chips">
-                    <li>Free space per disk</li><li class="warn" data-find="1">Days until full</li><li>File slots (inodes)</li><li>Read-only disks</li>
-                    <li>ext4 errors</li><li>/boot space</li><li>Disk busy time</li><li>Disk pressure</li>
-                    <li>Encryption (LUKS)</li><li>/etc/fstab problems</li><li>Weekly TRIM</li><li>Disk scheduler and queue</li>
-                    <li>Partition alignment</li><li>What is safe to clean</li>
+                    <li class="warn" data-find="0">Firewall</li><li>AppArmor per process</li><li>SSH server settings</li><li>SSH keys</li>
+                    <li>Accounts with admin power</li><li>sudo use, 30 days</li><li>Sign-ins, 30 days</li><li>Kernel hardening settings</li>
+                    <li>SUID programs and their packages</li><li>Malware scanners</li><li>Screen lock</li><li>Snap and Flatpak permissions</li>
+                    <li>Mic, camera, and screen in use</li><li>Package list sent to Ubuntu</li>
                   </ul>
-                  <p class="dc-src"><span>Reads</span> /proc/mounts · statvfs · /proc/diskstats · /proc/pressure/io · /sys/block · /sys/fs/ext4 · /etc/fstab · 14 days of history</p>
-                  <details class="dc-more"><summary>What it can warn about (8)</summary>
-                    <ul><li>The main disk is low on space</li><li>A disk is low on space</li><li>/boot is almost full</li><li>A disk will be full in a few days</li><li>A disk is running out of file slots</li><li>A disk became read-only</li><li>A disk has filesystem errors</li><li>Everything is waiting for the disk</li></ul>
+                  <p class="dc-src"><span>Reads</span> /etc/ufw · /etc/ssh/sshd_config · /etc/passwd · /etc/group · AppArmor · /proc/sys · SUID files · pw-dump · popularity-contest. Never /etc/shadow.</p>
+                  <details class="dc-more"><summary>What it can warn about (5)</summary>
+                    <ul><li>The firewall is off</li><li>AppArmor is off</li><li>SSH lets root sign in with a password</li><li>Another account has full admin power</li><li>Your list of installed packages is sent to Ubuntu every week</li></ul>
                   </details>
                 </div>
               </li>
@@ -297,8 +294,29 @@
                 <span class="dc-depth" aria-hidden="true">L7</span>
                 <div class="dc-body">
                   <div class="dc-head">
+                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3v12c0 1.7-3.6 3-8 3s-8-1.3-8-3zM4 6c0 1.7 3.6 3 8 3s8-1.3 8-3M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+                    <div class="dc-title"><h3>Storage and backups</h3><p>16 readings · 10 warnings</p></div>
+                    <span class="dc-res warn">1 to look at</span>
+                  </div>
+                  <ul class="dc-chips">
+                    <li>Free space per disk</li><li class="warn" data-find="1">Days until full</li><li>File slots (inodes)</li><li>Read-only disks</li>
+                    <li>ext4 errors</li><li>/boot space</li><li>Disk busy time</li><li>Disk pressure</li>
+                    <li>Encryption (LUKS)</li><li>/etc/fstab problems</li><li>Weekly TRIM</li><li>Disk scheduler and queue</li>
+                    <li>Partition alignment</li><li>What is safe to clean</li><li>Backup schedule</li><li>Age of the last backup</li>
+                  </ul>
+                  <p class="dc-src"><span>Reads</span> /proc/mounts · statvfs · /proc/diskstats · /proc/pressure/io · /sys/block · /sys/fs/ext4 · /etc/fstab · Déjà Dup · Timeshift · 14 days of history</p>
+                  <details class="dc-more"><summary>What it can warn about (10)</summary>
+                    <ul><li>The main disk is low on space</li><li>A disk is low on space</li><li>/boot is almost full</li><li>A disk will be full in a few days</li><li>A disk is running out of file slots</li><li>A disk became read-only</li><li>A disk has filesystem errors</li><li>Everything is waiting for the disk</li><li>No backups are set up</li><li>The last backup is old</li></ul>
+                  </details>
+                </div>
+              </li>
+
+              <li class="dc-layer" style="--d:7">
+                <span class="dc-depth" aria-hidden="true">L8</span>
+                <div class="dc-body">
+                  <div class="dc-head">
                     <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 9h16M8 13l2 2-2 2M12 17h4"/></svg>
-                    <div class="dc-title"><h3>Kernel, drivers, and firmware</h3><p>17 checks · 8 warnings</p></div>
+                    <div class="dc-title"><h3>Kernel, drivers, and firmware</h3><p>17 readings · 8 warnings</p></div>
                     <span class="dc-res ok">All OK</span>
                   </div>
                   <ul class="dc-chips">
@@ -315,23 +333,45 @@
                 </div>
               </li>
 
-              <li class="dc-layer" style="--d:7">
-                <span class="dc-depth" aria-hidden="true">L8</span>
+              <li class="dc-layer" style="--d:8">
+                <span class="dc-depth" aria-hidden="true">L9</span>
+                <div class="dc-body">
+                  <div class="dc-head">
+                    <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h15v8H3zM21 11v2M13 9l-3 3h3l-3 3"/></svg>
+                    <div class="dc-title"><h3>Power, battery, and sleep</h3><p>14 readings · 5 warnings</p></div>
+                    <span class="dc-res ok">All OK</span>
+                  </div>
+                  <ul class="dc-chips">
+                    <li data-find="3">Battery capacity vs design</li><li>Battery cycles and heat</li><li>Charge and drain in watts</li><li>Charger watts (USB PD)</li>
+                    <li>Charge limits</li><li>Charge mode</li><li>Turbo on battery and on mains</li><li>Suspend history</li>
+                    <li>Suspend type (s2idle or deep)</li><li>What woke the computer</li><li>Devices that may wake it</li><li>Deep sleep share of the chip</li>
+                    <li>Devices that waste power</li><li>What closing the lid does</li>
+                  </ul>
+                  <p class="dc-src"><span>Reads</span> /sys/class/power_supply · /sys/class/usb_power_delivery · /sys/power · /proc/acpi/wakeup · /sys/devices/system/cpu · logind · the journal</p>
+                  <details class="dc-more"><summary>What it can warn about (5)</summary>
+                    <ul><li>The battery ran empty</li><li>The battery reports a fault</li><li>The battery is too hot</li><li>The battery has lost some of its capacity</li><li>The battery drains on the charger</li></ul>
+                  </details>
+                </div>
+              </li>
+
+              <li class="dc-layer" style="--d:9">
+                <span class="dc-depth" aria-hidden="true">L10</span>
                 <div class="dc-body">
                   <div class="dc-head">
                     <svg class="dc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h6v6H9zM5 5h14v14H5zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
-                    <div class="dc-title"><h3>Hardware</h3><p>16 checks · 16 warnings</p></div>
+                    <div class="dc-title"><h3>Hardware and devices</h3><p>17 readings · 11 warnings</p></div>
                     <span class="dc-res ok">All OK</span>
                   </div>
                   <ul class="dc-chips">
                     <li>CPU temperature</li><li>Every sensor and fan</li><li>Thermal trip points</li><li>Heat slowdowns</li>
                     <li>Machine-check errors</li><li>Memory errors (EDAC)</li><li data-find="2">SSD wear (SMART)</li><li>Disk read and write errors</li>
                     <li>PCIe link speed and width</li><li>PCIe link errors (AER)</li><li>USB 3 running at USB 2 speed</li><li>USB over-current</li>
-                    <li data-find="3">Battery capacity vs design</li><li>Battery cycles and heat</li><li>Charger watts (USB PD)</li><li>Wake-up sources</li>
+                    <li>USB-C ports and docks</li><li>Thunderbolt and USB4 devices</li><li>Screens: refresh rate, HDR, brightness</li><li>Sound chip and driver</li>
+                    <li>Bluetooth devices and their batteries</li>
                   </ul>
-                  <p class="dc-src"><span>Reads</span> /sys/class/hwmon · /sys/class/thermal · EDAC · smartctl and nvme · PCIe AER · /sys/class/power_supply · /sys/class/usb_power_delivery</p>
-                  <details class="dc-more"><summary>What it can warn about (16)</summary>
-                    <ul><li>The processor is very hot</li><li>A part is too hot</li><li>A fan stopped while the processor is hot</li><li>The cooling cannot keep up</li><li>The computer switched off at a critical temperature</li><li>The processor reported hardware errors</li><li>The memory reports errors</li><li>A PCIe link reports errors</li><li>A USB port was overloaded</li><li>A disk had read or write errors</li><li>A drive is wearing out</li><li>The battery ran empty</li><li>The battery reports a fault</li><li>The battery is too hot</li><li>The battery has lost some of its capacity</li><li>The battery drains on the charger</li></ul>
+                  <p class="dc-src"><span>Reads</span> /sys/class/hwmon · /sys/class/thermal · EDAC · smartctl and nvme · PCIe AER · /sys/class/typec · /sys/bus/thunderbolt · /sys/class/drm · /proc/asound · BlueZ</p>
+                  <details class="dc-more"><summary>What it can warn about (11)</summary>
+                    <ul><li>The processor is very hot</li><li>A part is too hot</li><li>A fan stopped while the processor is hot</li><li>The cooling cannot keep up</li><li>The computer switched off at a critical temperature</li><li>The processor reported hardware errors</li><li>The memory reports errors</li><li>A PCIe link reports errors</li><li>A USB port was overloaded</li><li>A disk had read or write errors</li><li>A drive is wearing out</li></ul>
                   </details>
                 </div>
               </li>
@@ -342,9 +382,9 @@
           <aside class="dc-out" aria-label="What you see in DeeCure">
             <p class="dc-cap">What you see</p>
             <div class="dc-funnel">
-              <div><b class="dc-total">117</b><span>checks</span></div>
+              <div><b>150+</b><span>readings</span></div>
               <div><b>55</b><span>warnings</span></div>
-              <div><b>8</b><span>layers</span></div>
+              <div><b>10</b><span>layers</span></div>
             </div>
             <p class="dc-into" aria-hidden="true">turned into</p>
             <div class="dc-card">
@@ -364,21 +404,21 @@
               </div>
               <ol class="dc-finds">
                 <li class="warn">
-                  <span class="dc-l">L5</span>
+                  <span class="dc-l">L6</span>
                   <div><strong>The firewall is off</strong><span>Security · read from /etc/ufw/ufw.conf</span></div>
                   <span class="dc-fix" aria-hidden="true">Fix</span>
                 </li>
                 <li class="warn">
-                  <span class="dc-l">L6</span>
+                  <span class="dc-l">L7</span>
                   <div><strong>Main disk full in about 12 days</strong><span>Storage · forecast from 14 days of use</span></div>
                 </li>
                 <li class="ok">
-                  <span class="dc-l">L8</span>
+                  <span class="dc-l">L10</span>
                   <div><strong>SSD: 92% of its life left</strong><span>Hardware · SMART, read every day</span></div>
                 </li>
                 <li class="ok">
-                  <span class="dc-l">L8</span>
-                  <div><strong>Battery health 84%</strong><span>Hardware · full charge vs design, 320 cycles</span></div>
+                  <span class="dc-l">L9</span>
+                  <div><strong>Battery health 84%</strong><span>Power · full charge vs design, 320 cycles</span></div>
                 </li>
               </ol>
             </div>
