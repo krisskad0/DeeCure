@@ -115,6 +115,9 @@ pub fn automatic_security(text: &str) -> bool {
 #[derive(Debug, Default)]
 pub struct Updates {
     last: Option<(Instant, UpdatesInfo)>,
+    /// The apt read in progress. It runs on its own, so the minute's collection (and the
+    /// first result after start) never waits for apt; its answer is used once it is ready.
+    running: Option<tokio::task::JoinHandle<io::Result<Vec<Upgradable>>>>,
 }
 
 impl Updates {
@@ -123,24 +126,11 @@ impl Updates {
 
     /// Pending updates and whether a restart is needed.
     pub async fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
-        let stale = self
-            .last
-            .as_ref()
-            .is_none_or(|(at, _)| at.elapsed() >= EVERY);
-        if stale && root.path("/usr/bin/apt").exists() {
-            let mut pending =
-                parse_upgradable(&run_apt("/usr/bin/apt", &["list", "--upgradable"]).await?);
-            // A dry run (no lock, no changes) tells which updates Ubuntu holds back for now.
-            let phased = run_apt(
-                "/usr/bin/apt-get",
-                &["-s", "-o", "Debug::NoLocking=1", "upgrade"],
-            )
-            .await
-            .map(|t| parse_phased(&t))
-            .unwrap_or_default();
-            for p in &mut pending {
-                p.phased = phased.contains(&p.name);
-            }
+        // Use the background read once it has finished.
+        if self.running.as_ref().is_some_and(|r| r.is_finished())
+            && let Some(running) = self.running.take()
+        {
+            let pending = running.await.map_err(io::Error::other)??;
             let info = UpdatesInfo {
                 pending,
                 lists_updated_at: modified(
@@ -153,6 +143,13 @@ impl Updates {
                 ),
             };
             self.last = Some((Instant::now(), info));
+        }
+        let stale = self
+            .last
+            .as_ref()
+            .is_none_or(|(at, _)| at.elapsed() >= EVERY);
+        if stale && self.running.is_none() && root.path("/usr/bin/apt").exists() {
+            self.running = Some(tokio::spawn(read_pending()));
         }
         let mut sample = Sample::default();
         let restart = root.path("/run/reboot-required").exists();
@@ -189,6 +186,23 @@ impl Updates {
         }
         Ok(sample)
     }
+}
+
+/// The pending updates, with the ones Ubuntu still phases in marked.
+async fn read_pending() -> io::Result<Vec<Upgradable>> {
+    let mut pending = parse_upgradable(&run_apt("/usr/bin/apt", &["list", "--upgradable"]).await?);
+    // A dry run (no lock, no changes) tells which updates Ubuntu holds back for now.
+    let phased = run_apt(
+        "/usr/bin/apt-get",
+        &["-s", "-o", "Debug::NoLocking=1", "upgrade"],
+    )
+    .await
+    .map(|t| parse_phased(&t))
+    .unwrap_or_default();
+    for p in &mut pending {
+        p.phased = phased.contains(&p.name);
+    }
+    Ok(pending)
 }
 
 /// Runs apt read-only (`list`, or a dry run with `-s`) and returns what it printed.
