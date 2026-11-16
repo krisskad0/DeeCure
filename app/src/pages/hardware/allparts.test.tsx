@@ -79,6 +79,13 @@ afterEach(() => {
   localStorage.clear();
 });
 
+/** The slots button, once it is enabled: it waits until the app knows the helper is installed. */
+async function slotsButton(): Promise<HTMLButtonElement> {
+  const name = "Read slots and sockets (asks for your password)";
+  await waitFor(() => expect((screen.getByRole("button", { name }) as HTMLButtonElement).disabled).toBe(false));
+  return screen.getByRole("button", { name }) as HTMLButtonElement;
+}
+
 describe("All Parts", () => {
   it("names touchpads, touchscreens, pens, and mice from the device name", () => {
     expect(pointerKind("VEN_04F3:00 04F3:32DC Touchpad")).toBe("Touchpad");
@@ -109,7 +116,7 @@ describe("All Parts", () => {
     // SATA ports need no password.
     expect(screen.getByText("SATA 2")).toBeTruthy();
     expect(screen.getByText("Nothing connected")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Read slots and sockets (asks for your password)" }));
+    fireEvent.click(await slotsButton());
     await waitFor(() => expect(screen.getByText("M.2 SSD 2")).toBeTruthy());
     expect(reads).toEqual(["memory_slots", "slots_ports"]);
     expect(screen.getByText("Headphone")).toBeTruthy();
@@ -120,8 +127,7 @@ describe("All Parts", () => {
     oldHelper = true;
     localStorage.setItem("deecure.access", JSON.stringify("full"));
     render(<HardwareAllParts />);
-    await waitFor(() => expect(screen.getByRole("button", { name: "Read slots and sockets (asks for your password)" })).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Read slots and sockets (asks for your password)" }));
+    fireEvent.click(await slotsButton());
     await waitFor(() => expect(screen.getByText("DIMM B")).toBeTruthy());
     expect(screen.getByText(/update DeeCure to read them/)).toBeTruthy();
     oldHelper = false;
