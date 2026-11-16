@@ -53,6 +53,7 @@ const READS: &[&str] = &[
     "crontabs",
     "accounts",
     "memory_slots",
+    "slots_ports",
     "bios_settings",
     "serial",
     "power_meters",
@@ -560,6 +561,9 @@ impl Helper {
                 "nvme" => nvme_details(&arg),
                 "memory_slots" => output("/usr/sbin/dmidecode", &["-t", "16", "-t", "17"])
                     .map(|t| reads::memory_slots(&t).to_string())
+                    .ok_or_else(|| "dmidecode gave no answer".into()),
+                "slots_ports" => output("/usr/sbin/dmidecode", &["-t", "8", "-t", "9"])
+                    .map(|t| reads::slots_and_ports(&t).to_string())
                     .ok_or_else(|| "dmidecode gave no answer".into()),
                 "bios_settings" => serde_json::to_string(&reads::bios_settings(Path::new("/")))
                     .map_err(|e| e.to_string()),

@@ -149,6 +149,44 @@ pub fn memory_slots(text: &str) -> Value {
     json!({ "arrays": arrays, "modules": modules })
 }
 
+/// The board's slots and sockets from `dmidecode -t 8 -t 9`: each port connector (USB, HDMI,
+/// audio, and so on) and each expansion slot (PCIe, M.2) with whether it is in use. The maker
+/// writes this table, so on some computers it is missing or not complete.
+pub fn slots_and_ports(text: &str) -> Value {
+    let port_keys = [
+        "Internal Reference Designator",
+        "Internal Connector Type",
+        "External Reference Designator",
+        "External Connector Type",
+        "Port Type",
+    ];
+    let slot_keys = [
+        "Designation",
+        "Type",
+        "Current Usage",
+        "Length",
+        "Bus Address",
+    ];
+    let fields = |block: &str, keys: &[&str]| -> BTreeMap<String, String> {
+        block
+            .lines()
+            .filter_map(|l| l.trim().split_once(": "))
+            .filter(|(k, _)| keys.contains(k))
+            .map(|(k, v)| (k.to_owned(), v.trim().to_owned()))
+            .collect()
+    };
+    let mut ports = Vec::new();
+    let mut slots = Vec::new();
+    for block in text.split("\n\n") {
+        match block.lines().nth(1).unwrap_or("").trim() {
+            "Port Connector Information" => ports.push(fields(block, &port_keys)),
+            "System Slot Information" => slots.push(fields(block, &slot_keys)),
+            _ => {}
+        }
+    }
+    json!({ "ports": ports, "slots": slots })
+}
+
 /// A BIOS settings interface (`/sys/class/firmware-attributes/<name>`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct BiosInterface {
@@ -651,6 +689,24 @@ mod tests {
         assert_eq!(v["modules"][0]["Configured Memory Speed"], "4800 MT/s");
         assert_eq!(v["modules"][0]["Bank Locator"], "P0 CHANNEL A");
         assert_eq!(v["modules"][1]["Filled"], "false");
+    }
+
+    #[test]
+    fn reads_slots_and_ports() {
+        let text = "# dmidecode 3.5\nGetting SMBIOS data from sysfs.\n\nHandle 0x0008, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: J3A1\n\tInternal Connector Type: None\n\tExternal Reference Designator: USB 1\n\tExternal Connector Type: Access Bus (USB)\n\tPort Type: USB\n\nHandle 0x0009, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: J9A1\n\tInternal Connector Type: None\n\tExternal Reference Designator: HDMI\n\tExternal Connector Type: Other\n\tPort Type: Video Port\n\nHandle 0x0020, DMI type 9, 17 bytes\nSystem Slot Information\n\tDesignation: M.2 SSD 1\n\tType: x4 PCI Express 4 x4\n\tCurrent Usage: In Use\n\tLength: Other\n\tID: 1\n\tCharacteristics:\n\t\t3.3 V is provided\n\tBus Address: 0000:02:00.0\n\nHandle 0x0021, DMI type 9, 17 bytes\nSystem Slot Information\n\tDesignation: M.2 SSD 2\n\tType: x4 PCI Express 4 x4\n\tCurrent Usage: Available\n\tLength: Other\n";
+        let v = slots_and_ports(text);
+        assert_eq!(v["ports"].as_array().unwrap().len(), 2);
+        assert_eq!(v["ports"][1]["External Reference Designator"], "HDMI");
+        assert_eq!(v["ports"][0]["Port Type"], "USB");
+        assert_eq!(v["slots"][0]["Current Usage"], "In Use");
+        assert_eq!(v["slots"][0]["Bus Address"], "0000:02:00.0");
+        assert_eq!(v["slots"][1]["Designation"], "M.2 SSD 2");
+        assert!(v["slots"][1].get("Bus Address").is_none());
+        // A computer whose maker wrote neither table.
+        assert_eq!(
+            slots_and_ports("# dmidecode 3.5\n"),
+            json!({ "ports": [], "slots": [] })
+        );
     }
 
     #[test]

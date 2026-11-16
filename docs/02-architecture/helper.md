@@ -30,6 +30,7 @@ All read-outs share one polkit action, `io.github.krisskad0.deecure.read` (appro
 | `self_tests` | `smartctl -j -l selftest /dev/<disk>`, summed up: each test's kind, result, and drive hour, and the test running now | As `smart` |
 | `nvme` | `nvme id-ctrl`, `id-ns`, `fw-log` with `--output-format=binary`, decoded by the NVMe specification's offsets: firmware slots and versions, block formats, power states, temperature limits, write cache. The serial number is left out. | An NVMe disk name; its controller (`nvme0` from `nvme0n1`) comes from the checked name. Needs `nvme-cli`. |
 | `memory_slots` | `dmidecode -t 16 -t 17`: the board's most memory, slot count, error correction, and each slot (size, type, form factor, rated and running speed, bank, part) | Arrays for video memory are left out |
+| `slots_ports` | `dmidecode -t 8 -t 9`: each port connector (internal and outside names, connector type, port type) and each expansion slot such as PCIe or M.2 (name, type, in use or available, length, bus address), for Hardware › All Parts | The maker writes this table, so it may be missing or not complete; the app says so |
 | `bios_settings` | Every `/sys/class/firmware-attributes/<interface>/attributes/<setting>`: value, default, allowed values or range; and `authentication/{Admin,System}/is_enabled` | Folder names must be plain (letters, digits, `_.-`); one line of at most 512 bytes per file. Password files are never opened. |
 | `firewall_rules` | `ufw status verbose` | - |
 | `crontabs` | Each file in `/var/spool/cron/crontabs` | - |

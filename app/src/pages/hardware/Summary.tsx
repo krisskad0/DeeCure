@@ -11,6 +11,7 @@ import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
 import { type StatusRow, StatusList } from "../../components/StatusList";
 import { bytes, heatStatus, pick, pickAll } from "../../metrics";
+import { LinkButton } from "../../components/Button";
 import { href } from "../../route";
 import { useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
@@ -69,7 +70,7 @@ export function HardwareSummary() {
           ]}
         />
       </Panel>
-      <Panel title="Components" span={6} flush>
+      <Panel title="Components" actions={<LinkButton to={href("hardware", "parts")}>All parts</LinkButton>} span={6} flush>
         <StatusList rows={rows} />
       </Panel>
       {atLeast(mode, "expert") && <Guard><HardwareErrorsPanel /></Guard>}

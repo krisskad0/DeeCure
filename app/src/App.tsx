@@ -34,6 +34,7 @@ import { LogsCrashes, LogsErrors, LogsJournal, LogsKernel } from "./pages/logs/L
 import { JobsAnacron, JobsAt, JobsCalendar, JobsCron, JobsTimers } from "./pages/jobs/Jobs";
 import { ServicesStartup, ServicesUser } from "./pages/services/OtherServices";
 import { StorageCleanup, StorageFilesystems, StorageOverview, StorageUsage } from "./pages/storage/Storage";
+import { HardwareAllParts } from "./pages/hardware/AllParts";
 import { HardwareFirmware } from "./pages/hardware/Firmware";
 import { HardwareGraphics } from "./pages/hardware/Graphics";
 import { HardwareMemory } from "./pages/hardware/Memory";
@@ -92,6 +93,7 @@ const TABS: Record<string, Record<string, Tab>> = {
   processes: { all: ProcessesAll, top: ProcessesTop },
   hardware: {
     summary: HardwareSummary,
+    parts: HardwareAllParts,
     processor: HardwareProcessor,
     memory: HardwareMemory,
     storage: HardwareStorage,
