@@ -200,7 +200,7 @@
   show(current);
 })();
 
-// "How deep it looks": the scan walks down the eight layers. In each layer it lights the checks one
+// "How deep it looks": the scan walks down the layers. In each layer it lights the checks one
 // by one; a check that leads to a sentence on the card shows that sentence. It plays only while the
 // section is on screen. Without the script, or with reduced motion, the finished scan stays.
 (() => {
@@ -211,14 +211,11 @@
   const chips = layers.map((l) => [...l.querySelectorAll(".dc-chips li")]);
   const finds = [...root.querySelectorAll(".dc-finds li")];
   const total = chips.flat().length;
-  const count = root.querySelector(".dc-count");
   const status = root.querySelector(".dc-status-t");
   const num = root.querySelector(".dc-num");
   const pause = root.querySelector(".dc-pause");
   const DONE = status.textContent;
-  // The totals come from the page itself, so they stay right when a check is added.
-  root.querySelectorAll(".dc-total").forEach((el) => (el.textContent = total));
-  count.textContent = total;
+  // The progress bar counts the readings on the page, so it stays right when one is added.
 
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     pause.hidden = true;
@@ -231,7 +228,6 @@
   const at = (ms, fn) => timers.push(setTimeout(fn, ms));
   const setDone = (v) => {
     done = v;
-    count.textContent = v;
     root.style.setProperty("--done", (v / total).toFixed(3));
   };
   const setScore = (v) => {

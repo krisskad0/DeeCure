@@ -1,6 +1,6 @@
-# DeeCure: Linux system monitor, health check, and optimizer for Ubuntu
+# DeeCure: deep insight into every layer of your Linux computer
 
-**Every Linux system has hidden problems, in the hardware or the software, that are hard to find. DeeCure checks every layer of your desktop, laptop, or server deeply, explains what it finds in plain English, and fixes problems with one click, with undo.** It is free and open source. It covers your CPU, graphics, memory, disks and SSDs, battery, temperatures, firmware, services, updates, and security, in one desktop app and one terminal command. Everything stays on your computer: no account, no cloud, no telemetry.
+**Is your Linux computer really healthy? The answer is spread across many layers, tools, and log files, in the hardware and the software. DeeCure checks every layer of your desktop, laptop, or server in one go, explains what it finds in plain English, and fixes problems with one click, with undo.** It is free and open source. It covers your CPU, graphics, memory, disks and SSDs, battery, temperatures, firmware, services, updates, and security, in one desktop app and one terminal command. Everything stays on your computer: no account, no cloud, no telemetry.
 
 [![CI](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml/badge.svg)](https://github.com/krisskad0/DeeCure/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -13,10 +13,10 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-deep-look-dark.svg">
-  <img src="docs/07-user-guide/images/deecure-deep-look-light.svg" alt="How deep DeeCure looks: eight layers, each nested inside the one above, from apps and processes, services and jobs, packages and updates, network, security and backups, storage, and kernel and firmware down to the hardware. A scan walks down the layers, 117 checks in all, while live readings move. The health score fills to 92, and what the scan found appears as plain sentences, each with its path down the layers: the firewall is off, the main disk will be full in about 12 days, the SSD has 92% of its life left, and battery health is 84%.">
+  <img src="docs/07-user-guide/images/deecure-deep-look-light.svg" alt="What DeeCure does, in four steps. It checks 10 layers, with more than 150 readings, 55 warnings, and 47 fixes with undo. Step 1, look deep: a scan beam walks down the layers: apps and processes; services, start-up, and jobs; containers; packages and updates; network; security, accounts, and privacy; storage and backups; kernel, drivers, and firmware; power, battery, and sleep; and hardware and devices. Step 2, see it at a glance: a health score of 92, live CPU, memory, temperature, and network readings, and what needs you: the firewall is off, the main disk is full in about 12 days, and the SSD has 92% of its life left. Step 3, fix it safely: the problem is explained in plain English, the exact command (sudo ufw enable) is shown first, the fix is applied and checked again, and it can be undone. Step 4, optimize: 12 improvements this computer needs, each with a preview.">
 </picture>
 
-*How deep it looks: eight layers, each one inside the one above, from the apps you see down to the chips inside. DeeCure turns 117 checks into one score and a few plain sentences, and each sentence shows the layer and the path where it was found. [See it find, explain, fix, and undo](#see-it-work).*
+*What DeeCure does, in four steps: it checks all 10 layers, from the apps you see down to the chips inside; it shows one health score with live readings; it fixes a problem step by step, with undo; and it finds the improvements your computer really needs. The numbers here are an example. [See it work in the real app](#see-it-work).*
 
 **Website:** [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): features, screenshots, and downloads on one page.
 

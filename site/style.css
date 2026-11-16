@@ -372,8 +372,8 @@ details p { margin: 10px 0 0; color: var(--ink-2); }
   .dw-toast { width: 15em; }
 }
 
-/* How deep it looks (#deep): eight layers, one under the other. Each deeper layer is darker and
-   steps further in (--d is its depth, 0 to 7). The base styles are the finished scan; with the
+/* How deep it looks (#deep): ten layers, one under the other. Each deeper layer is darker and
+   steps further in (--d is its depth, 0 to 9). The base styles are the finished scan; with the
    script, .anim hides the results and app.js brings them in, layer by layer, check by check. */
 .deep-lead { margin-inline: auto; max-width: 700px; }
 .dc { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 40px; align-items: start; margin-top: 44px; }
