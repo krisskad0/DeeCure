@@ -34,6 +34,10 @@ pub struct Upgradable {
     pub origin: String,
     /// True when the new version comes from a security archive.
     pub security: bool,
+    /// Ubuntu rolls this update out in stages and has not reached this computer yet
+    /// (phased updates): apt and Software Updater wait for it, and so does DeeCure.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub phased: bool,
 }
 
 /// The `updates` inventory.
@@ -69,6 +73,7 @@ pub fn parse_upgradable(text: &str) -> Vec<Upgradable> {
                 candidate,
                 security: origin.split(',').any(|o| o.ends_with("-security")),
                 origin,
+                phased: false,
             })
         })
         .collect();
@@ -77,6 +82,24 @@ pub fn parse_upgradable(text: &str) -> Vec<Upgradable> {
             .cmp(&a.security)
             .then_with(|| a.name.cmp(&b.name))
     });
+    out
+}
+
+/// The packages a dry run of `apt-get upgrade` defers because Ubuntu has not phased them in
+/// for this computer yet: the names after "The following upgrades have been deferred due to
+/// phasing:", one indented line or more.
+pub fn parse_phased(text: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut inside = false;
+    for line in text.lines() {
+        if line.starts_with("The following upgrades have been deferred due to phasing") {
+            inside = true;
+        } else if inside && line.starts_with(char::is_whitespace) {
+            out.extend(line.split_whitespace().map(str::to_owned));
+        } else {
+            inside = false;
+        }
+    }
     out
 }
 
@@ -92,6 +115,9 @@ pub fn automatic_security(text: &str) -> bool {
 #[derive(Debug, Default)]
 pub struct Updates {
     last: Option<(Instant, UpdatesInfo)>,
+    /// The apt read in progress. It runs on its own, so the minute's collection (and the
+    /// first result after start) never waits for apt; its answer is used once it is ready.
+    running: Option<tokio::task::JoinHandle<io::Result<Vec<Upgradable>>>>,
 }
 
 impl Updates {
@@ -100,12 +126,11 @@ impl Updates {
 
     /// Pending updates and whether a restart is needed.
     pub async fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
-        let stale = self
-            .last
-            .as_ref()
-            .is_none_or(|(at, _)| at.elapsed() >= EVERY);
-        if stale && root.path("/usr/bin/apt").exists() {
-            let pending = parse_upgradable(&apt_list().await?);
+        // Use the background read once it has finished.
+        if self.running.as_ref().is_some_and(|r| r.is_finished())
+            && let Some(running) = self.running.take()
+        {
+            let pending = running.await.map_err(io::Error::other)??;
             let info = UpdatesInfo {
                 pending,
                 lists_updated_at: modified(
@@ -119,6 +144,13 @@ impl Updates {
             };
             self.last = Some((Instant::now(), info));
         }
+        let stale = self
+            .last
+            .as_ref()
+            .is_none_or(|(at, _)| at.elapsed() >= EVERY);
+        if stale && self.running.is_none() && root.path("/usr/bin/apt").exists() {
+            self.running = Some(tokio::spawn(read_pending()));
+        }
         let mut sample = Sample::default();
         let restart = root.path("/run/reboot-required").exists();
         sample.metrics.push(metric(
@@ -129,11 +161,13 @@ impl Updates {
             now,
         ));
         if let Some((_, info)) = &self.last {
-            let security = info.pending.iter().filter(|p| p.security).count();
+            // Only updates this computer can install now; phased ones come when Ubuntu says.
+            let ready = info.pending.iter().filter(|p| !p.phased);
+            let security = ready.clone().filter(|p| p.security).count();
             sample.metrics.push(metric(
                 "updates.pending",
                 None,
-                info.pending.len() as f64,
+                ready.count() as f64,
                 Unit::Count,
                 now,
             ));
@@ -154,9 +188,27 @@ impl Updates {
     }
 }
 
-async fn apt_list() -> io::Result<String> {
-    let child = Command::new("/usr/bin/apt")
-        .args(["list", "--upgradable"])
+/// The pending updates, with the ones Ubuntu still phases in marked.
+async fn read_pending() -> io::Result<Vec<Upgradable>> {
+    let mut pending = parse_upgradable(&run_apt("/usr/bin/apt", &["list", "--upgradable"]).await?);
+    // A dry run (no lock, no changes) tells which updates Ubuntu holds back for now.
+    let phased = run_apt(
+        "/usr/bin/apt-get",
+        &["-s", "-o", "Debug::NoLocking=1", "upgrade"],
+    )
+    .await
+    .map(|t| parse_phased(&t))
+    .unwrap_or_default();
+    for p in &mut pending {
+        p.phased = phased.contains(&p.name);
+    }
+    Ok(pending)
+}
+
+/// Runs apt read-only (`list`, or a dry run with `-s`) and returns what it printed.
+async fn run_apt(program: &str, args: &[&str]) -> io::Result<String> {
+    let child = Command::new(program)
+        .args(args)
         .env("LC_ALL", "C")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
@@ -168,7 +220,7 @@ async fn apt_list() -> io::Result<String> {
         .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "apt did not answer in time"))??;
     if !output.status.success() {
         return Err(io::Error::other(format!(
-            "apt list failed ({})",
+            "{program} failed ({})",
             output.status
         )));
     }
@@ -201,6 +253,25 @@ code/stable 1.95.0-1730 amd64 [upgradable from: 1.94.2-1728]
         assert_eq!(list[0].candidate, "3.0.13-0ubuntu3.5");
         assert_eq!(list[1].name, "code");
         assert!(!list[2].security);
+    }
+
+    #[test]
+    fn reads_which_updates_ubuntu_holds_back() {
+        let dry_run = "Reading package lists...\nCalculating upgrade...\nThe following upgrades have been deferred due to phasing:\n  distro-info libdistro-info-perl lintian\n  python3-distro-info snapd\n0 upgraded, 0 newly installed, 0 to remove and 5 not upgraded.\n";
+        assert_eq!(
+            parse_phased(dry_run),
+            [
+                "distro-info",
+                "libdistro-info-perl",
+                "lintian",
+                "python3-distro-info",
+                "snapd"
+            ]
+        );
+        assert!(
+            parse_phased("0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.\n")
+                .is_empty()
+        );
     }
 
     #[test]

@@ -21,11 +21,14 @@ const loadUpdates = () => getSnapshot<UpdatesInfo>("updates");
 const loadHistory = () => getInventory("update_history");
 const loadSystem = () => getInventory("system");
 
+/** "Waiting for Ubuntu" for a phased update: Ubuntu rolls it out in stages and has not reached this computer yet. */
+const priority = (p: Pending) => (p.phased ? "Waiting for Ubuntu" : p.security ? "Security" : "Regular");
+
 const PENDING: Column<Pending>[] = [
   { key: "name", label: "Package", text: (p) => p.name },
   { key: "installed", label: "Installed", text: (p) => p.installed, render: (p) => <code>{p.installed}</code>, expert: true },
   { key: "candidate", label: "Candidate", text: (p) => p.candidate, render: (p) => <code>{p.candidate}</code> },
-  { key: "priority", label: "Priority", text: (p) => (p.security ? "Security" : "Regular"), render: (p) => <StatusBadge variant={p.security ? "warn" : "off"} label={p.security ? "Security" : "Regular"} /> },
+  { key: "priority", label: "Priority", text: (p) => priority(p), render: (p) => <StatusBadge variant={p.phased ? "info" : p.security ? "warn" : "off"} label={priority(p)} /> },
   { key: "origin", label: "From", text: (p) => p.origin, expert: true },
 ];
 
@@ -53,7 +56,10 @@ export function PackagesUpdates() {
       </Panel>
     );
   }
-  const security = info.pending.filter((p) => p.security).length;
+  // Phased updates wait until Ubuntu rolls them out to this computer; nothing installs them before.
+  const ready = info.pending.filter((p) => !p.phased);
+  const phased = info.pending.length - ready.length;
+  const security = ready.filter((p) => p.security).length;
   // Security fixes first; the rest in apt's order. The full list is in the table.
   const first = [...info.pending].sort((a, b) => Number(b.security) - Number(a.security)).slice(0, 8);
   const kernel = info.pending.find((p) => /^linux-image-/.test(p.name));
@@ -61,7 +67,7 @@ export function PackagesUpdates() {
     <>
       <KpiRow
         tiles={[
-          { label: "Pending", value: String(info.pending.length), status: info.pending.length ? "warn" : "ok" },
+          { label: "Pending", value: String(ready.length), status: ready.length ? "warn" : "ok", subtext: phased ? `${phased} more waiting for Ubuntu` : undefined },
           { label: "Security", value: String(security), status: security ? "warn" : "ok" },
           { label: "Last check", value: info.lists_updated_at ? ago(info.lists_updated_at) : "Never", subtext: "package lists refreshed" },
           { label: "Automatic security updates", value: info.automatic_security ? "On" : "Off", status: info.automatic_security ? "ok" : "warn" },
@@ -73,7 +79,7 @@ export function PackagesUpdates() {
         subtitle={`${info.pending.length} packages`}
         source="apt list --upgradable"
         actions={
-          info.pending.length > 0 && (
+          ready.length > 0 && (
             <span className="btn-row">
               {security > 0 && <Button small variant="primary" onClick={() => openFix("security.install_security_updates")}>Install security updates…</Button>}
               <Button small onClick={() => openFix("system.install_updates")}>Install all…</Button>
@@ -89,6 +95,13 @@ export function PackagesUpdates() {
           </div>
         ) : (
           <>
+            {phased > 0 && (
+              <ul className="kn-notable svc-verdict">
+                <li>
+                  <StatusBadge variant="info" label="Waiting for Ubuntu" /> {phased === 1 ? "1 update waits" : `${phased} updates wait`} for Ubuntu's staged rollout to reach this computer. Software Updater installs {phased === 1 ? "it" : "them"} then, and DeeCure does not install {phased === 1 ? "it" : "them"} before.
+                </li>
+              </ul>
+            )}
             <div className="kn-chips">
               {[...countBy(info.pending.map((p) => p.origin))].map(([origin, n]) => (
                 <span key={origin} className="kn-chip">
@@ -112,7 +125,7 @@ export function PackagesUpdates() {
                       <code>{p.installed}</code> → <code>{p.candidate}</code>
                     </span>
                   </span>
-                  <span className="src-tags">{p.security ? <StatusBadge variant="warn" label="Security" /> : <span className="muted">{p.origin}</span>}</span>
+                  <span className="src-tags">{p.phased ? <StatusBadge variant="info" label="Waiting for Ubuntu" /> : p.security ? <StatusBadge variant="warn" label="Security" /> : <span className="muted">{p.origin}</span>}</span>
                 </li>
               ))}
             </ul>

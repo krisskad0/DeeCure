@@ -30,7 +30,8 @@ pub trait Probe {
     fn unit_loaded(&self, unit: &str) -> bool;
     /// The dpkg state of a package: `ii` installed, `rc` only settings left; `None` if unknown.
     fn package_state(&self, name: &str) -> Option<String>;
-    /// `(name, revision)` of disabled snap revisions.
+    /// `(name, revision)` of old snap revisions: disabled ones of a snap that has a revision
+    /// in use ([`deecure_core::cleanup::old_snap_revisions`]).
     fn disabled_snaps(&self) -> Vec<(String, String)>;
     /// The running kernel release.
     fn running_kernel(&self) -> String;
@@ -45,6 +46,11 @@ pub trait Probe {
     /// The packages `apt-get autoremove` would remove now (a dry run).
     fn autoremove_list(&self) -> Vec<String> {
         Vec::new()
+    }
+    /// Why purging a removed package is not safe, or `None`
+    /// ([`deecure_core::cleanup::purge_risk`] on its removal script).
+    fn purge_risk(&self, _package: &str) -> Option<String> {
+        None
     }
 }
 
@@ -262,6 +268,14 @@ pub fn prepare(call: &Call, sys: &dyn Probe) -> Result<Vec<Command>, String> {
         }
         Call::PurgeResidual { packages } => {
             check_packages(packages, sys, "rc", "has no leftover settings")?;
+            // A purge still runs the removal script: refuse one that deletes data or turns
+            // off a unit an installed package uses (docker.io after docker-ce, for example).
+            if let Some((p, why)) = packages
+                .iter()
+                .find_map(|p| sys.purge_risk(p).map(|why| (p, why)))
+            {
+                return Err(format!("DeeCure does not purge {p}: {why}"));
+            }
             Ok(vec![apt(&["purge", "--"], packages)])
         }
         Call::UpgradePackages { packages } => {
@@ -782,6 +796,49 @@ mod tests {
         ] {
             assert!(prepare(&bad, &Fake).is_err(), "{bad:?}");
         }
+    }
+
+    #[test]
+    fn never_purges_a_package_whose_removal_script_is_not_safe() {
+        struct Leftovers;
+        impl Probe for Leftovers {
+            fn unit_loaded(&self, _: &str) -> bool {
+                false
+            }
+            fn package_state(&self, _: &str) -> Option<String> {
+                Some("rc".into())
+            }
+            fn disabled_snaps(&self) -> Vec<(String, String)> {
+                Vec::new()
+            }
+            fn running_kernel(&self) -> String {
+                String::new()
+            }
+            fn installed_kernels(&self) -> Vec<String> {
+                Vec::new()
+            }
+            fn has(&self, _: &str) -> bool {
+                true
+            }
+            fn purge_risk(&self, package: &str) -> Option<String> {
+                (package == "docker.io")
+                    .then(|| "its removal script deletes /var/lib/docker".into())
+            }
+        }
+        let purge = |names: &[&str]| {
+            prepare(
+                &Call::PurgeResidual {
+                    packages: names.iter().map(|n| (*n).to_owned()).collect(),
+                },
+                &Leftovers,
+            )
+        };
+        let err = purge(&["ubuntu-fan", "docker.io"]).unwrap_err();
+        assert!(
+            err.contains("docker.io") && err.contains("/var/lib/docker"),
+            "{err}"
+        );
+        assert!(purge(&["ubuntu-fan", "bridge-utils"]).is_ok());
     }
 
     #[test]

@@ -62,6 +62,12 @@ pub struct PciDevice {
     /// Power saving: `auto` (on) or `on` (always awake).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub power_control: Option<String>,
+    /// How many holds keep it awake (`power/runtime_usage`; the kernel shows it with
+    /// `CONFIG_PM_ADVANCED_DEBUG`, as Ubuntu's does). With power saving off the kernel holds it
+    /// once; a second hold is a driver that never lets it sleep, so turning power saving on
+    /// changes nothing.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub runtime_usage: Option<u32>,
     /// `active`, `suspended`, or `unsupported`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub power_state: Option<String>,
@@ -180,6 +186,7 @@ pub fn read(root: &SystemRoot) -> Vec<PciDevice> {
                             .map(|p| p.to_string_lossy().into_owned())
                     }),
                 power_control: text(root, &at("power/control")),
+                runtime_usage: text(root, &at("power/runtime_usage")).and_then(|v| v.parse().ok()),
                 power_state: text(root, &at("power/runtime_status")),
                 address,
             }

@@ -54,12 +54,56 @@ pub struct Removable {
     pub undo: String,
 }
 
+/// A removed package's removal script, which a purge still runs, from dpkg's supported
+/// interface (dpkg's own files are private to it). Empty when the package has none.
+async fn removal_script(name: &str) -> String {
+    command::output(
+        "dpkg-query",
+        &["--control-show", "--", name, "postrm"],
+        Duration::from_secs(5),
+    )
+    .await
+    .unwrap_or_default()
+}
+
+/// Whether a systemd unit file exists, so an installed package (or the admin) uses it.
+fn unit_present(root: &SystemRoot, unit: &str) -> bool {
+    [
+        "/etc/systemd/system",
+        "/usr/lib/systemd/system",
+        "/lib/systemd/system",
+    ]
+    .iter()
+    .any(|dir| root.path(&format!("{dir}/{unit}")).exists())
+}
+
+/// Splits removed packages, each with its removal script, into those whose leftover settings
+/// are safe to purge and those left out, each as "name: why"
+/// ([`deecure_core::cleanup::purge_risk`]).
+pub fn safe_to_purge(
+    root: &SystemRoot,
+    residual: Vec<(String, String)>,
+) -> (Vec<String>, Vec<String>) {
+    let mut safe = Vec::new();
+    let mut kept = Vec::new();
+    for (name, script) in residual {
+        match deecure_core::cleanup::purge_risk(&script, |u| unit_present(root, u)) {
+            Some(why) => kept.push(format!("{name}: {why}")),
+            None => safe.push(name),
+        }
+    }
+    (safe, kept)
+}
+
 /// The `packages` inventory.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
 pub struct PackagesInfo {
     pub packages: Vec<Package>,
     pub sources: Vec<Source>,
     pub removable: Vec<Removable>,
+    /// Removed packages whose leftover settings are not offered, each as "name: why".
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub purge_kept: Vec<String>,
 }
 
 /// The `dpkg-query` format DeeCure asks for: one tab-separated line per package.
@@ -205,20 +249,27 @@ pub async fn read(root: &SystemRoot) -> PackagesInfo {
     .await
     .unwrap_or_default();
     let (mut packages, residual) = parse_dpkg(&list, &auto);
+    let mut scripts = Vec::with_capacity(residual.len());
+    for name in residual {
+        let script = removal_script(&name).await;
+        scripts.push((name, script));
+    }
+    let (residual, kept) = safe_to_purge(root, scripts);
     let apt_sizes: HashMap<String, u64> =
         packages.iter().map(|p| (p.name.clone(), p.size)).collect();
     let mut snap_disabled = 0u64;
     let mut snap_disabled_names = Vec::new();
     if let Some(list) = command::output("snap", &["list", "--all"], Duration::from_secs(10)).await {
+        let old: HashSet<(String, String)> = deecure_core::cleanup::old_snap_revisions(&list)
+            .into_iter()
+            .collect();
         for l in list.lines().skip(1) {
             let f: Vec<&str> = l.split_whitespace().collect();
             let (Some(name), Some(version), Some(rev)) = (f.first(), f.get(1), f.get(2)) else {
                 continue;
             };
             let size = file_size(&root.path(&format!("/var/lib/snapd/snaps/{name}_{rev}.snap")));
-            if f.last()
-                .is_some_and(|n| n.split(',').any(|x| x == "disabled"))
-            {
+            if old.contains(&((*name).to_owned(), (*rev).to_owned())) {
                 snap_disabled += size;
                 snap_disabled_names.push(format!("{name} (rev {rev})"));
                 continue;
@@ -339,6 +390,7 @@ pub async fn read(root: &SystemRoot) -> PackagesInfo {
         packages,
         sources,
         removable,
+        purge_kept: kept,
     }
 }
 
@@ -361,6 +413,34 @@ fn human_size(text: &str) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn leaves_out_leftover_settings_whose_purge_is_not_safe() {
+        // This laptop on 2026-11-16: docker-ce replaced docker.io, containerd.io replaced containerd.
+        let root = crate::collect::test_support::fixture_root(
+            "purge",
+            &[("/usr/lib/systemd/system/containerd.service", "[Unit]\n")],
+        );
+        let scripts = [
+            (
+                "docker.io",
+                "purge)\n\t/var/lib/docker/nuke-graph-directory.sh /var/lib/docker\n",
+            ),
+            (
+                "containerd",
+                "\t\tdeb-systemd-helper purge 'containerd.service' >/dev/null || true\n",
+            ),
+            ("ubuntu-fan", "purge)\n\trm -f /etc/network/fan\n"),
+            ("bridge-utils", ""),
+        ]
+        .map(|(n, s)| (n.to_owned(), s.to_owned()))
+        .to_vec();
+        let (safe, kept) = safe_to_purge(&root, scripts);
+        assert_eq!(safe, ["ubuntu-fan", "bridge-utils"]);
+        assert_eq!(kept.len(), 2);
+        assert!(kept[0].starts_with("docker.io: ") && kept[0].contains("/var/lib/docker"));
+        assert!(kept[1].starts_with("containerd: ") && kept[1].contains("containerd.service"));
+    }
 
     #[test]
     fn reads_dpkg_and_auto_marks() {
