@@ -52,7 +52,7 @@ The insights catalog (task 1) moved to just before the collectors (task 7), so t
     4. [System](../03-ui-design/05-pages/05-system.md)
     5. [Hardware](../03-ui-design/05-pages/06-hardware.md)
     6. [Power](../03-ui-design/05-pages/07-power.md)
-    7. [Display & Audio](../03-ui-design/05-pages/08-display.md)
+    7. [Display & Audio](../03-ui-design/05-pages/08-devices.md)
     8. [Processes](../03-ui-design/05-pages/09-processes.md)
     9. [Services](../03-ui-design/05-pages/10-services.md)
     10. [Scheduled Jobs](../03-ui-design/05-pages/11-jobs.md) (including the calendar)

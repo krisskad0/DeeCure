@@ -1,11 +1,11 @@
-# Containers (`containers`)
+# Containers & VMs (`containers`)
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Workloads · Icon: `cube` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: Running · Icon: `cube` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Containers, Images and volumes (Images, then Volumes), Virtual Machines. The sections below keep their old names: each is now a part of a merged sub-page, and old links scroll to it ([merged sub-pages](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)).
 
-## Containers › Containers: `containers/containers`
+## Containers & VMs › Containers: `containers/containers`
 
 1. **KPI row** · span 12
 
@@ -28,9 +28,9 @@
 | api-test | `node:20-alpine` | {off:Exited (0) 2 days ago} | - | - | - |
 
 3. **Alert banner**: "Port 5432 bypasses the UFW firewall" · span 12
-- State: `warn` · Title: "Port 5432 bypasses the UFW firewall" · Text: "Docker publishes ports with its own iptables rules. Bind to 127.0.0.1 to keep it local." · Buttons: [View firewall](go:network/firewall)
+- State: `warn` · Title: "Port 5432 bypasses the UFW firewall" · Text: "Docker publishes ports with its own iptables rules. Bind to 127.0.0.1 to keep it local." · Buttons: [View firewall](go:security/firewall)
 
-## Containers › Images: `containers/images`
+## Containers & VMs › Images: `containers/images`
 
 1. **Donut chart**: "Image storage" · span 4
 - Center: "9.0" / "GB" · unit "GB"
@@ -55,7 +55,7 @@
 | nginx | alpine | 48 MB | 2 months ago | - |
 | <none> | <none> | 1.1 GB | dangling | - |
 
-## Containers › Volumes: `containers/volumes`
+## Containers & VMs › Volumes: `containers/volumes`
 
 1. **Data table**: "Volumes" · span 12
 - Source chip (Expert): `docker volume ls · docker system df -v`
@@ -66,7 +66,7 @@
 | `redisdata` | local | 64 MB | redis-dev |
 | `api-node-modules` | local | 86 MB | api-test |
 
-## Containers › Virtual Machines: `containers/vms`
+## Containers & VMs › Virtual Machines: `containers/vms`
 
 1. **Data table**: "Virtual machines" · span 12
 - Source chip (Expert): `VBoxManage list vms · virsh list --all`

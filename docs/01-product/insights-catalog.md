@@ -27,33 +27,33 @@ Sources are listed in [Collectors](../02-architecture/collectors.md).
 | Pressure stall information (CPU, memory, I/O) | Yes | Performance › Pressure |
 | Journal entries, error groups, kernel log | Yes (in the `adm` group, the default for the first user) | Logs |
 | Crashes (kernel, systemd, apport) | Yes | Logs › Crashes |
-| Boot history and unclean shutdowns | Yes | Logs › Boots |
+| Boot history and unclean shutdowns | Yes | Operating System › Boot |
 | Package, config-file, and USB device changes | Yes | Activity |
 
 ## System
 
 | Insight | Access | Page |
 | --- | --- | --- |
-| OS, release support dates, kernel, uptime, virtualization, Ubuntu Pro, Livepatch | Yes | System › Overview |
-| Boot phase times and slowest units | Yes | System › Boot |
-| Pending updates, security updates, automatic updates, update history | Yes | System › Updates |
-| Installed kernels, modules, taint | Yes | System › Kernel |
-| Time zone, NTP sync, locale, keyboard | Yes | System › Time & Locale |
+| OS, release support dates, kernel, uptime, virtualization, Ubuntu Pro, Livepatch | Yes | Operating System › Overview |
+| Boot phase times and slowest units | Yes | Operating System › Boot |
+| Pending updates, security updates, automatic updates, update history | Yes | Apps & Updates › Updates |
+| Installed kernels, modules, taint | Yes | Operating System › Kernel |
+| Time zone, NTP sync, locale, keyboard | Yes | Operating System › Time & Locale |
 | Machine, chassis, BIOS, Secure Boot, TPM | Yes | Hardware › Summary, Firmware |
 | Serial number | Admin | Hardware › Summary |
 | Processor model, hybrid cores, cache, features | Yes | Hardware › Processor |
-| Memory module type, speed, slots | Admin | Hardware › Memory |
-| Disks: model, type, size, temperature (NVMe) | Yes | Hardware › Storage Devices |
-| SMART health, wear, errors | Admin | Hardware › Storage Devices |
+| Memory module type, speed, slots | Admin | Hardware › Memory Modules |
+| Disks: model, type, size, temperature (NVMe) | Yes | Hardware › Drives |
+| SMART health, wear, errors | Admin | Hardware › Drives |
 | Temperatures and fans | Yes | Hardware › Sensors |
-| PCI, USB, input, and Bluetooth devices with drivers | Yes | Hardware › Peripherals |
+| PCI, USB, input, and Bluetooth devices with drivers | Yes | Devices › Ports & Devices |
 | Firmware updates (fwupd, when it runs) | Yes | Hardware › Firmware |
 | Battery charge, health, capacity, cycles, charge limit | Yes | Power › Battery |
 | Per-process power use | Admin | Power › Battery |
 | Power mode, battery policy, suspend and lid settings | Yes | Power › Power Profile |
 | Sleep history | Yes | Power › Sleep |
-| Screens, resolution, refresh, scale (GNOME) | Yes | Display & Audio |
-| Sound devices, volumes, streams (PipeWire) | Yes | Display & Audio |
+| Screens, resolution, refresh, scale (GNOME) | Yes | Devices › Displays |
+| Sound devices, volumes, streams (PipeWire) | Yes | Devices › Audio |
 
 ## Workloads, software, and data
 
@@ -77,8 +77,8 @@ Sources are listed in [Collectors](../02-architecture/collectors.md).
 | Interfaces, addresses, Wi-Fi signal, connectivity, DNS, VPNs | Yes | Network |
 | Listening ports and who can reach them | Yes | Network › Open Ports |
 | Which system program owns a port | Admin | Network › Open Ports |
-| Firewall on/off and default policy | Yes | Network › Firewall |
-| Firewall rules | Admin | Network › Firewall |
+| Firewall on/off and default policy | Yes | Security › Firewall |
+| Firewall rules | Admin | Security › Firewall |
 | Users, groups, sessions, sign-ins, sudo use, SSH keys | Yes | Accounts |
 | Password strength | No (only salted hashes exist) | Accounts › Users |
 | Password age, locked accounts | Admin | Accounts › Users |

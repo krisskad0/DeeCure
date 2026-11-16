@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BackupsJobs, BackupsRestore, BackupsSnapshots } from "../backups/Backups";
 import { ContainersImages, ContainersList, ContainersVms, ContainersVolumes, dockerBytes } from "../containers/Containers";
-import { PackagesCleanup, PackagesInstalled, PackagesSources } from "./Packages";
+import { PackagesInstalled, PackagesReclaimable, PackagesSources } from "./Packages";
 
 const now = Date.now();
 let docker = "running";
@@ -22,7 +22,7 @@ vi.mock("../../api", () => ({
             { name: "firefox", version: "131.0.3", source: "snap", size: 286e6, manual: true },
           ],
           sources: [{ line: "http://archive.ubuntu.com/ubuntu noble main", kind: "Official", signed: true, own_key: true, enabled: true, file: "ubuntu.sources" }, { line: "http://example.com/repo ./", kind: "Third-party", signed: false, own_key: false, enabled: true, file: "x.list" }],
-          removable: [{ action: "packages.autoremove", title: "Packages no longer needed", count: 48, size: 310e6, names: ["linux-headers-6.8.0-45"], undo: "reinstallable" }],
+          removable: [{ action: "packages.autoremove", title: "Packages no longer needed", count: 48, size: 310e6, names: ["linux-headers-6.8.0-45"], undo: "reinstallable" }, { action: "storage.remove_old_snap_revisions", title: "Disabled snap revisions", count: 6, size: 8.7e9, names: ["firefox"], undo: "irreversible" }],
         },
         containers: {
           docker,
@@ -64,7 +64,11 @@ describe("Packages", () => {
 
   it("flags unchecked sources and lists cleanup from a simulation", async () => {
     await shows(PackagesSources, "1 source skips signature checks");
-    await shows(PackagesCleanup, "Packages no longer needed");
+    // Storage › Cleanup already lists the old snap revisions, so this table leaves them out.
+    render(<PackagesReclaimable />);
+    await waitFor(() => expect(screen.getByText("Packages no longer needed")).toBeTruthy());
+    expect(screen.queryByText("Disabled snap revisions")).toBeNull();
+    cleanup();
   });
 });
 

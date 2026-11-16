@@ -24,7 +24,7 @@
 | Look at services | **Services** | System and user services, startup apps, and how locked down each service is (exposure score) |
 | Look at scheduled work | **Scheduled Jobs** | Cron, anacron, `at`, and systemd timers in one calendar, with failed jobs |
 | Read logs fast | **Logs** | The journal, errors grouped with explanations, kernel messages, crashes, and every boot with how it ended |
-| Check the boot | **System › Boot** | What made the last boot slow, step by step |
+| Check the boot | **Operating System › Boot** | What made the last boot slow, step by step |
 
 On a server, install without the desktop app:
 

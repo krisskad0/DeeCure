@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// System › Updates (docs/03-ui-design/05-pages/05-system.md), with real data.
+// Apps & Updates › Updates (docs/03-ui-design/05-pages/13-packages.md), with real data.
 // Installing updates goes through the fix engine and the admin helper.
 
 import { type AptRun, type UpdatesInfo, getInventory, getSnapshot } from "../../api";
@@ -40,7 +40,7 @@ const HISTORY: Column<AptRun>[] = [
   { key: "result", label: "Result", text: (r) => (r.failed ? "Failed" : "Success"), render: (r) => <StatusBadge variant={r.failed ? "crit" : "ok"} label={r.failed ? "Failed" : "Success"} /> },
 ];
 
-export function SystemUpdates() {
+export function PackagesUpdates() {
   const { data: snapshot, error } = useLive(loadUpdates, 60_000);
   const history = useLive(loadHistory, 300_000).data;
   const system = useLive(loadSystem, 60_000).data;

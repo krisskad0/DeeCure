@@ -7,7 +7,7 @@ import type { AppError, Finding, StatusReport } from "../api";
 import { Panel, type Span } from "../components/Panel";
 import { StatusBadge } from "../components/StatusBadge";
 import { NoData } from "./NoData";
-import { severityVariant, tabOf } from "../status";
+import { pageOf, severityVariant, tabOf } from "../status";
 import { ago } from "../time";
 import { kbTopic, useKb } from "../kb";
 import { HowTo } from "../components/HowTo";
@@ -57,7 +57,7 @@ function Body({ findings, report, error, now, compact }: { findings: Finding[]; 
     return (
       <ul className="issues-compact">
         {findings.map((f) => {
-          const area = f.rule.split(".")[0];
+          const area = pageOf(f);
           const page = PAGES.find((p) => p.id === area);
           return (
             <li key={`${f.rule}|${f.subject ?? ""}`}>
@@ -83,7 +83,7 @@ function Body({ findings, report, error, now, compact }: { findings: Finding[]; 
     <ul className="issue-cards">
       {findings.map((f) => {
         const variant = severityVariant(f.severity);
-        const area = f.rule.split(".")[0];
+        const area = pageOf(f);
         const page = PAGES.find((p) => p.id === area);
         const tab = page?.tabs.find((t) => t.id === tabOf(f)) ?? page?.tabs[0];
         const where = page && tab ? href(page.id, tab.id) : undefined;

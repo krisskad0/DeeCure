@@ -2,8 +2,8 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Network & Access · Icon: `wifi` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Interfaces, Connections, Open Ports, Firewall, DNS & VPN, Traffic
+- Group: Network & Security · Icon: `wifi` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
+- Sub-pages: Interfaces, Connections, Open Ports, DNS & VPN, Traffic (Firewall moved to Security on 2026-11-16)
 
 ## Network › Interfaces: `network/interfaces`
 
@@ -92,30 +92,6 @@ Above the table: chips per state (open, waiting, other), and two columns of rank
 
 The panel lists ports reachable from other computers first (protocol, port, what it is, the process, the address, exposure, and whether the firewall filters it), or one green line when none is; ports for this computer only are chips, one per port. The table is under "Show all".
 
-## Network › Firewall: `network/firewall`
-
-1. **KPI row** · span 12
-
-| Label | Value | Unit | Status badge | Subtext | Visual | Opens |
-| --- | --- | --- | --- | --- | --- | --- |
-| Status | Active |  | - | ufw | - | - |
-| Incoming | Deny |  | - | default | - | - |
-| Outgoing | Allow |  | - | default | - | - |
-| Rules | 2 |  | - |   | - | - |
-| Blocked today | 37 |  | - | packets | - | - |
-
-2. **Data table**: "Rules" · span 12
-- Source chip (Expert): `sudo ufw status numbered`
-- Empty text: "Requires Full access"
-
-| # [n] | To | Action | From | Comment |
-| --- | --- | --- | --- | --- |
-| 1 | `5353/udp` | {ok:ALLOW IN} | Anywhere | mDNS |
-| 2 | `1714:1764/tcp` | {ok:ALLOW IN} | `192.168.1.0/24` | GSConnect |
-
-3. **Alert banner**: "Docker rules are not managed by ufw" · span 12
-- State: `warn` · Title: "Docker rules are not managed by ufw" · Text: "Port 5432 (pg-dev) is reachable from the LAN even though ufw denies incoming traffic." · Buttons: [View container](go:containers/containers)
-
 ## Network › DNS & VPN: `network/dns`
 
 1. **Key-value list**: "DNS" · span 6
@@ -142,11 +118,8 @@ Expert: "Routes" shows the internet route (device and gateway) as one row, chips
 
 ## Network › Traffic: `network/traffic`
 
-1. **Line chart**: "Throughput" · span 12
-- Source chip (Expert): `/proc/net/dev`
-- Height 220px · Y axis 0 to auto · unit "MB/s"
-- Series: Download (slot 1, gen[9, 0.8, 0.6, 0.8, 0, 6, 1.2]); Upload (slot 2, gen[10, 0.2, 0.2, 0.3, 0, 3, 0.3])
-- X axis: time (current range)
+1. **Info banner**: "Total download and upload" · "The speed of all apps together is on Performance › Network." · Button: [Open](go:performance/network)
+- It replaced a second "Throughput" chart on 2026-11-16: Performance › Network shows the same chart from the same file.
 
 2. **Line chart and ranked bars**: "Download by app over time", then "Upload by app over time" · span 12 each, at every level
 - The same layout as Performance › CPU "CPU use by app over time": a dropdown (Last 24 hours, Last 7 days, Last 30 days), the 5 biggest apps as lines in KB/s, a "TCP only" line, then "Most in all" with the bytes; every one is under "Show all"

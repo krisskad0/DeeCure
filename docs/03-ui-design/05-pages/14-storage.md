@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Software & Data · Icon: `db` · Status badge: {crit:Critical} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: Data · Icon: `db` · Status badge: {crit:Critical} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Overview, Filesystems, Disk Usage, Cleanup
 - Page header actions (all sub-pages without their own): [**Free up space**](act:fix:storage) (shown while reclaimable space > 0)
 
@@ -147,6 +147,17 @@ Header actions: [**Free 15.2 GB**](act:fix:storage) (hidden once done), then Ref
 | Empty Trash | 312 files | 2.1 GB | {warn:Irreversible} | - |
 | Clean APT package cache | Downloaded .deb files | 0.4 GB | {info:Regenerates} | 🔒 |
 
+3. **Data table**: "Packages and leftover settings" · span 12 (moved from Packages › Cleanup on 2026-11-16)
+- It leaves out "Disabled snap revisions", because "Cleanup candidates" already has it.
+
+| Item | Count [n] | Size [n] | Undo | (action) |
+| --- | --- | --- | --- | --- |
+| Packages no longer needed (autoremove) | 48 | 310 MB | {info:Reinstallable} | [Remove](act:toast:48 packages removed · 310 MB freed.) |
+| Duplicate app: VLC (apt + snap) | 1 | 320 MB | {info:Reinstallable} | [Review](act:toast:Keep one VLC to save 320 MB.) |
+| Unused Flatpak runtimes | 2 | 640 MB | {info:Regenerates} | [Remove](act:toast:flatpak uninstall --unused) |
+| Apps not used in 90+ days | 2 | 106 MB | {off:Review} | [Review](go:packages/installed) |
+| Old kernel 6.8.0-41 | 1 | 320 MB | {info:Reinstallable} | [Remove](act:toast:Old kernel queued for removal.) |
+
 ---
 
-← Previous: [Packages](13-packages.md) · [Index](README.md) · Next: [Backups](15-backups.md) →
+← Previous: [Apps & Updates](13-packages.md) · [Index](README.md) · Next: [Backups](15-backups.md) →

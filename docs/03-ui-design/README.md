@@ -17,7 +17,7 @@ Follow the folders in number order.
 | 2 | [02-shell](02-shell/README.md) | Top bar, sidebar, page header, tabs, 12-column grid, overlays |
 | 3 | [03-components](03-components/README.md) | 24 reusable components. Build each one once, as a component that takes a config object. |
 | 4 | [04-behavior](04-behavior/README.md) | State model, page status rules, fixes, sample data, interactions |
-| 5 | [05-pages](05-pages/README.md) | 22 pages and 91 sub-pages. Each widget lists its type, grid width, title, and full data. |
+| 5 | [05-pages](05-pages/README.md) | 23 pages and 89 sub-pages. Each widget lists its type, grid width, title, and full data. |
 
 ## Spec to code
 

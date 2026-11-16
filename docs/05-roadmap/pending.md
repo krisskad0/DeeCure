@@ -52,7 +52,7 @@ Containers have nobody signed in, so these need a real Ubuntu desktop (not done 
 | The agent starts right after installing | Install with the one command while signed in, open DeeCure at once: no "agent unreachable" (fixed in alpha.3: the package starts the agent for everyone signed in, and the app starts it if needed) |
 | A real notification | Settings › Notifications › **Send a test notification** |
 | The tray | Settings › General › Tray icon, on Ubuntu's GNOME; then KDE, and GNOME without the AppIndicator extension (the switch must say "no tray area") |
-| Admin read-outs | Expert view, each with the password once: Hardware › Memory slots, Firmware › BIOS settings, Storage › NVMe and self-tests (install `nvme-cli` and `smartmontools`), Performance › CPU power, Power › Sleep low power and wake-ups (the tracing instance must be gone afterwards: `ls /sys/kernel/tracing/instances` as root), Accounts › sudo and SSH; then `systemctl start deecure-health.service` and read `/run/deecure/admin-health.json` |
+| Admin read-outs | Expert view, each with the password once: Hardware › Memory Modules (memory slots), Firmware › BIOS settings, Storage › NVMe and self-tests (install `nvme-cli` and `smartmontools`), Performance › CPU power, Power › Sleep low power and wake-ups (the tracing instance must be gone afterwards: `ls /sys/kernel/tracing/instances` as root), Accounts › sudo and SSH; then `systemctl start deecure-health.service` and read `/run/deecure/admin-health.json` |
 | Install speed | Time the one command on a normal desktop (expected 40-50 MB of Ubuntu libraries; a bare system needs about 120 MB) |
 
 ## 4. First version: what the owner still has to review

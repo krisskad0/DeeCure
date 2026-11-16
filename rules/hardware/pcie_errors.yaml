@@ -6,7 +6,7 @@ explain: >
   Since the last start, PCIe links reported {pcie.errors_fatal} fatal and
   {pcie.errors_nonfatal} uncorrectable errors, and {pcie.errors_corrected_24h} fixed
   errors in the last 24 hours. A device (drive, graphics card, Wi-Fi) or its slot is
-  failing. Hardware › Peripherals shows the links with errors.
+  failing. Devices › Ports & Devices shows the links with errors.
 limits:
   - name: corrected
     label: "Fixed errors in a day before warning"

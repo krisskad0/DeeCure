@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// Logs › Journal, Errors, Crashes, Kernel, Boots (docs/03-ui-design/05-pages/03-logs.md), with real data.
+// Logs › Journal, Errors, Crashes, Kernel (docs/03-ui-design/05-pages/03-logs.md), with real data.
 
-import { type BootRecord, type Crash, type ErrorsInfo, type KernelLine, type LogEntry, getInventory, getMetrics } from "../../api";
+import { type Crash, type ErrorsInfo, type KernelLine, type LogEntry, getInventory } from "../../api";
 import { type Column, DataTable } from "../../components/DataTable";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
@@ -9,7 +9,7 @@ import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { BarChart } from "../../components/charts/BarChart";
 import { BarList } from "../../components/charts/BarList";
 import { Heatmap } from "../../components/charts/Heatmap";
-import { duration, heatRows, topCounts, unescapeUnit, when } from "../../metrics";
+import { heatRows, topCounts, unescapeUnit, when } from "../../metrics";
 import { kbError, useKb } from "../../kb";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
@@ -18,11 +18,6 @@ const loadJournal = () => getInventory("journal");
 const loadErrors = () => getInventory("errors");
 const loadKernel = () => getInventory("kernel_log");
 const loadCrashes = () => getInventory("crashes");
-const loadBoots = () => getInventory("boots");
-const loadBootTimes = () => {
-  const until = Date.now();
-  return getMetrics("boot.time", until - 365 * 86_400_000, until, { maxPoints: 2000 });
-};
 
 /** Journal priorities in words, with a badge color. */
 export function level(priority: number): [StatusVariant, string] {
@@ -202,37 +197,5 @@ export function LogsKernel() {
       <LogSummary lines={lines.map((k) => ({ source: k.subsystem, message: k.message }))} sourceTitle="Busiest parts of the kernel" />
       <DataTable rows={lines} columns={KERNEL} rowKey={(k) => `${k.at}|${k.message.slice(0, 60)}`} search={{ placeholder: "Filter kernel log" }} filter={{ column: "level", options: ["error", "warning", "info"] }} pageSize={14} />
     </Panel>
-  );
-}
-
-const SHUTDOWN: Record<BootRecord["shutdown"], [StatusVariant, string]> = { running: ["info", "Running"], clean: ["ok", "Clean"], unclean: ["crit", "Unclean"] };
-
-const BOOTS: Column<BootRecord>[] = [
-  { key: "started", label: "Started", text: (b) => String(b.started), render: (b) => when(b.started) },
-  { key: "ended", label: "Ended", text: (b) => (b.shutdown === "running" ? "-" : when(b.ended)) },
-  { key: "duration", label: "Duration", text: (b) => duration((b.ended - b.started) / 1000), numeric: true },
-  { key: "shutdown", label: "Shutdown", text: (b) => SHUTDOWN[b.shutdown][1], render: (b) => <StatusBadge variant={SHUTDOWN[b.shutdown][0]} label={SHUTDOWN[b.shutdown][1]} /> },
-  { key: "kernel", label: "Kernel", text: (b) => b.kernel ?? "-", render: (b) => (b.kernel ? <code>{b.kernel.replace(/-generic$/, "")}</code> : "-") },
-];
-
-export function LogsBoots() {
-  const { data: boots, error } = useLive(loadBoots, 300_000);
-  const times = useLive(loadBootTimes, 300_000).data ?? [];
-  if (!boots) return <Waiting title="Boot history" error={error} />;
-  const recent = times.slice(-10);
-  const today = new Date().toDateString();
-  return (
-    <>
-      <Panel title="Boot duration" subtitle={`last ${recent.length} boots DeeCure measured`} source="systemd (like systemd-analyze)" span={6}>
-        {recent.length ? (
-          <BarChart bars={recent.map((p) => ({ label: new Date(p.at).toDateString() === today ? "Today" : new Date(p.at).toLocaleDateString(undefined, { day: "numeric", month: "short" }), value: p.value }))} unit="s" />
-        ) : (
-          <div className="chart-empty muted">Boot times appear after the next boot.</div>
-        )}
-      </Panel>
-      <Panel title="Boot history" source="journalctl --list-boots" span={6} flush>
-        <DataTable rows={boots} columns={BOOTS} rowKey={(b) => String(b.started)} empty="The journal keeps no earlier boots" />
-      </Panel>
-    </>
   );
 }

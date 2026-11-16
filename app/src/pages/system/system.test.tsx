@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Renders the System and Processes pages with realistic agent answers and with gaps.
+// Renders the Operating System, Apps & Updates › Updates, and Processes pages with realistic agent answers and with gaps.
 
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,7 +8,8 @@ import { SystemBoot } from "./Boot";
 import { SystemKernel } from "./Kernel";
 import { SystemOverview } from "./Overview";
 import { SystemTime } from "./Time";
-import { SystemUpdates } from "./Updates";
+import { PackagesUpdates } from "../packages/Updates";
+import { UiContext } from "../../ui";
 
 const at = Date.now();
 let boot: unknown = null;
@@ -54,6 +55,11 @@ vi.mock("../../api", () => ({
         },
         update_history: [{ start: "2026-10-23  00:34:58", source: "unattended-upgrades", packages: 3, changes: ["upgrade openssl"], failed: false }],
         processes: PROCESSES,
+        boots: [
+          { started: at - 3_600_000, ended: at, shutdown: "running", kernel: "6.8.0-47-generic" },
+          { started: at - 90_000_000, ended: at - 7_200_000, shutdown: "unclean", kernel: "6.8.0-45-generic" },
+        ],
+        kernel_detail: { time_sync: { Server: "ntp.ubuntu.com", Offset: "+7.740ms", Stratum: "2" } },
       }[kind],
     ),
   toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
@@ -80,17 +86,21 @@ describe("System pages", () => {
   it("boot waits honestly, then shows phases and history", async () => {
     render(<SystemBoot />);
     await waitFor(() => expect(screen.getByText(/once the boot has finished/)).toBeTruthy());
+    // The boot history (was Logs › Boots) does not wait for the boot times.
+    await waitFor(() => expect(screen.getByText("Unclean")).toBeTruthy());
     cleanup();
     boot = { data: { boot_id: "x", booted_at: at, times: { firmware: 8.1, loader: 2.4, kernel: 3.9, userspace: 26.8, total: 41.2 }, slowest: [{ name: "dev-mapper-ubuntu\\x2dvg.device", seconds: 2.2 }] } };
     render(<SystemBoot />);
     await waitFor(() => expect(screen.getByText("41.2")).toBeTruthy());
     expect(screen.getByText("Average 29.0 s")).toBeTruthy();
     expect(screen.getByText("dev-mapper-ubuntu-vg.device")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Boot history")).toBeTruthy());
+    expect(screen.getByText("Unclean")).toBeTruthy();
   });
 
   it("updates list security first and show history", async () => {
     updates = { data: { pending: [{ name: "openssl", installed: "1", candidate: "2", origin: "noble-security", security: true }], lists_updated_at: at - 7_200_000, automatic_security: true } };
-    render(<SystemUpdates />);
+    render(<PackagesUpdates />);
     await waitFor(() => expect(screen.getAllByText("openssl").length).toBeGreaterThan(0));
     expect(screen.getAllByText("Security").length).toBeGreaterThan(0);
     expect(screen.getByText("2 h ago")).toBeTruthy();
@@ -104,6 +114,16 @@ describe("System pages", () => {
     render(<SystemTime />);
     await waitFor(() => expect(screen.getByText(/^Asia\/Kolkata/)).toBeTruthy());
     expect(screen.getByText("Imperial · °F")).toBeTruthy();
+    // Time sync (was on Kernel) shows at Expert only.
+    expect(screen.queryByText("Time sync")).toBeNull();
+    cleanup();
+    render(
+      <UiContext.Provider value={{ mode: "expert", range: "24h" }}>
+        <SystemTime />
+      </UiContext.Provider>,
+    );
+    await waitFor(() => expect(screen.getByText("+7.740ms")).toBeTruthy());
+    expect(screen.getByText("Time sync")).toBeTruthy();
   });
 });
 

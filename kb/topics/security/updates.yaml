@@ -3,4 +3,4 @@ summary: "Security updates close holes that attackers use. Ubuntu publishes them
 steps:
   - "Open the Software Updater, or run: sudo apt update && sudo apt upgrade"
   - "Restart if asked, so the new versions are used."
-  - "Keep automatic security updates on (System › Updates)."
+  - "Keep automatic security updates on (Apps & Updates › Updates)."

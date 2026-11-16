@@ -2,7 +2,7 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Monitoring · Icon: `hist` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
+- Group: Monitor · Icon: `hist` · Status badge: {ok:Healthy} (rule in [Page status rules](../04-behavior/page-status.md))
 - Sub-pages: Timeline (with Package History, Device Events, and DeeCure Actions below it, from the Advanced level up), Config Changes. The sections below keep their old names: each is now a part of a merged sub-page, and old links scroll to it ([merged sub-pages](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)).
 
 ## Activity › Timeline: `activity/timeline`
@@ -106,7 +106,7 @@ Above the table: ranked bars of the 5 devices plugged in and out most, with the 
 Every tab reads the history the agent saves ([History events](../../02-architecture/collectors.md#history-events)), through the `events` call.
 
 - **Timeline:** the last 7 days by default; a **Period** menu in the panel header picks 7, 30, or 90 days, and the tiles and the "Changes by type" chart follow it. It shows the newest 20 changes, with "Showing 20 of N changes" and **Show 20 more** under the list; at the end, **Show older changes** moves to the next period (an empty period offers **Look further back**). The agent sends at most 2000 events; past that the subtitle says "newest changes only". The packages of one apt run are one row; config files changed within a minute of each other are one row. A single config file has **View** (its diff in a side drawer); a fix DeeCure made has **Undo** right in the row.
-- **"Something broke after a change":** when a new kernel was installed, or the computer started with a different kernel in the last 7 days, a banner says so and shows the how-to "Start once with the previous kernel" (`kb/topics/system/previous-kernel.yaml`), with a link to System › Kernel.
+- **"Something broke after a change":** when a new kernel was installed, or the computer started with a different kernel in the last 7 days, a banner says so and shows the how-to "Start once with the previous kernel" (`kb/topics/system/previous-kernel.yaml`), with a link to Operating System › Kernel.
 - **Package History:** 12 months of deb, snap, and Flatpak changes, with a Type column.
 - **Config Changes:** 30 days, with Added / Changed / Removed filters, who changed it, and **View** for the diff. A file changed several times in a day shows ×N.
 - **Device Events:** 30 days of USB plugs, with ×N for repeats in one hour.

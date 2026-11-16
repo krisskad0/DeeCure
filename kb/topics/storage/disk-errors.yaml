@@ -3,4 +3,4 @@ summary: "Read or write errors, a filesystem that records errors, or a disk that
 steps:
   - "Back up your important files now, to another disk or online."
   - "Restart: the filesystem check runs at boot and repairs what it can."
-  - "Check the drive in Hardware › Storage Devices; replace it if the errors come back."
+  - "Check the drive in Hardware › Drives; replace it if the errors come back."

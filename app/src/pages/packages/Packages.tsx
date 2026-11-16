@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// Packages › Installed, Sources, Cleanup, Permissions (docs/03-ui-design/05-pages/13-packages.md),
-// with real data. Cleanup removes packages no longer needed and leftover settings through
-// the fix engine; removing any one package is not offered.
+// Apps & Updates › Installed and Sources (docs/03-ui-design/05-pages/13-packages.md), with real data.
+// PackagesReclaimable shows on Storage › Cleanup: it removes packages no longer needed and
+// leftover settings through the fix engine; removing any one package is not offered.
 
 import { Guard } from "../../components/ErrorBoundary";
 import { atLeast, useUi } from "../../ui";
@@ -25,7 +25,6 @@ import { useFix } from "../../shell/FixDrawer";
 import { Button } from "../../components/Button";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
-import { PrivacyPermissions } from "../privacy/Privacy";
 
 const loadPackages = () => getInventory("packages");
 const usePackages = () => useLive(loadPackages, 300_000);
@@ -93,7 +92,7 @@ export function PackagesInstalled() {
         />
       </Panel>
       {inspect && (
-        <Drawer title={inspect.name} subtitle={`${LABEL[inspect.source]} package`} note="To remove packages no longer needed, use Packages › Cleanup" onClose={() => setInspect(null)}>
+        <Drawer title={inspect.name} subtitle={`${LABEL[inspect.source]} package`} note="To remove packages no longer needed, use Storage › Cleanup" onClose={() => setInspect(null)}>
           <KeyValueList
             rows={[
               ["Version", inspect.version ? <code key="v">{inspect.version}</code> : "-"],
@@ -194,22 +193,22 @@ const REMOVABLE: Column<Removable>[] = [
   { key: "undo", label: "Undo", text: (r) => r.undo, render: (r) => <StatusBadge variant={r.undo === "reinstallable" ? "info" : "warn"} label={r.undo === "reinstallable" ? "Reinstallable" : "Irreversible"} /> },
 ];
 
-export function PackagesCleanup() {
+/** Storage › Cleanup already offers the old snap revisions, so this table leaves them out. */
+const SHOWN_IN_STORAGE = "storage.remove_old_snap_revisions";
+
+/** Packages no longer needed and leftover settings, on Storage › Cleanup (was Packages › Cleanup). */
+export function PackagesReclaimable() {
   const { data: info, error } = usePackages();
   const openFix = useFix();
-  if (!info) return <Waiting title="Reclaimable" error={error} />;
+  if (!info) return <Waiting title="Packages and leftover settings" error={error} />;
   return (
-    <>
-      <Panel title="Reclaimable" source="apt-get -s autoremove (simulation) · snap · dpkg" span={12} flush>
-        <DataTable
-          rows={info.removable}
-          columns={[...REMOVABLE, { key: "act", label: "", text: () => "", render: (r) => <Button small onClick={() => openFix(r.action)}>Remove…</Button> }]}
-          rowKey={(r) => r.action}
-          empty="Nothing to remove"
-        />
-      </Panel>
-    </>
+    <Panel title="Packages and leftover settings" source="apt-get -s autoremove (simulation) · dpkg" span={12} flush>
+      <DataTable
+        rows={info.removable.filter((r) => r.action !== SHOWN_IN_STORAGE)}
+        columns={[...REMOVABLE, { key: "act", label: "", text: () => "", render: (r) => <Button small onClick={() => openFix(r.action)}>Remove…</Button> }]}
+        rowKey={(r) => r.action}
+        empty="Nothing to remove"
+      />
+    </Panel>
   );
 }
-
-export const PackagesPermissions = PrivacyPermissions;

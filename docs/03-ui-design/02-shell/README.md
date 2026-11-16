@@ -40,7 +40,7 @@ Every edge respects `env(safe-area-inset-*)`. The page body never scrolls horizo
 | File | What it covers |
 | --- | --- |
 | [top-bar.md](top-bar.md) | Brand, machine picker, search, time range, mode switch, notifications |
-| [sidebar.md](sidebar.md) | All 22 pages and sub-pages, item styles, rail mode |
+| [sidebar.md](sidebar.md) | All 23 pages and sub-pages, item styles, rail mode |
 | [page-header.md](page-header.md) | Breadcrumb, title, status badge, actions, tabs |
 | [overlays.md](overlays.md) | Drawer, popovers, command palette, toast |
 

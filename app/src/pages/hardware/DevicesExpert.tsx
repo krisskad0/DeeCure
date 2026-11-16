@@ -35,7 +35,7 @@ export function screenSize(s: Screen): { inches?: number; ppi?: number } {
   return { inches, ppi };
 }
 
-// ---------- Hardware › Peripherals ----------
+// ---------- Devices › Ports & Devices ----------
 
 export function BuiltInDevicesExpert() {
   const { data: d, error } = useDevices();
@@ -86,7 +86,7 @@ export function BuiltInDevicesExpert() {
   );
 }
 
-// ---------- Display & Audio ----------
+// ---------- Devices › Displays and Audio ----------
 
 export function ScreensExpert() {
   const { data: d, error } = useDevices();

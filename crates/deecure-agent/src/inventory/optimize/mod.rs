@@ -601,7 +601,7 @@ async fn memory_errors(root: &SystemRoot) -> Check {
             format!("{ue} uncorrected memory errors reported since the last start.")
         },
         ue > 0,
-        "Uncorrected errors can crash apps or damage files. Hardware › Memory shows which module; test it with memtest86+ from the boot menu and replace it.",
+        "Uncorrected errors can crash apps or damage files. Hardware › Memory Modules shows which module; test it with memtest86+ from the boot menu and replace it.",
     )
 }
 

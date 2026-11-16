@@ -45,9 +45,20 @@ describe("Beginner and Expert menus", () => {
   it("the Advanced and Expert sidebars show every page", () => {
     for (const mode of ["advanced", "expert"] as const) {
       sidebar(mode, "#/overview/summary");
-      for (const page of ["Scheduled Jobs", "Containers", "Logs", "Accounts", "Diagnostics"]) expect(screen.getByText(page)).toBeTruthy();
+      for (const page of ["Scheduled Jobs", "Containers & VMs", "Logs", "Accounts", "Diagnostics", "Devices", "Apps & Updates", "Operating System"]) expect(screen.getByText(page)).toBeTruthy();
+      // Seven group labels; Overview comes first with none.
+      const labels = [...document.querySelectorAll(".group-label")].map((e) => e.textContent);
+      expect(labels).toEqual(["Monitor", "Machine", "Software", "Running", "Data", "Network & Security", "Tools"]);
       cleanup();
     }
+  });
+
+  it("the Overview header names only the page, with no empty group before it", () => {
+    inMode("expert", <PageHeader route={parseHash("#/overview/summary")} status={null} tabCounts={{}} onRefresh={async () => {}} />);
+    expect([...document.querySelectorAll(".crumb")].map((e) => e.textContent)).toEqual(["Overview", "Summary"]);
+    cleanup();
+    inMode("expert", <PageHeader route={parseHash("#/devices/ports")} status={null} tabCounts={{}} onRefresh={async () => {}} />);
+    expect([...document.querySelectorAll(".crumb")].map((e) => e.textContent)).toEqual(["Machine", "Devices", "Ports & Devices"]);
   });
 
   it("Optimize is in the Expert sidebar only, and stays while it is open", () => {
