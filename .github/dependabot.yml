@@ -1,6 +1,6 @@
 # Dependency updates, kept calm: once a month, small updates (minor and patch) grouped
 # into one pull request per ecosystem, and each major version as its own pull request
-# to review. Security fixes come right away regardless (Dependabot security updates).
+# to review (GitHub Actions majors come together, see below). Security fixes come right away regardless (Dependabot security updates).
 version: 2
 updates:
   - package-ecosystem: cargo
@@ -30,6 +30,10 @@ updates:
     groups:
       actions:
         update-types: [minor, patch]
+      # A major update of an Action used in release.yml is only tested by a release, so
+      # majors come as one pull request, merged just before a release.
+      actions-major:
+        update-types: [major]
     commit-message:
       prefix: "ci(deps)"
     open-pull-requests-limit: 3

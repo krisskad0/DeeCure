@@ -142,13 +142,16 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      # By name, so the files land straight in dist/. Since v8 a hash mismatch stops the job.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-files
           path: dist
 
+      # actions/attest replaces attest-build-provenance and attest-sbom, which since v4 are
+      # only wrappers around it (attest-sbom is deprecated). No sbom-path: SLSA provenance.
       - name: Sign build provenance for every file
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: |
             dist/*.deb
@@ -156,7 +159,7 @@ jobs:
             dist/SHA256SUMS
 
       - name: Sign the SBOM for the packages
-        uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2.4.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: dist/*.deb
           sbom-path: dist/deecure-sbom.spdx.json
