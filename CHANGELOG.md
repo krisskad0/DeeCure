@@ -24,6 +24,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- **Optimize could delete all Docker data.** "Remove leftover settings of removed packages" purged every removed package, and a purge still runs the package's removal script. After moving from Ubuntu's `docker.io` to Docker's `docker-ce`, purging `docker.io` deletes `/var/lib/docker`, with every image, container, and volume. Packages whose removal script deletes data or turns off a service an installed package uses (such as `containerd` next to `containerd.io`) are now left out and named, and the admin helper refuses them too.
+- Optimize no longer removes a snap you turned off: its only version counted as an old version.
+- Optimize and Power › Sleep no longer offer power saving for a device whose driver keeps it awake anyway, where it changed nothing, or for a Bluetooth radio, which the kernel keeps awake on purpose so it does not drop connections.
+- Updates that Ubuntu still rolls out in stages (phased updates) are no longer installed early or counted as waiting. Apps & Updates › Updates shows them as "Waiting for Ubuntu".
+- The advice to clean the fans now looks at how long heat slowed the CPU (1% of the time or more), not how often: thousands of very short slowdowns a day are normal for laptop chips.
 - The agent could fail on its very first start with "table series already exists" when two agents opened the new database at the same time. Each schema step now takes the write lock and skips what the other agent already did.
 - The one-command install could install an older pre-release: it took the first release in GitHub's list, and GitHub listed 0.1.0-alpha.9 before 0.1.0-alpha.10. It now picks the highest version, as the in-app updater does. The install script comes from the main branch, so this fix reaches everyone at once.
 
