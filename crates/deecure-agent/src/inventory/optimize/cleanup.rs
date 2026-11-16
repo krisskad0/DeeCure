@@ -102,14 +102,28 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
         ),
     ] {
         let r = pkgs.removable.iter().find(|r| r.action == action);
+        // Leftover settings whose purge is not safe are named, so nobody wonders why.
+        let left_out = if action == "packages.purge_residual_config" && !pkgs.purge_kept.is_empty()
+        {
+            format!(
+                " Left out, because a purge is not safe: {}.",
+                pkgs.purge_kept.join("; ")
+            )
+        } else {
+            String::new()
+        };
         out.push(fix(
             &format!("packages:{action}"),
             title,
             match r {
                 Some(r) if r.count > 0 => {
-                    format!("{}: {}.", count(r.count, "package"), r.names.join(", "))
+                    format!(
+                        "{}: {}.{left_out}",
+                        count(r.count, "package"),
+                        r.names.join(", ")
+                    )
                 }
-                _ => "apt lists none.".into(),
+                _ => format!("apt lists none.{left_out}"),
             },
             r.is_some_and(|r| r.count > 0),
             action,
@@ -260,8 +274,25 @@ fn updates(agent: &Agent) -> Check {
             "admin",
         );
     };
-    let security = info.pending.iter().filter(|p| p.security).count();
-    let all = info.pending.len();
+    // Phased updates wait until Ubuntu rolls them out to this computer, as apt does.
+    let phased = info.pending.iter().filter(|p| p.phased).count();
+    let ready: Vec<_> = info.pending.iter().filter(|p| !p.phased).collect();
+    let security = ready.iter().filter(|p| p.security).count();
+    let all = ready.len();
+    if all == 0 && phased > 0 {
+        return fix(
+            "system.updates",
+            "Install updates",
+            format!(
+                "{} wait for Ubuntu's staged rollout to reach this computer; Software Updater installs them then.",
+                count(phased, "update")
+            ),
+            false,
+            "",
+            None,
+            "admin",
+        );
+    }
     if security > 0 {
         fix(
             "system.updates",

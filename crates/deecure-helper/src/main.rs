@@ -223,20 +223,26 @@ impl Probe for Live {
         .map(|s| s.trim().to_owned())
     }
     fn disabled_snaps(&self) -> Vec<(String, String)> {
-        output("/usr/bin/snap", &["list", "--all"])
-            .unwrap_or_default()
-            .lines()
-            .skip(1)
-            .filter(|l| {
-                l.split_whitespace()
-                    .last()
-                    .is_some_and(|n| n.split(',').any(|x| x == "disabled"))
-            })
-            .filter_map(|l| {
-                let f: Vec<&str> = l.split_whitespace().collect();
-                Some(((*f.first()?).to_owned(), (*f.get(2)?).to_owned()))
-            })
-            .collect()
+        deecure_core::cleanup::old_snap_revisions(
+            &output("/usr/bin/snap", &["list", "--all"]).unwrap_or_default(),
+        )
+    }
+    fn purge_risk(&self, package: &str) -> Option<String> {
+        // The removal script a purge still runs, from dpkg's supported interface.
+        let script = output(
+            "/usr/bin/dpkg-query",
+            &["--control-show", "--", package, "postrm"],
+        )
+        .unwrap_or_default();
+        deecure_core::cleanup::purge_risk(&script, |unit| {
+            [
+                "/etc/systemd/system",
+                "/usr/lib/systemd/system",
+                "/lib/systemd/system",
+            ]
+            .iter()
+            .any(|dir| Path::new(dir).join(unit).exists())
+        })
     }
     fn running_kernel(&self) -> String {
         std::fs::read_to_string("/proc/sys/kernel/osrelease")

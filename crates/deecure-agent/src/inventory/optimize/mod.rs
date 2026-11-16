@@ -324,12 +324,14 @@ fn old_kernels(root: &SystemRoot) -> Check {
     )
 }
 
-/// The same rule as the app's Power › Sleep list (`pciPowerSavingSafe`): it has a driver, and is
-/// not storage, a bridge, graphics, sound, or core system parts.
-fn pci_saving_safe(d: &pci_detail::PciDevice) -> bool {
+/// The same rule as the app's Power › Sleep list (`pciPowerSavingSafe`): it has a driver that
+/// lets it sleep (no second hold in `runtime_usage`), and is not storage, a bridge, graphics,
+/// sound, or core system parts.
+pub fn pci_saving_safe(d: &pci_detail::PciDevice) -> bool {
     d.driver.is_some()
         && d.sys_path.is_some()
         && d.power_control.as_deref() == Some("on")
+        && d.runtime_usage.is_none_or(|holds| holds <= 1)
         && ![
             "Storage",
             "Bridge",
@@ -369,7 +371,7 @@ fn device_saving(root: &SystemRoot, power: &power_detail::PowerDetail) -> Vec<Ch
         Some(fix(
             &format!("power.device_saving:{path}"),
             &title(&name),
-            format!("{name} has power saving off (power/control is \"on\"), so it never sleeps when idle. It is not a keyboard, mouse, or sound device. If it misbehaves after the change, undo it."),
+            format!("{name} has power saving off (power/control is \"on\"), so it never sleeps when idle. It is not a keyboard, mouse, sound device, or Bluetooth radio. If it misbehaves after the change, undo it."),
             true,
             "power.set_device_power_saving",
             Some(format!("{path}|on")),
@@ -381,22 +383,103 @@ fn device_saving(root: &SystemRoot, power: &power_detail::PowerDetail) -> Vec<Ch
 
 /// Heat slowdowns added up from the stored counter, which starts again at 0 after a restart.
 pub fn slowdowns(values: &[f64]) -> u64 {
+    added_up(values).round() as u64
+}
+
+/// What a counter added over readings; after a restart it starts again at 0.
+fn added_up(values: &[f64]) -> f64 {
     values
         .windows(2)
         .map(|w| if w[1] >= w[0] { w[1] - w[0] } else { w[1] })
-        .sum::<f64>()
-        .round() as u64
+        .sum()
+}
+
+/// The share of time heat must slow the CPU before cleaning is suggested: 1% is about
+/// 14 minutes of a day. Laptop chips that boost to their limit slow down for milliseconds
+/// thousands of times a day; that is normal and needs no cleaning.
+pub const HEAT_SHARE: f64 = 0.01;
+
+/// Seconds the computer was on between readings (gaps over 5 minutes are sleep or off), and
+/// seconds heat slowed the CPU in that time, from `cpu.throttle_seconds_total` readings.
+pub fn slowed_share(points: &[(i64, f64)]) -> (f64, f64) {
+    let on: f64 = points
+        .windows(2)
+        .map(|w| (w[1].0 - w[0].0) as f64 / 1000.0)
+        .filter(|gap| *gap > 0.0 && *gap <= 300.0)
+        .sum();
+    let values: Vec<f64> = points.iter().map(|p| p.1).collect();
+    (on, added_up(&values))
+}
+
+/// "45 s", "3 min 20 s", or "1 h 5 min".
+fn duration_text(seconds: f64) -> String {
+    let s = seconds.round() as u64;
+    match s {
+        0..60 => format!("{s} s"),
+        60..3600 => format!("{} min {} s", s / 60, s % 60),
+        _ => format!("{} h {} min", s / 3600, s % 3600 / 60),
+    }
 }
 
 fn heat(agent: &Agent, cpu: &cpu_detail::CpuDetail) -> Check {
     let now = Timestamp::now();
     let day = Timestamp(now.0 - 86_400_000);
-    let points = crate::store::lock(&agent.store)
+    let store = crate::store::lock(&agent.store);
+    let points = store
         .metrics("cpu.throttle_total", None, day, now)
         .unwrap_or_default();
+    let time: Vec<(i64, f64)> = store
+        .metrics("cpu.throttle_seconds_total", None, day, now)
+        .unwrap_or_default()
+        .iter()
+        .map(|m| (m.at.as_millis(), m.value))
+        .collect();
+    drop(store);
     let values: Vec<f64> = points.iter().map(|m| m.value).collect();
     let n = slowdowns(&values);
     let since_start = cpu.package_throttle_count.unwrap_or(0);
+    const WHAT: &str = "Dust in the fan or vents is the usual cause. Clean them, keep the vents free (not on a bed or lap), and check that the fan spins. Hardware › Sensors shows the temperatures where it slows down.";
+    if time.len() >= 2 {
+        // The kernel reports how long it slowed down: judge by that, not by how often.
+        let (on, slowed) = slowed_share(&time);
+        let share = if on > 0.0 { slowed / on } else { 0.0 };
+        // Right after an update the time counter is new: wait for an hour of readings.
+        if on < 3600.0 {
+            return advice(
+                "hardware.heat",
+                "Clean the fans, or check the cooling",
+                format!(
+                    "Not enough readings yet: DeeCure has measured how long heat slows the CPU for {}, and needs an hour.",
+                    duration_text(on)
+                ),
+                false,
+                WHAT,
+            );
+        }
+        let measured = if slowed < 0.5 {
+            "The CPU was not slowed by heat in the last 24 hours.".to_owned()
+        } else {
+            format!(
+                "The CPU was slowed by heat for {} in the last 24 hours: {:.1}% of the time it was on, in {}.{}",
+                duration_text(slowed),
+                share * 100.0,
+                count(n as usize, "slowdown"),
+                if share < HEAT_SHARE {
+                    " Short slowdowns like these are normal for laptop chips that boost to their limit; cleaning is suggested from 1%."
+                } else {
+                    ""
+                }
+            )
+        };
+        return advice(
+            "hardware.heat",
+            "Clean the fans, or check the cooling",
+            measured,
+            share >= HEAT_SHARE,
+            WHAT,
+        );
+    }
+    // A CPU that does not report the time (or the first minutes after an update): by count.
     advice(
         "hardware.heat",
         "Clean the fans, or check the cooling",
@@ -412,7 +495,7 @@ fn heat(agent: &Agent, cpu: &cpu_detail::CpuDetail) -> Check {
             )
         },
         n > 0,
-        "Dust in the fan or vents is the usual cause. Clean them, keep the vents free (not on a bed or lap), and check that the fan spins. Hardware › Sensors shows the temperatures where it slows down.",
+        WHAT,
     )
 }
 
@@ -655,6 +738,48 @@ pub async fn read(agent: &Agent) -> Vec<Check> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn heat_advice_counts_how_long_not_how_often() {
+        // A minute apart for 5 hours, slowed for 115 s in all (this laptop on 2026-11-16).
+        let points: Vec<(i64, f64)> = (0..=300)
+            .map(|i| (i * 60_000, i as f64 * 115.0 / 300.0))
+            .collect();
+        let (on, slowed) = slowed_share(&points);
+        assert_eq!(on, 18_000.0);
+        assert!((slowed - 115.0).abs() < 1e-6);
+        assert!(slowed / on < HEAT_SHARE, "0.6% is normal");
+        // A restart sets the counter back to 0; a long gap (sleep) is not time on.
+        let (on, slowed) = slowed_share(&[
+            (0, 50.0),
+            (60_000, 80.0),
+            (3_660_000, 10.0),
+            (3_720_000, 20.0),
+        ]);
+        assert_eq!(on, 120.0);
+        assert_eq!(slowed, 30.0 + 10.0 + 10.0);
+        assert_eq!(duration_text(115.0), "1 min 55 s");
+        assert_eq!(duration_text(45.2), "45 s");
+        assert_eq!(duration_text(3900.0), "1 h 5 min");
+    }
+
+    #[test]
+    fn offers_power_saving_only_where_the_driver_lets_the_device_sleep() {
+        let device = |holds: Option<u32>| pci_detail::PciDevice {
+            driver: Some("rtw89_8852be".into()),
+            sys_path: Some("pci0000:00/0000:00:1d.1/0000:2d:00.0".into()),
+            power_control: Some("on".into()),
+            class: Some("Network".into()),
+            runtime_usage: holds,
+            ..Default::default()
+        };
+        // The kernel's own hold only: turning power saving on lets it sleep.
+        assert!(pci_saving_safe(&device(Some(1))));
+        // The driver holds it too: it would never sleep, so nothing is offered.
+        assert!(!pci_saving_safe(&device(Some(2))));
+        // A kernel that does not show the count: as before.
+        assert!(pci_saving_safe(&device(None)));
+    }
 
     #[test]
     fn every_part_is_an_inventory_kind() {

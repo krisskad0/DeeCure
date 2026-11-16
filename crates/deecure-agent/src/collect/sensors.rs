@@ -50,7 +50,7 @@ const SLOW_EVERY_MS: i64 = 5 * 60_000 - 5_000;
 /// One `temp` metric per sensor (subject `<chip>/<label>`) with `temp.limit` (where it starts
 /// to be too hot: the sensor's own `max`, or 5 °C under its `crit`), `temp.critical`, and
 /// `temp.hot_minutes`; one `fan` per fan; `temp.cpu` with the same three for the CPU; and
-/// `cpu.throttle_total` with `cpu.throttle_minutes_hour`.
+/// `cpu.throttle_total` with `cpu.throttle_minutes_hour`, and `cpu.throttle_seconds_total`.
 #[derive(Debug, Default)]
 pub struct Sensors {
     /// Minutes in a row at or over the limit, per sensor.
@@ -188,6 +188,22 @@ impl Collector for Sensors {
             sample
                 .metrics
                 .push(metric("cpu.throttle_total", None, count, Unit::Count, now));
+        }
+        // How long heat slowed the chip, which tells more than how often: many very short
+        // slowdowns are normal for laptop chips that boost to their limit.
+        if let Some(ms) =
+            read_trimmed(&root.path(
+                "/sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_total_time_ms",
+            ))
+            .and_then(|v| v.parse::<f64>().ok())
+        {
+            sample.metrics.push(metric(
+                "cpu.throttle_seconds_total",
+                None,
+                ms / 1000.0,
+                Unit::Seconds,
+                now,
+            ));
         }
         let dir = root.path("/sys/class/hwmon");
         let Ok(entries) = std::fs::read_dir(&dir) else {

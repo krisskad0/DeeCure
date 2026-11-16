@@ -272,6 +272,8 @@ export interface PciDevice {
   errors?: { corrected: number; nonfatal: number; fatal: number };
   sys_path?: string;
   power_control?: string;
+  /** Holds that keep it awake: 2 or more with power saving off means the driver never lets it sleep. */
+  runtime_usage?: number;
   power_state?: string;
 }
 
@@ -603,7 +605,8 @@ export interface BootInfo {
 }
 
 export interface UpdatesInfo {
-  pending: { name: string; installed: string; candidate: string; origin: string; security: boolean }[];
+  /** `phased`: Ubuntu rolls it out in stages and has not reached this computer yet; nothing installs it until then. */
+  pending: { name: string; installed: string; candidate: string; origin: string; security: boolean; phased?: boolean }[];
   lists_updated_at?: number | null;
   automatic_security: boolean;
 }
@@ -1130,6 +1133,8 @@ export interface PackagesInfo {
   packages: PackageInfo[];
   sources: { line: string; kind: "Official" | "PPA" | "Third-party"; signed: boolean; own_key: boolean; enabled: boolean; file: string }[];
   removable: { action: string; title: string; count: number; size: number; names: string[]; undo: "reinstallable" | "irreversible" }[];
+  /** Removed packages whose leftover settings are not offered, each as "name: why" (a purge that is not safe). */
+  purge_kept?: string[];
 }
 
 export interface ContainersInfo {

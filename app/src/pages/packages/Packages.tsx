@@ -209,6 +209,11 @@ export function PackagesReclaimable() {
         rowKey={(r) => r.action}
         empty="Nothing to remove"
       />
+      {info.purge_kept && info.purge_kept.length > 0 && (
+        <p className="muted" style={{ margin: "8px 12px" }}>
+          Left out on purpose, because removing their settings is not safe: {info.purge_kept.join("; ")}.
+        </p>
+      )}
     </Panel>
   );
 }

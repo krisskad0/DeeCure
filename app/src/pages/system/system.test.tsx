@@ -107,6 +107,14 @@ describe("System pages", () => {
     await waitFor(() => expect(screen.getByText("unattended-upgrades")).toBeTruthy());
   });
 
+  it("updates that Ubuntu still phases in wait, and are not counted or offered", async () => {
+    updates = { data: { pending: [{ name: "snapd", installed: "2.77.1", candidate: "2.78", origin: "noble-updates", security: false, phased: true }], lists_updated_at: at, automatic_security: true } };
+    render(<PackagesUpdates />);
+    await waitFor(() => expect(screen.getByText("1 more waiting for Ubuntu")).toBeTruthy());
+    expect(screen.getAllByText("Waiting for Ubuntu").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Install all/ })).toBeNull();
+  });
+
   it("kernel and time render", async () => {
     render(<SystemKernel />);
     await waitFor(() => expect(screen.getByText("Fallback")).toBeTruthy());

@@ -156,20 +156,11 @@ pub fn tree_size(path: &Path) -> (u64, u64) {
     (bytes, files)
 }
 
-/// Reads `snap list --all` and returns `(name, revision)` of disabled revisions.
+/// Reads `snap list --all` and returns `(name, revision)` of old revisions: disabled ones of a
+/// snap that has a revision in use. A turned-off snap is left alone
+/// ([`deecure_core::cleanup::old_snap_revisions`]).
 pub fn disabled_snaps(list: &str) -> Vec<(String, String)> {
-    list.lines()
-        .skip(1)
-        .filter(|l| {
-            l.split_whitespace()
-                .last()
-                .is_some_and(|notes| notes.split(',').any(|n| n == "disabled"))
-        })
-        .filter_map(|l| {
-            let f: Vec<&str> = l.split_whitespace().collect();
-            Some(((*f.first()?).to_owned(), (*f.get(2)?).to_owned()))
-        })
-        .collect()
+    deecure_core::cleanup::old_snap_revisions(list)
 }
 
 /// "4.0GB (79%)" or "157.2MB" (docker's decimal units) → bytes.
@@ -376,12 +367,10 @@ mod tests {
     #[test]
     fn parses_tool_outputs() {
         let snaps = "Name Version Rev Tracking Publisher Notes\ncore18 20260204 2999 latest/stable canonical** base,disabled\ncore18 20260901 3084 latest/stable canonical** base\nfirefox 1 10 latest/stable mozilla** disabled\n";
+        // firefox has only a disabled revision: the snap is turned off, not old, so it stays.
         assert_eq!(
             disabled_snaps(snaps),
-            [
-                ("core18".to_owned(), "2999".to_owned()),
-                ("firefox".to_owned(), "10".to_owned())
-            ]
+            [("core18".to_owned(), "2999".to_owned())]
         );
         assert_eq!(docker_size("4.0GB (79%)"), 4_000_000_000);
         assert_eq!(docker_size("157.2MB"), 157_200_000);

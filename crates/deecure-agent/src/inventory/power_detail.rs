@@ -420,8 +420,10 @@ fn wake_sources(root: &SystemRoot) -> Vec<WakeSource> {
         .collect()
 }
 
-/// USB interface classes that must stay awake: HID (03, keyboards and mice) and audio (01).
-const KEEP_AWAKE: &[&str] = &["03", "01"];
+/// USB classes that must stay awake: HID (03, keyboards and mice), audio (01), and Bluetooth
+/// radios (e0). The kernel's `btusb` keeps Bluetooth awake on purpose (`enable_autosuspend`
+/// is off in Ubuntu), because power saving makes many adapters drop their connections.
+const KEEP_AWAKE: &[&str] = &["03", "01", "e0"];
 
 fn usb(root: &SystemRoot) -> Vec<UsbPower> {
     let base = "/sys/bus/usb/devices";
@@ -654,6 +656,10 @@ mod tests {
                 ("/sys/bus/usb/devices/3-6/power/control", "auto\n"),
                 ("/sys/bus/usb/devices/3-6/bDeviceClass", "ef\n"),
                 ("/sys/bus/usb/devices/3-6:1.0/bInterfaceClass", "0e\n"),
+                ("/sys/bus/usb/devices/3-9/product", "Bluetooth Radio\n"),
+                ("/sys/bus/usb/devices/3-9/power/control", "on\n"),
+                ("/sys/bus/usb/devices/3-9/bDeviceClass", "e0\n"),
+                ("/sys/bus/usb/devices/3-9:1.0/bInterfaceClass", "e0\n"),
                 (
                     "/sys/bus/usb/devices/usb3/product",
                     "xHCI Host Controller\n",
@@ -697,7 +703,7 @@ mod tests {
         );
         assert_eq!(
             p.usb.len(),
-            2,
+            3,
             "host controllers and interfaces are not devices"
         );
         assert!(
@@ -705,6 +711,8 @@ mod tests {
             "a receiver for a keyboard and mouse stays awake"
         );
         assert!(!p.usb[1].keep_awake);
+        // The kernel keeps Bluetooth radios awake on purpose; DeeCure never offers power saving.
+        assert!(p.usb.iter().find(|u| u.port == "3-9").unwrap().keep_awake);
     }
 
     #[test]

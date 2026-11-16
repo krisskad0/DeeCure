@@ -353,5 +353,7 @@ export function PowerControls() {
 /** A PCI device worth offering power saving: it has a driver, and is not storage (NVMe has its
  * own power states), a bridge, graphics, audio, or a system peripheral. */
 export function pciPowerSavingSafe(d: PciDevice): boolean {
-  return !!d.driver && !!d.sys_path && d.power_control === "on" && !["Storage", "Bridge", "Display", "Audio and video", "System", "Memory"].includes(d.class ?? "");
+  // A second hold (runtime_usage 2 or more) is a driver that never lets the device sleep:
+  // turning power saving on would change nothing, so it is not offered.
+  return !!d.driver && !!d.sys_path && d.power_control === "on" && (d.runtime_usage ?? 0) <= 1 && !["Storage", "Bridge", "Display", "Audio and video", "System", "Memory"].includes(d.class ?? "");
 }

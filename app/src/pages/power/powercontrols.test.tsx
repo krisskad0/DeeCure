@@ -168,5 +168,8 @@ describe("Power controls", () => {
     expect(mustKeepWaking({ name: "serio0", events: 0, wakeups: 0, active: 0 })).toBe(true);
     expect(pciPowerSavingSafe({ address: "x", class: "Storage", driver: "nvme", sys_path: "p", power_control: "on" })).toBe(false);
     expect(pciPowerSavingSafe({ address: "x", class: "Network", sys_path: "p", power_control: "on" })).toBe(false);
+    // The driver holds the device too (runtime_usage 2): power saving would change nothing.
+    expect(pciPowerSavingSafe({ address: "x", class: "Network", driver: "rtw89_8852be", sys_path: "p", power_control: "on", runtime_usage: 2 })).toBe(false);
+    expect(pciPowerSavingSafe({ address: "x", class: "Network", driver: "iwlwifi", sys_path: "p", power_control: "on", runtime_usage: 1 })).toBe(true);
   });
 });

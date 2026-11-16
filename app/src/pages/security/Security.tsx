@@ -51,7 +51,8 @@ export function SecurityOverview() {
   // The agent's own warning, so this list and Overview › Issues always agree.
   const autoStopped = useFinding("security.auto_updates_stopped");
   if (!sec) return <Waiting title="Security posture" error={error} />;
-  const security = updates?.pending.filter((p) => p.security).length;
+  // Phased updates wait for Ubuntu's rollout, as on Apps & Updates › Updates.
+  const security = updates?.pending.filter((p) => p.security && !p.phased).length;
   const failedHardening = sec.hardening.filter((h) => h.result === "fail").length;
   const ssh = accounts?.ssh;
   const checks: Check[] = [];

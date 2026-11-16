@@ -221,6 +221,8 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 .pending
                 .iter()
                 .filter(|p| p.security || !security_only)
+                // Phased updates wait until Ubuntu rolls them out to this computer.
+                .filter(|p| !p.phased)
                 .filter(|p| subject.is_none_or(|s| s == p.name))
                 .map(|p| p.name.clone())
                 .collect();
@@ -1368,6 +1370,7 @@ mod tests {
                     candidate: "2".into(),
                     origin: "noble-security".into(),
                     security: true,
+                    phased: false,
                 },
                 crate::collect::Upgradable {
                     name: "git".into(),
@@ -1375,6 +1378,16 @@ mod tests {
                     candidate: "2".into(),
                     origin: "noble-updates".into(),
                     security: false,
+                    phased: false,
+                },
+                // Ubuntu has not phased this one in for this computer: it is never installed.
+                crate::collect::Upgradable {
+                    name: "snapd".into(),
+                    installed: "1".into(),
+                    candidate: "2".into(),
+                    origin: "noble-updates".into(),
+                    security: false,
+                    phased: true,
                 },
             ],
             ..UpdatesInfo::default()
