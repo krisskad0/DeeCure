@@ -32,7 +32,7 @@ listenfd = "1"
 rusqlite = "0.41"
 rustix = { version = "1", features = ["fs", "param", "process"] }
 tokio = { version = "1", features = ["rt", "net", "io-util", "macros", "process", "signal", "time", "sync"] }
-zbus = { version = "5.19", default-features = false, features = ["tokio"] }
+zbus = { version = "6.3", default-features = false, features = ["tokio"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
