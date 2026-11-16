@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.11" date="2026-11-16" type="development">
+      <description>
+        <p>A clearer sidebar in seven groups, a new Devices page, and Hardware › All Parts: every part of the computer in one table, with its memory slots, drive slots, and sockets. Optimize is safer: it never purges a package whose removal would delete Docker's data, never removes a snap that was only turned off, and no longer offers changes that do nothing.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.10" date="2026-11-04" type="development">
       <description>
         <p>A new Optimize page: a round Scan button checks this computer live, part by part, a ring shows what passed and what needs something, and the improvements come one by one with what was measured. It checks by itself only once a day, and the Overview shows how many improvements wait.</p>

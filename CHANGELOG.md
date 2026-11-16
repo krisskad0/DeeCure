@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.11] - 2026-11-16
+
 ### Added
 
 - **A website** at [krisskad0.github.io/DeeCure](https://krisskad0.github.io/DeeCure/): what DeeCure does, who it is for, screenshots, privacy, an FAQ, and the one-command install and package downloads for the newest release. No tracking and no cookies.

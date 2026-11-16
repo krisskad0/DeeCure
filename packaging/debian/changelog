@@ -1,3 +1,15 @@
+deecure (0.1.0~alpha.11-1) noble; urgency=medium
+
+  * New sidebar in seven groups, a new Devices page, and an All Parts
+    page under Hardware with memory slots, drive slots, and sockets.
+  * Fix: Optimize never purges a package whose removal script deletes
+    Docker's data or turns off a service in use.
+  * Fix: Optimize no longer removes a turned-off snap, installs phased
+    updates early, or offers power saving that does nothing.
+  * Fix: the fan cleaning advice uses how long heat slowed the CPU.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Mon, 16 Nov 2026 17:08:07 +0530
+
 deecure (0.1.0~alpha.10-1) noble; urgency=medium
 
   * New Optimize page: a live scan part by part, a result ring, and the
