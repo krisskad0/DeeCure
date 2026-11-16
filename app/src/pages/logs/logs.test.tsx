@@ -5,7 +5,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { heatRows } from "../../metrics";
 import { topCounts } from "../../metrics";
-import { LogsBoots, LogsCrashes, LogsErrors, LogsJournal, LogsKernel, level } from "./Logs";
+import { LogsCrashes, LogsErrors, LogsJournal, LogsKernel, level } from "./Logs";
 
 const now = Date.now();
 const H = 3_600_000;
@@ -57,7 +57,6 @@ describe("Logs", () => {
       [LogsErrors, "Needs attention"],
       [LogsCrashes, "Recurring"],
       [LogsKernel, "ACPI"],
-      [LogsBoots, "Unclean"],
     ] as const) {
       render(<Tab />);
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));

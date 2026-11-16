@@ -1,15 +1,34 @@
 // SPDX-License-Identifier: Apache-2.0
-// System › Time & Locale (docs/03-ui-design/05-pages/05-system.md), with real data.
+// Operating System › Time & Locale (docs/03-ui-design/05-pages/05-system.md), with real data.
 
 import { useEffect, useState } from "react";
 import { getInventory } from "../../api";
+import { Guard } from "../../components/ErrorBoundary";
 import { KeyValueList } from "../../components/KeyValueList";
 import { Panel } from "../../components/Panel";
 import { StatusBadge } from "../../components/StatusBadge";
+import { atLeast, useUi } from "../../ui";
 import { useLive } from "../../useLive";
 import { NoData } from "../NoData";
 
 const loadOs = () => getInventory("os");
+const loadKernelDetail = () => getInventory("kernel_detail");
+
+/** Expert: the time server's numbers. It was on Operating System › Kernel until 2026-11-16. */
+function TimeSyncPanel() {
+  const { data: d, error } = useLive(loadKernelDetail, 60_000);
+  return (
+    <Panel title="Time sync" source="timedatectl timesync-status" span={12} flush>
+      {!d ? (
+        <NoData error={error} waiting="Loading…" />
+      ) : Object.keys(d.time_sync).length ? (
+        <KeyValueList rows={["Server", "Offset", "Delay", "Jitter", "Poll interval", "Stratum", "Packet count"].filter((k) => d.time_sync[k]).map((k): [string, string] => [k, d.time_sync[k]])} />
+      ) : (
+        <div className="empty muted">systemd-timesyncd is not running (another time service may be in use).</div>
+      )}
+    </Panel>
+  );
+}
 
 /** "IST, +0530" for a time zone. */
 function zoneName(zone: string, at: Date): string {
@@ -29,6 +48,7 @@ function units(locale?: string): string {
 }
 
 export function SystemTime() {
+  const { mode } = useUi();
   const { data: os, error } = useLive(loadOs, 60_000);
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -64,6 +84,7 @@ export function SystemTime() {
           ]}
         />
       </Panel>
+      {atLeast(mode, "expert") && <Guard><TimeSyncPanel /></Guard>}
     </>
   );
 }

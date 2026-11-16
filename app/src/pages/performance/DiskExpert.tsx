@@ -162,7 +162,7 @@ export function DiskIoExpertSections() {
   );
 }
 
-// ---------- Hardware › Storage Devices ----------
+// ---------- Hardware › Drives ----------
 
 export function DriveExpertSections() {
   const storage = useLive(loadStorage, 60_000);
@@ -283,7 +283,7 @@ export function FilesystemExpert() {
   );
 }
 
-// ---------- Hardware › Peripherals ----------
+// ---------- Devices › Ports & Devices ----------
 
 /** How many links have each verdict ("Full speed 5", "Nothing connected 2", …), most first. */
 export function linkCounts(links: PciDevice[]): [string, number][] {

@@ -1,11 +1,11 @@
-# System (`system`)
+# Operating System (`system`)
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: System · Icon: `sys` · Status badge: {info:Info} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Overview, Boot, Updates, Kernel, Time & Locale
+- Group: Software · Icon: `sys` · Status badge: {info:Info} (rule in [Page status rules](../04-behavior/page-status.md))
+- Sub-pages: Overview, Boot, Kernel, Time & Locale (Updates moved to Apps & Updates on 2026-11-16)
 
-## System › Overview: `system/overview`
+## Operating System › Overview: `system/overview`
 
 1. **Key-value list**: "Operating system" · span 6
 - Source chip (Expert): `/etc/os-release · uname -a`
@@ -40,7 +40,7 @@
 
 Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label "Standard support ends · Apr 2029".
 
-## System › Boot: `system/boot`
+## Operating System › Boot: `system/boot`
 
 1. **KPI row** · span 12
 
@@ -70,53 +70,20 @@ Fill and "Today" marker at 50.4%. Left label "Released · Apr 2024", right label
 - Height 220px · Y max auto · unit "s" · highlighted (warn + value label): index 9
 - Bars (label: value): 8 Oct: 29; 10 Oct: 28; 12 Oct: 31; 13 Oct: 27; 14 Oct: 28; 15 Oct: 30; 16 Oct: 29; 17 Oct: 28; 19 Oct: 28; Today: 41.2
 
+4. **Data table**: "Boot history" · span 12 (moved from Logs › Boots on 2026-11-16)
+- It loads on its own, so it shows even while the boot times above are still waiting.
+- Source chip (Expert): `journalctl --list-boots`
+
+| Started | Ended | Duration | Shutdown | Kernel |
+| --- | --- | --- | --- | --- |
+| Today 08:58 | - | 12 h 36 m | {info:Running} | `6.8.0-47` |
+| Mon 08:41 | Today 02:14 | 1 d 17 h | {crit:Unclean} | `6.8.0-45` |
+| Sat 10:12 | Mon 08:40 | 1 d 22 h | {ok:Clean} | `6.8.0-45` |
+| Thu 09:01 | Sat 10:11 | 2 d 1 h | {ok:Clean} | `6.8.0-45` |
 
 Expert adds: **What the desktop waited for** (the boot's critical chain, indented by depth, the slowest step marked) and **Every unit's start time**: chips for how many units started, took over 1 s, over 100 ms, and under 100 ms, with the full list under **Show all** (the slowest are already in "Slowest units").
 
-## System › Updates: `system/updates`
-
-Header actions: [**Install security updates**](act:fix:sec) (hidden once done), then Refresh.
-
-Tab count pill: 12.
-
-1. **KPI row** · span 12
-
-| Label | Value | Unit | Status badge | Subtext | Visual | Opens |
-| --- | --- | --- | --- | --- | --- | --- |
-| Pending | 12 |  | {warn:Warning} |   | - | - |
-| Security | 4 |  | {warn:Warning} |   | - | - |
-| Last check | 2 | h ago | - |   | - | - |
-| Automatic security updates | On |  | - |   | - | - |
-| Reboot required | Yes |  | {info:Info} |   | - | - |
-
-2. **Data table**: "Pending updates" · span 12
-- Source chip (Expert): `apt list --upgradable`
-- Row selection · bulk button [Install selected](act:fix:sec)
-- Total count shown: 12
-- Table ID: `pending`
-
-| Package | Installed [x] | Candidate | Priority | Size [n] |
-| --- | --- | --- | --- | --- |
-| openssl | `3.0.13-0ubuntu3.4` | `3.0.13-0ubuntu3.5` | {warn:Security} | 1.2 MB |
-| libssl3t64 | `3.0.13-0ubuntu3.4` | `3.0.13-0ubuntu3.5` | {warn:Security} | 1.9 MB |
-| sudo | `1.9.15p5-3ubuntu5.1` | `1.9.15p5-3ubuntu5.2` | {warn:Security} | 0.9 MB |
-| linux-firmware | `…0ubuntu2.5` | `…0ubuntu2.6` | {warn:Security} | 298 MB |
-| google-chrome-stable | `130.0.6723.58` | `130.0.6723.69` | {off:Regular} | 112 MB |
-| git | `1:2.43.0-1ubuntu7.1` | `1:2.43.0-1ubuntu7.2` | {off:Regular} | 3.7 MB |
-| docker-ce | `5:27.3.1` | `5:27.3.2` | {off:Regular} | 25 MB |
-| code (snap) | `1.94.2` | `1.95.0` | {off:Regular} | 106 MB |
-
-3. **Data table**: "Update history" · span 12
-
-| Date | Packages [n] | Source | Result |
-| --- | --- | --- | --- |
-| Today 10:40 | 3 | unattended-upgrades | {ok:Success} |
-| Tue 18:40 | 6 | Software Updater | {ok:Success} |
-| Thu 06:24 | 2 | unattended-upgrades | {ok:Success} |
-
-"Pending updates" shows chips per origin, a note when a new kernel waits (restart after installing), and up to 8 rows (security fixes first) with the version change. The table, with its search, is under "Show all".
-
-## System › Kernel: `system/kernel`
+## Operating System › Kernel: `system/kernel`
 
 1. **Running kernel** · span 5
 - The version, large; chips: "Not tainted" (or "Tainted (N)", warn), "245 modules loaded", "installed 7 Oct 2026".
@@ -134,11 +101,10 @@ Expert adds:
 - **KPI row:** file watches (with a bar), open files, kernel lockdown, clock offset.
 - **Kernel settings from files** · span 12: a green "As shipped" line when every setting comes from Ubuntu's packages unchanged and in effect; otherwise "Worth a look" lists each setting set on this computer, from a changed package file, changed while running, or replaced by a later file, with why and the file. Then a chip per package with how many it sets, and **Show all N settings** for the full table.
 - **File watches by program** · span 6: the top 8 as ranked bars with PID; **Show all** when there are more.
-- **Time sync** · span 6.
 - **Loaded modules** · span 6: a green "All signed" line, or a warning list of modules from outside the kernel or unsigned (taint letters); then "Drive the most devices" as ranked bars; **Show all** for the full table.
-- **Extra drivers (DKMS)** · span 6.
+- **Extra drivers (DKMS)** · span 12.
 
-## System › Time & Locale: `system/time`
+## Operating System › Time & Locale: `system/time`
 
 1. **Key-value list**: "Date and time" · span 6
 - Source chip (Expert): `timedatectl`
@@ -160,6 +126,8 @@ Expert adds:
 | Keyboard layout | us |
 | Input method | IBus |
 | Units | Metric · °C |
+
+Expert adds: **Time sync** · span 12 (moved from Kernel on 2026-11-16): the time server's numbers from `timedatectl timesync-status`: server, offset, delay, jitter, poll interval, stratum, and packet count.
 
 ---
 

@@ -27,6 +27,7 @@ import { useEventCount } from "../../useEventCount";
 import { useLive } from "../../useLive";
 import { useLatest } from "../performance/shared";
 import { NoData } from "../NoData";
+import { PackagesReclaimable } from "../packages/Packages";
 
 interface FsEntry {
   mount_point: string;
@@ -264,9 +265,12 @@ export function StorageCleanup() {
   const openFix = useFix();
   if (!storage) {
     return (
-      <Panel title="Cleanup candidates" span={12}>
-        <NoData error={error} waiting="Looking for things to clean… (Trash, caches, old snaps, Docker)" />
-      </Panel>
+      <>
+        <Panel title="Cleanup candidates" span={12}>
+          <NoData error={error} waiting="Looking for things to clean… (Trash, caches, old snaps, Docker)" />
+        </Panel>
+        <PackagesReclaimable />
+      </>
     );
   }
   const total = reclaimable(storage);
@@ -287,6 +291,7 @@ export function StorageCleanup() {
       >
         <DataTable rows={storage.candidates} columns={CANDIDATES} rowKey={(c) => c.action} empty="Nothing to clean right now" />
       </Panel>
+      <PackagesReclaimable />
     </>
   );
 }

@@ -7,10 +7,22 @@ import type { StatusVariant } from "./components/StatusBadge";
 
 /**
  * Pages that are not a health area never show a status badge: tools, Settings, and pages that
- * show records or live views (Logs, Activity, Processes, Display & Audio). No warning covers
- * them, so a badge could only ever say "Unknown".
+ * show records or live views (Logs, Activity, Processes). No warning covers them, so a badge
+ * could only ever say "Unknown".
  */
-const NO_BADGE = new Set(["optimize", "diagnostics", "assistant", "settings", "logs", "activity", "processes", "display"]);
+const NO_BADGE = new Set(["optimize", "diagnostics", "assistant", "settings", "logs", "activity", "processes"]);
+
+/**
+ * Rules whose page is not the category before the dot. The rule IDs stay the same, so saved
+ * findings and muted warnings keep working; the Health Score still counts them by category.
+ */
+export const RULE_PAGE: Record<string, string> = {
+  "hardware.pcie_errors": "devices",
+  "hardware.usb_overcurrent": "devices",
+};
+
+/** Pages with no area of their own in the agent: they count as checked when this area is. */
+const CHECKED_WITH: Record<string, string> = { devices: "hardware" };
 const RANK: Record<Finding["severity"], number> = { info: 1, warning: 2, critical: 3 };
 const VARIANT: Record<Finding["severity"], StatusVariant> = { info: "info", warning: "warn", critical: "crit" };
 
@@ -18,9 +30,9 @@ export function severityVariant(severity: Finding["severity"]): StatusVariant {
   return VARIANT[severity];
 }
 
-/** The page a finding belongs to: the category before the dot in its rule ID. */
+/** The page a finding belongs to: RULE_PAGE, or else the category before the dot in its rule ID. */
 export function pageOf(finding: Finding): string {
-  return finding.rule.split(".")[0];
+  return RULE_PAGE[finding.rule] ?? finding.rule.split(".")[0];
 }
 
 export function findingsFor(pageId: string, report: StatusReport | null): Finding[] {
@@ -46,16 +58,16 @@ export const RULE_TAB: Record<string, string> = {
   "hardware.memory_errors": "memory",
   "hardware.no_acceleration": "graphics",
   "hardware.part_hot": "sensors",
-  "hardware.pcie_errors": "peripherals",
+  "hardware.pcie_errors": "ports",
   "hardware.thermal_shutdown": "sensors",
-  "hardware.usb_overcurrent": "peripherals",
+  "hardware.usb_overcurrent": "ports",
   "jobs.job_failed": "all",
   "network.errors": "interfaces",
   "network.no_internet": "interfaces",
   "network.offline": "interfaces",
   "network.weak_wifi": "interfaces",
   "packages.broken": "installed",
-  "packages.updates_available": "installed",
+  "packages.updates_available": "updates",
   "performance.disk_stall": "disk",
   "performance.memory_short": "memory",
   "performance.oom_kill": "memory",
@@ -86,7 +98,7 @@ export const RULE_TAB: Record<string, string> = {
   "storage.root_almost_full": "overview",
   "system.clock_unsynced": "time",
   "system.kernel_crash": "overview",
-  "system.reboot_required": "updates",
+  "system.reboot_required": "overview",
   "system.time_sync_off": "time",
 };
 
@@ -118,7 +130,7 @@ export const RULE_PANELS: Record<string, string[]> = {
   "network.offline": ["Connectivity"],
   "network.weak_wifi": ["Wi-Fi"],
   "packages.broken": ["Packages"],
-  "packages.updates_available": ["Packages"],
+  "packages.updates_available": ["Pending updates"],
   "performance.disk_stall": ["Devices"],
   "performance.memory_short": ["Memory usage"],
   "performance.oom_kill": ["Out-of-memory guard", "Memory usage"],
@@ -147,7 +159,7 @@ export const RULE_PANELS: Record<string, string[]> = {
   "storage.read_only": ["Filesystems"],
   "storage.root_almost_full": ["Space allocation"],
   "system.clock_unsynced": ["Date and time"],
-  "system.reboot_required": ["Pending updates"],
+  "system.reboot_required": ["Status"],
   "system.time_sync_off": ["Date and time"],
 };
 
@@ -181,7 +193,7 @@ export function pageStatus(pageId: string, report: StatusReport | null, error: A
   if (error || !report?.checked_at) return "off";
   const findings = findingsFor(pageId, report);
   if (findings.length === 0) {
-    const checked = pageId === "overview" ? (report.checked ?? []).length > 0 : (report.checked ?? []).includes(pageId);
+    const checked = pageId === "overview" ? (report.checked ?? []).length > 0 : (report.checked ?? []).includes(CHECKED_WITH[pageId] ?? pageId);
     return checked ? "ok" : "off";
   }
   const worst = findings.reduce((a, b) => (RANK[b.severity] > RANK[a.severity] ? b : a));

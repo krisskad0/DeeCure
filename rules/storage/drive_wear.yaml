@@ -7,7 +7,7 @@ explain: >
   Drive {item.name} reports wear or failure: {item.life_used}% of its rated life used
   (NVMe), {item.critical_warning} critical warning flags (NVMe), and {item.reallocated}
   replaced and {item.pending} unreadable sectors (SATA). It may fail soon. Back up your
-  files now; Hardware › Storage Devices shows the drive's full health. The helper reads
+  files now; Hardware › Drives shows the drive's full health. The helper reads
   this once a day.
 limits:
   - name: life_used

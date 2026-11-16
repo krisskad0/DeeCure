@@ -6,7 +6,6 @@
 
 import { type KernelDetail, getInventory } from "../../api";
 import { DataTable } from "../../components/DataTable";
-import { KeyValueList } from "../../components/KeyValueList";
 import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { ShowAll } from "../../components/ShowAll";
@@ -156,13 +155,6 @@ export function KernelExpertSections() {
           </>
         )}
       </Panel>
-      <Panel title="Time sync" source="timedatectl timesync-status" span={6} flush>
-        {Object.keys(d.time_sync).length ? (
-          <KeyValueList rows={["Server", "Offset", "Delay", "Jitter", "Poll interval", "Stratum", "Packet count"].filter((k) => d.time_sync[k]).map((k): [string, string] => [k, d.time_sync[k]])} />
-        ) : (
-          <div className="empty muted">systemd-timesyncd is not running (another time service may be in use).</div>
-        )}
-      </Panel>
       <Panel title="Loaded modules" subtitle={`${d.modules.length} loaded`} info="Taint letters: O built outside the kernel, E not signed, P proprietary. Devices counts the hardware each module drives." source="/proc/modules · /sys/module" span={6}>
         {tainted.length === 0 ? (
           <div className="kn-verdict">
@@ -197,7 +189,7 @@ export function KernelExpertSections() {
           />
         </ShowAll>
       </Panel>
-      <Panel title="Extra drivers (DKMS)" info="Drivers built on this computer, such as NVIDIA or VirtualBox. Each must be built for every installed kernel, or the device stops working after starting that kernel." source="dkms status · /lib/modules" span={6} flush>
+      <Panel title="Extra drivers (DKMS)" info="Drivers built on this computer, such as NVIDIA or VirtualBox. Each must be built for every installed kernel, or the device stops working after starting that kernel." source="dkms status · /lib/modules" span={12} flush>
         {!d.dkms ? (
           <div className="empty muted">DKMS is not installed, so there are no extra drivers to build.</div>
         ) : (

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-// Renders the Hardware, Power, and Display & Audio pages with realistic answers and with gaps.
+// Renders the Hardware, Power, and Devices pages with realistic answers and with gaps.
 
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Metric } from "../../api";
-import { DisplayAudio, DisplayDisplays } from "../display/Display";
+import { DevicesAudio, DevicesDisplays } from "../devices/Display";
 import { PowerBattery, PowerProfile, PowerSleep, sleepSummary } from "../power/Power";
 import { HardwareFirmware } from "./Firmware";
 import { HardwareGraphics } from "./Graphics";
 import { HardwareMemory } from "./Memory";
-import { HardwarePeripherals } from "./Peripherals";
+import { DevicesPorts } from "../devices/Ports";
 import { HardwareProcessor } from "./Processor";
 import { HardwareSensors } from "./Sensors";
 import { HardwareStorage } from "./Storage";
@@ -109,7 +109,7 @@ describe("Hardware pages", () => {
   });
 
   it("peripherals count only real missing drivers and include Bluetooth", async () => {
-    render(<HardwarePeripherals />);
+    render(<DevicesPorts />);
     await waitFor(() => expect(screen.getByText("Earbuds · battery 80%")).toBeTruthy());
     expect(screen.getByText("No driver needed")).toBeTruthy();
     expect(screen.getAllByText("No driver").length).toBe(1);
@@ -150,15 +150,15 @@ describe("Power and Display pages", () => {
   });
 
   it("displays and audio render, and audio without PipeWire is honest", async () => {
-    render(<DisplayDisplays />);
+    render(<DevicesDisplays />);
     await waitFor(() => expect(screen.getByText("1920 × 1080")).toBeTruthy());
     expect(screen.getByText("Mutter (GNOME 46.0)")).toBeTruthy();
     cleanup();
-    render(<DisplayAudio />);
+    render(<DevicesAudio />);
     await waitFor(() => expect(screen.getByText("Volume 45%")).toBeTruthy());
     cleanup();
     audio = { outputs: [], inputs: [], streams: [] };
-    render(<DisplayAudio />);
+    render(<DevicesAudio />);
     await waitFor(() => expect(screen.getByText(/No sound server answered/)).toBeTruthy());
   });
 

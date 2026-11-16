@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Display & Audio (docs/03-ui-design/05-pages/08-display.md), with real data.
+// Devices › Displays and Devices › Audio (docs/03-ui-design/05-pages/08-devices.md), with real data.
 
 import { Guard } from "../../components/ErrorBoundary";
 import { ScreensExpert, SoundHardwareExpert } from "../hardware/DevicesExpert";
@@ -33,7 +33,7 @@ const OUTPUTS: Column<Output>[] = [
   { key: "status", label: "Status", text: (o) => (o.connected ? "Connected" : "Disconnected"), render: (o) => <StatusBadge variant={o.connected ? "ok" : "off"} label={o.connected ? "Connected" : "Disconnected"} /> },
 ];
 
-export function DisplayDisplays() {
+export function DevicesDisplays() {
   const { mode } = useUi();
   const { data: display, error } = useLive(loadDisplay, 15_000);
   const machine = useLive(loadMachine, 3_600_000).data;
@@ -70,7 +70,7 @@ const devices = (label: string): Column<AudioDevice>[] => [
   { key: "default", label: "Default", text: (d) => (d.default ? "Yes" : "No"), render: (d) => yes(d.default) },
 ];
 
-export function DisplayAudio() {
+export function DevicesAudio() {
   const { mode } = useUi();
   const { data: audio, error } = useLive(loadAudio, 10_000);
   if (!audio) {

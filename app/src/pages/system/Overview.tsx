@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// System › Overview (docs/03-ui-design/05-pages/05-system.md), with real data.
+// Operating System › Overview (docs/03-ui-design/05-pages/05-system.md), with real data.
 
 import { type BootInfo, getInventory, getMachine, getSnapshot } from "../../api";
 import { KeyValueList } from "../../components/KeyValueList";

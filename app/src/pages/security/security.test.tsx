@@ -4,7 +4,8 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AccountsGroups, AccountsLogins, AccountsSessions, AccountsSsh, AccountsUsers } from "../accounts/Accounts";
-import { NetworkConnections, NetworkDns, NetworkFirewall, NetworkInterfaces, NetworkPorts, NetworkTraffic } from "../network/Network";
+import { NetworkConnections, NetworkDns, NetworkInterfaces, NetworkPorts, NetworkTraffic } from "../network/Network";
+import { SecurityFirewall } from "./Firewall";
 import { PrivacyAccess, PrivacyPermissions, PrivacySettings } from "../privacy/Privacy";
 import { SecurityHardening, SecurityIntegrity, SecurityMalware, SecurityOverview, SecurityVulns } from "./Security";
 
@@ -72,9 +73,9 @@ describe("Network", () => {
     await shows(NetworkInterfaces, "HomeNet-5G");
     await shows(NetworkConnections, "chrome");
     await shows(NetworkPorts, "Not filtered");
-    await shows(NetworkFirewall, "The firewall is off");
+    await shows(SecurityFirewall, "The firewall is off");
     await shows(NetworkDns, "Office");
-    await shows(NetworkTraffic, "Throughput");
+    await shows(NetworkTraffic, "Total download and upload");
   });
 });
 

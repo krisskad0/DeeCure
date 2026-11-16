@@ -2,8 +2,8 @@
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Monitoring · Icon: `logs` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Journal (with Kernel below it), Errors and crashes (Errors, then Crashes), Boots. The sections below keep their old names: each is now a part of a merged sub-page, and old links scroll to it ([merged sub-pages](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)).
+- Group: Monitor · Icon: `logs` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
+- Sub-pages: Journal (with Kernel below it), Errors and crashes (Errors, then Crashes). Boots went away on 2026-11-16: its table moved to Operating System › Boot. The sections below keep their old names: each is now a part of a merged sub-page, and old links scroll to it ([merged sub-pages](../../01-product/view-levels.md#fewer-tabs-for-advanced-and-expert)).
 
 ## Logs › Journal: `logs/journal`
 
@@ -121,24 +121,6 @@ With no crash, the panel is one green line ("No crashes in the last 7 days") ins
 | Mon 09:44 | {warn:warn} | usb | `usb 3-2: USB disconnect, device number 3` |
 
 Above the table: the same two columns, "Busiest parts of the kernel" (subsystems) and "Most repeated".
-
-## Logs › Boots: `logs/boots`
-
-1. **Bar chart**: "Boot duration" · span 6
-- Subtitle: "last 10 boots"
-- Source chip (Expert): `systemd-analyze`
-- Height 200px · Y max auto · unit "s" · highlighted (warn + value label): index 9
-- Bars (label: value): 8 Oct: 29; 10 Oct: 28; 12 Oct: 31; 13 Oct: 27; 14 Oct: 28; 15 Oct: 30; 16 Oct: 29; 17 Oct: 28; 19 Oct: 28; Today: 41.2
-
-2. **Data table**: "Boot history" · span 6
-- Source chip (Expert): `journalctl --list-boots`
-
-| Started | Ended | Duration | Shutdown | Kernel |
-| --- | --- | --- | --- | --- |
-| Today 08:58 | - | 12 h 36 m | {info:Running} | `6.8.0-47` |
-| Mon 08:41 | Today 02:14 | 1 d 17 h | {crit:Unclean} | `6.8.0-45` |
-| Sat 10:12 | Mon 08:40 | 1 d 22 h | {ok:Clean} | `6.8.0-45` |
-| Thu 09:01 | Sat 10:11 | 2 d 1 h | {ok:Clean} | `6.8.0-45` |
 
 ---
 

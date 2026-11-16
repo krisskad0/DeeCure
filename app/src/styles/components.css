@@ -625,7 +625,7 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .sc-points-warn { color: var(--warn-ink); } .sc-points-crit { color: var(--crit-ink); }
 .sc-hint { margin: 0; font-size: 12.5px; }
 
-/* System › Kernel */
+/* Operating System › Kernel */
 .kn-now { display: flex; flex-direction: column; gap: 10px; }
 .kn-version { font-size: 20px; font-weight: 700; }
 .kn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -685,7 +685,7 @@ input[type="checkbox"]:not([role="switch"]), input[type="radio"] { accent-color:
 .pl-item { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 8px; background: var(--track); font-size: 12px; }
 .pl-item b { font-size: 22px; font-variant-numeric: tabular-nums; }
 
-/* Packages › Sources: one row per source, snap tiles */
+/* Apps & Updates › Sources: one row per source, snap tiles */
 .src-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
 .src-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; }
 .src-list li.src-off { opacity: 0.6; }

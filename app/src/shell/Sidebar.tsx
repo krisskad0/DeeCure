@@ -89,7 +89,8 @@ export function Sidebar(props: {
       <div className="nav-scroll">
         {groups.map((group) => (
           <div className="nav-group" key={group}>
-            <div className="group-label">{group}</div>
+            {/* Overview has no group: it comes first, with no label. */}
+            {group && <div className="group-label">{group}</div>}
             <ul>{pages.filter((p) => p.group === group).map(item)}</ul>
           </div>
         ))}

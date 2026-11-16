@@ -18,6 +18,6 @@
 
 - Every page and sub-page as `Page › Sub-page` (or just `Page` when it has one sub-page), kind "Page". Beginner mode lists only its own pages and no services; with no matches it says "No matches. Advanced shows every page and service." ([Beginner mode](sidebar.md#beginner-mode)).
 - Services: bluetooth.service, docker.service, NetworkManager.service, snapd.service, cups-browsed.service → Services › System Services.
-- Packages: the first 14 package names from Packages › Installed → Packages › Installed.
+- Packages: the first 14 package names from Apps & Updates › Installed → Apps & Updates › Installed.
 - Jobs: sync-notes.sh, backup-photos.sh → Scheduled Jobs › Cron; logrotate.timer, e2scrub_all.timer → Scheduled Jobs › Systemd Timers.
 - Keyboard: ↑/↓ moves the highlight (wraps, scrolls into view), Enter opens, Esc closes. The highlighted row has an `--accent-soft` background.

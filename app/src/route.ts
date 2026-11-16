@@ -33,8 +33,31 @@ export const MERGED: Record<string, { tab: string; section: string }> = {
   "accounts/logins": { tab: "sessions", section: "logins" },
 };
 
+/**
+ * Old sub-pages, as `page/tab`, that moved to another page (the sidebar change of 2026-11-16,
+ * docs/03-ui-design/02-shell/sidebar.md), and old pages, as `page`, that are gone.
+ */
+export const MOVED: Record<string, { page: string; tab: string }> = {
+  "hardware/peripherals": { page: "devices", tab: "ports" },
+  "display/displays": { page: "devices", tab: "displays" },
+  "display/audio": { page: "devices", tab: "audio" },
+  "system/updates": { page: "packages", tab: "updates" },
+  "network/firewall": { page: "security", tab: "firewall" },
+  "logs/boots": { page: "system", tab: "boot" },
+  "packages/cleanup": { page: "storage", tab: "cleanup" },
+  "packages/permissions": { page: "privacy", tab: "perms" },
+  display: { page: "devices", tab: "displays" },
+};
+
+/** Where an old page and sub-page live now; unchanged when they did not move. */
+function moved(pageId: string, tabId: string | undefined): { page: string; tab: string | undefined } {
+  const to = (tabId ? MOVED[`${pageId}/${tabId}`] : undefined) ?? (PAGES.some((p) => p.id === pageId) ? undefined : MOVED[pageId]);
+  return to ?? { page: pageId, tab: tabId };
+}
+
 export function parseHash(hash: string): Route {
-  const [pageId, rawTab, rawSection] = hash.replace(/^#\/?/, "").split("/");
+  const [oldPage, oldTab, rawSection] = hash.replace(/^#\/?/, "").split("/");
+  const { page: pageId, tab: rawTab } = moved(oldPage, oldTab);
   const merged = MERGED[`${pageId}/${rawTab}`];
   const tabId = merged?.tab ?? rawTab;
   const page = PAGES.find((p) => p.id === pageId) ?? PAGES[0];
@@ -43,7 +66,8 @@ export function parseHash(hash: string): Route {
   return { page, tab, gallery: import.meta.env.DEV && pageId === "gallery", section };
 }
 
-export function href(pageId: string, tabId?: string): string {
+export function href(oldPage: string, oldTab?: string): string {
+  const { page: pageId, tab: tabId } = moved(oldPage, oldTab);
   const merged = tabId ? MERGED[`${pageId}/${tabId}`] : undefined;
   if (merged) return `#/${pageId}/${merged.tab}/${merged.section}`;
   return tabId ? `#/${pageId}/${tabId}` : `#/${pageId}`;

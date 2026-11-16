@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-// System › Boot (docs/03-ui-design/05-pages/05-system.md), with real data.
+// Operating System › Boot (docs/03-ui-design/05-pages/05-system.md), with real data.
 // The history holds the boots since DeeCure was installed.
 
 import { Guard } from "../../components/ErrorBoundary";
 import { BootExpertSections } from "../services/ServicesExpert";
 import { atLeast, useUi } from "../../ui";
-import { type BootInfo, getMetrics, getSnapshot } from "../../api";
+import { type BootInfo, type BootRecord, getInventory, getMetrics, getSnapshot } from "../../api";
+import { type Column, DataTable } from "../../components/DataTable";
+import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
+import { duration, when } from "../../metrics";
 import { KpiRow, type Kpi } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { BarChart } from "../../components/charts/BarChart";
@@ -19,6 +22,28 @@ const loadHistory = () => {
   return getMetrics("boot.time", until - 365 * 86_400_000, until, { maxPoints: 2000 });
 };
 
+const loadBoots = () => getInventory("boots");
+
+const SHUTDOWN: Record<BootRecord["shutdown"], [StatusVariant, string]> = { running: ["info", "Running"], clean: ["ok", "Clean"], unclean: ["crit", "Unclean"] };
+
+const BOOTS: Column<BootRecord>[] = [
+  { key: "started", label: "Started", text: (b) => String(b.started), render: (b) => when(b.started) },
+  { key: "ended", label: "Ended", text: (b) => (b.shutdown === "running" ? "-" : when(b.ended)) },
+  { key: "duration", label: "Duration", text: (b) => duration((b.ended - b.started) / 1000), numeric: true },
+  { key: "shutdown", label: "Shutdown", text: (b) => SHUTDOWN[b.shutdown][1], render: (b) => <StatusBadge variant={SHUTDOWN[b.shutdown][0]} label={SHUTDOWN[b.shutdown][1]} /> },
+  { key: "kernel", label: "Kernel", text: (b) => b.kernel ?? "-", render: (b) => (b.kernel ? <code>{b.kernel.replace(/-generic$/, "")}</code> : "-") },
+];
+
+/** Every boot the journal keeps. It was Logs › Boots until 2026-11-16. */
+function BootHistory() {
+  const { data: boots, error } = useLive(loadBoots, 300_000);
+  return (
+    <Panel title="Boot history" source="journalctl --list-boots" span={12} flush>
+      {boots ? <DataTable rows={boots} columns={BOOTS} rowKey={(b) => String(b.started)} empty="The journal keeps no earlier boots" /> : <NoData error={error} waiting="Loading…" />}
+    </Panel>
+  );
+}
+
 /** systemd escapes "-" in unit names as "\x2d". */
 const unescape = (name: string) => name.replace(/\\x([0-9a-f]{2})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
 
@@ -28,10 +53,14 @@ export function SystemBoot() {
   const history = useLive(loadHistory, 300_000).data ?? [];
   const boot = snapshot?.data;
   if (!boot?.times) {
+    // The boot history does not wait for the boot times.
     return (
-      <Panel title="Boot" span={12}>
-        <NoData error={error} waiting={snapshot === undefined ? "Loading…" : "DeeCure reads the boot times once the boot has finished. Check back in a few minutes."} />
-      </Panel>
+      <>
+        <Panel title="Boot" span={12}>
+          <NoData error={error} waiting={snapshot === undefined ? "Loading…" : "DeeCure reads the boot times once the boot has finished. Check back in a few minutes."} />
+        </Panel>
+        <BootHistory />
+      </>
     );
   }
   const t = boot.times;
@@ -66,6 +95,7 @@ export function SystemBoot() {
           highlight={slow ? [recent.length - 1] : []}
         />
       </Panel>
+      <BootHistory />
       {atLeast(mode, "expert") && <Guard><BootExpertSections /></Guard>}
     </>
   );

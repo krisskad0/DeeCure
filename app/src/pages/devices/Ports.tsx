@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Hardware › Peripherals (docs/03-ui-design/05-pages/06-hardware.md), with real data.
+// Devices › Ports & Devices (docs/03-ui-design/05-pages/08-devices.md), with real data.
 
 import { Guard } from "../../components/ErrorBoundary";
-import { PortsExpertSections } from "./PlatformExpert";
-import { BuiltInDevicesExpert } from "./DevicesExpert";
+import { PortsExpertSections } from "../hardware/PlatformExpert";
+import { BuiltInDevicesExpert } from "../hardware/DevicesExpert";
 import { PcieLinks } from "../performance/DiskExpert";
 import { atLeast, useUi } from "../../ui";
 import { type Column, DataTable } from "../../components/DataTable";
@@ -11,7 +11,7 @@ import { KpiRow } from "../../components/KpiTile";
 import { Panel } from "../../components/Panel";
 import { StatusBadge, type StatusVariant } from "../../components/StatusBadge";
 import { NoData } from "../NoData";
-import { NEEDS_DRIVER, useBluetooth, useHardware } from "./shared";
+import { NEEDS_DRIVER, useBluetooth, useHardware } from "../hardware/shared";
 
 interface Row {
   key: string;
@@ -30,7 +30,7 @@ const COLUMNS: Column<Row>[] = [
   { key: "status", label: "Status", text: (r) => r.status[1], render: (r) => <StatusBadge variant={r.status[0]} label={r.status[1]} /> },
 ];
 
-export function HardwarePeripherals() {
+export function DevicesPorts() {
   const { mode } = useUi();
   const { data: hw, error } = useHardware();
   const bt = useBluetooth();

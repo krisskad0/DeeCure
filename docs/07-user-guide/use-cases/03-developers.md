@@ -26,8 +26,8 @@ DeeCure answers all of this in one place, with the data source shown next to eve
 | Get disk space back | **Storage › Cleanup** | Unused Docker images and build cache, old snap versions, caches, and logs, each with its size |
 | Find open ports | **Network › Open Ports** and **Connections** | Every listening port, its program, and whether the firewall lets it in |
 | Read services and jobs | **Services** and **Scheduled Jobs** | System and user services, startup apps, a calendar of cron jobs and systemd timers |
-| Read the kernel | **System › Kernel** | Installed kernels with the fallback, loaded modules, limits, and kernel settings with the file that set them |
-| Check the hardware link speed | **Hardware › Peripherals › PCIe links** (Expert view) | Whether the SSD, the graphics card, and other chips run at their full PCIe speed |
+| Read the kernel | **Operating System › Kernel** | Installed kernels with the fallback, loaded modules, limits, and kernel settings with the file that set them |
+| Check the hardware link speed | **Devices › Ports & Devices › PCIe links** (Expert view) | Whether the SSD, the graphics card, and other chips run at their full PCIe speed |
 | Read logs without `journalctl` flags | **Logs** | The journal, errors grouped with explanations, crashes, and every boot |
 
 ![DeeCure memory page on Linux: what fills RAM as one bar with cache striped, a verdict, usage over 24 hours, where memory goes, and the apps and services using the most](../images/deecure-expert-memory-map.png)

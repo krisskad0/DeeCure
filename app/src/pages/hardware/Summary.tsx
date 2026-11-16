@@ -48,10 +48,10 @@ export function HardwareSummary() {
     { icon: "fan", label: "Fans", metric: fans.length ? fans.map((f) => `${Math.round(f.value)} RPM`).join(", ") : "Not reported", status: fans.length ? "ok" : "off", href: href("hardware", "sensors") },
     {
       icon: "usb",
-      label: "Peripherals",
+      label: "Ports & Devices",
       metric: `${hw.devices.filter((d) => d.bus === "USB").length + (bluetooth?.devices.length ?? 0)} devices · ${missing} missing drivers`,
       status: missing ? "warn" : "ok",
-      href: href("hardware", "peripherals"),
+      href: href("devices", "ports"),
     },
     { icon: "bolt", label: "Firmware", metric: !firmware ? "Loading…" : !firmware.available ? "fwupd not running" : updates ? `${updates} update${updates === 1 ? "" : "s"} available` : "Up to date", status: !firmware?.available ? "off" : updates ? "info" : "ok", href: href("hardware", "firmware") },
   ];

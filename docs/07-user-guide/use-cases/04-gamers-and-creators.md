@@ -19,10 +19,10 @@
 | See how busy the graphics card is | **Performance › GPU** and the **Overview** | GPU use over time next to CPU and memory. AMD and Intel report it; the NVIDIA driver does not, and DeeCure says so instead of guessing. |
 | Check the graphics setup | **Hardware › Graphics** | The kernel driver, OpenGL and Vulkan versions, hardware video decoding, and driver checks |
 | Get the right driver | **Hardware › Graphics** and **Optimize** | Drivers Ubuntu recommends for your card, and the hardware video driver when it is missing |
-| Keep full speed | **Hardware › Peripherals › PCIe links** (Expert view) | Whether the graphics card and the SSD run at their full PCIe link speed and width |
+| Keep full speed | **Devices › Ports & Devices › PCIe links** (Expert view) | Whether the graphics card and the SSD run at their full PCIe link speed and width |
 | Stay cool under load | **Hardware › Sensors** and **Hardware › Processor** | Each temperature against the part's own limit, heat slowdowns, fan speeds, and the chip's power limits |
 | Pick the power mode | **Power › Power Profile** | Performance, Balanced, or Power saver |
-| Check screens and sound | **Display & Audio** | Connected displays, the session type, and sound output and input devices |
+| Check screens and sound | **Devices › Displays** and **Devices › Audio** | Connected displays, the session type, and sound output and input devices |
 | Make room for big games and projects | **Storage** | What fills the disk, and safe clean-ups |
 
 ![DeeCure processor page on Linux: live load, temperature, and frequency, every performance and efficient core with its speed and temperature, and the chip's power limits](../images/deecure-expert-processor-cores-power-limits.png)

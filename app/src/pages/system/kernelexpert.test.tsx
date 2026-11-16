@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Expert kernel sections: who set each setting, limits, modules, DKMS gaps, and time sync.
+// Expert kernel sections: who set each setting, limits, modules, DKMS gaps, and the clock offset.
 
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -48,13 +48,13 @@ describe("Expert kernel sections", () => {
     expect(screen.getAllByText("This computer").length).toBeGreaterThan(0);
   });
 
-  it("limits, modules, DKMS gaps, and time sync", async () => {
+  it("limits, modules, DKMS gaps, and the clock offset (the Time sync panel is on Time & Locale)", async () => {
     render(<KernelExpertSections />);
     await waitFor(() => expect(screen.getByText("92")).toBeTruthy());
     expect(screen.getByText("no system-wide limit")).toBeTruthy();
     expect(screen.getAllByText("POE").length).toBeGreaterThan(0);
     expect(screen.getByText("6.8.0-49-generic")).toBeTruthy();
-    expect(screen.getAllByText("+7.740ms")).toHaveLength(2);
+    expect(screen.getAllByText("+7.740ms")).toHaveLength(1);
     expect(missingKernels(d, { kernels: ["6.8.0-45-generic", "6.8.0-49-generic"] })).toEqual([]);
   });
 

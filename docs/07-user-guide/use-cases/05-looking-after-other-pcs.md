@@ -20,7 +20,7 @@
 | Know what changed | **Activity › Timeline** | Every package install and upgrade (apt, snap, Flatpak), config file change with line-by-line differences, USB device, boot, and crash, for 7, 30, or 90 days |
 | Get a report to keep or share | `deecure report --html report.html` | One HTML file with health, problems, what changed, disks, and a tip |
 | Check backups | **Backups** | The last Déjà Dup backup and Timeshift snapshot, where they go, and how old they are |
-| Keep updates flowing | **System › Updates** and **Security** | Waiting updates, security updates first, and whether automatic updates really still install |
+| Keep updates flowing | **Apps & Updates › Updates** and **Security** | Waiting updates, security updates first, and whether automatic updates really still install |
 | Fix without guessing | Any problem, then **Fix** | Every step and command shown first, the result checked, and an undo kept |
 | See who uses the computer | **Accounts** | People and groups, active sessions, sign-ins per day, and SSH keys |
 
@@ -52,7 +52,7 @@
 1. Install DeeCure ([Install](../install.md)) and open it.
 2. Fix anything critical on the **Overview**.
 3. Open **Backups**. If nothing is set up, set up Ubuntu's Backups (Déjà Dup).
-4. Open **System › Updates** and make sure automatic updates work.
+4. Open **Apps & Updates › Updates** and make sure automatic updates work.
 5. Set the view to **Beginner** before you hand the computer back.
 
 ---

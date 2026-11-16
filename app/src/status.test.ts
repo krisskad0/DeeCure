@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import type { Finding, StatusReport } from "./api";
 import { PAGES } from "./spec/pages";
-import { RULE_TAB, pageStatus, tabStatus } from "./status";
+import { RULE_PAGE, RULE_TAB, pageOf, pageStatus, tabStatus } from "./status";
 
 // The test runs in Node; Node's own modules are not in the app's types, so they are loaded by name.
 const nodeFs = "node:fs";
@@ -47,7 +47,7 @@ describe("pageStatus", () => {
   });
 
   it("shows no badge on tools, settings, and pages that are not a health area", () => {
-    for (const page of ["diagnostics", "settings", "logs", "activity", "processes", "display"]) {
+    for (const page of ["diagnostics", "settings", "logs", "activity", "processes"]) {
       expect(pageStatus(page, report([]), null)).toBeNull();
     }
   });
@@ -73,7 +73,24 @@ describe("tabStatus", () => {
     for (const id of ids) {
       const tab = RULE_TAB[id];
       expect(tab, id).toBeDefined();
-      expect(PAGES.find((p) => p.id === id.split(".")[0])?.tabs.some((t) => t.id === tab), id).toBe(true);
+      expect(PAGES.find((p) => p.id === (RULE_PAGE[id] ?? id.split(".")[0]))?.tabs.some((t) => t.id === tab), id).toBe(true);
     }
+  });
+});
+
+describe("rules shown on another page", () => {
+  it("PCIe and USB warnings belong to Devices, but keep their rule IDs", () => {
+    expect(pageOf(finding("hardware.pcie_errors", "warning"))).toBe("devices");
+    expect(pageOf(finding("hardware.usb_overcurrent", "warning"))).toBe("devices");
+    expect(pageOf(finding("hardware.cpu_hot", "warning"))).toBe("hardware");
+    const r = report([finding("hardware.pcie_errors", "warning")], ["hardware"]);
+    expect(pageStatus("devices", r, null)).toBe("warn");
+    expect(pageStatus("hardware", r, null)).toBe("ok");
+    expect(tabStatus("devices", "ports", r)).toBe("warn");
+  });
+
+  it("Devices counts as checked when Hardware is", () => {
+    expect(pageStatus("devices", report([], ["hardware"]), null)).toBe("ok");
+    expect(pageStatus("devices", report([], ["power"]), null)).toBe("off");
   });
 });

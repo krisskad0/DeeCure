@@ -55,7 +55,7 @@ clockTick = () => { clock++; return `${21 + floor(clock/60)}:${pad2(clock % 60)}
 | 4 | {warn:Warning} | Battery health degraded | 71% of design capacity | Power | 02 Sep | - | [View](go:power/battery) | always |
 | 5 | {warn:Warning} | Backup overdue | Last successful backup 21 days ago | Backups | 07 Oct | - | [View](go:backups/jobs) | always |
 | 6 | {warn:Warning} | Out-of-memory kill | chrome renderer · Mon 16:12 | Logs | Mon 16:12 | 1 | [View](go:logs/kernel) | always |
-| 7 | {info:Info} | Reboot required | libc6, openssl, sudo updated | System | Today 10:40 | - | [Details](go:system/updates) | always |
+| 7 | {info:Info} | Reboot required | libc6, openssl, sudo updated | System | Today 10:40 | - | [Details](go:system/overview) | always |
 | 8 | {info:Info} | Low-battery action not set | Unclean shutdown at 02:14 today | Power | Today 02:14 | 1 | [Configure](act:fix:batt) | until low-battery action configured |
 | 9 | {info:Info} | Missed timer run | e2scrub_all.timer · Sun 03:10 | Scheduled Jobs | Sun 03:10 | 1 | [View](go:jobs/timers) | always |
 

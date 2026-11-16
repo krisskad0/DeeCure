@@ -1,11 +1,57 @@
-# Packages (`packages`)
+# Apps & Updates (`packages`)
 
 [Docs](../../README.md) › [UI design](../README.md) › [Pages](README.md)
 
-- Group: Software & Data · Icon: `pkg` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
-- Sub-pages: Installed, Sources, Cleanup, Permissions
+- Group: Software · Icon: `pkg` · Status badge: {warn:Warning} (rule in [Page status rules](../04-behavior/page-status.md))
+- Sub-pages: Updates, Installed, Sources
+- Cleanup moved to Storage › Cleanup, and Permissions was the same table as Privacy › App Permissions (2026-11-16).
 
-## Packages › Installed: `packages/installed`
+## Apps & Updates › Updates: `packages/updates`
+
+It was System › Updates until 2026-11-16.
+
+Header actions: [**Install security updates**](act:fix:sec) (hidden once done), then Refresh.
+
+Tab count pill: 12.
+
+1. **KPI row** · span 12
+
+| Label | Value | Unit | Status badge | Subtext | Visual | Opens |
+| --- | --- | --- | --- | --- | --- | --- |
+| Pending | 12 |  | {warn:Warning} |   | - | - |
+| Security | 4 |  | {warn:Warning} |   | - | - |
+| Last check | 2 | h ago | - |   | - | - |
+| Automatic security updates | On |  | - |   | - | - |
+| Reboot required | Yes |  | {info:Info} |   | - | - |
+
+2. **Data table**: "Pending updates" · span 12
+- Source chip (Expert): `apt list --upgradable`
+- Row selection · bulk button [Install selected](act:fix:sec)
+- Total count shown: 12
+- Table ID: `pending`
+
+| Package | Installed [x] | Candidate | Priority | Size [n] |
+| --- | --- | --- | --- | --- |
+| openssl | `3.0.13-0ubuntu3.4` | `3.0.13-0ubuntu3.5` | {warn:Security} | 1.2 MB |
+| libssl3t64 | `3.0.13-0ubuntu3.4` | `3.0.13-0ubuntu3.5` | {warn:Security} | 1.9 MB |
+| sudo | `1.9.15p5-3ubuntu5.1` | `1.9.15p5-3ubuntu5.2` | {warn:Security} | 0.9 MB |
+| linux-firmware | `…0ubuntu2.5` | `…0ubuntu2.6` | {warn:Security} | 298 MB |
+| google-chrome-stable | `130.0.6723.58` | `130.0.6723.69` | {off:Regular} | 112 MB |
+| git | `1:2.43.0-1ubuntu7.1` | `1:2.43.0-1ubuntu7.2` | {off:Regular} | 3.7 MB |
+| docker-ce | `5:27.3.1` | `5:27.3.2` | {off:Regular} | 25 MB |
+| code (snap) | `1.94.2` | `1.95.0` | {off:Regular} | 106 MB |
+
+3. **Data table**: "Update history" · span 12
+
+| Date | Packages [n] | Source | Result |
+| --- | --- | --- | --- |
+| Today 10:40 | 3 | unattended-upgrades | {ok:Success} |
+| Tue 18:40 | 6 | Software Updater | {ok:Success} |
+| Thu 06:24 | 2 | unattended-upgrades | {ok:Success} |
+
+"Pending updates" shows chips per origin, a note when a new kernel waits (restart after installing), and up to 8 rows (security fixes first) with the version change. The table, with its search, is under "Show all".
+
+## Apps & Updates › Installed: `packages/installed`
 
 1. **KPI row** · span 12
 
@@ -16,7 +62,7 @@
 | Flatpak | 6 |  | - | 2.2 GB | - | - |
 | AppImage | 2 |  | - | found in ~/Downloads | - | - |
 | Language packages | 29 |  | - | pip · npm · cargo | - | - |
-| Updates | 12 |  | {warn:Warning} |   | - | `system/updates` |
+| Updates | 12 |  | {warn:Warning} |   | - | `packages/updates` |
 
 2. **Donut chart**: "Disk usage by source" · span 4
 - Center: "12.4" / "GB" · unit "GB"
@@ -63,7 +109,7 @@
 
 Under the donut, "Biggest packages" ranks the 8 largest packages from any source.
 
-## Packages › Sources: `packages/sources`
+## Apps & Updates › Sources: `packages/sources`
 
 1. **Data table**: "Software sources" · span 12
 - Source chip (Expert): `/etc/apt/sources.list.d`
@@ -82,33 +128,6 @@ Under the donut, "Biggest packages" ranks the 8 largest packages from any source
 
 **Software sources** starts with chips (Official, PPA, Third-party, signed, off) and lists one row per source: the site in bold, its path and suites under it, the type badge, and "signed" or "signed, own key" (or "Not checked" in red); the table with files is under **Show as a table with files**. Expert adds **Package health** (packages from no repository as chips), **Snap refreshes**, **Snaps** as one tile per snap (current version, channel, "+N old", classic), with every version under **Show all**, and **Flatpak runtimes**.
 
-## Packages › Cleanup: `packages/cleanup`
-
-1. **Data table**: "Reclaimable" · span 12
-
-| Item | Count [n] | Size [n] | Undo | (action) |
-| --- | --- | --- | --- | --- |
-| Packages no longer needed (autoremove) | 48 | 310 MB | {info:Reinstallable} | [Remove](act:toast:48 packages removed · 310 MB freed.) |
-| Disabled snap revisions | 6 | 8.7 GB | {warn:Irreversible} | [Clean](act:fix:storage) |
-| Duplicate app: VLC (apt + snap) | 1 | 320 MB | {info:Reinstallable} | [Review](act:toast:Keep one VLC to save 320 MB.) |
-| Unused Flatpak runtimes | 2 | 640 MB | {info:Regenerates} | [Remove](act:toast:flatpak uninstall --unused) |
-| Apps not used in 90+ days | 2 | 106 MB | {off:Review} | [Review](go:packages/installed) |
-| Old kernel 6.8.0-41 | 1 | 320 MB | {info:Reinstallable} | [Remove](act:toast:Old kernel queued for removal.) |
-
-## Packages › Permissions: `packages/permissions`
-
-1. **Data table**: "Sandboxed app permissions" · span 12
-- Source chip (Expert): `snap connections · flatpak info --show-permissions`
-
-| App | Source | Camera | Microphone | Home folder | Network | Location |
-| --- | --- | --- | --- | --- | --- | --- |
-| zoom-client | {info:snap} | ✓ | ✓ | ✓ | ✓ | - |
-| code | {info:snap} | - | - | ✓ | ✓ | - |
-| telegram-desktop | {info:snap} | ✓ | ✓ | ✓ | ✓ | - |
-| firefox | {info:snap} | ✓ | ✓ | ✓ | ✓ | ✓ |
-| com.spotify.Client | {ok:flatpak} | - | - | - | ✓ | - |
-| com.obsproject.Studio | {ok:flatpak} | ✓ | ✓ | ✓ | ✓ | - |
-
 ---
 
-← Previous: [Containers](12-containers.md) · [Index](README.md) · Next: [Storage](14-storage.md) →
+← Previous: [Containers & VMs](12-containers.md) · [Index](README.md) · Next: [Storage](14-storage.md) →

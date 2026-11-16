@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// System › Kernel (docs/03-ui-design/05-pages/05-system.md), with real data.
+// Operating System › Kernel (docs/03-ui-design/05-pages/05-system.md), with real data.
 // Removing old kernels goes through the fix engine and the admin helper. Expert replaces the
 // module list with the richer one in KernelExpert.tsx, so modules show once.
 
