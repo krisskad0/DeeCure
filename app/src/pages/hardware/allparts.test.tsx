@@ -40,6 +40,7 @@ const BOARD = {
 };
 const MEMORY = { arrays: [{ "Maximum Capacity": "64 GB", "Number Of Devices": "2" }], modules: [{ Size: "16 GB", Locator: "DIMM A", Type: "DDR5", Filled: "true" }, { Size: "No Module Installed", Locator: "DIMM B", Filled: "false" }] };
 const reads: string[] = [];
+let oldHelper = false;
 
 vi.mock("../../api", () => ({
   getInventory: (kind: string) =>
@@ -67,6 +68,7 @@ vi.mock("../../api", () => ({
   getHelperStatus: () => Promise.resolve(true),
   helperRead: (what: string) => {
     reads.push(what);
+    if (oldHelper && what === "slots_ports") return Promise.reject({ kind: "other", message: "unknown read-out" });
     return Promise.resolve(JSON.stringify(what === "memory_slots" ? MEMORY : BOARD));
   },
   toAppError: (e: unknown) => ({ kind: "other", message: String(e) }),
@@ -112,5 +114,16 @@ describe("All Parts", () => {
     expect(reads).toEqual(["memory_slots", "slots_ports"]);
     expect(screen.getByText("Headphone")).toBeTruthy();
     expect(screen.getByText("DIMM B")).toBeTruthy();
+  });
+
+  it("still shows the memory slots when the helper is older than the app", async () => {
+    oldHelper = true;
+    localStorage.setItem("deecure.access", JSON.stringify("full"));
+    render(<HardwareAllParts />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Read slots and sockets (asks for your password)" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Read slots and sockets (asks for your password)" }));
+    await waitFor(() => expect(screen.getByText("DIMM B")).toBeTruthy());
+    expect(screen.getByText(/update DeeCure to read them/)).toBeTruthy();
+    oldHelper = false;
   });
 });

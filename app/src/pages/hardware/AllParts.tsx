@@ -144,7 +144,7 @@ function MakerSlots() {
   const [access] = usePref<"basic" | "full">("access", "basic");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<{ memory?: MemorySlots; board?: SlotsPorts } | null>(null);
+  const [data, setData] = useState<{ memory?: MemorySlots; board?: SlotsPorts; boardError?: string } | null>(null);
   if (helper === false) return <div className="empty muted">Only the admin can read the memory slots, the expansion slots, and the sockets. It needs Full access, which needs the DeeCure admin helper (Settings › Access).</div>;
   if (helper && access !== "full")
     return (
@@ -159,8 +159,12 @@ function MakerSlots() {
       try {
         // The password is asked once: polkit keeps the approval for a few minutes.
         const memory = JSON.parse(await helperRead("memory_slots")) as MemorySlots;
-        const board = JSON.parse(await helperRead("slots_ports")) as SlotsPorts;
-        setData({ memory, board });
+        // An older helper does not know this read: keep the memory slots and say why the rest is missing.
+        const board = await helperRead("slots_ports").then(
+          (t) => ({ board: JSON.parse(t) as SlotsPorts }),
+          (e) => ({ boardError: toAppError(e).message }),
+        );
+        setData({ memory, ...board });
       } catch (e) {
         setError(e instanceof SyntaxError ? "The helper gave no readable answer." : toAppError(e).message);
       } finally {
@@ -178,10 +182,20 @@ function MakerSlots() {
   }
   const slots = data.board?.slots ?? [];
   const ports = data.board?.ports ?? [];
+  const memory = data.memory ? <MemorySlotsView data={data.memory} /> : null;
+  if (data.boardError) {
+    return (
+      <>
+        <div className="kn-head">Memory slots</div>
+        {memory}
+        <p className="muted" style={{ marginTop: 8 }}>The expansion slots and sockets could not be read ({data.boardError}). The admin helper may be older than this app: update DeeCure to read them.</p>
+      </>
+    );
+  }
   return (
     <>
       <div className="kn-head">Memory slots</div>
-      {data.memory ? <MemorySlotsView data={data.memory} /> : null}
+      {memory}
       <div className="kn-head" style={{ marginTop: 12 }}>Expansion slots (PCIe and M.2)</div>
       <DataTable
         rows={slots}
