@@ -845,11 +845,8 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                     },
                 ));
             }
-            if steps.is_empty() {
-                return Err(
-                    "the screen and sleep settings already save power when you are away".into(),
-                );
-            }
+            // Already done (for example applied a moment ago): an empty plan, which the app
+            // shows as "nothing to do", not an error.
             steps
         }
         "storage.cap_journal" => {

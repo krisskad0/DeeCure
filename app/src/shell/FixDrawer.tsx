@@ -4,7 +4,7 @@
 
 import { listen } from "@tauri-apps/api/event";
 import { createContext, useContext, useEffect, useState } from "react";
-import { type FixPlan, type StepResult, USER_CALLS, applyFix, getFixPlan, getStatus, toAppError } from "../api";
+import { type FixPlan, type StepResult, applyFix, callIsAdmin, getFixPlan, getStatus, toAppError } from "../api";
 import { AlertBanner } from "../components/AlertBanner";
 import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
@@ -25,7 +25,6 @@ type Phase = { kind: "loading" } | { kind: "error"; message: string } | { kind: 
 export function FixDrawer({ action, subject, onClose, onDone }: { action: string; subject?: string; onClose: () => void; onDone?: () => void }) {
   const { mode } = useUi();
   const access = useAccess();
-  const isAdmin = (op: string) => !USER_CALLS.includes(op);
   const [plan, setPlan] = useState<FixPlan | null>(null);
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
@@ -75,10 +74,10 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
   };
 
   // In Basic access, admin steps cannot be chosen (and are taken out if access changes).
-  const picked = plan?.steps.filter((s) => chosen.has(s.id) && (access.full || !isAdmin(s.call.op))) ?? [];
-  const blocked = plan?.steps.some((s) => isAdmin(s.call.op)) && !access.full;
+  const picked = plan?.steps.filter((s) => chosen.has(s.id) && (access.full || !callIsAdmin(s.call))) ?? [];
+  const blocked = plan?.steps.some((s) => callIsAdmin(s.call)) && !access.full;
   const total = picked.reduce((sum, s) => sum + (s.size ?? 0), 0);
-  const admin = picked.some((s) => isAdmin(s.call.op));
+  const admin = picked.some((s) => callIsAdmin(s.call));
   const running = phase.kind === "running";
   const result = (id: string) => results.find((r) => r.id === id);
 
@@ -100,7 +99,7 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
     >
       {phase.kind === "loading" && <p className="muted">Working out what this fix would do…</p>}
       {phase.kind === "error" && <AlertBanner tone="crit" title="The fix could not run" text={phase.message} />}
-      {plan && plan.steps.length === 0 && phase.kind === "preview" && <p className="muted">Nothing to do right now: there is nothing this fix could change.</p>}
+      {plan && plan.steps.length === 0 && phase.kind === "preview" && <p className="muted">Nothing to do right now: this is already done, or there is nothing this fix could change.</p>}
       {blocked && phase.kind === "preview" && (
         <AlertBanner
           tone="info"
@@ -112,7 +111,7 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
         <ul className="fix-steps">
           {plan.steps.map((s) => {
             const r = result(s.id);
-            const locked = isAdmin(s.call.op) && !access.full;
+            const locked = callIsAdmin(s.call) && !access.full;
             const on = chosen.has(s.id) && !locked;
             return (
               <li key={s.id} className={on ? "" : "off"}>
@@ -143,7 +142,7 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
                   <span className="fix-step-desc">{r ? r.message : s.description}</span>
                   <span className="fix-step-tags">
                     <StatusBadge variant={UNDO[s.undo][0]} label={UNDO[s.undo][1]} />
-                    {!USER_CALLS.includes(s.call.op) && <StatusBadge variant="off" label="Admin" />}
+                    {callIsAdmin(s.call) && <StatusBadge variant="off" label="Admin" />}
                     {s.size ? <span className="muted">{bytes(s.size)}</span> : null}
                   </span>
                   {mode === "expert" && <code className="fix-cmd">{s.command}</code>}

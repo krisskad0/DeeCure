@@ -20,6 +20,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Optimize offers the 80% charge limit to every laptop whose battery supports one**, not only to laptops on mains most of the last 14 days. The text says each charge then lasts about a fifth less. A Fast charge mode is also offered a gentler one without the 14 days rule.
 
+### Fixed
+
+- After a fix from Optimize, the item showed as still needed until the next full scan, so it could be applied twice. Now only that item's part is checked again at once, and the item shows as done.
+- A fix with nothing left to change (for example, applied a moment ago) said "The fix could not run". It now says there is nothing to do.
+- The fix preview marked some steps that run as you as "Admin": the keyboard backlight, radios, Wi-Fi power saving, firmware updates, and your own Flatpak cleanup. In Basic access they were locked for no reason.
+
 ## [0.1.0-alpha.11] - 2026-11-16
 
 ### Added
