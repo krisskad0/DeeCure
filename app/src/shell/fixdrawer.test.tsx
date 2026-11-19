@@ -17,6 +17,8 @@ const PLAN: FixPlan = {
   ],
 };
 const applied = vi.fn();
+/** What the agent answers after the fix: the finding is gone unless a test says otherwise. */
+const status = vi.fn(() => Promise.resolve({ generated_at: 0, findings: [] as { rule: string; subject?: string }[] }));
 
 vi.mock("@tauri-apps/api/event", () => ({ listen: () => Promise.resolve(() => undefined) }));
 vi.mock("../api", async (orig) => ({
@@ -26,7 +28,7 @@ vi.mock("../api", async (orig) => ({
     applied(chosen);
     return Promise.resolve({ run: { id: 7, action: plan.action, title: plan.title, started_at: 0, finished_at: 1, status: "succeeded", steps: chosen.map((id) => ({ id, title: id, ok: true, message: "done" })) } });
   },
-  getStatus: () => Promise.resolve({ generated_at: 0, findings: [] }),
+  getStatus: () => status(),
   getHelperStatus: () => Promise.resolve(true),
 }));
 
@@ -52,6 +54,32 @@ describe("fix drawer", () => {
     await waitFor(() => expect(screen.getByText("DeeCure checked again: the issue is gone.")).toBeTruthy());
     expect(applied).toHaveBeenCalledWith(["trash"]);
     expect(done).toHaveBeenCalled();
+  });
+
+  it("looks again a few times before saying the problem is still there", async () => {
+    setAccess("full");
+    const open = { generated_at: 0, findings: [{ rule: "storage.root_almost_full" }] };
+    // The agent's next check takes a while: the finding is still open at the first two looks.
+    status.mockResolvedValueOnce(open).mockResolvedValueOnce(open);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(<FixDrawer action="storage.free_space" onClose={() => undefined} />);
+    await waitFor(() => expect(screen.getByText("Empty Trash")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: /Apply/ }));
+    await vi.advanceTimersByTimeAsync(7000);
+    vi.useRealTimers();
+    await waitFor(() => expect(screen.getByText("DeeCure checked again: the issue is gone.")).toBeTruthy());
+    // Still open after every look: then it says so.
+    cleanup();
+    status.mockResolvedValue(open);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(<FixDrawer action="storage.free_space" onClose={() => undefined} />);
+    await waitFor(() => expect(screen.getByText("Empty Trash")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: /Apply/ }));
+    await vi.advanceTimersByTimeAsync(9000);
+    vi.useRealTimers();
+    await waitFor(() => expect(screen.getByText("Done, but the problem is still there")).toBeTruthy());
+    status.mockReset();
+    status.mockImplementation(() => Promise.resolve({ generated_at: 0, findings: [] }));
   });
 
   it("in Basic access, admin steps are locked and the rest still works", async () => {

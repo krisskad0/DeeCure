@@ -20,6 +20,9 @@ export const useFix = () => useContext(FixContext);
 
 const UNDO: Record<string, [Parameters<typeof StatusBadge>[0]["variant"], string]> = { full: ["ok", "Reversible"], regenerates: ["info", "Regenerates"], none: ["warn", "Irreversible"] };
 
+
+/** When to look whether the finding is gone after a fix: about 8.5 s in all at most. */
+export const VERIFY_WAITS_MS = [2500, 2000, 2000, 2000];
 type Phase = { kind: "loading" } | { kind: "error"; message: string } | { kind: "preview" } | { kind: "running" } | { kind: "done"; fixed: boolean | null };
 
 export function FixDrawer({ action, subject, onClose, onDone }: { action: string; subject?: string; onClose: () => void; onDone?: () => void }) {
@@ -58,12 +61,16 @@ export function FixDrawer({ action, subject, onClose, onDone }: { action: string
         picked.map((s) => s.id),
       );
       setResults(run.steps);
-      // The agent checks again right away; give it a moment, then see if the finding is gone.
+      // The agent checks again right away. Some checks need a few seconds (after a package
+      // install it reads apt again), so look again a few times before saying it is still there.
       let fixed: boolean | null = null;
       if (plan.rule && run.status === "succeeded") {
-        await new Promise((r) => setTimeout(r, 2500));
-        const status = await getStatus().catch(() => null);
-        fixed = status ? !status.findings.some((f) => f.rule === plan.rule && (plan.subject === undefined || f.subject === plan.subject || f.subject === undefined)) : null;
+        for (const wait of VERIFY_WAITS_MS) {
+          await new Promise((r) => setTimeout(r, wait));
+          const status = await getStatus().catch(() => null);
+          fixed = status ? !status.findings.some((f) => f.rule === plan.rule && (plan.subject === undefined || f.subject === plan.subject || f.subject === undefined)) : null;
+          if (fixed !== false) break;
+        }
       }
       setPhase({ kind: "done", fixed });
       onDone?.();

@@ -3,8 +3,9 @@
 //! Pending package updates, from `apt list --upgradable`.
 //!
 //! The command only reads apt's package lists: it needs no admin rights, takes no lock,
-//! and changes nothing. It runs at most once an hour; between runs the last answer is
-//! repeated, so rules always have fresh facts.
+//! and changes nothing. It runs once an hour, and again as soon as the installed packages
+//! (`/var/lib/dpkg/status`) or the package lists change, so a check right after an install
+//! sees it. Between runs the last answer is repeated, so rules always have fresh facts.
 
 use std::io;
 use std::process::Stdio;
@@ -118,6 +119,23 @@ pub struct Updates {
     /// The apt read in progress. It runs on its own, so the minute's collection (and the
     /// first result after start) never waits for apt; its answer is used once it is ready.
     running: Option<tokio::task::JoinHandle<io::Result<Vec<Upgradable>>>>,
+    /// When the installed packages and the package lists last changed, as seen when the newest
+    /// read started.
+    read_for: Option<Changes>,
+}
+
+/// When the installed packages (`dpkg/status`) and the package lists (apt's success stamp)
+/// last changed.
+type Changes = (Option<Timestamp>, Option<Timestamp>);
+
+/// How long one collection waits for a read started because packages changed. A read takes
+/// about a second; a slower one goes on in the background.
+const WAIT: Duration = Duration::from_secs(10);
+
+/// True when apt must be read again: no answer yet, an answer older than `EVERY`, or packages
+/// or lists changed since the newest read started.
+pub fn needs_read(age: Option<Duration>, read_for: Option<Changes>, now: Changes) -> bool {
+    age.is_none_or(|a| a >= EVERY) || read_for.is_some_and(|r| r != now)
 }
 
 impl Updates {
@@ -126,6 +144,28 @@ impl Updates {
 
     /// Pending updates and whether a restart is needed.
     pub async fn collect(&mut self, root: &SystemRoot, now: Timestamp) -> io::Result<Sample> {
+        let changes: Changes = (
+            modified(&root.path("/var/lib/dpkg/status")),
+            modified(&root.path("/var/lib/apt/periodic/update-success-stamp")),
+        );
+        let changed = self.read_for.is_some_and(|r| r != changes);
+        let age = self.last.as_ref().map(|(at, _)| at.elapsed());
+        if needs_read(age, self.read_for, changes)
+            && self.running.is_none()
+            && root.path("/usr/bin/apt").exists()
+        {
+            self.running = Some(tokio::spawn(read_pending()));
+            self.read_for = Some(changes);
+        }
+        // After an install or an apt update, wait a little for the new answer, so the check
+        // right after a fix sees it. Never at start: the first result does not wait for apt.
+        if changed && self.last.is_some() {
+            let until = Instant::now() + WAIT;
+            while self.running.as_ref().is_some_and(|r| !r.is_finished()) && Instant::now() < until
+            {
+                tokio::time::sleep(Duration::from_millis(50)).await;
+            }
+        }
         // Use the background read once it has finished.
         if self.running.as_ref().is_some_and(|r| r.is_finished())
             && let Some(running) = self.running.take()
@@ -143,13 +183,6 @@ impl Updates {
                 ),
             };
             self.last = Some((Instant::now(), info));
-        }
-        let stale = self
-            .last
-            .as_ref()
-            .is_none_or(|(at, _)| at.elapsed() >= EVERY);
-        if stale && self.running.is_none() && root.path("/usr/bin/apt").exists() {
-            self.running = Some(tokio::spawn(read_pending()));
         }
         let mut sample = Sample::default();
         let restart = root.path("/run/reboot-required").exists();
@@ -242,6 +275,32 @@ git/noble-updates 1:2.43.0-1ubuntu7.2 amd64 [upgradable from: 1:2.43.0-1ubuntu7.
 openssl/noble-updates,noble-security 3.0.13-0ubuntu3.5 amd64 [upgradable from: 3.0.13-0ubuntu3.4]
 code/stable 1.95.0-1730 amd64 [upgradable from: 1.94.2-1728]
 ";
+
+    #[test]
+    fn apt_is_read_again_after_an_install_or_a_list_update() {
+        let t = |ms| Some(Timestamp(ms));
+        let before = (t(1), t(10));
+        // No answer yet, or an old one.
+        assert!(needs_read(None, None, before));
+        assert!(needs_read(Some(EVERY), Some(before), before));
+        // A fresh answer, nothing changed.
+        assert!(!needs_read(
+            Some(Duration::from_secs(60)),
+            Some(before),
+            before
+        ));
+        // Packages installed (dpkg status newer), or the lists updated.
+        assert!(needs_read(
+            Some(Duration::from_secs(60)),
+            Some(before),
+            (t(2), t(10))
+        ));
+        assert!(needs_read(
+            Some(Duration::from_secs(60)),
+            Some(before),
+            (t(1), t(11))
+        ));
+    }
 
     #[test]
     fn parses_upgradable_security_first() {
