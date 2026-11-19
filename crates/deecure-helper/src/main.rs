@@ -731,7 +731,8 @@ fn apply_saved() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-/// Sets the kept highest CPU speed for the new power source (90-deecure-power.rules).
+/// Sets the kept highest CPU speed and turbo for the new power source, and a kept charge limit
+/// or charge mode the firmware lost (90-deecure-power.rules).
 /// Quiet and quick when nothing is kept, because udev runs it on every charger change.
 fn power_source_changed() -> ExitCode {
     let root = Path::new("/");
@@ -750,6 +751,14 @@ fn power_source_changed() -> ExitCode {
     };
     for key in ["battery_cpu_limit", "battery_turbo"] {
         if let Some(o) = saved::apply_setting(root, key) {
+            let input = json!({"on": on, "setting": key});
+            audit(0, "PowerSourceChanged", &input, o.ok, &o.message);
+        }
+    }
+    // Some firmware forgets a charge limit or switches the charge mode: set a kept one again,
+    // only when it is no longer there, so nothing is written on a normal plug in.
+    for key in saved::charge_keys(root) {
+        if let Some(o) = saved::apply_if_lost(root, &key) {
             let input = json!({"on": on, "setting": key});
             audit(0, "PowerSourceChanged", &input, o.ok, &o.message);
         }

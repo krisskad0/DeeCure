@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Power saver on battery** (Power › Power Profile › Power controls, and on Optimize): when you unplug the charger, the power mode changes to Power saver, and when you plug it in again, it goes back to the mode you had. A mode you pick yourself stays until the next unplug. It needs no password: DeeCure switches the mode as you.
+- **Turbo on battery** now has its own row in Power › Power Profile › Power controls. Before, it could be turned off only from Optimize.
+- **A new warning: "Battery charges past its limit".** It shows when the battery keeps charging 3 points or more above its stop limit for 10 minutes, which means the firmware ignores the limit. On some laptops (Dell) the limit works only in the Custom charge mode, and the warning says so.
+- **A charge limit or charge mode set in DeeCure is set again when the charger is plugged in**, if the firmware lost it. When the value is still there, nothing is written.
+- **Optimize: "Make the battery last longer"**: the average draw on battery over the last 7 days, the share of the battery used an hour, how long a full charge lasts, and the 3 biggest users. It is offered when a full charge lasts under 8 hours, with what to do.
+
+### Changed
+
+- **Optimize offers the 80% charge limit to every laptop whose battery supports one**, not only to laptops on mains most of the last 14 days. The text says each charge then lasts about a fifth less. A Fast charge mode is also offered a gentler one without the 14 days rule.
+
 ## [0.1.0-alpha.11] - 2026-11-16
 
 ### Added

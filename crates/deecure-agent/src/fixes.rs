@@ -745,6 +745,32 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 Call::SetBatteryTurbo { on },
             )]
         }
+        "power.set_battery_saver" => {
+            let on = on_off(need(subject, "on|off")?)?;
+            subtitle = "DeeCure switches the power mode as you, no password".into();
+            vec![step(
+                "battery-saver",
+                if on {
+                    "Use Power saver on battery"
+                } else {
+                    "Stop switching to Power saver on battery"
+                },
+                if on {
+                    "When you unplug the charger, the power mode changes to Power saver. When you plug it in again, it goes back to the mode you had. If the laptop is on battery now, Power saver turns on within a few seconds. If you pick another mode yourself, DeeCure leaves it until the next unplug."
+                } else {
+                    "The power mode stays as you set it. If DeeCure turned on Power saver, it goes back to the mode you had."
+                }
+                .into(),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "on unplug: powerprofilesctl set power-saver ({})",
+                    if on { "on" } else { "off" }
+                ),
+                Call::SetBatterySaver { on },
+            )]
+        }
         "storage.cap_journal" => {
             let raw = need(subject, "megabytes|off")?;
             let mb = if raw == "off" {
@@ -1201,6 +1227,11 @@ mod tests {
                 "power.set_battery_turbo",
                 Some("off"),
                 Call::SetBatteryTurbo { on: false },
+            ),
+            (
+                "power.set_battery_saver",
+                Some("on"),
+                Call::SetBatterySaver { on: true },
             ),
             (
                 "storage.cap_journal",

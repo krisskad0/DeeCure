@@ -11,8 +11,8 @@ It tells one short story in the app's own look (colours from app/src/tokens.css)
   6. The end card: name, promise, and where to get it.
 
 The numbers are real counts: 10 layers, more than 150 readings (the 153 Expert readings in
-docs/01-product/expert-coverage.md, plus the basic ones), 55 warnings (one per file in rules/),
-and 47 fixes. The layer list matches the site's
+docs/01-product/expert-coverage.md, plus the basic ones), 56 warnings (one per file in rules/),
+and 48 fixes. The layer list matches the site's
 "How deep it looks" section. CSS animation only (no script), so GitHub plays it. With
 "reduce motion" it shows the "See it" step without moving. The size is 1080 x 1350, so the
 same drawing can be recorded as a portrait video for social posts.
@@ -64,7 +64,7 @@ T = END[1]
 STATIC = "view"  # the scene shown with "reduce motion"
 
 # The layers, from the surface down: (name, what it looks at, warnings, a finding here?)
-# The warnings add up to the 55 rule files in rules/.
+# The warnings add up to the 56 rule files in rules/.
 LAYERS = [
     ("Apps and processes", "CPU, memory, power per app", 3, False),
     ("Services, start-up, and jobs", "units, boot, timers, cron", 3, False),
@@ -74,12 +74,12 @@ LAYERS = [
     ("Security, accounts, and privacy", "firewall, AppArmor, SSH", 5, True),
     ("Storage and backups", "space, days until full, ext4", 10, True),
     ("Kernel, drivers, and firmware", "crashes, Secure Boot, TPM", 8, False),
-    ("Power, battery, and sleep", "battery health, charger, suspend", 5, False),
+    ("Power, battery, and sleep", "battery health, charger, suspend", 6, False),
     ("Hardware and devices", "sensors, SSD, PCIe, USB-C", 11, False),
 ]
 WARNINGS = sum(n for _, _, n, _ in LAYERS)
-READINGS, FIXES = 150, 47  # 150+: the Expert readings alone are 153
-assert WARNINGS == 55
+READINGS, FIXES = 150, 48  # 150+: the Expert readings alone are 153
+assert WARNINGS == 56
 SCAN_START, SCAN_STEP, SCAN_LEN = DEEP[0] + 1.0, 0.5, 0.42
 LSTART = [SCAN_START + i * SCAN_STEP for i in range(len(LAYERS))]
 LDONE = [t + SCAN_LEN for t in LSTART]

@@ -62,8 +62,10 @@ journalctl -b -1 -u systemd-suspend.service   # what happened during the last su
 **Fix it with DeeCure:**
 
 1. Find the app in **Power › Battery**, then close it, or end it in **Processes**.
-2. Open **Power › Power Profile** and use the Power saver mode on battery.
+2. Open **Power › Power Profile** and use the Power saver mode on battery. In Expert, **Power controls › Power saver on battery** does this for you: Power saver turns on when you unplug, and your mode comes back when you plug in.
 3. Open **Optimize**. It offers only what was measured on your laptop:
+   - **Make the battery last longer**, when a full charge lasts under 8 hours at your real draw. It shows the watts, the hours, and the 3 biggest users.
+   - **Use Power saver on battery**, when the laptop ran on battery for an hour or more in the last 7 days.
    - **Turn off turbo on battery**, when the CPU often slowed down from heat on battery in the last 7 days.
    - **Power saving for a device**, when that device supports it and has it off.
    - **A different power mode**, when Performance runs on battery for a long time.
@@ -93,7 +95,8 @@ sudo powertop                             # what uses power right now
 
 1. Lost capacity cannot come back, but you can slow down further wear.
 2. Open **Power › Power Profile › Power controls** (Expert view) and set a **charge limit**: Full 100%, Balanced 90%, Long life 80%, or your own start and stop values. It is kept after a restart.
-3. **Optimize** suggests a charge limit only when the laptop was on the charger most of the last 14 days.
+3. **Optimize** suggests the 80% limit whenever the battery supports one and stops above 80%.
+4. If the battery still charges past the limit, DeeCure warns "Battery charges past its limit". The firmware is not following the limit. On some laptops (Dell) the limit works only in the Custom charge mode: set it in Power controls, or in the firmware setup (BIOS). A limit set in DeeCure is set again each time you plug in the charger.
 
 **By hand:**
 

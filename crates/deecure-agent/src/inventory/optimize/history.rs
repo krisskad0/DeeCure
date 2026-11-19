@@ -88,21 +88,17 @@ pub fn lid_closed_wakes(log: &str) -> usize {
 pub async fn checks(agent: &Agent) -> Vec<Check> {
     let now = deecure_core::Timestamp::now().0;
     let detail = power_detail::read(&agent.root);
+    let info = power::read(agent).await;
     let mut out = Vec::new();
     let mains = series(agent, "power.on_mains", 14 * DAY);
     if let Some(b) = detail.batteries.first() {
-        let usage = mains_share(&mains, now);
-        let enough = usage.is_some_and(|(_, days)| days >= 13.5);
-        let mostly = usage.is_some_and(|(share, _)| share >= 0.7);
-        let text = |what: &str| match usage {
-            None => "No power readings yet: DeeCure keeps one a minute.".to_owned(),
-            Some((_, days)) if days < 13.5 => {
-                format!("{days:.0} of 14 days of power readings so far; {what} after 14 days.")
-            }
-            Some((share, _)) => format!(
-                "On mains {:.0}% of the time over the last 14 days.",
-                share * 100.0
+        let usage = match mains_share(&mains, now) {
+            Some((share, days)) if days >= 1.0 => format!(
+                " On mains {:.0}% of the time over the last {} days.",
+                share * 100.0,
+                days.round().min(14.0)
             ),
+            _ => String::new(),
         };
         if let Some(stop) = b.charge_stop {
             let subject = format!(
@@ -116,9 +112,12 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
                 if stop <= 80 {
                     format!("Battery {} already stops at {stop}%.", b.name)
                 } else {
-                    text("checked")
+                    format!(
+                        "Battery {} charges to {stop}%. Stopping at 80% slows its wear; each charge then lasts about a fifth less.{usage}",
+                        b.name
+                    )
                 },
-                enough && mostly && stop > 80,
+                stop > 80,
                 "power.set_charge_limits",
                 Some(subject),
                 "admin",
@@ -133,14 +132,15 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
                 &format!("power.charge_mode:{}", b.name),
                 "Use a gentler charge mode",
                 if fast {
-                    text("checked")
+                    "The charge mode is Fast: it charges quickly but wears the battery more."
+                        .to_owned()
                 } else {
                     format!(
                         "The charge mode is {}.",
                         mode.current.as_deref().unwrap_or("not reported")
                     )
                 },
-                fast && enough && mostly && gentle.is_some(),
+                fast && gentle.is_some(),
                 "power.set_charge_mode",
                 gentle.map(|g| format!("{}:{g}", b.name)),
                 "admin",
@@ -162,15 +162,197 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
             Some("off".into()),
             "admin",
         ));
-        out.push(power_mode(agent, &mains, now).await);
+        let week: Vec<(i64, f64)> = mains
+            .iter()
+            .filter(|(t, _)| now - t <= 7 * DAY)
+            .copied()
+            .collect();
+        out.push(battery_saver(
+            &info,
+            minutes_on_battery(&week),
+            detail.battery_saver,
+        ));
+        out.push(battery_drain(agent, &b.name, &info, &week, now));
+        out.push(power_mode(&info, &mains, now));
         out.push(lid_wakes(&detail).await);
     }
     out.push(zswap(agent));
     out
 }
 
-async fn power_mode(agent: &Agent, mains: &[(i64, f64)], now: i64) -> Check {
-    let info = power::read(agent).await;
+/// Minutes on battery in `mains` (one point a minute in the last 7 days).
+pub fn minutes_on_battery(mains: &[(i64, f64)]) -> usize {
+    mains.iter().filter(|(_, v)| *v < 0.5).count()
+}
+
+/// The average draw on battery in watts, and the minutes it covers: only readings taken while no
+/// charger was plugged in, matched by time with the power source readings.
+pub fn battery_draw(mains: &[(i64, f64)], watts: &[(i64, f64)]) -> Option<(f64, usize)> {
+    let on: HashMap<i64, f64> = mains.iter().copied().collect();
+    let draws: Vec<f64> = watts
+        .iter()
+        .filter(|(t, w)| *w > 0.0 && on.get(t).is_some_and(|v| *v < 0.5))
+        .map(|(_, w)| *w)
+        .collect();
+    (!draws.is_empty()).then(|| (draws.iter().sum::<f64>() / draws.len() as f64, draws.len()))
+}
+
+/// How long a full charge lasts at the measured draw before Optimize offers help, in hours.
+pub const SHORT_HOURS: f64 = 8.0;
+
+fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool) -> Check {
+    let title = "Use Power saver on battery";
+    let (offered, measured) = if info.profile.is_none() {
+        (
+            false,
+            "The power mode is not available (power-profiles-daemon).".to_owned(),
+        )
+    } else if on {
+        (
+            false,
+            "Power saver already turns on by itself when you unplug.".to_owned(),
+        )
+    } else if minutes < 60 {
+        (
+            false,
+            format!(
+                "{} on battery in the last 7 days: not enough to judge.",
+                count(minutes, "minute")
+            ),
+        )
+    } else {
+        (
+            true,
+            format!(
+                "{} on battery in the last 7 days, and the power mode stays the same when you unplug.",
+                hours_text(minutes as f64 / 60.0)
+            ),
+        )
+    };
+    fix(
+        "power.battery_saver",
+        title,
+        measured,
+        offered,
+        "power.set_battery_saver",
+        Some("on".into()),
+        "you",
+    )
+}
+
+fn battery_drain(
+    agent: &Agent,
+    battery: &str,
+    info: &power::PowerInfo,
+    mains: &[(i64, f64)],
+    now: i64,
+) -> Check {
+    let title = "Make the battery last longer";
+    let what = "Turn on Power saver on battery and turbo off on battery (Power › Power Profile › Power controls). Lower the screen brightness: the screen is often the biggest single user. On battery, close the apps at the top of Power › Battery › Battery use by app when you do not need them.";
+    let since = deecure_core::Timestamp(now - 7 * DAY);
+    let (watts, top) = {
+        let store = crate::store::lock(&agent.store);
+        let watts = store
+            .metrics(
+                "battery.power",
+                Some(battery),
+                since,
+                deecure_core::Timestamp(now),
+            )
+            .unwrap_or_default()
+            .into_iter()
+            .map(|m| (m.at.0, m.value))
+            .collect::<Vec<_>>();
+        let top = store
+            .metric_sums(
+                crate::collect::app_battery::METRIC,
+                since,
+                deecure_core::Timestamp(now),
+            )
+            .unwrap_or_default();
+        (watts, top)
+    };
+    let full = info
+        .batteries
+        .iter()
+        .find(|b| b.name == battery)
+        .and_then(|b| b.full_wh)
+        .filter(|f| *f > 0.0);
+    let (Some((w, minutes)), Some(full)) = (battery_draw(mains, &watts), full) else {
+        return advice(
+            "power.battery_drain",
+            title,
+            "No readings on battery in the last 7 days.".into(),
+            false,
+            what,
+        );
+    };
+    if minutes < 60 {
+        return advice(
+            "power.battery_drain",
+            title,
+            format!(
+                "{} on battery in the last 7 days: not enough to judge.",
+                count(minutes, "minute")
+            ),
+            false,
+            what,
+        );
+    }
+    let hours = full / w;
+    let measured = format!(
+        "On battery, the laptop used {w:.1} W on average in the last 7 days, about {:.0}% of the battery an hour. A full charge ({full:.0} Wh now) lasts about {}.{}",
+        w / full * 100.0,
+        hours_text(hours),
+        top_users(&top)
+    );
+    advice(
+        "power.battery_drain",
+        title,
+        measured,
+        hours < SHORT_HOURS,
+        what,
+    )
+}
+
+/// " Most of it: Google Chrome 30%, the screen and system at rest 25%, …" from the per-app
+/// estimate (Power › Battery), or nothing when there is none.
+pub fn top_users(sums: &[(Option<String>, f64)]) -> String {
+    let total: f64 = sums.iter().map(|(_, v)| v.max(0.0)).sum();
+    if total <= 0.0 {
+        return String::new();
+    }
+    let mut list: Vec<(String, f64)> = sums
+        .iter()
+        .filter_map(|(s, v)| {
+            let (kind, name) = super::super::app_battery::parse(s.as_deref()?);
+            let label = match kind.as_str() {
+                "rest" => "the screen, Wi-Fi, and the system at rest".to_owned(),
+                "other" => "small apps together".to_owned(),
+                _ => name,
+            };
+            Some((label, *v))
+        })
+        .collect();
+    list.sort_by(|a, b| b.1.total_cmp(&a.1));
+    let parts: Vec<String> = list
+        .iter()
+        .take(3)
+        .map(|(n, v)| format!("{n} {:.0}%", v / total * 100.0))
+        .collect();
+    format!(" Most of it (an estimate): {}.", parts.join(", "))
+}
+
+/// "7.2 hours", "45 minutes".
+fn hours_text(hours: f64) -> String {
+    if hours < 1.0 {
+        count((hours * 60.0).round() as usize, "minute")
+    } else {
+        format!("{hours:.1} hours")
+    }
+}
+
+fn power_mode(info: &power::PowerInfo, mains: &[(i64, f64)], now: i64) -> Check {
     let title = "Change the power mode";
     let hour: Vec<f64> = mains
         .iter()
@@ -180,7 +362,7 @@ async fn power_mode(agent: &Agent, mains: &[(i64, f64)], now: i64) -> Check {
     let steady = hour.len() >= 50;
     let all_mains = steady && hour.iter().all(|v| *v >= 0.5);
     let all_battery = steady && hour.iter().all(|v| *v < 0.5);
-    let profile = info.profile.unwrap_or_default();
+    let profile = info.profile.clone().unwrap_or_default();
     let (offered, why) = match profile.as_str() {
         "power-saver" if all_mains => (
             true,
@@ -324,6 +506,37 @@ mod tests {
         assert!((share - 12.0 / 14.0).abs() < 1e-9);
         assert!((days - 14.0).abs() < 1e-9);
         assert!(mains_share(&[], 0).is_none());
+    }
+
+    #[test]
+    fn the_draw_counts_only_readings_on_battery() {
+        let mains = [(1, 1.0), (2, 0.0), (3, 0.0), (4, 0.0), (5, 1.0)];
+        // Minute 1 and 5 on the charger; minute 4 has no power reading.
+        let watts = [(1, 20.0), (2, 4.0), (3, 6.0), (5, 25.0)];
+        assert_eq!(battery_draw(&mains, &watts), Some((5.0, 2)));
+        assert_eq!(minutes_on_battery(&mains), 3);
+        assert_eq!(battery_draw(&[(1, 1.0)], &[(1, 20.0)]), None);
+    }
+
+    #[test]
+    fn the_top_users_are_named_with_their_share() {
+        let sums = [
+            (Some("app:Google Chrome".to_owned()), 300.0),
+            (Some("rest".to_owned()), 500.0),
+            (Some("app:Visual Studio Code".to_owned()), 150.0),
+            (Some("other".to_owned()), 50.0),
+        ];
+        assert_eq!(
+            top_users(&sums),
+            " Most of it (an estimate): the screen, Wi-Fi, and the system at rest 50%, Google Chrome 30%, Visual Studio Code 15%."
+        );
+        assert_eq!(top_users(&[]), "");
+    }
+
+    #[test]
+    fn hours_read_well() {
+        assert_eq!(hours_text(7.04), "7.0 hours");
+        assert_eq!(hours_text(0.75), "45 minutes");
     }
 
     #[test]

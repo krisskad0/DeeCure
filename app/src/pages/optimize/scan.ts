@@ -28,7 +28,7 @@ export const PARTS: { id: string; label: string; icon: IconName; what: string }[
   { id: "devices", label: "Devices", icon: "usb", what: "Power saving, PCIe link width, and USB speed" },
   { id: "hardware", label: "Hardware health", icon: "chip", what: "Heat slowdowns, battery health, restart needed, and memory errors" },
   { id: "cleanup", label: "Space, packages, and updates", icon: "layers", what: "Trash, caches, logs, snaps, Docker, unused packages, updates, firewall, and file watches" },
-  { id: "history", label: "Usage history", icon: "hist", what: "Charge limit, power mode, turbo on battery, wake-ups, and swapping" },
+  { id: "history", label: "Usage history", icon: "hist", what: "Charge limit, battery drain, power saver and turbo on battery, power mode, wake-ups, and swapping" },
   { id: "drivers", label: "Drivers and firmware", icon: "mon", what: "Video driver, second graphics card, recommended drivers, firmware, and DKMS" },
 ];
 

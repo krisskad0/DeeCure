@@ -384,6 +384,8 @@ export interface PowerDetail {
   kept?: KeptSetting[];
   /** What closing the lid does. Older agents do not send it. */
   lid?: LidSettings;
+  /** "Power saver on battery" is on. Older agents do not send it. */
+  battery_saver?: boolean;
 }
 
 /** What closing the lid does: from logind's files, and what logind runs with now. */

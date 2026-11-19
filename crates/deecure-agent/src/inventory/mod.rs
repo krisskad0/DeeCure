@@ -36,7 +36,7 @@ mod os;
 pub(crate) mod packages;
 mod pci_detail;
 mod platform_detail;
-mod power;
+pub(crate) mod power;
 mod power_detail;
 mod privacy;
 mod process_detail;

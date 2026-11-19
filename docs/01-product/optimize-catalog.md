@@ -36,7 +36,8 @@ Every item follows the fix engine's rules: a preview of each step, your OK first
 | Stop "wait for network" from delaying boot | It delays boot by more than 2 seconds, and nothing on this computer needs the network before sign-in (no network mounts, no service that wants `network-online.target`) | Turns off `NetworkManager-wait-online` | Yes | Admin | ✅ On Optimize (a service counts when it wants `network-online.target` and started at this boot) |
 | Turn off a service that slows boot | It is on the boot's critical chain, and it is not needed (for example Bluetooth on a computer without Bluetooth) | Turns the service off | Yes | Admin | Partly: turn off any service exists; the "not needed" check is new |
 | Turn off a startup app that slows sign-in | It used much CPU in the first minute after sign-in | Turns the startup app off | Yes | You | Partly: turning off exists; measuring CPU in the first minute after sign-in is new |
-| Limit battery charge to 80% | The battery supports a limit, and the laptop was on mains power most of the last 14 days | Sets the charge limits (start 75%, stop 80%); any other values are in Power › Power controls | Yes | Admin | ✅ On Optimize ("most" = 70% of 14 days; until 14 days of readings exist, the page says how many days it has) |
+| Limit battery charge to 80% | The battery supports a limit, and it stops above 80% now | Sets the charge limits (start 75%, stop 80%); any other values are in Power › Power Profile › Power controls | Yes | Admin | ✅ On Optimize (offered to every laptop whose battery supports a limit, since 2026-11-19; before, only when it was on mains 70% of 14 days. The text says each charge then lasts about a fifth less, and shows the time on mains) |
+| Use Power saver on battery | The laptop was on battery 60 minutes or more in the last 7 days, the power mode is available, and the setting is off | Switches to Power saver when the charger is unplugged, and back to the mode before it when it is plugged in. A mode the user picks by hand stays until the next unplug | Yes | You | ✅ On Optimize, and in Power › Power Profile › Power controls (the agent switches the mode, as the user, so no password) |
 | Change the power mode | Power saver on mains power, or Performance on battery for a long time | Changes the mode | Yes | You | ✅ On Optimize ("a long time" = the last hour, all on mains or all on battery) |
 | Install security updates, or all updates | Updates are waiting. Updates Ubuntu still rolls out in stages (phased) are left out until the rollout reaches this computer, as apt and Software Updater do | Installs them | No | Admin | ✅ On Optimize |
 | Turn on the firewall | The firewall is installed but off | Turns it on | Yes | Admin | ✅ On Optimize |
@@ -44,7 +45,7 @@ Every item follows the fix engine's rules: a preview of each step, your OK first
 | Rebuild a missing driver (DKMS) | A local driver is not built for an installed kernel | Builds it | Not needed (only adds) | Admin | ✅ On Optimize (only kernels that can start) |
 | Install the recommended driver | A device uses a fallback driver or none, and `ubuntu-drivers` recommends one | Installs that driver package | Yes (remove the package) | Admin | ✅ On Optimize (when Ubuntu's pick is not installed) |
 | Install missing firmware | The kernel log shows firmware that failed to load, and a newer `linux-firmware` has it | Updates `linux-firmware` | Yes (older version from the archive) | Admin | ✅ On Optimize (offered only when a newer linux-firmware is waiting) |
-| Use a gentler charge mode | Fast charging is on, and the laptop was on mains power most of the last 14 days | Sets the charge mode to Adaptive or Standard | Yes | Admin | ✅ On Optimize (Adaptive, else Standard; same 14 days rule) |
+| Use a gentler charge mode | Fast charging is on | Sets the charge mode to Adaptive or Standard | Yes | Admin | ✅ On Optimize (Adaptive, else Standard; no 14 days rule since 2026-11-19) |
 | Finish a broken package install | `dpkg --audit` reports half-installed packages | Finishes the pending step | No | Admin | ✅ On Optimize (keeps your own settings files) |
 
 ## Shown as advice only (no automatic change)
@@ -63,6 +64,7 @@ These cannot be fixed by software, so DeeCure shows the measurement and what to 
 | Use a faster SATA port or cable | A SATA drive links below the speed it supports | Needs the drive read (step 6): Linux reports only the controller's limit, not the drive's |
 | Replace the drive soon | Drive wear or media errors cross the drive's own warning level | New |
 | Replace the battery | Battery health is under 60% | ✅ On Optimize |
+| Make the battery last longer | A full charge lasts under 8 hours at the average draw on battery in the last 7 days (only readings with no charger plugged in, 60 minutes or more). It shows the draw in watts, the share of the battery used an hour, the hours a full charge lasts, and the 3 biggest users from the per-app estimate. The advice: Power saver and turbo off on battery, lower brightness, close the top apps on battery | ✅ On Optimize |
 | Restart to load new microcode or a new kernel | A newer one is installed but not running | ✅ On Optimize |
 | Replace a memory module | Uncorrected memory errors are reported | ✅ On Optimize |
 

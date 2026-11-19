@@ -257,6 +257,8 @@ pub struct PowerDetail {
     pub kept: Vec<KeptSetting>,
     /// What closing the lid does, from the files and from logind now.
     pub lid: super::logind::Lid,
+    /// "Power saver on battery" is on for this user (`crate::battery_saver`).
+    pub battery_saver: bool,
 }
 
 /// A device's path under `/sys/devices`, from a link such as `/sys/bus/usb/devices/3-6`.
@@ -543,6 +545,9 @@ pub fn read(root: &SystemRoot) -> PowerDetail {
         aspm_policy: text(root, "/sys/module/pcie_aspm/parameters/policy").map(|t| choice(&t)),
         wake_sources: wake_sources(root),
         usb: usb(root),
+        battery_saver: crate::battery_saver::is_on(
+            deecure_core::fix::battery_saver_file().as_deref(),
+        ),
     }
 }
 

@@ -257,6 +257,7 @@ export function PowerControls() {
   const wifi = net?.wifi.find((w) => w.uuid);
   const topKhz = Math.max(0, ...(cpu?.cores ?? []).map((c) => c.hardware_max_khz ?? c.max_khz ?? 0));
   const cpuLimit = p.kept?.find((k) => k.setting === "battery_cpu_limit")?.call.percent ?? undefined;
+  const turboOff = p.kept?.find((k) => k.setting === "battery_turbo")?.call.on === false;
   return (
     <Panel
       title="Power controls"
@@ -272,6 +273,26 @@ export function PowerControls() {
         <FieldRow label="CPU turbo" description={`Now ${cpu.turbo ? "on" : "off"}. Off: lower top speed, less heat, longer battery. Kept after restart.`}>
           <Button small onClick={() => openFix("power.set_turbo", cpu.turbo ? "off" : "on")}>
             Turn turbo {cpu.turbo ? "off" : "on"}
+          </Button>
+        </FieldRow>
+      )}
+      {p.batteries.length > 0 && p.battery_saver !== undefined && (
+        <FieldRow
+          label="Power saver on battery"
+          description={`Now ${p.battery_saver ? "on" : "off"}. On: the power mode changes to Power saver when you unplug, and back to your mode when you plug in. A mode you pick yourself stays until the next unplug. No password needed.`}
+        >
+          <Button small onClick={() => openFix("power.set_battery_saver", p.battery_saver ? "off" : "on")}>
+            {p.battery_saver ? "Stop switching" : "Switch on unplug"}
+          </Button>
+        </FieldRow>
+      )}
+      {p.batteries.length > 0 && cpu?.turbo !== undefined && (
+        <FieldRow
+          label="Turbo on battery"
+          description={`Now ${turboOff ? "off on battery" : "the same as on mains"}. Off on battery: lower top speed, less heat, longer battery. On mains, turbo follows the CPU turbo setting.`}
+        >
+          <Button small onClick={() => openFix("power.set_battery_turbo", turboOff ? "on" : "off")}>
+            {turboOff ? "Allow on battery" : "Turn off on battery"}
           </Button>
         </FieldRow>
       )}

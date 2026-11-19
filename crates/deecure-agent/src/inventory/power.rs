@@ -159,7 +159,8 @@ fn batteries(root: &SystemRoot) -> (Vec<BatteryInfo>, Option<bool>) {
     (list, on_ac)
 }
 
-async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
+/// The power mode now and the modes offered, from power-profiles-daemon.
+pub(crate) async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
     // The new name first; older releases only have the second.
     for (service, object) in [
         (
@@ -204,6 +205,37 @@ async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
         return Some((active, profiles));
     }
     None
+}
+
+/// Changes the power mode through power-profiles-daemon, as the user (no password).
+pub(crate) async fn set_profile(agent: &Agent, profile: &str) -> Result<(), String> {
+    for (service, object) in [
+        (
+            "org.freedesktop.UPower.PowerProfiles",
+            "/org/freedesktop/UPower/PowerProfiles",
+        ),
+        ("net.hadess.PowerProfiles", "/net/hadess/PowerProfiles"),
+    ] {
+        if !agent.is_running(Bus::System, service).await {
+            continue;
+        }
+        let bus = agent.bus(Bus::System).await.map_err(|e| e.to_string())?;
+        bus.call_method(
+            Some(service),
+            object,
+            Some("org.freedesktop.DBus.Properties"),
+            "Set",
+            &(
+                service,
+                "ActiveProfile",
+                zbus::zvariant::Value::from(profile),
+            ),
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+    Err("the power profiles service is not running".into())
 }
 
 async fn gsetting(schema: &str, key: &str) -> Option<String> {

@@ -17,8 +17,14 @@ use super::{Collector, Sample, SystemRoot, metric, minutes_since, read_trimmed};
 pub struct Battery {
     /// Minutes in a row plugged in while the battery drains, per battery.
     drain: std::collections::HashMap<String, f64>,
+    /// Minutes in a row charging above the battery's own stop limit, per battery.
+    over: std::collections::HashMap<String, f64>,
     last: Option<Timestamp>,
 }
+
+/// How many points above its stop limit a charging battery must be to count as over it. A
+/// battery can read a point or two over the limit when the charger stops.
+pub const OVER_BY: f64 = 3.0;
 
 /// What the battery's own `health` file says when something is wrong (anything but "Good").
 pub const FAULTS: &[&str] = &[
@@ -148,6 +154,29 @@ impl Collector for Battery {
                 Unit::Count,
                 now,
             ));
+            // The stop limit, and charging on above it (OVER_BY points or more): the firmware
+            // does not follow the limit (on some laptops it applies only in one charge mode).
+            if let Some(stop) = number(&supply, "charge_control_end_threshold") {
+                sample.metrics.push(metric(
+                    "battery.charge_stop",
+                    subject,
+                    stop,
+                    Unit::Percent,
+                    now,
+                ));
+                let over = stop < 100.0
+                    && status.as_deref() == Some("Charging")
+                    && number(&supply, "capacity").is_some_and(|c| c >= stop + OVER_BY);
+                let minutes = self.over.entry(name.clone()).or_insert(0.0);
+                *minutes = if over { *minutes + step } else { 0.0 };
+                sample.metrics.push(metric(
+                    "battery.over_limit_minutes",
+                    subject,
+                    *minutes,
+                    Unit::Count,
+                    now,
+                ));
+            }
             if text("status").as_deref() == Some("Discharging")
                 && let Some(seconds) = time_left(&supply)
             {
@@ -316,5 +345,57 @@ mod tests {
             Battery::default().collect(&root, Timestamp(0)).unwrap(),
             Sample::default()
         );
+    }
+
+    #[test]
+    fn charging_on_above_the_stop_limit_is_counted_in_minutes() {
+        let files = |status: &'static str, capacity: &'static str| {
+            vec![
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/status", status),
+                ("/sys/class/power_supply/BAT0/capacity", capacity),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "80\n",
+                ),
+            ]
+        };
+        let over = |sample: &Sample| value(sample, "battery.over_limit_minutes", Some("BAT0"));
+        let mut battery = Battery::default();
+        // At the limit, or a point over it: the charger is stopping, not over.
+        let root = fixture_root("battery-at-limit", &files("Charging\n", "81\n"));
+        let sample = battery.collect(&root, Timestamp(0)).unwrap();
+        assert_eq!(
+            value(&sample, "battery.charge_stop", Some("BAT0")),
+            Some(80.0)
+        );
+        assert_eq!(over(&sample), Some(0.0));
+        // Still charging at 93%: one minute over, then two.
+        let root = fixture_root("battery-over-limit", &files("Charging\n", "93\n"));
+        assert_eq!(
+            over(&battery.collect(&root, Timestamp(60_000)).unwrap()),
+            Some(1.0)
+        );
+        assert_eq!(
+            over(&battery.collect(&root, Timestamp(120_000)).unwrap()),
+            Some(2.0)
+        );
+        // Above the limit but not charging (charged before the limit was set): not over.
+        let root = fixture_root("battery-over-idle", &files("Not charging\n", "93\n"));
+        assert_eq!(
+            over(&battery.collect(&root, Timestamp(180_000)).unwrap()),
+            Some(0.0)
+        );
+        // No limit file: neither reading.
+        let root = fixture_root(
+            "battery-no-limit",
+            &[
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/status", "Charging\n"),
+            ],
+        );
+        let sample = Battery::default().collect(&root, Timestamp(0)).unwrap();
+        assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
+        assert_eq!(over(&sample), None);
     }
 }
