@@ -72,6 +72,7 @@ DeeCure's main job is to keep the computer healthy and free of errors, and to wa
 | Battery reports a fault | The battery says Dead, Overheat, Over voltage, Cold, or Failure | It may stop working or be unsafe | Critical | ✅ |
 | Battery ran empty | 2% or less and still draining. (Not by voltage: many batteries report their nominal voltage as the "design minimum", which is reached at normal charge, so a voltage rule would warn wrongly.) | Draining to empty again and again wears the cells | Warning | ✅ |
 | Charger too weak | Plugged in but the battery drains, for 10 minutes ("not charging" at a charge limit is normal and does not count) | The battery runs down even on the charger | Warning | ✅ |
+| Battery charges past its limit | The battery has a stop limit below 100%, and it keeps charging 3 points or more above it, for 10 minutes | The firmware ignores the limit, so the battery wears faster. On some laptops (Dell) the limit works only in the Custom charge mode | Warning | ✅ |
 
 ## Temperatures and fans
 

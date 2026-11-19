@@ -125,6 +125,12 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         Some("on|off"),
     ),
     (
+        "power.set_battery_saver",
+        "Use Power saver on battery",
+        Some("on|off"),
+    ),
+    ("power.save_when_away", "Save power when you are away", None),
+    (
         "storage.cap_journal",
         "Cap the system log size",
         Some("megabytes|off"),
@@ -384,6 +390,27 @@ pub enum Call {
         /// Turbo on battery.
         on: bool,
     },
+    /// Switch to the Power saver mode when the charger is unplugged, and back to the mode
+    /// before it when the charger is plugged in again. Kept in [`battery_saver_file`]; the
+    /// agent does the switching, as the user.
+    SetBatterySaver {
+        /// On or off.
+        on: bool,
+    },
+    /// Seconds without use before the screen turns off (GNOME `idle-delay`); 0 = never.
+    SetScreenIdle {
+        /// 0, or 60-3600.
+        seconds: u32,
+    },
+    /// What the laptop does after some time without use on battery (GNOME
+    /// `sleep-inactive-battery-type` and `-timeout`). Apps that play media or ask to stay awake
+    /// still keep it awake.
+    SetBatteryIdleSleep {
+        /// One of [`IDLE_ACTIONS`].
+        action: String,
+        /// 60-86400.
+        seconds: u32,
+    },
     /// Cap the system log (`SystemMaxUse=` in a journald drop-in), and shrink it to the cap now.
     /// `None` removes the drop-in.
     SetJournalCap {
@@ -476,6 +503,9 @@ impl Call {
                 | Call::SetStartupApp { .. }
                 | Call::EndProcess { .. }
                 | Call::SetPowerProfile { .. }
+                | Call::SetBatterySaver { .. }
+                | Call::SetScreenIdle { .. }
+                | Call::SetBatteryIdleSleep { .. }
                 | Call::SetKeyboardBacklight { .. }
                 | Call::SetRadio { .. }
                 | Call::SetWifiPowerSave { .. }
@@ -483,6 +513,29 @@ impl Call {
                 | Call::UpdateFirmware { .. }
         )
     }
+}
+
+/// What GNOME may do after some time without use (`sleep-inactive-*-type`).
+pub const IDLE_ACTIONS: &[&str] = &[
+    "nothing",
+    "suspend",
+    "hibernate",
+    "interactive",
+    "blank",
+    "logout",
+];
+
+/// Where "Power saver on battery" is kept for this user:
+/// `$XDG_CONFIG_HOME/deecure/battery-saver.json`, or `~/.config/deecure/battery-saver.json`.
+/// It holds `{"on": true}` or `{"on": false}`; a missing file means off.
+pub fn battery_saver_file() -> Option<std::path::PathBuf> {
+    let config = std::env::var_os("XDG_CONFIG_HOME")
+        .filter(|c| !c.is_empty())
+        .map(std::path::PathBuf::from)
+        .or_else(|| {
+            std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join(".config"))
+        })?;
+    Some(config.join("deecure/battery-saver.json"))
 }
 
 /// One step of a plan.
@@ -612,6 +665,11 @@ mod tests {
         );
         assert!(Call::CleanAptCache.admin());
         assert!(!Call::EmptyTrash.admin());
+        assert!(!Call::SetBatterySaver { on: true }.admin());
+        assert_eq!(
+            serde_json::to_value(Call::SetBatterySaver { on: true }).unwrap(),
+            json!({"op": "set_battery_saver", "on": true})
+        );
         assert!(
             serde_json::from_value::<Call>(json!({"op": "rm_rf", "path": "/"})).is_err(),
             "unknown operations cannot be read"

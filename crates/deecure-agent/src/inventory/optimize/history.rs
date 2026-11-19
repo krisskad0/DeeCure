@@ -88,21 +88,17 @@ pub fn lid_closed_wakes(log: &str) -> usize {
 pub async fn checks(agent: &Agent) -> Vec<Check> {
     let now = deecure_core::Timestamp::now().0;
     let detail = power_detail::read(&agent.root);
+    let info = power::read(agent).await;
     let mut out = Vec::new();
     let mains = series(agent, "power.on_mains", 14 * DAY);
     if let Some(b) = detail.batteries.first() {
-        let usage = mains_share(&mains, now);
-        let enough = usage.is_some_and(|(_, days)| days >= 13.5);
-        let mostly = usage.is_some_and(|(share, _)| share >= 0.7);
-        let text = |what: &str| match usage {
-            None => "No power readings yet: DeeCure keeps one a minute.".to_owned(),
-            Some((_, days)) if days < 13.5 => {
-                format!("{days:.0} of 14 days of power readings so far; {what} after 14 days.")
-            }
-            Some((share, _)) => format!(
-                "On mains {:.0}% of the time over the last 14 days.",
-                share * 100.0
+        let usage = match mains_share(&mains, now) {
+            Some((share, days)) if days >= 1.0 => format!(
+                " On mains {:.0}% of the time over the last {} days.",
+                share * 100.0,
+                days.round().min(14.0)
             ),
+            _ => String::new(),
         };
         if let Some(stop) = b.charge_stop {
             let subject = format!(
@@ -116,9 +112,12 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
                 if stop <= 80 {
                     format!("Battery {} already stops at {stop}%.", b.name)
                 } else {
-                    text("checked")
+                    format!(
+                        "Battery {} charges to {stop}%. Stopping at 80% slows its wear; each charge then lasts about a fifth less.{usage}",
+                        b.name
+                    )
                 },
-                enough && mostly && stop > 80,
+                stop > 80,
                 "power.set_charge_limits",
                 Some(subject),
                 "admin",
@@ -133,14 +132,15 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
                 &format!("power.charge_mode:{}", b.name),
                 "Use a gentler charge mode",
                 if fast {
-                    text("checked")
+                    "The charge mode is Fast: it charges quickly but wears the battery more."
+                        .to_owned()
                 } else {
                     format!(
                         "The charge mode is {}.",
                         mode.current.as_deref().unwrap_or("not reported")
                     )
                 },
-                fast && enough && mostly && gentle.is_some(),
+                fast && gentle.is_some(),
                 "power.set_charge_mode",
                 gentle.map(|g| format!("{}:{g}", b.name)),
                 "admin",
@@ -162,15 +162,209 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
             Some("off".into()),
             "admin",
         ));
-        out.push(power_mode(agent, &mains, now).await);
+        let week: Vec<(i64, f64)> = mains
+            .iter()
+            .filter(|(t, _)| now - t <= 7 * DAY)
+            .copied()
+            .collect();
+        let usage = battery_usage(agent, &b.name, &info, &week, now);
+        out.push(battery_saver(
+            &info,
+            minutes_on_battery(&week),
+            detail.battery_saver,
+            usage.as_deref(),
+        ));
+        out.push(power_mode(&info, &mains, now));
         out.push(lid_wakes(&detail).await);
     }
+    out.push(away(&info, !detail.batteries.is_empty()));
     out.push(zswap(agent));
     out
 }
 
-async fn power_mode(agent: &Agent, mains: &[(i64, f64)], now: i64) -> Check {
-    let info = power::read(agent).await;
+/// Minutes on battery in `mains` (one point a minute in the last 7 days).
+pub fn minutes_on_battery(mains: &[(i64, f64)]) -> usize {
+    mains.iter().filter(|(_, v)| *v < 0.5).count()
+}
+
+/// The average draw on battery in watts, and the minutes it covers: only readings taken while no
+/// charger was plugged in, matched by time with the power source readings.
+pub fn battery_draw(mains: &[(i64, f64)], watts: &[(i64, f64)]) -> Option<(f64, usize)> {
+    let on: HashMap<i64, f64> = mains.iter().copied().collect();
+    let draws: Vec<f64> = watts
+        .iter()
+        .filter(|(t, w)| *w > 0.0 && on.get(t).is_some_and(|v| *v < 0.5))
+        .map(|(_, w)| *w)
+        .collect();
+    (!draws.is_empty()).then(|| (draws.iter().sum::<f64>() / draws.len() as f64, draws.len()))
+}
+
+/// "5 minutes", "1 minute".
+fn minutes(seconds: u32) -> String {
+    count((seconds / 60) as usize, "minute")
+}
+
+/// What is wrong with the screen and sleep settings, if anything: the screen never turns off or
+/// stays on over 15 minutes; on battery the laptop never sleeps or waits over 30 minutes.
+pub fn away_needs(
+    screen: Option<u32>,
+    sleep: Option<u32>,
+    battery: bool,
+) -> (Option<String>, Option<String>) {
+    let screen = match screen {
+        Some(0) => Some("the screen never turns off by itself".to_owned()),
+        Some(s) if s > 900 => Some(format!(
+            "the screen stays on for {} without use",
+            minutes(s)
+        )),
+        _ => None,
+    };
+    let sleep = match sleep.filter(|_| battery) {
+        Some(0) => Some("on battery the laptop never sleeps by itself".to_owned()),
+        Some(s) if s > 1800 => Some(format!(
+            "on battery the laptop sleeps only after {} without use",
+            minutes(s)
+        )),
+        _ => None,
+    };
+    (screen, sleep)
+}
+
+/// One item for both settings that save power only while nobody uses the computer: the screen
+/// turning off, and sleep on battery. The fix preview has a step for each one needed.
+fn away(info: &power::PowerInfo, battery: bool) -> Check {
+    let (screen, sleep) = away_needs(
+        info.screen_blank_seconds,
+        info.suspend_on_battery_seconds,
+        battery,
+    );
+    let offered = screen.is_some() || sleep.is_some();
+    let measured = if offered {
+        let facts: Vec<String> = [screen, sleep].into_iter().flatten().collect();
+        let text = facts.join(", and ");
+        let mut first = text.chars();
+        format!(
+            "{}{}. {} power only while you are away: video, calls, and apps that ask to stay awake still keep the screen and the laptop on.",
+            first
+                .next()
+                .map(|c| c.to_uppercase().to_string())
+                .unwrap_or_default(),
+            first.as_str(),
+            if facts.len() == 1 {
+                "The fix saves"
+            } else {
+                "Both fixes save"
+            }
+        )
+    } else {
+        match (info.screen_blank_seconds, info.suspend_on_battery_seconds) {
+            (None, _) => "The screen and sleep settings cannot be read (GNOME only).".to_owned(),
+            (Some(s), Some(b)) if battery => format!(
+                "The screen turns off after {} without use, and on battery the laptop sleeps after {}.",
+                minutes(s),
+                minutes(b)
+            ),
+            (Some(s), _) => format!("The screen turns off after {} without use.", minutes(s)),
+        }
+    };
+    fix(
+        "power.away",
+        "Save power when you are away",
+        measured,
+        offered,
+        "power.save_when_away",
+        None,
+        "you",
+    )
+}
+
+fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool, usage: Option<&str>) -> Check {
+    let title = "Use Power saver on battery";
+    let usage = usage.map(|u| format!(" {u}")).unwrap_or_default();
+    let (offered, measured) = if info.profile.is_none() {
+        (
+            false,
+            "The power mode is not available (power-profiles-daemon).".to_owned(),
+        )
+    } else if on {
+        (
+            false,
+            format!("Power saver already turns on by itself when you unplug.{usage}"),
+        )
+    } else if minutes < 60 {
+        (
+            false,
+            format!(
+                "{} on battery in the last 7 days: not enough to judge.",
+                count(minutes, "minute")
+            ),
+        )
+    } else {
+        (
+            true,
+            format!(
+                "{} on battery in the last 7 days.{usage} The power mode stays the same when you unplug.",
+                hours_text(minutes as f64 / 60.0)
+            ),
+        )
+    };
+    fix(
+        "power.battery_saver",
+        title,
+        measured,
+        offered,
+        "power.set_battery_saver",
+        Some("on".into()),
+        "you",
+    )
+}
+
+/// The measured use on battery in the last 7 days, in one sentence: the average draw, the share
+/// of the battery an hour, and how long a full charge lasts. `None` with under 60 minutes.
+fn battery_usage(
+    agent: &Agent,
+    battery: &str,
+    info: &power::PowerInfo,
+    mains: &[(i64, f64)],
+    now: i64,
+) -> Option<String> {
+    let watts: Vec<(i64, f64)> = crate::store::lock(&agent.store)
+        .metrics(
+            "battery.power",
+            Some(battery),
+            deecure_core::Timestamp(now - 7 * DAY),
+            deecure_core::Timestamp(now),
+        )
+        .unwrap_or_default()
+        .into_iter()
+        .map(|m| (m.at.0, m.value))
+        .collect();
+    let full = info
+        .batteries
+        .iter()
+        .find(|b| b.name == battery)
+        .and_then(|b| b.full_wh)
+        .filter(|f| *f > 0.0)?;
+    let (w, minutes) = battery_draw(mains, &watts)?;
+    (minutes >= 60).then(|| {
+        format!(
+            "On battery, the laptop used {w:.1} W on average (about {:.0}% of the battery an hour), so a full charge ({full:.0} Wh now) lasts about {}.",
+            w / full * 100.0,
+            hours_text(full / w)
+        )
+    })
+}
+
+/// "7.2 hours", "45 minutes".
+fn hours_text(hours: f64) -> String {
+    if hours < 1.0 {
+        count((hours * 60.0).round() as usize, "minute")
+    } else {
+        format!("{hours:.1} hours")
+    }
+}
+
+fn power_mode(info: &power::PowerInfo, mains: &[(i64, f64)], now: i64) -> Check {
     let title = "Change the power mode";
     let hour: Vec<f64> = mains
         .iter()
@@ -180,7 +374,7 @@ async fn power_mode(agent: &Agent, mains: &[(i64, f64)], now: i64) -> Check {
     let steady = hour.len() >= 50;
     let all_mains = steady && hour.iter().all(|v| *v >= 0.5);
     let all_battery = steady && hour.iter().all(|v| *v < 0.5);
-    let profile = info.profile.unwrap_or_default();
+    let profile = info.profile.clone().unwrap_or_default();
     let (offered, why) = match profile.as_str() {
         "power-saver" if all_mains => (
             true,
@@ -324,6 +518,54 @@ mod tests {
         assert!((share - 12.0 / 14.0).abs() < 1e-9);
         assert!((days - 14.0).abs() < 1e-9);
         assert!(mains_share(&[], 0).is_none());
+    }
+
+    #[test]
+    fn the_draw_counts_only_readings_on_battery() {
+        let mains = [(1, 1.0), (2, 0.0), (3, 0.0), (4, 0.0), (5, 1.0)];
+        // Minute 1 and 5 on the charger; minute 4 has no power reading.
+        let watts = [(1, 20.0), (2, 4.0), (3, 6.0), (5, 25.0)];
+        assert_eq!(battery_draw(&mains, &watts), Some((5.0, 2)));
+        assert_eq!(minutes_on_battery(&mains), 3);
+        assert_eq!(battery_draw(&[(1, 1.0)], &[(1, 20.0)]), None);
+    }
+
+    #[test]
+    fn away_offers_only_what_never_happens_or_waits_long() {
+        // This laptop on 2026-11-19: the screen never turns off, and it never sleeps on battery.
+        let (screen, sleep) = away_needs(Some(0), Some(0), true);
+        assert_eq!(
+            screen.as_deref(),
+            Some("the screen never turns off by itself")
+        );
+        assert_eq!(
+            sleep.as_deref(),
+            Some("on battery the laptop never sleeps by itself")
+        );
+        assert_eq!(away_needs(Some(300), Some(900), true), (None, None));
+        assert!(away_needs(Some(1800), Some(3600), true).1.is_some());
+        // A desktop: sleep on battery is not its business.
+        assert_eq!(away_needs(Some(300), Some(0), false), (None, None));
+        let info = power::PowerInfo {
+            screen_blank_seconds: Some(0),
+            suspend_on_battery_seconds: Some(900),
+            ..Default::default()
+        };
+        let check = away(&info, true);
+        assert!(check.offered);
+        assert!(
+            check
+                .measured
+                .starts_with("The screen never turns off by itself. The fix saves"),
+            "{}",
+            check.measured
+        );
+    }
+
+    #[test]
+    fn hours_read_well() {
+        assert_eq!(hours_text(7.04), "7.0 hours");
+        assert_eq!(hours_text(0.75), "45 minutes");
     }
 
     #[test]

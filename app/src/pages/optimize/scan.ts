@@ -25,10 +25,10 @@ export const PARTS: { id: string; label: string; icon: IconName; what: string }[
   { id: "boot", label: "Start-up", icon: "play", what: 'Whether "wait for network" slows boot' },
   { id: "disks", label: "Disks", icon: "db", what: "Weekly TRIM for SSDs" },
   { id: "kernels", label: "Old kernels", icon: "pkg", what: "Kernels kept besides the running one and a fallback" },
-  { id: "devices", label: "Devices", icon: "usb", what: "Power saving, PCIe link width, and USB speed" },
+  { id: "devices", label: "Devices", icon: "usb", what: "Power saving, PCIe link width, USB speed, and services with no hardware" },
   { id: "hardware", label: "Hardware health", icon: "chip", what: "Heat slowdowns, battery health, restart needed, and memory errors" },
   { id: "cleanup", label: "Space, packages, and updates", icon: "layers", what: "Trash, caches, logs, snaps, Docker, unused packages, updates, firewall, and file watches" },
-  { id: "history", label: "Usage history", icon: "hist", what: "Charge limit, power mode, turbo on battery, wake-ups, and swapping" },
+  { id: "history", label: "Usage history", icon: "hist", what: "Charge limit, battery drain, power saver and turbo on battery, power mode, wake-ups, and swapping" },
   { id: "drivers", label: "Drivers and firmware", icon: "mon", what: "Video driver, second graphics card, recommended drivers, firmware, and DKMS" },
 ];
 
@@ -111,7 +111,7 @@ async function run() {
     const started = Date.now();
     setPart(part.id, { status: "running", startedAt: started });
     try {
-      const got = await getInventory(`optimize_${part.id}`);
+      const got = tagged(await getInventory(`optimize_${part.id}`), part.id);
       all.push(...got);
       const found = got.filter((c) => c.offered);
       setPart(part.id, { status: "done", ms: Date.now() - started, checked: got.length, found: found.length });
@@ -153,9 +153,32 @@ export function scanOptimize(): Promise<void> {
   return running;
 }
 
-/** After a fix: the answer may be out of date. Nothing is checked until the user asks. */
-export function optimizeChanged() {
-  if (state.at !== undefined) set({ changedAt: Date.now() });
+/** Marks each check with the part it came from. */
+function tagged(checks: OptimizeCheck[], part: string): OptimizeCheck[] {
+  return checks.map((c) => ({ ...c, part }));
+}
+
+/**
+ * After a fix: the answer may be out of date. When the fix came from a check whose part is known,
+ * only that part is checked again at once (a second or two), so the item shows as done. Otherwise
+ * the page says to scan again.
+ */
+export async function optimizeChanged(action?: string): Promise<void> {
+  if (state.at === undefined) return;
+  set({ changedAt: Date.now() });
+  const parts = [...new Set((state.checks ?? []).filter((c) => action && c.action === action && c.part).map((c) => c.part as string))];
+  if (parts.length === 0 || running) return;
+  try {
+    let checks = state.checks ?? [];
+    for (const part of parts) {
+      const got = tagged(await getInventory(`optimize_${part}`), part);
+      checks = [...checks.filter((c) => c.part !== part), ...got];
+    }
+    set({ checks: sorted(checks), changedAt: undefined });
+    save(state.checks ?? [], state.at ?? Date.now());
+  } catch {
+    // The banner stays: "Scan again to see what is left."
+  }
 }
 
 /** For tests: forget every answer and the kept one, or with `keep`, read the kept one again. */

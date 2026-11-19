@@ -397,6 +397,16 @@ pub fn plan(call: &Call, root: &Path) -> Option<Result<(Vec<Write>, Call), Strin
     })
 }
 
+/// True when every write would leave its file as it is: the value is there already, or, for a
+/// list of choices such as `Trickle Fast [Custom]`, it is the one in use.
+pub fn already_set(writes: &[Write]) -> bool {
+    writes.iter().all(|w| {
+        read(&w.path).is_some_and(|now| {
+            now == w.value || (now.contains('[') && choices(&now).1.as_deref() == Some(&w.value))
+        })
+    })
+}
+
 /// `Trickle Fast [Custom]`: every choice, and the one in brackets, which is in use.
 fn choices(text: &str) -> (Vec<String>, Option<String>) {
     let offered = text

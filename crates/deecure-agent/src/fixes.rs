@@ -54,6 +54,19 @@ fn need<'a>(subject: Option<&'a str>, what: &str) -> Result<&'a str, String> {
         .ok_or_else(|| format!("this fix needs a {what}"))
 }
 
+/// A GNOME idle time in seconds, in words: "never", "5 minutes".
+fn idle_text(seconds: Option<&str>) -> String {
+    match seconds.and_then(|s| s.parse::<u32>().ok()) {
+        Some(0) => "never".into(),
+        Some(s) if s % 60 == 0 => {
+            let m = s / 60;
+            format!("{m} minute{}", if m == 1 { "" } else { "s" })
+        }
+        Some(s) => format!("{s} seconds"),
+        None => "not reported".into(),
+    }
+}
+
 async fn disabled_snaps(agent: &Agent) -> Vec<(String, String, u64)> {
     let list = command::output("snap", &["list", "--all"], Duration::from_secs(10))
         .await
@@ -745,6 +758,97 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 Call::SetBatteryTurbo { on },
             )]
         }
+        "power.set_battery_saver" => {
+            let on = on_off(need(subject, "on|off")?)?;
+            subtitle = "DeeCure switches the power mode as you, no password".into();
+            vec![step(
+                "battery-saver",
+                if on {
+                    "Use Power saver on battery"
+                } else {
+                    "Stop switching to Power saver on battery"
+                },
+                if on {
+                    "When you unplug the charger, the power mode changes to Power saver. When you plug it in again, it goes back to the mode you had. If the laptop is on battery now, Power saver turns on within a few seconds. If you pick another mode yourself, DeeCure leaves it until the next unplug."
+                } else {
+                    "The power mode stays as you set it. If DeeCure turned on Power saver, it goes back to the mode you had."
+                }
+                .into(),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "on unplug: powerprofilesctl set power-saver ({})",
+                    if on { "on" } else { "off" }
+                ),
+                Call::SetBatterySaver { on },
+            )]
+        }
+        "power.save_when_away" => {
+            let gs = crate::inventory::power::gsetting;
+            let power = "org.gnome.settings-daemon.plugins.power";
+            let num = |v: Option<String>| v.and_then(|v| v.parse::<u32>().ok());
+            let screen_now = num(gs("org.gnome.desktop.session", "idle-delay").await);
+            let sleep_type = gs(power, "sleep-inactive-battery-type").await;
+            let sleep_time = num(gs(power, "sleep-inactive-battery-timeout").await);
+            let sleep_now = match sleep_type.as_deref() {
+                Some("nothing") => Some(0),
+                _ => sleep_time,
+            };
+            let battery = crate::battery_saver::power_source(&agent.root).is_some();
+            let (screen, sleep) =
+                crate::inventory::optimize::away_needs(screen_now, sleep_now, battery);
+            let lock = gs("org.gnome.desktop.screensaver", "lock-enabled").await;
+            subtitle = "GNOME settings, as you, no password; untick a step to skip it".into();
+            let mut steps = Vec::new();
+            if screen.is_some() {
+                steps.push(step(
+                    "screen-idle",
+                    "Turn the screen off after 5 minutes without use",
+                    format!(
+                        "Now: {}. Only time without keyboard, mouse, or touchpad use counts. A video or a call that asks to keep the screen on still keeps it on.{}",
+                        idle_text(screen_now.map(|s| s.to_string()).as_deref()),
+                        if lock.as_deref() == Some("true") {
+                            " Your screen lock is on, so the screen also locks when it turns off."
+                        } else {
+                            ""
+                        }
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    "gsettings set org.gnome.desktop.session idle-delay 300".into(),
+                    Call::SetScreenIdle { seconds: 300 },
+                ));
+            }
+            if sleep.is_some() {
+                steps.push(step(
+                    "battery-idle-sleep",
+                    "Sleep after 15 minutes without use, on battery only",
+                    format!(
+                        "Now: {}. Playing music or video, a call, or an app that asks to stay awake keeps the laptop awake. On mains nothing changes.",
+                        match sleep_now {
+                            Some(0) | None => "the laptop never sleeps by itself on battery".to_owned(),
+                            Some(_) => format!(
+                                "it sleeps after {}",
+                                idle_text(sleep_time.map(|s| s.to_string()).as_deref())
+                            ),
+                        }
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-timeout 900; gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type suspend".into(),
+                    Call::SetBatteryIdleSleep {
+                        action: "suspend".into(),
+                        seconds: 900,
+                    },
+                ));
+            }
+            // Already done (for example applied a moment ago): an empty plan, which the app
+            // shows as "nothing to do", not an error.
+            steps
+        }
         "storage.cap_journal" => {
             let raw = need(subject, "megabytes|off")?;
             let mb = if raw == "off" {
@@ -1201,6 +1305,11 @@ mod tests {
                 "power.set_battery_turbo",
                 Some("off"),
                 Call::SetBatteryTurbo { on: false },
+            ),
+            (
+                "power.set_battery_saver",
+                Some("on"),
+                Call::SetBatterySaver { on: true },
             ),
             (
                 "storage.cap_journal",

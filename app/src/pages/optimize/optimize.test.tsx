@@ -163,6 +163,24 @@ describe("Optimize", () => {
     await waitFor(() => expect(calls).toHaveLength(8));
   });
 
+  it("after a fix from an item, checks only that item's part again, and the item shows as done", async () => {
+    checks = [WAIT];
+    withFix(<OptimizeAll />);
+    await waitFor(() => expect(screen.getByText("1 improvement for this computer")).toBeTruthy());
+    calls.length = 0;
+    // The fix worked: the boot part now finds nothing to offer.
+    checks = [{ ...WAIT, offered: false, measured: "NetworkManager-wait-online is off." }];
+    await optimizeChanged(WAIT.action);
+    expect(calls).toEqual(["optimize_boot"]);
+    await waitFor(() => expect(screen.queryByText("1 improvement for this computer")).toBeNull());
+    expect(screen.queryByText("A fix ran after this check")).toBeNull();
+    // A fix that no item offered (opened from another page) only marks the list as maybe old.
+    calls.length = 0;
+    await optimizeChanged("storage.free_space");
+    expect(calls).toEqual([]);
+    await waitFor(() => expect(screen.getByText("A fix ran after this check")).toBeTruthy());
+  });
+
   it("checks by itself when the kept answer is a day old", async () => {
     checks = [HEAT];
     keep([WAIT], Date.now() - 86_400_000 - 1000);

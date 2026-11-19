@@ -272,7 +272,7 @@ export default function App() {
           onClose={() => setFix(null)}
           onDone={() => {
             void refresh();
-            optimizeChanged();
+            void optimizeChanged(fix.action);
           }}
         />
       )}

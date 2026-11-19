@@ -337,6 +337,35 @@ pub fn apply_setting(root: &Path, key: &str) -> Option<Outcome> {
     })
 }
 
+/// The kept battery charge settings (`charge_limits:<battery>`, `charge_mode:<battery>`).
+pub fn charge_keys(root: &Path) -> Vec<String> {
+    load(&root.join(SAVED))
+        .settings
+        .into_keys()
+        .filter(|k| k.starts_with("charge_limits:") || k.starts_with("charge_mode:"))
+        .collect()
+}
+
+/// Sets a kept setting again only when the system no longer has it (some firmware forgets a
+/// charge limit, or switches the charge mode). `None` when it is not kept, or nothing changed.
+pub fn apply_if_lost(root: &Path, key: &str) -> Option<Outcome> {
+    let saved = load(&root.join(SAVED));
+    let kept = saved.settings.get(key)?;
+    if setting(&kept.call).as_deref() == Some(key)
+        && let Some(Ok((writes, _))) = power::plan(&kept.call, root)
+        && power::already_set(&writes)
+    {
+        return None;
+    }
+    let result = apply_one(root, key, kept);
+    Some(Outcome {
+        setting: key.to_owned(),
+        call: kept.call.clone(),
+        ok: result.is_ok(),
+        message: result.unwrap_or_else(|e| e),
+    })
+}
+
 /// Saves the boot results for the app.
 pub fn write_results(root: &Path, time_ms: u128, outcomes: &[Outcome]) -> Result<(), String> {
     let text = serde_json::json!({"time": time_ms, "results": outcomes}).to_string();
@@ -628,5 +657,50 @@ mod tests {
         remember(&root, &limit(None), &limit(Some(60))).unwrap();
         assert_eq!(battery_cpu_limit(&root), None);
         assert!(apply_setting(&root, "battery_cpu_limit").is_none());
+    }
+
+    #[test]
+    fn a_lost_charge_limit_is_set_again_and_a_kept_one_is_left_alone() {
+        let root = test_root(
+            "lost",
+            &[
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/model_name", "5B10W51867\n"),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "100\n",
+                ),
+                (
+                    "/sys/class/power_supply/BAT0/charge_types",
+                    "Standard Adaptive [Custom]\n",
+                ),
+            ],
+        );
+        let stop = "sys/class/power_supply/BAT0/charge_control_end_threshold";
+        let mode = |m: &str| Call::SetChargeMode {
+            battery: "BAT0".into(),
+            mode: m.into(),
+        };
+        remember(&root, &limits(80), &limits(100)).unwrap();
+        remember(&root, &mode("Custom"), &mode("Standard")).unwrap();
+        assert_eq!(
+            charge_keys(&root),
+            ["charge_limits:BAT0", "charge_mode:BAT0"]
+        );
+        // The limit is still 100 in the fixture (remember only keeps it): set again.
+        let o = apply_if_lost(&root, "charge_limits:BAT0").unwrap();
+        assert!(o.ok, "{}", o.message);
+        assert_eq!(file(&root, stop), "80");
+        // Now it is there, and Custom is still in use: nothing is written.
+        assert!(apply_if_lost(&root, "charge_limits:BAT0").is_none());
+        assert!(apply_if_lost(&root, "charge_mode:BAT0").is_none());
+        // The firmware switched to Standard: Custom is set again.
+        std::fs::write(
+            root.join("sys/class/power_supply/BAT0/charge_types"),
+            "Standard Adaptive Custom [Standard]\n",
+        )
+        .unwrap();
+        assert!(apply_if_lost(&root, "charge_mode:BAT0").unwrap().ok);
+        assert!(apply_if_lost(&root, "turbo").is_none(), "not kept");
     }
 }

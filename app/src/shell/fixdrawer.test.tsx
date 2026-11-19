@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { FixPlan } from "../api";
 import { FixDrawer } from "./FixDrawer";
+import { callIsAdmin } from "../api";
 
 const PLAN: FixPlan = {
   action: "storage.free_space",
@@ -52,6 +53,16 @@ describe("fix drawer", () => {
     await waitFor(() => expect(screen.getByText("DeeCure checked again: the issue is gone.")).toBeTruthy());
     expect(applied).toHaveBeenCalledWith(["trash"]);
     expect(done).toHaveBeenCalled();
+  });
+
+  it("knows which steps run as you and which need the password", () => {
+    for (const op of ["set_battery_saver", "set_screen_idle", "set_battery_idle_sleep", "set_keyboard_backlight", "set_radio", "set_wifi_power_save", "update_firmware", "set_power_profile"]) {
+      expect(callIsAdmin({ op }), op).toBe(false);
+    }
+    expect(callIsAdmin({ op: "remove_unused_flatpaks", system: false })).toBe(false);
+    expect(callIsAdmin({ op: "remove_unused_flatpaks", system: true })).toBe(true);
+    expect(callIsAdmin({ op: "clean_apt_cache" })).toBe(true);
+    expect(callIsAdmin({ op: "set_charge_limits" })).toBe(true);
   });
 
   it("in Basic access, admin steps are locked and the rest still works", async () => {

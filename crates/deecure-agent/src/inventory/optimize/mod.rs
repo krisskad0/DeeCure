@@ -16,6 +16,7 @@ use super::storage_detail;
 mod cleanup;
 mod drivers;
 mod history;
+pub(crate) use history::away_needs;
 
 use super::{
     command, cpu_detail, kernel, memory_detail, pci_detail, power_detail, services_detail,
@@ -293,6 +294,111 @@ async fn trim(root: &SystemRoot) -> Check {
             "admin",
         ),
     }
+}
+
+/// True when the folder under `/sys` or `/dev` has an entry whose name starts with `prefix`.
+fn any_entry(root: &SystemRoot, dir: &str, prefix: &str) -> bool {
+    std::fs::read_dir(root.path(dir))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .any(|e| e.file_name().to_string_lossy().starts_with(prefix))
+}
+
+/// An rfkill switch of this type (`wwan`, `bluetooth`) exists.
+fn rfkill_has(root: &SystemRoot, kind: &str) -> bool {
+    std::fs::read_dir(root.path("/sys/class/rfkill"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .any(|e| {
+            root.read(&format!(
+                "/sys/class/rfkill/{}/type",
+                e.file_name().to_string_lossy()
+            ))
+            .is_ok_and(|t| t.trim() == kind)
+        })
+}
+
+/// Any sign of a mobile modem: a WWAN device or switch, a modem control port, a `ww*` network
+/// interface, or a USB serial port (some USB modems show only that, so it counts too).
+pub fn has_modem(root: &SystemRoot) -> bool {
+    any_entry(root, "/sys/class/wwan", "")
+        || rfkill_has(root, "wwan")
+        || any_entry(root, "/dev", "cdc-wdm")
+        || any_entry(root, "/dev", "ttyUSB")
+        || any_entry(root, "/dev", "ttyACM")
+        || any_entry(root, "/sys/class/net", "ww")
+}
+
+/// Any Bluetooth chip, even one switched off (its rfkill switch stays).
+pub fn has_bluetooth(root: &SystemRoot) -> bool {
+    any_entry(root, "/sys/class/bluetooth", "") || rfkill_has(root, "bluetooth")
+}
+
+/// Services that start at every boot to wait for hardware this computer does not have.
+async fn no_hardware_services(root: &SystemRoot) -> Vec<Check> {
+    let mut out = Vec::new();
+    for (unit, name, hardware, has) in [
+        (
+            "ModemManager.service",
+            "ModemManager",
+            "mobile modem (no WWAN device and no USB modem)",
+            has_modem(root),
+        ),
+        (
+            "bluetooth.service",
+            "The Bluetooth service",
+            "Bluetooth chip",
+            has_bluetooth(root),
+        ),
+    ] {
+        let state = command::output_any("systemctl", &["is-enabled", unit], Duration::from_secs(5))
+            .await
+            .unwrap_or_default();
+        let state = state.trim();
+        if state.is_empty() || state == "not-found" {
+            continue;
+        }
+        let enabled = state == "enabled";
+        let (offered, measured) = if has {
+            (
+                false,
+                format!(
+                    "{name} is needed: this computer has a {}.",
+                    hardware.split(" (").next().unwrap_or(hardware)
+                ),
+            )
+        } else if !enabled {
+            (
+                false,
+                format!(
+                    "{name} is {state}, and this computer has no {}.",
+                    hardware.split(" (").next().unwrap_or(hardware)
+                ),
+            )
+        } else {
+            (
+                true,
+                format!(
+                    "{name} starts at every boot and waits, but this computer has no {hardware}. Turning it off saves a little memory and background work. If you add one later, undo this in DeeCure, or run: sudo systemctl enable --now {unit}"
+                ),
+            )
+        };
+        out.push(fix(
+            &format!("services.no_hardware:{unit}"),
+            &format!(
+                "Turn off {} (no hardware for it)",
+                unit.trim_end_matches(".service")
+            ),
+            measured,
+            offered,
+            "services.disable",
+            Some(unit.into()),
+            "admin",
+        ));
+    }
+    out
 }
 
 fn old_kernels(root: &SystemRoot) -> Check {
@@ -706,6 +812,7 @@ pub async fn read_part(agent: &Agent, part: &str) -> Vec<Check> {
             let mut checks = device_saving(root, &power);
             checks.extend(pcie(root));
             checks.extend(usb_speed(root));
+            checks.extend(no_hardware_services(root).await);
             checks
         }
         "hardware" => {
@@ -738,6 +845,30 @@ pub async fn read(agent: &Agent) -> Vec<Check> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_modem_or_bluetooth_chip_is_found_in_any_of_its_forms() {
+        use crate::collect::test_support::fixture_root;
+        let bare = fixture_root(
+            "opt-bare",
+            &[
+                ("/sys/class/net/wlp45s0/type", "1\n"),
+                ("/sys/class/rfkill/rfkill0/type", "wlan\n"),
+            ],
+        );
+        assert!(!has_modem(&bare));
+        assert!(!has_bluetooth(&bare));
+        let usb_modem = fixture_root("opt-usb-modem", &[("/dev/ttyUSB0", "")]);
+        assert!(has_modem(&usb_modem));
+        let wwan = fixture_root("opt-wwan", &[("/sys/class/net/wwan0/type", "65534\n")]);
+        assert!(has_modem(&wwan));
+        // A Bluetooth chip that is switched off still counts.
+        let blocked = fixture_root(
+            "opt-bt-off",
+            &[("/sys/class/rfkill/rfkill2/type", "bluetooth\n")],
+        );
+        assert!(has_bluetooth(&blocked));
+    }
 
     #[test]
     fn heat_advice_counts_how_long_not_how_often() {

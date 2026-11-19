@@ -13,7 +13,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/07-user-guide/images/deecure-deep-look-dark.svg">
-  <img src="docs/07-user-guide/images/deecure-deep-look-light.svg" alt="What DeeCure does, in four steps. It checks 10 layers, with more than 150 readings, 55 warnings, and 47 fixes with undo. Step 1, look deep: a scan beam walks down the layers: apps and processes; services, start-up, and jobs; containers; packages and updates; network; security, accounts, and privacy; storage and backups; kernel, drivers, and firmware; power, battery, and sleep; and hardware and devices. Step 2, see it at a glance: a health score of 92, live CPU, memory, temperature, and network readings, and what needs you: the firewall is off, the main disk is full in about 12 days, and the SSD has 92% of its life left. Step 3, fix it safely: the problem is explained in plain English, the exact command (sudo ufw enable) is shown first, the fix is applied and checked again, and it can be undone. Step 4, optimize: 12 improvements this computer needs, each with a preview.">
+  <img src="docs/07-user-guide/images/deecure-deep-look-light.svg" alt="What DeeCure does, in four steps. It checks 10 layers, with more than 150 readings, 56 warnings, and 49 fixes with undo. Step 1, look deep: a scan beam walks down the layers: apps and processes; services, start-up, and jobs; containers; packages and updates; network; security, accounts, and privacy; storage and backups; kernel, drivers, and firmware; power, battery, and sleep; and hardware and devices. Step 2, see it at a glance: a health score of 92, live CPU, memory, temperature, and network readings, and what needs you: the firewall is off, the main disk is full in about 12 days, and the SSD has 92% of its life left. Step 3, fix it safely: the problem is explained in plain English, the exact command (sudo ufw enable) is shown first, the fix is applied and checked again, and it can be undone. Step 4, optimize: 12 improvements this computer needs, each with a preview.">
 </picture>
 
 *What DeeCure does, in four steps: it checks all 10 layers, from the apps you see down to the chips inside; it shows one health score with live readings; it fixes a problem step by step, with undo; and it finds the improvements your computer really needs. The numbers here are an example. [See it work in the real app](#see-it-work).*
@@ -52,7 +52,7 @@ Then open **DeeCure** from the app menu. It updates itself after that: it tells 
 1. **Shows how healthy your computer is**: a health score, the problems behind it, and how busy your CPU, graphics (GPU), memory, disk, and network are, all on one screen.
 2. **Warns you early**: about overheating, a disk that will be full soon, a wearing SSD, a failing battery, memory errors, or security updates that silently stopped. It judges each part against **its own limits**, not one number for every computer.
 3. **Explains everything in plain English**: what a service does, what a log error means, why the computer is slow. Over 190 built-in explanations, right where you need them.
-4. **Fixes problems safely**: 47 fixes, each showing its exact steps before it runs, with your password only for admin steps, a check afterwards, and undo.
+4. **Fixes problems safely**: 49 fixes, each showing its exact steps before it runs, with your password only for admin steps, a check afterwards, and undo.
 5. **Gives you control**: battery charge limits, CPU turbo, power saving, sleep and wake-up, and what closing the lid does, all kept after a restart.
 
 It works without a password for looking around. It never changes anything unless you ask.
@@ -103,7 +103,7 @@ The full list: **[Ubuntu problems and how to fix them with DeeCure](docs/07-user
 - **No false alarms from spikes:** most warnings need the problem to last, for example 5 minutes near the limit. A short turbo burst that touches the CPU's limit while it is cool is normal and never warns.
 - **Never out of date:** a warning that DeeCure cannot confirm for a day closes, so old numbers never stay on screen.
 - **Your rules:** turn any warning off or change when it fires. The safe default is shown next to your value.
-- **55 warnings** across CPU, memory, disks, battery, temperatures, fans, graphics, hardware errors, services, packages, network, and security. [Full list](docs/01-product/health-warnings.md)
+- **56 warnings** across CPU, memory, disks, battery, temperatures, fans, graphics, hardware errors, services, packages, network, and security. [Full list](docs/01-product/health-warnings.md)
 
 ### Easy to read, and it shows where to look
 

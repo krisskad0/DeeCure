@@ -33,6 +33,7 @@ const power: PowerDetail = {
     { setting: "turbo", call: { op: "set_turbo", on: false } },
     { setting: "suspend_mode", call: { op: "set_suspend_mode", mode: "deep", keep: true }, boot_ok: true, boot_message: "mem_sleep = deep" },
   ],
+  battery_saver: false,
 };
 
 vi.mock("../../api", () => ({
@@ -82,6 +83,37 @@ describe("Power controls", () => {
       ["power.set_radio", "bluetooth|on"],
       ["power.set_wifi_power_save", "798005ca-d9fd-4047-86c5-8ed2ff14b23d|off"],
     ]);
+  });
+
+  it("power saver and turbo on battery open their preview, and an older agent hides power saver", async () => {
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("Switch on unplug")).toBeTruthy());
+    expect(screen.getByText(/Now off\. On: the power mode changes to Power saver/)).toBeTruthy();
+    fireEvent.click(screen.getByText("Switch on unplug"));
+    fireEvent.click(screen.getByText("Turn off on battery"));
+    expect(opened).toEqual([
+      ["power.set_battery_saver", "on"],
+      ["power.set_battery_turbo", "off"],
+    ]);
+    cleanup();
+    opened.length = 0;
+    power.battery_saver = true;
+    power.kept!.push({ setting: "battery_turbo", call: { op: "set_battery_turbo", on: false } });
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("Stop switching")).toBeTruthy());
+    fireEvent.click(screen.getByText("Stop switching"));
+    fireEvent.click(screen.getByText("Allow on battery"));
+    expect(opened).toEqual([
+      ["power.set_battery_saver", "off"],
+      ["power.set_battery_turbo", "on"],
+    ]);
+    cleanup();
+    power.kept!.pop();
+    power.battery_saver = undefined;
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("Turn off on battery")).toBeTruthy());
+    expect(screen.queryByText("Power saver on battery")).toBeNull();
+    power.battery_saver = false;
   });
 
   it("kept settings show in words with this start's result", async () => {
