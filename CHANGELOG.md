@@ -6,26 +6,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-### Added
-
-- **Power saver on battery** (Power › Power Profile › Power controls, and on Optimize): when you unplug the charger, the power mode changes to Power saver, and when you plug it in again, it goes back to the mode you had. A mode you pick yourself stays until the next unplug. It needs no password: DeeCure switches the mode as you.
-- **Turbo on battery** now has its own row in Power › Power Profile › Power controls. Before, it could be turned off only from Optimize.
-- **A new warning: "Battery charges past its limit".** It shows when the battery keeps charging 3 points or more above its stop limit for 10 minutes, which means the firmware ignores the limit. On some laptops (Dell) the limit works only in the Custom charge mode, and the warning says so.
-- **A charge limit or charge mode set in DeeCure is set again when the charger is plugged in**, if the firmware lost it. When the value is still there, nothing is written.
-- **Optimize shows your real use on battery** in "Use Power saver on battery": the average watts over the last 7 days, the share of the battery used an hour, and how long a full charge lasts.
-- **Optimize: "Save power when you are away"**: when the screen never turns off (or stays on over 15 minutes), or the laptop never sleeps on battery (or waits over 30 minutes). One preview with a step for each: the screen off after 5 minutes, and sleep after 15 minutes on battery only. You can untick either step. It runs as you, with no password. Video, calls, and apps that ask to stay awake still keep the screen and the laptop on.
-- **Optimize: "Turn off a service with no hardware"**: ModemManager when the computer has no mobile modem, and the Bluetooth service when there is no Bluetooth chip at all.
-
-### Changed
-
-- **Optimize offers the 80% charge limit to every laptop whose battery supports one**, not only to laptops on mains most of the last 14 days. The text says each charge then lasts about a fifth less. A Fast charge mode is also offered a gentler one without the 14 days rule.
-
-### Fixed
-
-- After a fix from Optimize, the item showed as still needed until the next full scan, so it could be applied twice. Now only that item's part is checked again at once, and the item shows as done.
-- A fix with nothing left to change (for example, applied a moment ago) said "The fix could not run". It now says there is nothing to do.
-- The fix preview marked some steps that run as you as "Admin": the keyboard backlight, radios, Wi-Fi power saving, firmware updates, and your own Flatpak cleanup. In Basic access they were locked for no reason.
-
 ## [0.1.0-alpha.11] - 2026-11-16
 
 ### Added
