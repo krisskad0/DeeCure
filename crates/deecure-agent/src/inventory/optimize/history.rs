@@ -244,12 +244,17 @@ fn away(info: &power::PowerInfo, battery: bool) -> Check {
         let text = facts.join(", and ");
         let mut first = text.chars();
         format!(
-            "{}{}. These save power only while you are away: video, calls, and apps that ask to stay awake still keep the screen and the laptop on.",
+            "{}{}. {} power only while you are away: video, calls, and apps that ask to stay awake still keep the screen and the laptop on.",
             first
                 .next()
                 .map(|c| c.to_uppercase().to_string())
                 .unwrap_or_default(),
-            first.as_str()
+            first.as_str(),
+            if facts.len() == 1 {
+                "The fix saves"
+            } else {
+                "Both fixes save"
+            }
         )
     } else {
         match (info.screen_blank_seconds, info.suspend_on_battery_seconds) {
@@ -551,7 +556,7 @@ mod tests {
         assert!(
             check
                 .measured
-                .starts_with("The screen never turns off by itself. These save"),
+                .starts_with("The screen never turns off by itself. The fix saves"),
             "{}",
             check.measured
         );
