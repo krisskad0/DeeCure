@@ -172,12 +172,90 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
             minutes_on_battery(&week),
             detail.battery_saver,
         ));
+        out.push(battery_idle_sleep(&info));
         out.push(battery_drain(agent, &b.name, &info, &week, now));
         out.push(power_mode(&info, &mains, now));
         out.push(lid_wakes(&detail).await);
     }
+    out.push(screen_idle(&info));
     out.push(zswap(agent));
     out
+}
+
+/// "5 minutes", "1 minute".
+fn minutes(seconds: u32) -> String {
+    count((seconds / 60) as usize, "minute")
+}
+
+/// Turn the screen off after 5 minutes without use, when it never does, or waits over 15.
+fn screen_idle(info: &power::PowerInfo) -> Check {
+    let (offered, measured) = match info.screen_blank_seconds {
+        None => (
+            false,
+            "The screen setting cannot be read (GNOME only).".to_owned(),
+        ),
+        Some(0) => (
+            true,
+            "The screen never turns off by itself when you are away. The screen is often the biggest single power user.".to_owned(),
+        ),
+        Some(s) if s > 900 => (
+            true,
+            format!(
+                "The screen stays on for {} after you stop using the computer.",
+                minutes(s)
+            ),
+        ),
+        Some(s) => (
+            false,
+            format!("The screen turns off after {} without use.", minutes(s)),
+        ),
+    };
+    fix(
+        "power.screen_idle",
+        "Turn the screen off when you are away",
+        measured,
+        offered,
+        "power.set_screen_idle",
+        Some("300".into()),
+        "you",
+    )
+}
+
+/// Sleep after 15 minutes without use on battery, when the laptop never does, or waits over 30.
+fn battery_idle_sleep(info: &power::PowerInfo) -> Check {
+    let (offered, measured) = match info.suspend_on_battery_seconds {
+        None => (
+            false,
+            "The sleep setting cannot be read (GNOME only).".to_owned(),
+        ),
+        Some(0) => (
+            true,
+            "On battery, the laptop never sleeps by itself, so the battery keeps draining when you leave it open and unused.".to_owned(),
+        ),
+        Some(s) if s > 1800 => (
+            true,
+            format!(
+                "On battery, the laptop sleeps only after {} without use.",
+                minutes(s)
+            ),
+        ),
+        Some(s) => (
+            false,
+            format!(
+                "On battery, the laptop sleeps after {} without use.",
+                minutes(s)
+            ),
+        ),
+    };
+    fix(
+        "power.battery_idle_sleep",
+        "Sleep when you are away, on battery",
+        measured,
+        offered,
+        "power.set_battery_idle_sleep",
+        Some("900".into()),
+        "you",
+    )
 }
 
 /// Minutes on battery in `mains` (one point a minute in the last 7 days).
@@ -248,7 +326,7 @@ fn battery_drain(
     now: i64,
 ) -> Check {
     let title = "Make the battery last longer";
-    let what = "Turn on Power saver on battery and turbo off on battery (Power › Power Profile › Power controls). Lower the screen brightness: the screen is often the biggest single user. On battery, close the apps at the top of Power › Battery › Battery use by app when you do not need them.";
+    let what = "Use the other battery items Optimize offers here: each one was measured as needed on this computer, and none of them limits the apps you use. They save power when you are away (screen off, sleep), switch to Power saver only while unplugged, and stop work that waits for hardware this computer does not have.";
     let since = deecure_core::Timestamp(now - 7 * DAY);
     let (watts, top) = {
         let store = crate::store::lock(&agent.store);
@@ -531,6 +609,29 @@ mod tests {
             " Most of it (an estimate): the screen, Wi-Fi, and the system at rest 50%, Google Chrome 30%, Visual Studio Code 15%."
         );
         assert_eq!(top_users(&[]), "");
+    }
+
+    #[test]
+    fn the_screen_and_sleep_are_offered_only_when_they_never_happen_or_wait_long() {
+        let info = |blank, sleep| power::PowerInfo {
+            screen_blank_seconds: blank,
+            suspend_on_battery_seconds: sleep,
+            ..Default::default()
+        };
+        let offered = |b, s| {
+            let i = info(b, s);
+            (screen_idle(&i).offered, battery_idle_sleep(&i).offered)
+        };
+        // This laptop on 2026-11-19: never and never.
+        assert_eq!(offered(Some(0), Some(0)), (true, true));
+        assert_eq!(offered(Some(300), Some(900)), (false, false));
+        assert_eq!(offered(Some(1800), Some(3600)), (true, true));
+        assert_eq!(offered(None, None), (false, false));
+        assert!(
+            screen_idle(&info(Some(0), None))
+                .measured
+                .contains("never turns off")
+        );
     }
 
     #[test]

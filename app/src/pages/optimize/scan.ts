@@ -25,7 +25,7 @@ export const PARTS: { id: string; label: string; icon: IconName; what: string }[
   { id: "boot", label: "Start-up", icon: "play", what: 'Whether "wait for network" slows boot' },
   { id: "disks", label: "Disks", icon: "db", what: "Weekly TRIM for SSDs" },
   { id: "kernels", label: "Old kernels", icon: "pkg", what: "Kernels kept besides the running one and a fallback" },
-  { id: "devices", label: "Devices", icon: "usb", what: "Power saving, PCIe link width, and USB speed" },
+  { id: "devices", label: "Devices", icon: "usb", what: "Power saving, PCIe link width, USB speed, and services with no hardware" },
   { id: "hardware", label: "Hardware health", icon: "chip", what: "Heat slowdowns, battery health, restart needed, and memory errors" },
   { id: "cleanup", label: "Space, packages, and updates", icon: "layers", what: "Trash, caches, logs, snaps, Docker, unused packages, updates, firewall, and file watches" },
   { id: "history", label: "Usage history", icon: "hist", what: "Charge limit, battery drain, power saver and turbo on battery, power mode, wake-ups, and swapping" },

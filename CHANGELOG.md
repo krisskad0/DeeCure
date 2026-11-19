@@ -12,7 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Turbo on battery** now has its own row in Power › Power Profile › Power controls. Before, it could be turned off only from Optimize.
 - **A new warning: "Battery charges past its limit".** It shows when the battery keeps charging 3 points or more above its stop limit for 10 minutes, which means the firmware ignores the limit. On some laptops (Dell) the limit works only in the Custom charge mode, and the warning says so.
 - **A charge limit or charge mode set in DeeCure is set again when the charger is plugged in**, if the firmware lost it. When the value is still there, nothing is written.
-- **Optimize: "Make the battery last longer"**: the average draw on battery over the last 7 days, the share of the battery used an hour, how long a full charge lasts, and the 3 biggest users. It is offered when a full charge lasts under 8 hours, with what to do.
+- **Optimize: "Make the battery last longer"**: the average draw on battery over the last 7 days, the share of the battery used an hour, how long a full charge lasts, and the 3 biggest users. It is offered when a full charge lasts under 8 hours. It points only to the other battery items measured as needed, and never says to close the apps you use.
+- **Optimize: "Turn the screen off when you are away"** (when the screen never turns off, or stays on over 15 minutes) and **"Sleep when you are away, on battery"** (when the laptop never sleeps on battery, or waits over 30 minutes). They set 5 and 15 minutes, as you, with no password. Video, calls, and apps that ask to stay awake still keep the screen and the laptop awake.
+- **Optimize: "Turn off a service with no hardware"**: ModemManager when the computer has no mobile modem, and the Bluetooth service when there is no Bluetooth chip at all.
 
 ### Changed
 

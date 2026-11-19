@@ -54,6 +54,19 @@ fn need<'a>(subject: Option<&'a str>, what: &str) -> Result<&'a str, String> {
         .ok_or_else(|| format!("this fix needs a {what}"))
 }
 
+/// A GNOME idle time in seconds, in words: "never", "5 minutes".
+fn idle_text(seconds: Option<&str>) -> String {
+    match seconds.and_then(|s| s.parse::<u32>().ok()) {
+        Some(0) => "never".into(),
+        Some(s) if s % 60 == 0 => {
+            let m = s / 60;
+            format!("{m} minute{}", if m == 1 { "" } else { "s" })
+        }
+        Some(s) => format!("{s} seconds"),
+        None => "not reported".into(),
+    }
+}
+
 async fn disabled_snaps(agent: &Agent) -> Vec<(String, String, u64)> {
     let list = command::output("snap", &["list", "--all"], Duration::from_secs(10))
         .await
@@ -771,6 +784,89 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 Call::SetBatterySaver { on },
             )]
         }
+        "power.set_screen_idle" => {
+            let seconds: u32 = need(subject, "seconds")?
+                .parse()
+                .map_err(|_| "the time is not a number")?;
+            if seconds != 0 && !(60..=3600).contains(&seconds) {
+                return Err("the time must be 0 (never) or 60-3600 seconds".into());
+            }
+            let gs = crate::inventory::power::gsetting;
+            let now = gs("org.gnome.desktop.session", "idle-delay").await;
+            let lock = gs("org.gnome.desktop.screensaver", "lock-enabled").await;
+            subtitle = "A GNOME setting, as you, no password".into();
+            vec![step(
+                "screen-idle",
+                &if seconds == 0 {
+                    "Never turn the screen off by itself".to_owned()
+                } else {
+                    format!(
+                        "Turn the screen off after {} minutes without use",
+                        seconds / 60
+                    )
+                },
+                format!(
+                    "Now: {}. Only time without keyboard, mouse, or touchpad use counts. A video or a call that asks to keep the screen on still keeps it on.{}",
+                    idle_text(now.as_deref()),
+                    if lock.as_deref() == Some("true") {
+                        " Your screen lock is on, so the screen also locks when it turns off."
+                    } else {
+                        ""
+                    }
+                ),
+                None,
+                Undo::Full,
+                true,
+                format!("gsettings set org.gnome.desktop.session idle-delay {seconds}"),
+                Call::SetScreenIdle { seconds },
+            )]
+        }
+        "power.set_battery_idle_sleep" => {
+            let raw = need(subject, "seconds|off")?;
+            let (action, seconds) = if raw == "off" {
+                ("nothing", 900)
+            } else {
+                let s: u32 = raw.parse().map_err(|_| "the time is not a number")?;
+                if !(60..=86_400).contains(&s) {
+                    return Err("the time must be 60-86400 seconds".into());
+                }
+                ("suspend", s)
+            };
+            let gs = crate::inventory::power::gsetting;
+            let power = "org.gnome.settings-daemon.plugins.power";
+            let now_type = gs(power, "sleep-inactive-battery-type").await;
+            let now_time = gs(power, "sleep-inactive-battery-timeout").await;
+            subtitle = "A GNOME setting, as you, no password".into();
+            vec![step(
+                "battery-idle-sleep",
+                &if action == "nothing" {
+                    "Never sleep by itself on battery".to_owned()
+                } else {
+                    format!(
+                        "Sleep after {} minutes without use on battery",
+                        seconds / 60
+                    )
+                },
+                format!(
+                    "Now: {}. Only on battery, and only after that long without keyboard, mouse, or touchpad use. Playing music or video, a call, or an app that asks to stay awake keeps the laptop awake. On mains nothing changes.",
+                    match now_type.as_deref() {
+                        Some("nothing") | None =>
+                            "the laptop never sleeps by itself on battery".to_owned(),
+                        Some(t) => format!("{t} after {}", idle_text(now_time.as_deref())),
+                    }
+                ),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-timeout {seconds}; gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type {action}"
+                ),
+                Call::SetBatteryIdleSleep {
+                    action: action.into(),
+                    seconds,
+                },
+            )]
+        }
         "storage.cap_journal" => {
             let raw = need(subject, "megabytes|off")?;
             let mb = if raw == "off" {
@@ -1234,6 +1330,27 @@ mod tests {
                 Call::SetBatterySaver { on: true },
             ),
             (
+                "power.set_screen_idle",
+                Some("300"),
+                Call::SetScreenIdle { seconds: 300 },
+            ),
+            (
+                "power.set_battery_idle_sleep",
+                Some("900"),
+                Call::SetBatteryIdleSleep {
+                    action: "suspend".into(),
+                    seconds: 900,
+                },
+            ),
+            (
+                "power.set_battery_idle_sleep",
+                Some("off"),
+                Call::SetBatteryIdleSleep {
+                    action: "nothing".into(),
+                    seconds: 900,
+                },
+            ),
+            (
                 "storage.cap_journal",
                 Some("500"),
                 Call::SetJournalCap { mb: Some(500) },
@@ -1331,6 +1448,8 @@ mod tests {
             ("power.set_charge_limits", "BAT0:80"),
             ("power.set_charge_limits", "BAT0:x:80"),
             ("power.set_turbo", "maybe"),
+            ("power.set_screen_idle", "30"),
+            ("power.set_battery_idle_sleep", "never"),
             ("power.set_radio", "nfc|on"),
             ("power.set_device_power_saving", "pci0000:00/0000:00:14.0"),
             ("power.set_keyboard_backlight", "bright"),

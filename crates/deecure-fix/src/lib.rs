@@ -132,6 +132,10 @@ pub async fn run_call(call: &Call) -> Result<(String, Option<Call>), String> {
         Call::EndProcess { pid, name } => end_process(*pid, name).map(|m| (m, None)),
         Call::SetPowerProfile { profile } => set_power_profile(profile).await,
         Call::SetBatterySaver { on } => set_battery_saver(*on),
+        Call::SetScreenIdle { seconds } => set_screen_idle(*seconds).await,
+        Call::SetBatteryIdleSleep { action, seconds } => {
+            set_battery_idle_sleep(action, *seconds).await
+        }
         Call::SetKeyboardBacklight { level } => set_keyboard_backlight(*level).await,
         Call::SetRadio { kind, on } => set_radio(kind, *on).await,
         Call::SetWifiPowerSave { uuid, value } => set_wifi_power_save(uuid, *value).await,
@@ -394,6 +398,99 @@ async fn set_power_profile(profile: &str) -> Result<(String, Option<Call>), Stri
         ));
     }
     Err("the power profiles service is not running".into())
+}
+
+const SESSION: &str = "org.gnome.desktop.session";
+const GNOME_POWER: &str = "org.gnome.settings-daemon.plugins.power";
+
+/// A GNOME setting now, without its type word and quotes (`uint32 300` gives `300`).
+async fn gsetting(schema: &str, key: &str) -> Result<String, String> {
+    let raw = program("gsettings", &["get", schema, key]).await?;
+    Ok(gsetting_value(&raw))
+}
+
+/// `uint32 300` to `300`, `'suspend'` to `suspend`.
+pub fn gsetting_value(raw: &str) -> String {
+    raw.trim()
+        .trim_start_matches("uint32 ")
+        .trim_start_matches("int32 ")
+        .trim_matches('\'')
+        .to_owned()
+}
+
+/// Sets how long the screen stays on without use. The old value is the undo.
+async fn set_screen_idle(seconds: u32) -> Result<(String, Option<Call>), String> {
+    if seconds != 0 && !(60..=3600).contains(&seconds) {
+        return Err("the time must be 0 (never) or 60-3600 seconds".into());
+    }
+    let old: u32 = gsetting(SESSION, "idle-delay")
+        .await?
+        .parse()
+        .map_err(|_| "the screen setting is not a number")?;
+    program(
+        "gsettings",
+        &["set", SESSION, "idle-delay", &seconds.to_string()],
+    )
+    .await?;
+    Ok((
+        if seconds == 0 {
+            "the screen no longer turns off by itself".into()
+        } else {
+            format!(
+                "the screen turns off after {} minutes without use",
+                seconds / 60
+            )
+        },
+        Some(Call::SetScreenIdle { seconds: old }),
+    ))
+}
+
+/// Sets what the laptop does after some time without use on battery. The old values are the
+/// undo.
+async fn set_battery_idle_sleep(
+    action: &str,
+    seconds: u32,
+) -> Result<(String, Option<Call>), String> {
+    if !deecure_core::fix::IDLE_ACTIONS.contains(&action) {
+        return Err(format!("{action} is not an idle action"));
+    }
+    if !(60..=86_400).contains(&seconds) {
+        return Err("the time must be 60-86400 seconds".into());
+    }
+    let old_action = gsetting(GNOME_POWER, "sleep-inactive-battery-type").await?;
+    let old_seconds: u32 = gsetting(GNOME_POWER, "sleep-inactive-battery-timeout")
+        .await?
+        .parse()
+        .map_err(|_| "the sleep time is not a number")?;
+    program(
+        "gsettings",
+        &[
+            "set",
+            GNOME_POWER,
+            "sleep-inactive-battery-timeout",
+            &seconds.to_string(),
+        ],
+    )
+    .await?;
+    program(
+        "gsettings",
+        &["set", GNOME_POWER, "sleep-inactive-battery-type", action],
+    )
+    .await?;
+    Ok((
+        if action == "nothing" {
+            "on battery, the laptop no longer sleeps by itself".into()
+        } else {
+            format!(
+                "on battery, the laptop sleeps after {} minutes without use",
+                seconds / 60
+            )
+        },
+        Some(Call::SetBatteryIdleSleep {
+            action: old_action,
+            seconds: old_seconds.max(60),
+        }),
+    ))
 }
 
 /// Keeps "Power saver on battery" on or off for this user. The agent reads the file and does
@@ -754,5 +851,12 @@ mod tests {
         assert!(is_uuid("0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"));
         assert!(!is_uuid("Home; rm -rf /"));
         assert!(!is_uuid("0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5"));
+    }
+
+    #[test]
+    fn gsetting_values_lose_their_type_and_quotes() {
+        assert_eq!(gsetting_value("uint32 300\n"), "300");
+        assert_eq!(gsetting_value("'nothing'"), "nothing");
+        assert_eq!(gsetting_value("900"), "900");
     }
 }

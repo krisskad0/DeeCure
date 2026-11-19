@@ -238,7 +238,7 @@ pub(crate) async fn set_profile(agent: &Agent, profile: &str) -> Result<(), Stri
     Err("the power profiles service is not running".into())
 }
 
-async fn gsetting(schema: &str, key: &str) -> Option<String> {
+pub(crate) async fn gsetting(schema: &str, key: &str) -> Option<String> {
     let out = command::output("gsettings", &["get", schema, key], Duration::from_secs(3)).await?;
     Some(
         out.trim()

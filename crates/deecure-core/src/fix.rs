@@ -130,6 +130,16 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         Some("on|off"),
     ),
     (
+        "power.set_screen_idle",
+        "Turn the screen off when idle",
+        Some("seconds"),
+    ),
+    (
+        "power.set_battery_idle_sleep",
+        "Sleep when idle on battery",
+        Some("seconds|off"),
+    ),
+    (
         "storage.cap_journal",
         "Cap the system log size",
         Some("megabytes|off"),
@@ -396,6 +406,20 @@ pub enum Call {
         /// On or off.
         on: bool,
     },
+    /// Seconds without use before the screen turns off (GNOME `idle-delay`); 0 = never.
+    SetScreenIdle {
+        /// 0, or 60-3600.
+        seconds: u32,
+    },
+    /// What the laptop does after some time without use on battery (GNOME
+    /// `sleep-inactive-battery-type` and `-timeout`). Apps that play media or ask to stay awake
+    /// still keep it awake.
+    SetBatteryIdleSleep {
+        /// One of [`IDLE_ACTIONS`].
+        action: String,
+        /// 60-86400.
+        seconds: u32,
+    },
     /// Cap the system log (`SystemMaxUse=` in a journald drop-in), and shrink it to the cap now.
     /// `None` removes the drop-in.
     SetJournalCap {
@@ -489,6 +513,8 @@ impl Call {
                 | Call::EndProcess { .. }
                 | Call::SetPowerProfile { .. }
                 | Call::SetBatterySaver { .. }
+                | Call::SetScreenIdle { .. }
+                | Call::SetBatteryIdleSleep { .. }
                 | Call::SetKeyboardBacklight { .. }
                 | Call::SetRadio { .. }
                 | Call::SetWifiPowerSave { .. }
@@ -497,6 +523,16 @@ impl Call {
         )
     }
 }
+
+/// What GNOME may do after some time without use (`sleep-inactive-*-type`).
+pub const IDLE_ACTIONS: &[&str] = &[
+    "nothing",
+    "suspend",
+    "hibernate",
+    "interactive",
+    "blank",
+    "logout",
+];
 
 /// Where "Power saver on battery" is kept for this user:
 /// `$XDG_CONFIG_HOME/deecure/battery-saver.json`, or `~/.config/deecure/battery-saver.json`.
