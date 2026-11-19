@@ -31,7 +31,7 @@ mod memory_detail;
 pub(crate) mod net;
 pub(crate) mod net_deep;
 mod network;
-mod optimize;
+pub(crate) mod optimize;
 mod os;
 pub(crate) mod packages;
 mod pci_detail;

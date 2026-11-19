@@ -16,6 +16,7 @@ use super::storage_detail;
 mod cleanup;
 mod drivers;
 mod history;
+pub(crate) use history::away_needs;
 
 use super::{
     command, cpu_detail, kernel, memory_detail, pci_detail, power_detail, services_detail,

@@ -129,16 +129,7 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         "Use Power saver on battery",
         Some("on|off"),
     ),
-    (
-        "power.set_screen_idle",
-        "Turn the screen off when idle",
-        Some("seconds"),
-    ),
-    (
-        "power.set_battery_idle_sleep",
-        "Sleep when idle on battery",
-        Some("seconds|off"),
-    ),
+    ("power.save_when_away", "Save power when you are away", None),
     (
         "storage.cap_journal",
         "Cap the system log size",

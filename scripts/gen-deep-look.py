@@ -12,7 +12,7 @@ It tells one short story in the app's own look (colours from app/src/tokens.css)
 
 The numbers are real counts: 10 layers, more than 150 readings (the 153 Expert readings in
 docs/01-product/expert-coverage.md, plus the basic ones), 56 warnings (one per file in rules/),
-and 50 fixes. The layer list matches the site's
+and 49 fixes. The layer list matches the site's
 "How deep it looks" section. CSS animation only (no script), so GitHub plays it. With
 "reduce motion" it shows the "See it" step without moving. The size is 1080 x 1350, so the
 same drawing can be recorded as a portrait video for social posts.
@@ -78,7 +78,7 @@ LAYERS = [
     ("Hardware and devices", "sensors, SSD, PCIe, USB-C", 11, False),
 ]
 WARNINGS = sum(n for _, _, n, _ in LAYERS)
-READINGS, FIXES = 150, 50  # 150+: the Expert readings alone are 153
+READINGS, FIXES = 150, 49  # 150+: the Expert readings alone are 153
 assert WARNINGS == 56
 SCAN_START, SCAN_STEP, SCAN_LEN = DEEP[0] + 1.0, 0.5, 0.42
 LSTART = [SCAN_START + i * SCAN_STEP for i in range(len(LAYERS))]

@@ -167,95 +167,19 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
             .filter(|(t, _)| now - t <= 7 * DAY)
             .copied()
             .collect();
+        let usage = battery_usage(agent, &b.name, &info, &week, now);
         out.push(battery_saver(
             &info,
             minutes_on_battery(&week),
             detail.battery_saver,
+            usage.as_deref(),
         ));
-        out.push(battery_idle_sleep(&info));
-        out.push(battery_drain(agent, &b.name, &info, &week, now));
         out.push(power_mode(&info, &mains, now));
         out.push(lid_wakes(&detail).await);
     }
-    out.push(screen_idle(&info));
+    out.push(away(&info, !detail.batteries.is_empty()));
     out.push(zswap(agent));
     out
-}
-
-/// "5 minutes", "1 minute".
-fn minutes(seconds: u32) -> String {
-    count((seconds / 60) as usize, "minute")
-}
-
-/// Turn the screen off after 5 minutes without use, when it never does, or waits over 15.
-fn screen_idle(info: &power::PowerInfo) -> Check {
-    let (offered, measured) = match info.screen_blank_seconds {
-        None => (
-            false,
-            "The screen setting cannot be read (GNOME only).".to_owned(),
-        ),
-        Some(0) => (
-            true,
-            "The screen never turns off by itself when you are away. The screen is often the biggest single power user.".to_owned(),
-        ),
-        Some(s) if s > 900 => (
-            true,
-            format!(
-                "The screen stays on for {} after you stop using the computer.",
-                minutes(s)
-            ),
-        ),
-        Some(s) => (
-            false,
-            format!("The screen turns off after {} without use.", minutes(s)),
-        ),
-    };
-    fix(
-        "power.screen_idle",
-        "Turn the screen off when you are away",
-        measured,
-        offered,
-        "power.set_screen_idle",
-        Some("300".into()),
-        "you",
-    )
-}
-
-/// Sleep after 15 minutes without use on battery, when the laptop never does, or waits over 30.
-fn battery_idle_sleep(info: &power::PowerInfo) -> Check {
-    let (offered, measured) = match info.suspend_on_battery_seconds {
-        None => (
-            false,
-            "The sleep setting cannot be read (GNOME only).".to_owned(),
-        ),
-        Some(0) => (
-            true,
-            "On battery, the laptop never sleeps by itself, so the battery keeps draining when you leave it open and unused.".to_owned(),
-        ),
-        Some(s) if s > 1800 => (
-            true,
-            format!(
-                "On battery, the laptop sleeps only after {} without use.",
-                minutes(s)
-            ),
-        ),
-        Some(s) => (
-            false,
-            format!(
-                "On battery, the laptop sleeps after {} without use.",
-                minutes(s)
-            ),
-        ),
-    };
-    fix(
-        "power.battery_idle_sleep",
-        "Sleep when you are away, on battery",
-        measured,
-        offered,
-        "power.set_battery_idle_sleep",
-        Some("900".into()),
-        "you",
-    )
 }
 
 /// Minutes on battery in `mains` (one point a minute in the last 7 days).
@@ -275,11 +199,83 @@ pub fn battery_draw(mains: &[(i64, f64)], watts: &[(i64, f64)]) -> Option<(f64, 
     (!draws.is_empty()).then(|| (draws.iter().sum::<f64>() / draws.len() as f64, draws.len()))
 }
 
-/// How long a full charge lasts at the measured draw before Optimize offers help, in hours.
-pub const SHORT_HOURS: f64 = 8.0;
+/// "5 minutes", "1 minute".
+fn minutes(seconds: u32) -> String {
+    count((seconds / 60) as usize, "minute")
+}
 
-fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool) -> Check {
+/// What is wrong with the screen and sleep settings, if anything: the screen never turns off or
+/// stays on over 15 minutes; on battery the laptop never sleeps or waits over 30 minutes.
+pub fn away_needs(
+    screen: Option<u32>,
+    sleep: Option<u32>,
+    battery: bool,
+) -> (Option<String>, Option<String>) {
+    let screen = match screen {
+        Some(0) => Some("the screen never turns off by itself".to_owned()),
+        Some(s) if s > 900 => Some(format!(
+            "the screen stays on for {} without use",
+            minutes(s)
+        )),
+        _ => None,
+    };
+    let sleep = match sleep.filter(|_| battery) {
+        Some(0) => Some("on battery the laptop never sleeps by itself".to_owned()),
+        Some(s) if s > 1800 => Some(format!(
+            "on battery the laptop sleeps only after {} without use",
+            minutes(s)
+        )),
+        _ => None,
+    };
+    (screen, sleep)
+}
+
+/// One item for both settings that save power only while nobody uses the computer: the screen
+/// turning off, and sleep on battery. The fix preview has a step for each one needed.
+fn away(info: &power::PowerInfo, battery: bool) -> Check {
+    let (screen, sleep) = away_needs(
+        info.screen_blank_seconds,
+        info.suspend_on_battery_seconds,
+        battery,
+    );
+    let offered = screen.is_some() || sleep.is_some();
+    let measured = if offered {
+        let facts: Vec<String> = [screen, sleep].into_iter().flatten().collect();
+        let text = facts.join(", and ");
+        let mut first = text.chars();
+        format!(
+            "{}{}. These save power only while you are away: video, calls, and apps that ask to stay awake still keep the screen and the laptop on.",
+            first
+                .next()
+                .map(|c| c.to_uppercase().to_string())
+                .unwrap_or_default(),
+            first.as_str()
+        )
+    } else {
+        match (info.screen_blank_seconds, info.suspend_on_battery_seconds) {
+            (None, _) => "The screen and sleep settings cannot be read (GNOME only).".to_owned(),
+            (Some(s), Some(b)) if battery => format!(
+                "The screen turns off after {} without use, and on battery the laptop sleeps after {}.",
+                minutes(s),
+                minutes(b)
+            ),
+            (Some(s), _) => format!("The screen turns off after {} without use.", minutes(s)),
+        }
+    };
+    fix(
+        "power.away",
+        "Save power when you are away",
+        measured,
+        offered,
+        "power.save_when_away",
+        None,
+        "you",
+    )
+}
+
+fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool, usage: Option<&str>) -> Check {
     let title = "Use Power saver on battery";
+    let usage = usage.map(|u| format!(" {u}")).unwrap_or_default();
     let (offered, measured) = if info.profile.is_none() {
         (
             false,
@@ -288,7 +284,7 @@ fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool) -> Check {
     } else if on {
         (
             false,
-            "Power saver already turns on by itself when you unplug.".to_owned(),
+            format!("Power saver already turns on by itself when you unplug.{usage}"),
         )
     } else if minutes < 60 {
         (
@@ -302,7 +298,7 @@ fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool) -> Check {
         (
             true,
             format!(
-                "{} on battery in the last 7 days, and the power mode stays the same when you unplug.",
+                "{} on battery in the last 7 days.{usage} The power mode stays the same when you unplug.",
                 hours_text(minutes as f64 / 60.0)
             ),
         )
@@ -318,107 +314,40 @@ fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool) -> Check {
     )
 }
 
-fn battery_drain(
+/// The measured use on battery in the last 7 days, in one sentence: the average draw, the share
+/// of the battery an hour, and how long a full charge lasts. `None` with under 60 minutes.
+fn battery_usage(
     agent: &Agent,
     battery: &str,
     info: &power::PowerInfo,
     mains: &[(i64, f64)],
     now: i64,
-) -> Check {
-    let title = "Make the battery last longer";
-    let what = "Use the other battery items Optimize offers here: each one was measured as needed on this computer, and none of them limits the apps you use. They save power when you are away (screen off, sleep), switch to Power saver only while unplugged, and stop work that waits for hardware this computer does not have.";
-    let since = deecure_core::Timestamp(now - 7 * DAY);
-    let (watts, top) = {
-        let store = crate::store::lock(&agent.store);
-        let watts = store
-            .metrics(
-                "battery.power",
-                Some(battery),
-                since,
-                deecure_core::Timestamp(now),
-            )
-            .unwrap_or_default()
-            .into_iter()
-            .map(|m| (m.at.0, m.value))
-            .collect::<Vec<_>>();
-        let top = store
-            .metric_sums(
-                crate::collect::app_battery::METRIC,
-                since,
-                deecure_core::Timestamp(now),
-            )
-            .unwrap_or_default();
-        (watts, top)
-    };
+) -> Option<String> {
+    let watts: Vec<(i64, f64)> = crate::store::lock(&agent.store)
+        .metrics(
+            "battery.power",
+            Some(battery),
+            deecure_core::Timestamp(now - 7 * DAY),
+            deecure_core::Timestamp(now),
+        )
+        .unwrap_or_default()
+        .into_iter()
+        .map(|m| (m.at.0, m.value))
+        .collect();
     let full = info
         .batteries
         .iter()
         .find(|b| b.name == battery)
         .and_then(|b| b.full_wh)
-        .filter(|f| *f > 0.0);
-    let (Some((w, minutes)), Some(full)) = (battery_draw(mains, &watts), full) else {
-        return advice(
-            "power.battery_drain",
-            title,
-            "No readings on battery in the last 7 days.".into(),
-            false,
-            what,
-        );
-    };
-    if minutes < 60 {
-        return advice(
-            "power.battery_drain",
-            title,
-            format!(
-                "{} on battery in the last 7 days: not enough to judge.",
-                count(minutes, "minute")
-            ),
-            false,
-            what,
-        );
-    }
-    let hours = full / w;
-    let measured = format!(
-        "On battery, the laptop used {w:.1} W on average in the last 7 days, about {:.0}% of the battery an hour. A full charge ({full:.0} Wh now) lasts about {}.{}",
-        w / full * 100.0,
-        hours_text(hours),
-        top_users(&top)
-    );
-    advice(
-        "power.battery_drain",
-        title,
-        measured,
-        hours < SHORT_HOURS,
-        what,
-    )
-}
-
-/// " Most of it: Google Chrome 30%, the screen and system at rest 25%, …" from the per-app
-/// estimate (Power › Battery), or nothing when there is none.
-pub fn top_users(sums: &[(Option<String>, f64)]) -> String {
-    let total: f64 = sums.iter().map(|(_, v)| v.max(0.0)).sum();
-    if total <= 0.0 {
-        return String::new();
-    }
-    let mut list: Vec<(String, f64)> = sums
-        .iter()
-        .filter_map(|(s, v)| {
-            let (kind, name) = super::super::app_battery::parse(s.as_deref()?);
-            let label = match kind.as_str() {
-                "rest" => "the screen, Wi-Fi, and the system at rest".to_owned(),
-                "other" => "small apps together".to_owned(),
-                _ => name,
-            };
-            Some((label, *v))
-        })
-        .collect();
-    list.sort_by(|a, b| b.1.total_cmp(&a.1));
-    let parts: Vec<String> = list
-        .iter()
-        .take(3)
-        .map(|(n, v)| format!("{n} {:.0}%", v / total * 100.0))
-        .collect();
-    format!(" Most of it (an estimate): {}.", parts.join(", "))
+        .filter(|f| *f > 0.0)?;
+    let (w, minutes) = battery_draw(mains, &watts)?;
+    (minutes >= 60).then(|| {
+        format!(
+            "On battery, the laptop used {w:.1} W on average (about {:.0}% of the battery an hour), so a full charge ({full:.0} Wh now) lasts about {}.",
+            w / full * 100.0,
+            hours_text(full / w)
+        )
+    })
 }
 
 /// "7.2 hours", "45 minutes".
@@ -597,40 +526,34 @@ mod tests {
     }
 
     #[test]
-    fn the_top_users_are_named_with_their_share() {
-        let sums = [
-            (Some("app:Google Chrome".to_owned()), 300.0),
-            (Some("rest".to_owned()), 500.0),
-            (Some("app:Visual Studio Code".to_owned()), 150.0),
-            (Some("other".to_owned()), 50.0),
-        ];
+    fn away_offers_only_what_never_happens_or_waits_long() {
+        // This laptop on 2026-11-19: the screen never turns off, and it never sleeps on battery.
+        let (screen, sleep) = away_needs(Some(0), Some(0), true);
         assert_eq!(
-            top_users(&sums),
-            " Most of it (an estimate): the screen, Wi-Fi, and the system at rest 50%, Google Chrome 30%, Visual Studio Code 15%."
+            screen.as_deref(),
+            Some("the screen never turns off by itself")
         );
-        assert_eq!(top_users(&[]), "");
-    }
-
-    #[test]
-    fn the_screen_and_sleep_are_offered_only_when_they_never_happen_or_wait_long() {
-        let info = |blank, sleep| power::PowerInfo {
-            screen_blank_seconds: blank,
-            suspend_on_battery_seconds: sleep,
+        assert_eq!(
+            sleep.as_deref(),
+            Some("on battery the laptop never sleeps by itself")
+        );
+        assert_eq!(away_needs(Some(300), Some(900), true), (None, None));
+        assert!(away_needs(Some(1800), Some(3600), true).1.is_some());
+        // A desktop: sleep on battery is not its business.
+        assert_eq!(away_needs(Some(300), Some(0), false), (None, None));
+        let info = power::PowerInfo {
+            screen_blank_seconds: Some(0),
+            suspend_on_battery_seconds: Some(900),
             ..Default::default()
         };
-        let offered = |b, s| {
-            let i = info(b, s);
-            (screen_idle(&i).offered, battery_idle_sleep(&i).offered)
-        };
-        // This laptop on 2026-11-19: never and never.
-        assert_eq!(offered(Some(0), Some(0)), (true, true));
-        assert_eq!(offered(Some(300), Some(900)), (false, false));
-        assert_eq!(offered(Some(1800), Some(3600)), (true, true));
-        assert_eq!(offered(None, None), (false, false));
+        let check = away(&info, true);
+        assert!(check.offered);
         assert!(
-            screen_idle(&info(Some(0), None))
+            check
                 .measured
-                .contains("never turns off")
+                .starts_with("The screen never turns off by itself. These save"),
+            "{}",
+            check.measured
         );
     }
 

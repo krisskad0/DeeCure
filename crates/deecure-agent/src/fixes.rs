@@ -784,88 +784,73 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 Call::SetBatterySaver { on },
             )]
         }
-        "power.set_screen_idle" => {
-            let seconds: u32 = need(subject, "seconds")?
-                .parse()
-                .map_err(|_| "the time is not a number")?;
-            if seconds != 0 && !(60..=3600).contains(&seconds) {
-                return Err("the time must be 0 (never) or 60-3600 seconds".into());
-            }
-            let gs = crate::inventory::power::gsetting;
-            let now = gs("org.gnome.desktop.session", "idle-delay").await;
-            let lock = gs("org.gnome.desktop.screensaver", "lock-enabled").await;
-            subtitle = "A GNOME setting, as you, no password".into();
-            vec![step(
-                "screen-idle",
-                &if seconds == 0 {
-                    "Never turn the screen off by itself".to_owned()
-                } else {
-                    format!(
-                        "Turn the screen off after {} minutes without use",
-                        seconds / 60
-                    )
-                },
-                format!(
-                    "Now: {}. Only time without keyboard, mouse, or touchpad use counts. A video or a call that asks to keep the screen on still keeps it on.{}",
-                    idle_text(now.as_deref()),
-                    if lock.as_deref() == Some("true") {
-                        " Your screen lock is on, so the screen also locks when it turns off."
-                    } else {
-                        ""
-                    }
-                ),
-                None,
-                Undo::Full,
-                true,
-                format!("gsettings set org.gnome.desktop.session idle-delay {seconds}"),
-                Call::SetScreenIdle { seconds },
-            )]
-        }
-        "power.set_battery_idle_sleep" => {
-            let raw = need(subject, "seconds|off")?;
-            let (action, seconds) = if raw == "off" {
-                ("nothing", 900)
-            } else {
-                let s: u32 = raw.parse().map_err(|_| "the time is not a number")?;
-                if !(60..=86_400).contains(&s) {
-                    return Err("the time must be 60-86400 seconds".into());
-                }
-                ("suspend", s)
-            };
+        "power.save_when_away" => {
             let gs = crate::inventory::power::gsetting;
             let power = "org.gnome.settings-daemon.plugins.power";
-            let now_type = gs(power, "sleep-inactive-battery-type").await;
-            let now_time = gs(power, "sleep-inactive-battery-timeout").await;
-            subtitle = "A GNOME setting, as you, no password".into();
-            vec![step(
-                "battery-idle-sleep",
-                &if action == "nothing" {
-                    "Never sleep by itself on battery".to_owned()
-                } else {
+            let num = |v: Option<String>| v.and_then(|v| v.parse::<u32>().ok());
+            let screen_now = num(gs("org.gnome.desktop.session", "idle-delay").await);
+            let sleep_type = gs(power, "sleep-inactive-battery-type").await;
+            let sleep_time = num(gs(power, "sleep-inactive-battery-timeout").await);
+            let sleep_now = match sleep_type.as_deref() {
+                Some("nothing") => Some(0),
+                _ => sleep_time,
+            };
+            let battery = crate::battery_saver::power_source(&agent.root).is_some();
+            let (screen, sleep) =
+                crate::inventory::optimize::away_needs(screen_now, sleep_now, battery);
+            let lock = gs("org.gnome.desktop.screensaver", "lock-enabled").await;
+            subtitle = "GNOME settings, as you, no password; untick a step to skip it".into();
+            let mut steps = Vec::new();
+            if screen.is_some() {
+                steps.push(step(
+                    "screen-idle",
+                    "Turn the screen off after 5 minutes without use",
                     format!(
-                        "Sleep after {} minutes without use on battery",
-                        seconds / 60
-                    )
-                },
-                format!(
-                    "Now: {}. Only on battery, and only after that long without keyboard, mouse, or touchpad use. Playing music or video, a call, or an app that asks to stay awake keeps the laptop awake. On mains nothing changes.",
-                    match now_type.as_deref() {
-                        Some("nothing") | None =>
-                            "the laptop never sleeps by itself on battery".to_owned(),
-                        Some(t) => format!("{t} after {}", idle_text(now_time.as_deref())),
-                    }
-                ),
-                None,
-                Undo::Full,
-                true,
-                format!(
-                    "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-timeout {seconds}; gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type {action}"
-                ),
-                Call::SetBatteryIdleSleep {
-                    action: action.into(),
-                    seconds,
-                },
-            )]
+                        "Now: {}. Only time without keyboard, mouse, or touchpad use counts. A video or a call that asks to keep the screen on still keeps it on.{}",
+                        idle_text(screen_now.map(|s| s.to_string()).as_deref()),
+                        if lock.as_deref() == Some("true") {
+                            " Your screen lock is on, so the screen also locks when it turns off."
+                        } else {
+                            ""
+                        }
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    "gsettings set org.gnome.desktop.session idle-delay 300".into(),
+                    Call::SetScreenIdle { seconds: 300 },
+                ));
+            }
+            if sleep.is_some() {
+                steps.push(step(
+                    "battery-idle-sleep",
+                    "Sleep after 15 minutes without use, on battery only",
+                    format!(
+                        "Now: {}. Playing music or video, a call, or an app that asks to stay awake keeps the laptop awake. On mains nothing changes.",
+                        match sleep_now {
+                            Some(0) | None => "the laptop never sleeps by itself on battery".to_owned(),
+                            Some(_) => format!(
+                                "it sleeps after {}",
+                                idle_text(sleep_time.map(|s| s.to_string()).as_deref())
+                            ),
+                        }
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-timeout 900; gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type suspend".into(),
+                    Call::SetBatteryIdleSleep {
+                        action: "suspend".into(),
+                        seconds: 900,
+                    },
+                ));
+            }
+            if steps.is_empty() {
+                return Err(
+                    "the screen and sleep settings already save power when you are away".into(),
+                );
+            }
+            steps
         }
         "storage.cap_journal" => {
             let raw = need(subject, "megabytes|off")?;
@@ -1330,27 +1315,6 @@ mod tests {
                 Call::SetBatterySaver { on: true },
             ),
             (
-                "power.set_screen_idle",
-                Some("300"),
-                Call::SetScreenIdle { seconds: 300 },
-            ),
-            (
-                "power.set_battery_idle_sleep",
-                Some("900"),
-                Call::SetBatteryIdleSleep {
-                    action: "suspend".into(),
-                    seconds: 900,
-                },
-            ),
-            (
-                "power.set_battery_idle_sleep",
-                Some("off"),
-                Call::SetBatteryIdleSleep {
-                    action: "nothing".into(),
-                    seconds: 900,
-                },
-            ),
-            (
                 "storage.cap_journal",
                 Some("500"),
                 Call::SetJournalCap { mb: Some(500) },
@@ -1448,8 +1412,6 @@ mod tests {
             ("power.set_charge_limits", "BAT0:80"),
             ("power.set_charge_limits", "BAT0:x:80"),
             ("power.set_turbo", "maybe"),
-            ("power.set_screen_idle", "30"),
-            ("power.set_battery_idle_sleep", "never"),
             ("power.set_radio", "nfc|on"),
             ("power.set_device_power_saving", "pci0000:00/0000:00:14.0"),
             ("power.set_keyboard_backlight", "bright"),
