@@ -119,14 +119,7 @@ pub async fn run(agent: std::sync::Arc<Agent>) {
     timer.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     loop {
         timer.tick().await;
-        last = match power_source(&agent.root) {
-            Some(mains) => look(&agent, file.as_deref(), last, mains).await,
-            None => {
-                // No battery: nothing to do. Look again rarely, in case one appears.
-                tokio::time::sleep(Duration::from_secs(600)).await;
-                None
-            }
-        };
+        last = look(&agent, file.as_deref(), last).await;
         if last != kept && store::lock(&agent.store).set_setting(LAST, &last).is_ok() {
             kept = last;
         }
@@ -134,7 +127,12 @@ pub async fn run(agent: std::sync::Arc<Agent>) {
 }
 
 /// One look: switches the power mode if needed, and gives the power source to remember.
-async fn look(agent: &Agent, file: Option<&Path>, last: Option<bool>, mains: bool) -> Option<bool> {
+///
+/// The setting comes first: a small file and one database value. The power supply files are
+/// ACPI or firmware calls (a few ms each), so they are read only when there is work to do: the
+/// setting is on, or a mode is waiting to be put back. A user who never turns it on costs
+/// nothing but this check.
+async fn look(agent: &Agent, file: Option<&Path>, last: Option<bool>) -> Option<bool> {
     let on = is_on(file);
     let before = store::lock(&agent.store)
         .setting::<Option<String>>(BEFORE)
@@ -144,6 +142,8 @@ async fn look(agent: &Agent, file: Option<&Path>, last: Option<bool>, mains: boo
     if !on && before.is_none() {
         return None;
     }
+    // No battery: nothing to switch.
+    let mains = power_source(&agent.root)?;
     // The power mode is one for the whole computer. With two people signed in, only the one at
     // the screen switches it; the other waits, and acts on a change once back at the screen.
     if !at_screen(agent).await {

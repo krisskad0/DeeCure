@@ -28,7 +28,7 @@ Use this list when reviewing any change to `deecure-helper`.
 
 - [ ] No shell. Run programs with a fixed argument list, never `sh -c`.
 - [ ] Every input is checked against a strict pattern or a live list (for example, the unit really exists).
-- [ ] The action has its own polkit action ID with the right level (`auth_admin_keep` for reads, `auth_admin` for writes). Exceptions with `auth_admin_keep`: low-risk writes with a full undo that one fix may run one after another, so the user types the password once: cleaning the APT cache, vacuuming the log, and the battery charge limits and charge mode (a Dell needs both for one limit).
+- [ ] The action has its own polkit action ID with the right level (`auth_admin_keep` for reads, `auth_admin` for writes). Exceptions with `auth_admin_keep`: low-risk writes with a full undo that one fix may run one after another, so the user types the password once: cleaning the APT cache, vacuuming the log, and the battery charge limits and charge mode (a Dell needs both for one limit). polkit keeps a password per action, so the charge limits and the charge mode share one action, `set-battery-charging`; with two actions the user would still type the password twice.
 - [ ] The call is written to the audit log with time, user, inputs, and result.
 - [ ] Errors return a clear message. They never leak file contents the caller could not read.
 - [ ] It cannot break the system or the session: apt changes keep changed settings files and use `--no-remove` where packages are installed or upgraded; a removal is checked against `PROTECTED_PACKAGES`; no unit in `ESSENTIAL_UNITS` is turned off and none in `NEVER_RESTART` is restarted; nothing is applied at every start without the "start that froze" guard ([helper](helper.md)).

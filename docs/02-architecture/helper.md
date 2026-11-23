@@ -9,7 +9,7 @@ The helper is the only part that runs as root, so it is kept small and strict.
    - `ReadSmart(device)`, `ReadFirewall()`, `ListAllCrontabs()`, `ReadShadowStatus()`
    - `CleanAptCache()`, `VacuumJournal(size)`, `RemoveSnapRevision(name, rev)`
    - `RestartService(unit)`, `DisableService(unit)`, `EnableFirewall()`, `RemoveOldKernels(keep=2)`
-3. Each action has a **polkit rule**. Read actions use `auth_admin_keep`, so one password covers a few minutes. So do a few low-risk writes with a full undo (the APT cache, the log size, the battery charge limits and charge mode), so a fix with two such steps asks once. Risky write actions ask every time.
+3. Each action has a **polkit rule**. Read actions use `auth_admin_keep`, so one password covers a few minutes. So do a few low-risk writes with a full undo (the APT cache, the log size, the battery charge limits and charge mode). polkit keeps a password per action, so the charge limits and the charge mode share one action, `set-battery-charging`: a Dell needs both for one limit, and the user types the password once. Risky write actions ask every time.
 4. The helper checks every input (for example, a service name must exist) and writes every call to an audit log.
 
 ## What is built

@@ -155,26 +155,37 @@ impl Collector for Battery {
                 now,
             ));
             // The stop limit, and charging on above it (OVER_BY points or more): the firmware
-            // does not follow the limit. Only a limit in use counts: a battery that offers a
-            // Custom charge mode follows the limit only in Custom, and in any other mode its
-            // limit files still show the stored Custom values (Dell), which do nothing then.
-            let in_use = crate::inventory::power_detail::limit_needs_custom(
-                text("charge_types")
-                    .map(|t| crate::inventory::power_detail::choice(&t))
-                    .as_ref(),
-            )
-            .is_none();
-            if in_use && let Some(stop) = number(&supply, "charge_control_end_threshold") {
-                sample.metrics.push(metric(
-                    "battery.charge_stop",
-                    subject,
-                    stop,
-                    Unit::Percent,
-                    now,
-                ));
-                let over = stop < 100.0
-                    && status.as_deref() == Some("Charging")
-                    && number(&supply, "capacity").is_some_and(|c| c >= stop + OVER_BY);
+            // does not follow the limit. On a Dell each of these files is a call into the BIOS
+            // (about 10 ms for the limit, 40 ms for the charge mode), so nothing is read while
+            // the battery does not charge: the limit only while it charges, and the charge
+            // mode only when the charge is already over the limit. Only a limit in use counts:
+            // a battery that offers a Custom charge mode follows the limit only in Custom, and
+            // in any other mode its files still show the stored Custom values (Dell).
+            if supply.join("charge_control_end_threshold").exists() {
+                let charging = status.as_deref() == Some("Charging");
+                let stop = charging
+                    .then(|| number(&supply, "charge_control_end_threshold"))
+                    .flatten();
+                let looks_over = stop.is_some_and(|s| {
+                    s < 100.0 && number(&supply, "capacity").is_some_and(|c| c >= s + OVER_BY)
+                });
+                let in_use = !looks_over
+                    || crate::inventory::power_detail::limit_needs_custom(
+                        text("charge_types")
+                            .map(|t| crate::inventory::power_detail::choice(&t))
+                            .as_ref(),
+                    )
+                    .is_none();
+                if in_use && let Some(stop) = stop {
+                    sample.metrics.push(metric(
+                        "battery.charge_stop",
+                        subject,
+                        stop,
+                        Unit::Percent,
+                        now,
+                    ));
+                }
+                let over = looks_over && in_use;
                 let minutes = self.over.entry(name.clone()).or_insert(0.0);
                 *minutes = if over { *minutes + step } else { 0.0 };
                 sample.metrics.push(metric(
@@ -388,12 +399,12 @@ mod tests {
             over(&battery.collect(&root, Timestamp(120_000)).unwrap()),
             Some(2.0)
         );
-        // Above the limit but not charging (charged before the limit was set): not over.
+        // Above the limit but not charging (charged before the limit was set): not over, and
+        // the limit is not even read (on a Dell each read is a call into the BIOS).
         let root = fixture_root("battery-over-idle", &files("Not charging\n", "93\n"));
-        assert_eq!(
-            over(&battery.collect(&root, Timestamp(180_000)).unwrap()),
-            Some(0.0)
-        );
+        let sample = battery.collect(&root, Timestamp(180_000)).unwrap();
+        assert_eq!(over(&sample), Some(0.0));
+        assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
         // No limit file: neither reading.
         let root = fixture_root(
             "battery-no-limit",
@@ -430,7 +441,7 @@ mod tests {
             &files("Trickle Fast [Standard] Adaptive Custom\n"),
         );
         let sample = battery.collect(&root, Timestamp(0)).unwrap();
-        assert_eq!(over(&sample), None);
+        assert_eq!(over(&sample), Some(0.0));
         assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
         // The same Dell in Custom: the limit is in use and is watched.
         let root = fixture_root(

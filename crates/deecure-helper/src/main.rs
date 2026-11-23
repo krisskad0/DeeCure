@@ -65,8 +65,16 @@ const READS: &[&str] = &[
 /// How long `wakeups` counts.
 const WAKEUP_SECONDS: u64 = 5;
 
-/// The polkit action for a call: `io.github.krisskad0.deecure.<operation>`.
+/// The polkit action for a call: `io.github.krisskad0.deecure.<operation>`. The charge limits
+/// and the charge mode share one action, `set-battery-charging`: polkit keeps a password per
+/// action, and a Dell needs both for one limit, so one password covers the two steps.
 fn polkit_action(call: &Call) -> String {
+    if matches!(
+        call,
+        Call::SetChargeLimits { .. } | Call::SetChargeMode { .. }
+    ) {
+        return "io.github.krisskad0.deecure.set-battery-charging".into();
+    }
     let op = serde_json::to_value(call)
         .ok()
         .and_then(|v| v.get("op")?.as_str().map(str::to_owned))
@@ -902,6 +910,23 @@ mod tests {
                 enabled: true
             }),
             "io.github.krisskad0.deecure.set-service-enabled"
+        );
+        // One action for both charge calls, so one password covers a limit and its mode.
+        let charging = "io.github.krisskad0.deecure.set-battery-charging";
+        assert_eq!(
+            polkit_action(&Call::SetChargeLimits {
+                battery: "BAT0".into(),
+                start: Some(75),
+                stop: 80
+            }),
+            charging
+        );
+        assert_eq!(
+            polkit_action(&Call::SetChargeMode {
+                battery: "BAT0".into(),
+                mode: "Custom".into()
+            }),
+            charging
         );
     }
 
