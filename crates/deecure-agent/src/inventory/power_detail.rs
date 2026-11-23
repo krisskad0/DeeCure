@@ -298,6 +298,21 @@ fn names(root: &SystemRoot, dir: &str) -> Vec<String> {
     v
 }
 
+/// The charge mode in use when the battery offers a `Custom` mode and another one is in use.
+/// The kernel follows the charge limits (`charge_control_*`) only in `Custom` when a battery
+/// offers it, so a limit is then ignored (a Dell charges to 100% in Standard or Adaptive).
+/// `None` when `Custom` is in use, or not offered.
+pub fn limit_needs_custom(mode: Option<&Choice>) -> Option<String> {
+    let mode = mode?;
+    if !mode.offered.iter().any(|o| o == "Custom") {
+        return None;
+    }
+    match mode.current.as_deref() {
+        Some("Custom") => None,
+        other => Some(other.unwrap_or("not reported").to_owned()),
+    }
+}
+
 /// `Trickle Fast [Custom]`: the one in brackets is in use.
 pub fn choice(text: &str) -> Choice {
     let offered: Vec<String> = text

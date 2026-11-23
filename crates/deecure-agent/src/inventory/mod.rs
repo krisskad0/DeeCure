@@ -37,7 +37,7 @@ pub(crate) mod packages;
 mod pci_detail;
 mod platform_detail;
 pub(crate) mod power;
-mod power_detail;
+pub(crate) mod power_detail;
 mod privacy;
 mod process_detail;
 mod process_io;

@@ -454,7 +454,7 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 ),
                 None => format!("echo {stop} | sudo tee {dir}/charge_control_end_threshold"),
             };
-            vec![step(
+            let mut steps = vec![step(
                 "charge-limits",
                 &text,
                 "Keeping a battery below full slows its wear. DeeCure sets it again at each start."
@@ -468,7 +468,34 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                     start,
                     stop,
                 },
-            )]
+            )];
+            // A battery with a Custom charge mode follows the limit only in that mode (a Dell
+            // in Standard or Adaptive charges to 100%), so the limit alone would do nothing.
+            let mode = agent
+                .root
+                .read(&format!("{dir}/charge_types"))
+                .ok()
+                .map(|t| crate::inventory::power_detail::choice(&t));
+            if stop < 100
+                && let Some(now) = crate::inventory::power_detail::limit_needs_custom(mode.as_ref())
+            {
+                steps.push(step(
+                    "charge-mode-custom",
+                    "Use the Custom charge mode, so the limit works",
+                    format!(
+                        "Now: {now}. This battery stops at the limit only in the Custom charge mode; in any other mode it charges to 100%."
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    format!("echo Custom | sudo tee {dir}/charge_types"),
+                    Call::SetChargeMode {
+                        battery: (*battery).to_owned(),
+                        mode: "Custom".into(),
+                    },
+                ));
+            }
+            steps
         }
         "power.set_charge_mode" => {
             let raw = need(subject, "battery:mode")?;
@@ -1172,6 +1199,46 @@ mod tests {
         for (a, _, _) in ACTIONS {
             assert!(FixActionId::new(*a).is_ok(), "{a}");
         }
+    }
+
+    #[tokio::test]
+    async fn a_limit_also_sets_custom_when_the_battery_needs_it() {
+        let root = |name: &str, modes: &'static str| {
+            Agent::new(
+                Arc::new(Mutex::new(Store::open_in_memory().unwrap())),
+                crate::collect::test_support::fixture_root(
+                    name,
+                    &[
+                        ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                        (
+                            "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                            "100\n",
+                        ),
+                        ("/sys/class/power_supply/BAT0/charge_types", modes),
+                    ],
+                ),
+            )
+        };
+        let ops = |p: Plan| p.steps.iter().map(|s| s.id.clone()).collect::<Vec<_>>();
+        // A Dell in Standard: the limit, then Custom.
+        let dell = root("limit-dell", "[Standard] Adaptive Custom Fast\n");
+        let p = plan(&dell, "power.set_charge_limits", Some("BAT0:-:80"))
+            .await
+            .unwrap();
+        assert_eq!(
+            p.steps[1].call,
+            Call::SetChargeMode {
+                battery: "BAT0".into(),
+                mode: "Custom".into()
+            }
+        );
+        assert_eq!(ops(p), ["charge-limits", "charge-mode-custom"]);
+        // Already in Custom, or back to Full (100%): the limit alone.
+        let custom = root("limit-custom", "Standard Adaptive [Custom]\n");
+        let p = plan(&custom, "power.set_charge_limits", Some("BAT0:-:80"));
+        assert_eq!(ops(p.await.unwrap()), ["charge-limits"]);
+        let p = plan(&dell, "power.set_charge_limits", Some("BAT0:-:100"));
+        assert_eq!(ops(p.await.unwrap()), ["charge-limits"]);
     }
 
     #[tokio::test]

@@ -527,17 +527,15 @@ pub const IDLE_ACTIONS: &[&str] = &[
     "logout",
 ];
 
-/// Where "Power saver on battery" is kept for this user:
-/// `$XDG_CONFIG_HOME/deecure/battery-saver.json`, or `~/.config/deecure/battery-saver.json`.
+/// Where "Power saver on battery" is kept for this user: `~/.config/deecure/battery-saver.json`.
 /// It holds `{"on": true}` or `{"on": false}`; a missing file means off.
+///
+/// Always under `HOME`, never `$XDG_CONFIG_HOME`: the app writes it from the desktop session,
+/// and the agent reads it from systemd, which can start before the desktop sets that variable.
+/// With two different folders the button would say done and nothing would switch.
 pub fn battery_saver_file() -> Option<std::path::PathBuf> {
-    let config = std::env::var_os("XDG_CONFIG_HOME")
-        .filter(|c| !c.is_empty())
-        .map(std::path::PathBuf::from)
-        .or_else(|| {
-            std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join(".config"))
-        })?;
-    Some(config.join("deecure/battery-saver.json"))
+    let home = std::env::var_os("HOME").filter(|h| !h.is_empty())?;
+    Some(std::path::PathBuf::from(home).join(".config/deecure/battery-saver.json"))
 }
 
 /// Is "Power saver on battery" on in this file? A missing or damaged file means off. The one
