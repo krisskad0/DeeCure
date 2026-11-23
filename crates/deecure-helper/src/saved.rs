@@ -52,7 +52,7 @@ pub struct Kept {
     pub id: Option<String>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Saved {
     pub settings: BTreeMap<String, Kept>,
 }
@@ -357,10 +357,29 @@ pub fn apply_if_lost(root: &Path, key: &str) -> Option<Outcome> {
     {
         return None;
     }
-    let result = apply_one(root, key, kept);
+    let mut result = apply_one(root, key, kept);
+    let mut call = kept.call.clone();
+    // A value kept before DeeCure read it back (or set by hand) may be one the firmware changes
+    // (Dell). Keep what the firmware keeps, so this is written once, not at every charger change.
+    if result.is_ok()
+        && let Some((stored, note)) = power::as_stored(&kept.call, root)
+    {
+        let mut saved = saved.clone();
+        if let Some(k) = saved.settings.get_mut(key) {
+            k.call = stored.clone();
+        }
+        let kept_now = serde_json::to_string_pretty(&saved)
+            .map_err(|e| e.to_string())
+            .and_then(|text| store(&root.join(SAVED), &text));
+        result = result.map(|m| match kept_now {
+            Ok(()) => format!("{m}. {note}"),
+            Err(e) => format!("{m}. {note} (could not save it: {e})"),
+        });
+        call = stored;
+    }
     Some(Outcome {
         setting: key.to_owned(),
-        call: kept.call.clone(),
+        call,
         ok: result.is_ok(),
         message: result.unwrap_or_else(|e| e),
     })
@@ -702,5 +721,40 @@ mod tests {
         .unwrap();
         assert!(apply_if_lost(&root, "charge_mode:BAT0").unwrap().ok);
         assert!(apply_if_lost(&root, "turbo").is_none(), "not kept");
+    }
+
+    #[test]
+    fn numbers_the_firmware_changed_are_read_back() {
+        // A Dell keeps a start of 50% when 40% is asked (no error is given).
+        let root = test_root(
+            "stored",
+            &[
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_start_threshold",
+                    "50\n",
+                ),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "80\n",
+                ),
+            ],
+        );
+        let asked = |start: u32| Call::SetChargeLimits {
+            battery: "BAT0".into(),
+            start: Some(start),
+            stop: 80,
+        };
+        let (stored, note) = power::as_stored(&asked(40), &root).unwrap();
+        assert_eq!(stored, asked(50));
+        assert!(
+            note.contains(
+                "it keeps start below 50% and stop at 80%, not start below 40% and stop at 80%"
+            ),
+            "{note}"
+        );
+        // What was asked is what is there: nothing to say.
+        assert!(power::as_stored(&asked(50), &root).is_none());
+        assert!(power::as_stored(&Call::CleanAptCache, &root).is_none());
     }
 }

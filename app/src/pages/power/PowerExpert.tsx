@@ -13,7 +13,7 @@ import { ShowAll } from "../../components/ShowAll";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useFix } from "../../shell/FixDrawer";
 import { useLive } from "../../useLive";
-import { pciPowerSavingSafe } from "./PowerControls";
+import { limitNeedsCustom, pciPowerSavingSafe } from "./PowerControls";
 import { NoData } from "../NoData";
 
 const loadPower = () => getInventory("power_detail");
@@ -81,7 +81,7 @@ export function BatteryExpertSections() {
               ["Temperature", b.temp_c !== undefined ? `${b.temp_c.toFixed(1)} °C` : "Not reported"],
               ["The battery says", b.health ?? "Not reported"],
               ["Made", b.made ?? "Not reported"],
-              ["Charge limits", b.charge_stop !== undefined ? `starts below ${b.charge_start ?? "-"}%, stops at ${b.charge_stop}%` : "This battery has no charge limits"],
+              ["Charge limits", b.charge_stop !== undefined ? `starts below ${b.charge_start ?? "-"}%, stops at ${b.charge_stop}%${limitNeedsCustom(b.charge_mode) ? ` (stored, not in use: they work only in the Custom charge mode, and the mode is ${limitNeedsCustom(b.charge_mode)})` : ""}` : "This battery has no charge limits"],
               ["Charge mode", b.charge_mode ? `${b.charge_mode.current ?? "-"} (offered: ${b.charge_mode.offered.join(", ")})` : "Not offered"],
               ...(b.charge_behaviour ? [["Charging behaviour", `${b.charge_behaviour.current ?? "-"} (offered: ${b.charge_behaviour.offered.join(", ")})`] as [string, string]] : []),
               ["Serial number", b.serial ?? "-"],

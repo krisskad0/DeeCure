@@ -14,7 +14,7 @@ use std::path::Path;
 use std::time::Duration;
 
 use crate::collect::SystemRoot;
-use crate::context::Agent;
+use crate::context::{Agent, Bus};
 use crate::inventory::power;
 use crate::store;
 
@@ -144,6 +144,11 @@ async fn look(agent: &Agent, file: Option<&Path>, last: Option<bool>, mains: boo
     if !on && before.is_none() {
         return None;
     }
+    // The power mode is one for the whole computer. With two people signed in, only the one at
+    // the screen switches it; the other waits, and acts on a change once back at the screen.
+    if !at_screen(agent).await {
+        return last;
+    }
     let Some((mode, _)) = power::profile(agent).await else {
         return last;
     };
@@ -156,6 +161,39 @@ async fn look(agent: &Agent, file: Option<&Path>, last: Option<bool>, mains: boo
     };
     // A failed switch is tried again at the next look.
     if done { on.then_some(mains) } else { last }
+}
+
+/// Is this user at the screen? From logind's `State` for this user: `active` when one of the
+/// user's sessions is in front (a locked screen still counts, and so does a session with no
+/// seat, such as SSH). `true` when logind cannot say, as on a computer with one user.
+async fn at_screen(agent: &Agent) -> bool {
+    let Ok(bus) = agent.bus(Bus::System).await else {
+        return true;
+    };
+    let Ok(reply) = bus
+        .call_method(
+            Some("org.freedesktop.login1"),
+            "/org/freedesktop/login1/user/self",
+            Some("org.freedesktop.DBus.Properties"),
+            "Get",
+            &("org.freedesktop.login1.User", "State"),
+        )
+        .await
+    else {
+        return true;
+    };
+    let state = reply
+        .body()
+        .deserialize::<zbus::zvariant::OwnedValue>()
+        .ok()
+        .and_then(|v| String::try_from(v).ok());
+    user_at_screen(state.as_deref())
+}
+
+/// `false` only when logind says the user is signed in but not at the screen (another person
+/// is), or is leaving.
+pub fn user_at_screen(state: Option<&str>) -> bool {
+    !matches!(state, Some("online" | "lingering" | "closing" | "offline"))
 }
 
 /// Changes the mode and remembers (or forgets) the mode to go back to.
@@ -266,6 +304,16 @@ mod tests {
                 before: "balanced".into()
             }
         );
+    }
+
+    #[test]
+    fn only_the_person_at_the_screen_switches() {
+        assert!(user_at_screen(Some("active")));
+        // Signed in, but another person is at the screen.
+        assert!(!user_at_screen(Some("online")));
+        assert!(!user_at_screen(Some("closing")));
+        // logind cannot say: one user, so act.
+        assert!(user_at_screen(None));
     }
 
     #[test]

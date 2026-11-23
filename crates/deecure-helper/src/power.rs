@@ -397,6 +397,48 @@ pub fn plan(call: &Call, root: &Path) -> Option<Result<(Vec<Write>, Call), Strin
     })
 }
 
+/// What the battery really keeps after a charge limit change, when it differs from `call`. Some
+/// firmware changes the numbers without an error (Dell keeps a start of 50-95% and a stop of
+/// 55-100%, at least 5 apart). DeeCure then keeps the stored values, so a later look does not
+/// take them for a lost setting and write again at every charger change. `None` when the
+/// battery keeps what was asked, or for any other call.
+pub fn as_stored(call: &Call, root: &Path) -> Option<(Call, String)> {
+    let Call::SetChargeLimits {
+        battery,
+        start,
+        stop,
+    } = call
+    else {
+        return None;
+    };
+    let dir = battery_dir(root, battery).ok()?;
+    let number = |file: &str| read(&dir.join(file)).and_then(|v| v.parse::<u32>().ok());
+    let real_stop = number("charge_control_end_threshold")?;
+    let real_start = match start {
+        Some(_) => Some(number("charge_control_start_threshold")?),
+        None => None,
+    };
+    if real_stop == *stop && real_start == *start {
+        return None;
+    }
+    let words = |start: Option<u32>, stop: u32| match start {
+        Some(s) => format!("start below {s}% and stop at {stop}%"),
+        None => format!("stop at {stop}%"),
+    };
+    Some((
+        Call::SetChargeLimits {
+            battery: battery.clone(),
+            start: real_start,
+            stop: real_stop,
+        },
+        format!(
+            "The firmware changed the numbers: it keeps {}, not {}. This laptop allows only some values, so DeeCure keeps what the firmware keeps.",
+            words(real_start, real_stop),
+            words(*start, *stop)
+        ),
+    ))
+}
+
 /// True when every write would leave its file as it is: the value is there already, or, for a
 /// list of choices such as `Trickle Fast [Custom]`, it is the one in use.
 pub fn already_set(writes: &[Write]) -> bool {

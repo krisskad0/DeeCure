@@ -143,38 +143,41 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
 /// The charge limit and charge mode items for one battery. `usage` is the time on mains, as a
 /// sentence with a space before it, or empty.
 ///
-/// - The 80% limit is offered only when the battery has no limit now (100%): a lower one, such
-///   as 90% from Power controls, was chosen and is left alone. Its preview also sets the Custom
-///   charge mode when the battery needs it for the limit to work.
-/// - A limit below 100% that the firmware ignores (the battery offers Custom, and another mode
-///   is in use) gets the charge mode item, set to Custom. No other item then changes the mode.
-/// - Otherwise Fast charging gets a gentler mode, except when the limit item already sets Custom.
+/// A limit counts only when it is in use. A battery that offers a Custom charge mode follows
+/// its limit only in Custom; in any other mode its limit files still show the stored Custom
+/// values (Dell), which do nothing, so that battery charges to 100%.
+///
+/// - The 80% limit is offered when no limit is in use. A lower limit in use, such as 90% from
+///   Power controls, was chosen and is left alone. When the battery needs Custom for the limit
+///   to work, the text says so, and the preview also sets Custom.
+/// - Fast charging gets a gentler mode, except when the 80% item will set Custom itself: a
+///   gentler mode would then turn the limit off again.
 pub fn charge_checks(b: &power_detail::BatteryDetail, usage: &str) -> Vec<Check> {
     let mut out = Vec::new();
     let custom = power_detail::limit_needs_custom(b.charge_mode.as_ref());
-    let limited = b.charge_stop.filter(|s| *s < 100);
-    if let Some(stop) = b.charge_stop {
+    let in_use = b.charge_stop.filter(|s| *s < 100 && custom.is_none());
+    if b.charge_stop.is_some() {
         let subject = format!(
             "{}:{}:80",
             b.name,
             if b.charge_start.is_some() { "75" } else { "-" }
         );
-        let measured = match (limited, &custom) {
-            (None, _) => format!(
-                "Battery {} charges to {stop}%. Stopping at 80% slows its wear; each charge then lasts about a fifth less.{usage}",
+        let wear = format!(
+            "Stopping at 80% slows its wear; each charge then lasts about a fifth less.{usage}"
+        );
+        let measured = match (in_use, &custom) {
+            (Some(stop), _) => format!("Battery {} already stops at {stop}%.", b.name),
+            (None, Some(now)) => format!(
+                "Battery {} charges to 100%: it follows a charge limit only in the Custom charge mode, and the mode is {now}. {wear} The fix also sets the Custom mode.",
                 b.name
             ),
-            (Some(_), Some(_)) => format!(
-                "Battery {} is set to stop at {stop}%, but it works only in the Custom charge mode (see \"Use the Custom charge mode\").",
-                b.name
-            ),
-            (Some(_), None) => format!("Battery {} already stops at {stop}%.", b.name),
+            (None, None) => format!("Battery {} charges to 100%. {wear}", b.name),
         };
         out.push(fix(
             &format!("power.charge_limit:{}", b.name),
             "Limit battery charge to 80%",
             measured,
-            limited.is_none(),
+            in_use.is_none(),
             "power.set_charge_limits",
             Some(subject),
             "admin",
@@ -186,42 +189,29 @@ pub fn charge_checks(b: &power_detail::BatteryDetail, usage: &str) -> Vec<Check>
         let gentle = ["Adaptive", "Standard"]
             .into_iter()
             .find(|m| mode.offered.iter().any(|o| o == m));
-        let (title, measured, offered, target) = match (limited, &custom) {
-            (Some(stop), Some(_)) => (
-                "Use the Custom charge mode",
-                format!(
-                    "Battery {} is set to stop at {stop}%, but the charge mode is {now}. The firmware follows the limit only in the Custom mode, so the battery charges to 100%.",
-                    b.name
-                ),
-                true,
-                Some("Custom"),
-            ),
-            (None, Some(_)) if fast && b.charge_stop.is_some() => (
-                "Use a gentler charge mode",
+        let (measured, offered) = if fast && custom.is_some() && b.charge_stop.is_some() {
+            (
                 "The charge mode is Fast. \"Limit battery charge to 80%\" also sets the Custom mode, which stops at the limit.".to_owned(),
                 false,
-                None,
-            ),
-            _ if fast => (
-                "Use a gentler charge mode",
-                "The charge mode is Fast: it charges quickly but wears the battery more.".to_owned(),
+            )
+        } else if fast {
+            (
+                "The charge mode is Fast: it charges quickly but wears the battery more."
+                    .to_owned(),
                 gentle.is_some(),
-                gentle,
-            ),
-            _ => (
-                "Use a gentler charge mode",
-                format!("The charge mode is {now}."),
-                false,
-                None,
-            ),
+            )
+        } else {
+            (format!("The charge mode is {now}."), false)
         };
         out.push(fix(
             &format!("power.charge_mode:{}", b.name),
-            title,
+            "Use a gentler charge mode",
             measured,
             offered,
             "power.set_charge_mode",
-            target.map(|m| format!("{}:{m}", b.name)),
+            gentle
+                .filter(|_| offered)
+                .map(|m| format!("{}:{m}", b.name)),
             "admin",
         ));
     }
@@ -628,13 +618,17 @@ mod tests {
         assert!(item(&dell, "power.charge_limit:BAT0").offered);
         let mode = item(&dell, "power.charge_mode:BAT0");
         assert!(!mode.offered, "{}", mode.measured);
-        // A Dell set to 80% but in Standard: the limit is ignored, so Custom is offered.
-        let ignored = charge_checks(&battery(80, "[Standard] Adaptive Custom Fast"), "");
-        assert!(!item(&ignored, "power.charge_limit:BAT0").offered);
-        let mode = item(&ignored, "power.charge_mode:BAT0");
-        assert!(mode.offered);
-        assert_eq!(mode.subject.as_deref(), Some("BAT0:Custom"));
-        assert_eq!(mode.title, "Use the Custom charge mode");
+        // A Dell in Standard whose limit files show a stored 90%: that value does nothing, so
+        // it is not called a limit. The 80% item is offered and says why; no mode item.
+        let stored = charge_checks(&battery(90, "[Standard] Adaptive Custom Fast"), "");
+        let limit = item(&stored, "power.charge_limit:BAT0");
+        assert!(limit.offered);
+        assert!(
+            limit.measured.starts_with("Battery BAT0 charges to 100%: it follows a charge limit only in the Custom charge mode, and the mode is Standard."),
+            "{}",
+            limit.measured
+        );
+        assert!(!item(&stored, "power.charge_mode:BAT0").offered);
         // A 90% limit the user chose, working in Custom: nothing is offered.
         let chosen = charge_checks(&battery(90, "Standard Adaptive [Custom] Fast"), "");
         assert!(chosen.iter().all(|c| !c.offered));

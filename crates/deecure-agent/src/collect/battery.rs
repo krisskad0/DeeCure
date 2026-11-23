@@ -155,8 +155,16 @@ impl Collector for Battery {
                 now,
             ));
             // The stop limit, and charging on above it (OVER_BY points or more): the firmware
-            // does not follow the limit (on some laptops it applies only in one charge mode).
-            if let Some(stop) = number(&supply, "charge_control_end_threshold") {
+            // does not follow the limit. Only a limit in use counts: a battery that offers a
+            // Custom charge mode follows the limit only in Custom, and in any other mode its
+            // limit files still show the stored Custom values (Dell), which do nothing then.
+            let in_use = crate::inventory::power_detail::limit_needs_custom(
+                text("charge_types")
+                    .map(|t| crate::inventory::power_detail::choice(&t))
+                    .as_ref(),
+            )
+            .is_none();
+            if in_use && let Some(stop) = number(&supply, "charge_control_end_threshold") {
                 sample.metrics.push(metric(
                     "battery.charge_stop",
                     subject,
@@ -397,5 +405,41 @@ mod tests {
         let sample = Battery::default().collect(&root, Timestamp(0)).unwrap();
         assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
         assert_eq!(over(&sample), None);
+    }
+
+    #[test]
+    fn a_stored_limit_outside_the_custom_mode_is_not_a_limit() {
+        // A Dell in Standard: the limit files show the stored Custom values, which do nothing,
+        // so charging to 100% is normal and must never warn.
+        let files = |modes: &'static str| {
+            vec![
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/status", "Charging\n"),
+                ("/sys/class/power_supply/BAT0/capacity", "97\n"),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "90\n",
+                ),
+                ("/sys/class/power_supply/BAT0/charge_types", modes),
+            ]
+        };
+        let over = |sample: &Sample| value(sample, "battery.over_limit_minutes", Some("BAT0"));
+        let mut battery = Battery::default();
+        let root = fixture_root(
+            "battery-dell-standard",
+            &files("Trickle Fast [Standard] Adaptive Custom\n"),
+        );
+        let sample = battery.collect(&root, Timestamp(0)).unwrap();
+        assert_eq!(over(&sample), None);
+        assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
+        // The same Dell in Custom: the limit is in use and is watched.
+        let root = fixture_root(
+            "battery-dell-custom",
+            &files("Trickle Fast Standard Adaptive [Custom]\n"),
+        );
+        assert_eq!(
+            over(&battery.collect(&root, Timestamp(60_000)).unwrap()),
+            Some(1.0)
+        );
     }
 }

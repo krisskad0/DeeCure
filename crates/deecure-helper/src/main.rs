@@ -463,7 +463,12 @@ impl Helper {
                 if let Some(plan) = power::plan(&task, Path::new("/")) {
                     let (writes, undo) = plan?;
                     let message = power::apply(&writes)?;
-                    let message = match saved::remember(Path::new("/"), &task, &undo) {
+                    // The firmware may keep other numbers than asked: keep and say what it keeps.
+                    let (kept, message) = match power::as_stored(&task, Path::new("/")) {
+                        Some((stored, note)) => (stored, format!("{message}. {note}")),
+                        None => (task.clone(), message),
+                    };
+                    let message = match saved::remember(Path::new("/"), &kept, &undo) {
                         Ok(()) => message,
                         Err(e) => format!("{message} (only until the next restart: {e})"),
                     };

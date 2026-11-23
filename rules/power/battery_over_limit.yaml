@@ -6,10 +6,9 @@ title: "Battery {item.name} charges past its {item.charge_stop}% limit"
 explain: >
   Battery {item.name} is set to stop charging at {item.charge_stop}%, but it has kept
   charging above that for {item.over_limit_minutes} minutes. The laptop's firmware is not
-  following the limit, so the battery wears faster. On some laptops (Dell, for example) the
-  limit works only in the Custom charge mode. Check the charge mode in Power › Power
-  controls, or in the firmware setup (BIOS). A limit set in DeeCure is set again each time
-  the charger is plugged in.
+  following the limit, so the battery wears faster. Check the charge limits and the charge
+  mode in Power › Power controls, or in the firmware setup (BIOS). A limit set in DeeCure is
+  set again each time the charger is plugged in.
 limits:
   - name: minutes
     label: "Minutes before warning"

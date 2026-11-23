@@ -97,7 +97,7 @@ sudo powertop                             # what uses power right now
 1. Lost capacity cannot come back, but you can slow down further wear.
 2. Open **Power › Power Profile › Power controls** (Expert view) and set a **charge limit**: Full 100%, Balanced 90%, Long life 80%, or your own start and stop values. It is kept after a restart.
 3. **Optimize** suggests the 80% limit whenever the battery supports one and stops above 80%.
-4. If the battery still charges past the limit, DeeCure warns "Battery charges past its limit". The firmware is not following the limit. On some laptops (Dell) the limit works only in the Custom charge mode: Optimize then offers **Use the Custom charge mode**, and a limit set from Optimize sets Custom by itself. You can also set it in Power controls, or in the firmware setup (BIOS). A limit set in DeeCure is set again each time you plug in the charger.
+4. If the battery still charges past the limit, DeeCure warns "Battery charges past its limit". The firmware is not following the limit. On some laptops (Dell) the limit works only in the Custom charge mode. In any other mode the limit is not in use, and DeeCure shows it as "not in use" in Power controls. A limit set in DeeCure (from Optimize or Power controls) sets Custom by itself. A limit set in DeeCure is set again each time you plug in the charger. To pick another charge mode, use Power controls, not the firmware setup (BIOS): DeeCure sets a kept mode again.
 
 **By hand:**
 
