@@ -8,7 +8,7 @@ use std::io;
 
 use deecure_core::{Snapshot, SnapshotKind, Timestamp, Unit};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::OwnedValue;
+use zbus::OwnedVariant;
 
 use super::services::UnitRow;
 use super::{Sample, SystemRoot, metric};
@@ -213,7 +213,7 @@ async fn get_all(
     bus: &zbus::Connection,
     path: &str,
     interface: &str,
-) -> zbus::Result<HashMap<String, OwnedValue>> {
+) -> zbus::Result<HashMap<String, OwnedVariant>> {
     let reply = bus
         .call_method(
             Some(SYSTEMD),

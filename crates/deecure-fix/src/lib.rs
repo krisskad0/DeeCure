@@ -12,7 +12,7 @@ use std::time::Duration;
 use deecure_core::Timestamp;
 use deecure_core::fix::{Call, FixRun, Plan, RunStatus, StepResult, idle_words};
 use serde_json::Value;
-use zbus::zvariant::{OwnedValue, Value as Variant};
+use zbus::{OwnedVariant, Variant};
 
 const HELPER: &str = "io.github.krisskad0.DeeCure.Helper";
 const HELPER_OBJECT: &str = "/io/github/krisskad0/DeeCure/Helper";
@@ -380,7 +380,7 @@ async fn set_power_profile(profile: &str) -> Result<(String, Option<Call>), Stri
         };
         let old: Option<String> = reply
             .body()
-            .deserialize::<OwnedValue>()
+            .deserialize::<OwnedVariant>()
             .ok()
             .and_then(|v| String::try_from(v).ok());
         bus.call_method(

@@ -137,13 +137,10 @@ pub async fn show(agent: &Agent, title: &str, body: &str, critical: bool) -> Res
         return Err("no notification service is running (is a desktop session open?)".into());
     }
     let conn = agent.bus(Bus::Session).await.map_err(|e| e.to_string())?;
-    let mut hints: HashMap<&str, zbus::zvariant::Value<'_>> = HashMap::new();
-    hints.insert(
-        "urgency",
-        zbus::zvariant::Value::U8(if critical { 2 } else { 1 }),
-    );
+    let mut hints: HashMap<&str, zbus::Variant<'_>> = HashMap::new();
+    hints.insert("urgency", zbus::Variant::U8(if critical { 2 } else { 1 }));
     // Lets the desktop show DeeCure's icon and open the app when the notification is clicked.
-    hints.insert("desktop-entry", zbus::zvariant::Value::from(APP_ID));
+    hints.insert("desktop-entry", zbus::Variant::from(APP_ID));
     let actions: Vec<&str> = Vec::new();
     let reply = conn
         .call_method(

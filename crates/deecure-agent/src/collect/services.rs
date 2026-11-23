@@ -6,7 +6,7 @@ use std::io;
 
 use deecure_core::{Snapshot, SnapshotKind, Timestamp, Unit};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{OwnedObjectPath, OwnedValue};
+use zbus::{OwnedObjectPath, OwnedVariant};
 
 use super::{Sample, metric};
 
@@ -127,7 +127,7 @@ impl Services {
 }
 
 /// Reads one property of a systemd unit, or `None` if it is missing or of another type.
-async fn property<T: TryFrom<OwnedValue>>(
+async fn property<T: TryFrom<OwnedVariant>>(
     bus: &zbus::Connection,
     path: &OwnedObjectPath,
     interface: &str,
@@ -143,7 +143,7 @@ async fn property<T: TryFrom<OwnedValue>>(
         )
         .await
         .ok()?;
-    let value: OwnedValue = reply.body().deserialize().ok()?;
+    let value: OwnedVariant = reply.body().deserialize().ok()?;
     T::try_from(value).ok()
 }
 

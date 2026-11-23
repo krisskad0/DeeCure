@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 use serde::Serialize;
-use zbus::zvariant::OwnedValue;
+use zbus::OwnedVariant;
 
 use super::command;
 use crate::collect::SystemRoot;
@@ -183,7 +183,7 @@ pub(crate) async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
             )
             .await
             .ok()?;
-        let props: HashMap<String, OwnedValue> = reply.body().deserialize().ok()?;
+        let props: HashMap<String, OwnedVariant> = reply.body().deserialize().ok()?;
         let active = props
             .get("ActiveProfile")
             .and_then(|v| v.try_clone().ok())
@@ -191,7 +191,7 @@ pub(crate) async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
         let profiles = props
             .get("Profiles")
             .and_then(|v| v.try_clone().ok())
-            .and_then(|v| Vec::<HashMap<String, OwnedValue>>::try_from(v).ok())
+            .and_then(|v| Vec::<HashMap<String, OwnedVariant>>::try_from(v).ok())
             .map(|list| {
                 list.into_iter()
                     .filter_map(|p| {
@@ -225,11 +225,7 @@ pub(crate) async fn set_profile(agent: &Agent, profile: &str) -> Result<(), Stri
             object,
             Some("org.freedesktop.DBus.Properties"),
             "Set",
-            &(
-                service,
-                "ActiveProfile",
-                zbus::zvariant::Value::from(profile),
-            ),
+            &(service, "ActiveProfile", zbus::Variant::from(profile)),
         )
         .await
         .map_err(|e| e.to_string())?;

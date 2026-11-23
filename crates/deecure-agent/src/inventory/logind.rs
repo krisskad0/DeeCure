@@ -136,7 +136,7 @@ pub async fn running(agent: &Agent) -> (Option<String>, Option<String>) {
                 )
                 .await
                 .ok()?;
-            let v: zbus::zvariant::OwnedValue = reply.body().deserialize().ok()?;
+            let v: zbus::OwnedVariant = reply.body().deserialize().ok()?;
             String::try_from(v).ok()
         }
     };

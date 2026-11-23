@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use serde::Serialize;
 use serde_json::Value;
-use zbus::zvariant::{OwnedObjectPath, OwnedValue};
+use zbus::{OwnedObjectPath, OwnedVariant};
 
 use super::command;
 use crate::collect::SystemRoot;
@@ -183,9 +183,9 @@ fn ufw(root: &SystemRoot) -> Firewall {
     }
 }
 
-type Props = HashMap<String, OwnedValue>;
+type Props = HashMap<String, OwnedVariant>;
 
-fn get<T: TryFrom<OwnedValue>>(p: &Props, key: &str) -> Option<T> {
+fn get<T: TryFrom<OwnedVariant>>(p: &Props, key: &str) -> Option<T> {
     T::try_from(p.get(key)?.try_clone().ok()?).ok()
 }
 

@@ -9,7 +9,7 @@ use std::time::{Duration, UNIX_EPOCH};
 
 use serde::Serialize;
 use serde_json::Value;
-use zbus::zvariant::{OwnedObjectPath, OwnedValue};
+use zbus::{OwnedObjectPath, OwnedVariant};
 
 use super::command;
 use crate::collect::SystemRoot;
@@ -286,7 +286,7 @@ pub fn parse_fingerprint(text: &str) -> Option<(u32, String, String)> {
     Some((f.first()?.parse().ok()?, (*f.get(1)?).to_owned(), kind))
 }
 
-type Props = HashMap<String, OwnedValue>;
+type Props = HashMap<String, OwnedVariant>;
 
 async fn sessions(agent: &Agent) -> Vec<Session> {
     const LOGIN: &str = "org.freedesktop.login1";

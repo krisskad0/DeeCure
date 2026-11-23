@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 use serde::Serialize;
-use zbus::zvariant::OwnedValue;
+use zbus::OwnedVariant;
 
 use crate::context::{Agent, Bus};
 
@@ -40,9 +40,9 @@ pub struct FirmwareInfo {
     pub devices: Vec<FirmwareDevice>,
 }
 
-type Dict = HashMap<String, OwnedValue>;
+type Dict = HashMap<String, OwnedVariant>;
 
-fn get<T: TryFrom<OwnedValue>>(d: &Dict, key: &str) -> Option<T> {
+fn get<T: TryFrom<OwnedVariant>>(d: &Dict, key: &str) -> Option<T> {
     T::try_from(d.get(key)?.try_clone().ok()?).ok()
 }
 
