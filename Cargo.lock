@@ -670,7 +670,7 @@ dependencies = [
 
 [[package]]
 name = "deecure-agent"
-version = "0.1.0-alpha.12"
+version = "0.1.0-alpha.13"
 dependencies = [
  "deecure-core",
  "listenfd",
@@ -685,7 +685,7 @@ dependencies = [
 
 [[package]]
 name = "deecure-cli"
-version = "0.1.0-alpha.12"
+version = "0.1.0-alpha.13"
 dependencies = [
  "clap",
  "deecure-core",
@@ -697,7 +697,7 @@ dependencies = [
 
 [[package]]
 name = "deecure-core"
-version = "0.1.0-alpha.12"
+version = "0.1.0-alpha.13"
 dependencies = [
  "jiff",
  "serde",
@@ -706,7 +706,7 @@ dependencies = [
 
 [[package]]
 name = "deecure-desktop"
-version = "0.1.0-alpha.12"
+version = "0.1.0-alpha.13"
 dependencies = [
  "deecure-core",
  "deecure-fix",
@@ -719,7 +719,7 @@ dependencies = [
 
 [[package]]
 name = "deecure-fix"
-version = "0.1.0-alpha.12"
+version = "0.1.0-alpha.13"
 dependencies = [
  "deecure-core",
  "rustix",
@@ -730,7 +730,7 @@ dependencies = [
 
 [[package]]
 name = "deecure-helper"
-version = "0.1.0-alpha.12"
+version = "0.1.0-alpha.13"
 dependencies = [
  "deecure-core",
  "rustix",

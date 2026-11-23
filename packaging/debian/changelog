@@ -1,3 +1,12 @@
+deecure (0.1.0~alpha.13-1) noble; urgency=medium
+
+  * Fix: installed updates are seen at once, not up to an hour later.
+  * Security: url 2.5.9 (RUSTSEC-2026-0592) and cookie 0.18.3
+    (RUSTSEC-2026-0594).
+  * Newer libraries: zbus 6, rusqlite 0.43, Tauri 2.12.7.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Mon, 23 Nov 2026 18:14:16 +0530
+
 deecure (0.1.0~alpha.12-1) noble; urgency=medium
 
   * Power saver on battery, turbo on battery, and a warning when the

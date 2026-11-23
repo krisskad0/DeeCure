@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.13] - 2026-11-23
+
 ### Fixed
 
 - After "Install security updates", or any other install, the check right after now sees it at once. Before, DeeCure read the package list at most once an hour, so it could still say the updates were waiting.
@@ -14,6 +16,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - `url` 2.5.9 ([RUSTSEC-2026-0592](https://rustsec.org/advisories/RUSTSEC-2026-0592)): a crafted URL could crash a program that reads its origin. DeeCure gets it through the desktop app's toolkit.
 - `cookie` 0.18.3 ([RUSTSEC-2026-0594](https://rustsec.org/advisories/RUSTSEC-2026-0594)): encrypted cookies could be forged in programs that fork. The desktop app's toolkit does not fork that way, so DeeCure was not exposed, but it no longer ships the affected version.
+
+### Changed
+
+- Newer building blocks underneath: zbus 6 for talking to the system (D-Bus), rusqlite 0.43 for the history database, and Tauri 2.12.7 for the window. Nothing changes in how DeeCure looks or works; an existing history database opens as before.
 
 ## [0.1.0-alpha.12] - 2026-11-23
 
