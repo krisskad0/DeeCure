@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use deecure_core::Timestamp;
-use deecure_core::fix::{Call, FixRun, Plan, RunStatus, StepResult};
+use deecure_core::fix::{Call, FixRun, Plan, RunStatus, StepResult, idle_words};
 use serde_json::Value;
 use zbus::zvariant::{OwnedValue, Value as Variant};
 
@@ -131,6 +131,11 @@ pub async fn run_call(call: &Call) -> Result<(String, Option<Call>), String> {
         }
         Call::EndProcess { pid, name } => end_process(*pid, name).map(|m| (m, None)),
         Call::SetPowerProfile { profile } => set_power_profile(profile).await,
+        Call::SetBatterySaver { on } => set_battery_saver(*on),
+        Call::SetScreenIdle { seconds } => set_screen_idle(*seconds).await,
+        Call::SetBatteryIdleSleep { action, seconds } => {
+            set_battery_idle_sleep(action, *seconds).await
+        }
         Call::SetKeyboardBacklight { level } => set_keyboard_backlight(*level).await,
         Call::SetRadio { kind, on } => set_radio(kind, *on).await,
         Call::SetWifiPowerSave { uuid, value } => set_wifi_power_save(uuid, *value).await,
@@ -393,6 +398,153 @@ async fn set_power_profile(profile: &str) -> Result<(String, Option<Call>), Stri
         ));
     }
     Err("the power profiles service is not running".into())
+}
+
+const SESSION: &str = "org.gnome.desktop.session";
+const GNOME_POWER: &str = "org.gnome.settings-daemon.plugins.power";
+
+/// A GNOME setting now, without its type word and quotes (`uint32 300` gives `300`).
+async fn gsetting(schema: &str, key: &str) -> Result<String, String> {
+    let raw = program("gsettings", &["get", schema, key]).await?;
+    Ok(gsetting_value(&raw))
+}
+
+/// `uint32 300` to `300`, `'suspend'` to `suspend`.
+pub fn gsetting_value(raw: &str) -> String {
+    raw.trim()
+        .trim_start_matches("uint32 ")
+        .trim_start_matches("int32 ")
+        .trim_matches('\'')
+        .to_owned()
+}
+
+/// Sets how long the screen stays on without use. The old value is the undo. Any value GNOME
+/// takes is allowed, so the undo can put back whatever was there (for example 2 hours).
+async fn set_screen_idle(seconds: u32) -> Result<(String, Option<Call>), String> {
+    let old: u32 = gsetting(SESSION, "idle-delay")
+        .await?
+        .parse()
+        .map_err(|_| "the screen setting is not a number")?;
+    program(
+        "gsettings",
+        &["set", SESSION, "idle-delay", &seconds.to_string()],
+    )
+    .await?;
+    Ok((
+        if seconds == 0 {
+            "the screen no longer turns off by itself".into()
+        } else {
+            format!(
+                "the screen turns off after {} without use",
+                idle_words(seconds)
+            )
+        },
+        Some(Call::SetScreenIdle { seconds: old }),
+    ))
+}
+
+/// What a battery idle setting does, in words, for the fix result.
+pub fn idle_sleep_words(action: &str, seconds: u32) -> String {
+    match action {
+        _ if seconds == 0 || action == "nothing" => {
+            "on battery, the laptop no longer sleeps by itself".into()
+        }
+        "suspend" => format!(
+            "on battery, the laptop sleeps after {} without use",
+            idle_words(seconds)
+        ),
+        "hibernate" => format!(
+            "on battery, the laptop hibernates after {} without use",
+            idle_words(seconds)
+        ),
+        "shutdown" => format!(
+            "on battery, the laptop shuts down after {} without use",
+            idle_words(seconds)
+        ),
+        other => format!(
+            "on battery, after {} without use the laptop does: {other}",
+            idle_words(seconds)
+        ),
+    }
+}
+
+/// Sets what the laptop does after some time without use on battery. The old values are the
+/// undo, exactly as they were: a timeout of 0 stays 0 (GNOME then never acts), so an undo never
+/// turns "never" into "after 1 minute". If the second setting cannot be written, the first is
+/// put back, so nothing is left half changed.
+async fn set_battery_idle_sleep(
+    action: &str,
+    seconds: u32,
+) -> Result<(String, Option<Call>), String> {
+    if !deecure_core::fix::IDLE_ACTIONS.contains(&action) {
+        return Err(format!("{action} is not an idle action"));
+    }
+    if i32::try_from(seconds).is_err() {
+        return Err("the time is too long for GNOME".into());
+    }
+    let old_action = gsetting(GNOME_POWER, "sleep-inactive-battery-type").await?;
+    let old_seconds: u32 = gsetting(GNOME_POWER, "sleep-inactive-battery-timeout")
+        .await?
+        .parse()
+        .map_err(|_| "the sleep time is not a number")?;
+    let set_timeout = |s: u32| async move {
+        program(
+            "gsettings",
+            &[
+                "set",
+                GNOME_POWER,
+                "sleep-inactive-battery-timeout",
+                &s.to_string(),
+            ],
+        )
+        .await
+    };
+    set_timeout(seconds).await?;
+    if let Err(e) = program(
+        "gsettings",
+        &["set", GNOME_POWER, "sleep-inactive-battery-type", action],
+    )
+    .await
+    {
+        let back = match set_timeout(old_seconds).await {
+            Ok(_) => "the sleep time was put back".to_owned(),
+            Err(b) => format!("the sleep time could not be put back to {old_seconds} s: {b}"),
+        };
+        return Err(format!("{e} ({back})"));
+    }
+    Ok((
+        idle_sleep_words(action, seconds),
+        Some(Call::SetBatteryIdleSleep {
+            action: old_action,
+            seconds: old_seconds,
+        }),
+    ))
+}
+
+/// Keeps "Power saver on battery" on or off for this user. The agent reads the file and does
+/// the switching when the charger is plugged in or out.
+fn set_battery_saver(on: bool) -> Result<(String, Option<Call>), String> {
+    let file = deecure_core::fix::battery_saver_file().ok_or("HOME is not set")?;
+    let was = deecure_core::fix::battery_saver_on(&file);
+    write_battery_saver(&file, on)?;
+    Ok((
+        if on {
+            "Power saver turns on when the charger is unplugged".into()
+        } else {
+            "Power saver no longer turns on by itself".into()
+        },
+        Some(Call::SetBatterySaver { on: was }),
+    ))
+}
+
+/// Writes the setting through a temporary file, so the agent never reads half a file.
+fn write_battery_saver(file: &Path, on: bool) -> Result<(), String> {
+    let dir = file.parent().ok_or("no folder for the setting")?;
+    std::fs::create_dir_all(dir).map_err(|e| format!("could not create {}: {e}", dir.display()))?;
+    let tmp = file.with_extension("json.tmp");
+    std::fs::write(&tmp, serde_json::json!({ "on": on }).to_string())
+        .and_then(|()| std::fs::rename(&tmp, file))
+        .map_err(|e| format!("could not save {}: {e}", file.display()))
 }
 
 /// Sets the keyboard backlight through UPower, after checking the level is in range.
@@ -718,5 +870,33 @@ mod tests {
         assert!(is_uuid("0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"));
         assert!(!is_uuid("Home; rm -rf /"));
         assert!(!is_uuid("0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5"));
+    }
+
+    #[test]
+    fn gsetting_values_lose_their_type_and_quotes() {
+        assert_eq!(gsetting_value("uint32 300\n"), "300");
+        assert_eq!(gsetting_value("'nothing'"), "nothing");
+        assert_eq!(gsetting_value("900"), "900");
+    }
+
+    #[test]
+    fn idle_times_and_actions_read_well() {
+        assert_eq!(idle_words(60), "1 minute");
+        assert_eq!(idle_words(900), "15 minutes");
+        assert_eq!(idle_words(7200), "120 minutes");
+        assert_eq!(idle_words(30), "30 seconds");
+        assert_eq!(
+            idle_sleep_words("suspend", 900),
+            "on battery, the laptop sleeps after 15 minutes without use"
+        );
+        // A timeout of 0 means GNOME never acts, whatever the action says.
+        assert_eq!(
+            idle_sleep_words("suspend", 0),
+            "on battery, the laptop no longer sleeps by itself"
+        );
+        assert_eq!(
+            idle_sleep_words("blank", 1200),
+            "on battery, after 20 minutes without use the laptop does: blank"
+        );
     }
 }

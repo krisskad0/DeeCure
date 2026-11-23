@@ -257,6 +257,8 @@ pub struct PowerDetail {
     pub kept: Vec<KeptSetting>,
     /// What closing the lid does, from the files and from logind now.
     pub lid: super::logind::Lid,
+    /// "Power saver on battery" is on for this user (`crate::battery_saver`).
+    pub battery_saver: bool,
 }
 
 /// A device's path under `/sys/devices`, from a link such as `/sys/bus/usb/devices/3-6`.
@@ -294,6 +296,28 @@ fn names(root: &SystemRoot, dir: &str) -> Vec<String> {
         .unwrap_or_default();
     v.sort();
     v
+}
+
+/// The charge mode in use when the battery offers a `Custom` mode and another one is in use.
+/// The kernel follows the charge limits (`charge_control_*`) only in `Custom` when a battery
+/// offers it, so a limit is then ignored (a Dell charges to 100% in Standard or Adaptive).
+/// `None` when `Custom` is in use, or not offered.
+pub fn limit_needs_custom(mode: Option<&Choice>) -> Option<String> {
+    let mode = mode?;
+    if !mode.offered.iter().any(|o| o == "Custom") {
+        return None;
+    }
+    match mode.current.as_deref() {
+        Some("Custom") => None,
+        other => Some(other.unwrap_or("not reported").to_owned()),
+    }
+}
+
+/// The stop limit in use, below 100%: `None` when the battery has none, or when its limit
+/// files show stored Custom values that do nothing in the mode in use ([`limit_needs_custom`]).
+pub fn limit_in_use(b: &BatteryDetail) -> Option<u32> {
+    b.charge_stop
+        .filter(|s| *s < 100 && limit_needs_custom(b.charge_mode.as_ref()).is_none())
 }
 
 /// `Trickle Fast [Custom]`: the one in brackets is in use.
@@ -543,6 +567,9 @@ pub fn read(root: &SystemRoot) -> PowerDetail {
         aspm_policy: text(root, "/sys/module/pcie_aspm/parameters/policy").map(|t| choice(&t)),
         wake_sources: wake_sources(root),
         usb: usb(root),
+        battery_saver: crate::battery_saver::is_on(
+            deecure_core::fix::battery_saver_file().as_deref(),
+        ),
     }
 }
 

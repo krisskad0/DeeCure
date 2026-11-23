@@ -384,6 +384,8 @@ export interface PowerDetail {
   kept?: KeptSetting[];
   /** What closing the lid does. Older agents do not send it. */
   lid?: LidSettings;
+  /** "Power saver on battery" is on. Older agents do not send it. */
+  battery_saver?: boolean;
 }
 
 /** What closing the lid does: from logind's files, and what logind runs with now. */
@@ -412,6 +414,8 @@ export interface OptimizeCheck {
   subject?: string;
   access?: "you" | "admin";
   advice?: string;
+  /** The scan part it came from (set by the app, not the agent), so a fix can re-check only that part. */
+  part?: string;
 }
 
 /** A power setting kept after restart, and what happened to it at this start. */
@@ -1384,7 +1388,29 @@ export interface FixRun {
 }
 
 /** Calls that need the root helper; everything else runs as the user. */
-export const USER_CALLS = ["empty_trash", "clear_thumbnails", "docker_prune_images", "docker_prune_build_cache", "set_startup_app", "end_process", "set_power_profile"];
+/** Steps that run as you, with no password: the same list as `Call::admin` in deecure-core. */
+export const USER_CALLS = [
+  "empty_trash",
+  "clear_thumbnails",
+  "docker_prune_images",
+  "docker_prune_build_cache",
+  "set_startup_app",
+  "end_process",
+  "set_power_profile",
+  "set_battery_saver",
+  "set_screen_idle",
+  "set_battery_idle_sleep",
+  "set_keyboard_backlight",
+  "set_radio",
+  "set_wifi_power_save",
+  "update_firmware",
+];
+
+/** True when a step needs the admin helper (and the password). Flatpak cleanup is yours unless it is the system's. */
+export function callIsAdmin(call: { op: string; system?: unknown }): boolean {
+  if (call.op === "remove_unused_flatpaks") return call.system !== false;
+  return !USER_CALLS.includes(call.op);
+}
 
 export function getFixPlan(action: string, subject?: string): Promise<FixPlan> {
   return invoke<FixPlan>("fix_plan", { action, subject: subject ?? null });

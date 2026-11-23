@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PowerDetail } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
-import { PowerControls, describeKept, lidSummary, limitsSubject, pciPowerSavingSafe, radioKinds } from "./PowerControls";
+import { PowerControls, describeKept, lidSummary, limitNeedsCustom, limitsSubject, pciPowerSavingSafe, radioKinds } from "./PowerControls";
 import { WakeExpertSections, mustKeepWaking } from "./PowerExpert";
 import { choose } from "../../test-utils";
 
@@ -33,6 +33,7 @@ const power: PowerDetail = {
     { setting: "turbo", call: { op: "set_turbo", on: false } },
     { setting: "suspend_mode", call: { op: "set_suspend_mode", mode: "deep", keep: true }, boot_ok: true, boot_message: "mem_sleep = deep" },
   ],
+  battery_saver: false,
 };
 
 vi.mock("../../api", () => ({
@@ -82,6 +83,70 @@ describe("Power controls", () => {
       ["power.set_radio", "bluetooth|on"],
       ["power.set_wifi_power_save", "798005ca-d9fd-4047-86c5-8ed2ff14b23d|off"],
     ]);
+  });
+
+  it("power saver and turbo on battery open their preview, and an older agent hides power saver", async () => {
+    withFix(<PowerControls powerModes />);
+    await waitFor(() => expect(screen.getByText("Switch on unplug")).toBeTruthy());
+    expect(screen.getByText(/Now off\. On: the power mode changes to Power saver/)).toBeTruthy();
+    fireEvent.click(screen.getByText("Switch on unplug"));
+    fireEvent.click(screen.getByText("Turn off on battery"));
+    expect(opened).toEqual([
+      ["power.set_battery_saver", "on"],
+      ["power.set_battery_turbo", "off"],
+    ]);
+    cleanup();
+    opened.length = 0;
+    power.battery_saver = true;
+    power.kept!.push({ setting: "battery_turbo", call: { op: "set_battery_turbo", on: false } });
+    withFix(<PowerControls powerModes />);
+    await waitFor(() => expect(screen.getByText("Stop switching")).toBeTruthy());
+    fireEvent.click(screen.getByText("Stop switching"));
+    fireEvent.click(screen.getByText("Allow on battery"));
+    expect(opened).toEqual([
+      ["power.set_battery_saver", "off"],
+      ["power.set_battery_turbo", "on"],
+    ]);
+    cleanup();
+    power.kept!.pop();
+    power.battery_saver = undefined;
+    withFix(<PowerControls powerModes />);
+    await waitFor(() => expect(screen.getByText("Turn off on battery")).toBeTruthy());
+    expect(screen.queryByText("Power saver on battery")).toBeNull();
+    power.battery_saver = false;
+    // No power profiles service: nothing could switch, so the row is not shown.
+    cleanup();
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("Turn off on battery")).toBeTruthy());
+    expect(screen.queryByText("Power saver on battery")).toBeNull();
+  });
+
+  it("stored limits outside the Custom mode are shown as not in use, and their preset still works", async () => {
+    expect(limitNeedsCustom({ current: "Standard", offered: ["Standard", "Custom"] })).toBe("Standard");
+    expect(limitNeedsCustom({ current: "Custom", offered: ["Standard", "Custom"] })).toBeUndefined();
+    expect(limitNeedsCustom({ current: "Fast", offered: ["Standard", "Fast"] })).toBeUndefined();
+    const saved = power.batteries[0].charge_mode;
+    power.batteries[0].charge_mode = { current: "Standard", offered: ["Standard", "Adaptive", "Custom"] };
+    try {
+      withFix(<PowerControls />);
+      await waitFor(() => expect(screen.getByText(/Not in use: this battery follows its limits only in the Custom charge mode, and the mode is Standard/)).toBeTruthy());
+      // The stored 80% does nothing, so "Long life (80%)" can be clicked; Full is what happens now.
+      expect((screen.getByText("Long life (80%)") as HTMLButtonElement).disabled).toBe(false);
+      expect((screen.getByText("Full (100%)") as HTMLButtonElement).disabled).toBe(true);
+    } finally {
+      power.batteries[0].charge_mode = saved;
+    }
+  });
+
+  it("a kept charge mode says DeeCure sets it again, so another mode is picked here", async () => {
+    power.kept!.push({ setting: "charge_mode:BAT0", call: { op: "set_charge_mode", battery: "BAT0", mode: "Custom" } });
+    try {
+      withFix(<PowerControls />);
+      await waitFor(() => expect(screen.getByText(/Kept by DeeCure: Custom is set again at each start and charger change/)).toBeTruthy());
+      expect(screen.getByText(/Charge limits and the charge mode are also set again when the charger is plugged in or out/)).toBeTruthy();
+    } finally {
+      power.kept!.pop();
+    }
   });
 
   it("kept settings show in words with this start's result", async () => {

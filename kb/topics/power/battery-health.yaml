@@ -4,4 +4,5 @@ steps:
   - "Above 80% is normal for a battery a few years old."
   - "Below 60% you will notice much shorter battery life; think about a replacement."
   - "To slow wear, avoid keeping the battery at 100% all day. Many laptops can stop charging at 80% (Power › Power Profile shows if yours can)."
+  - "If the battery charges past the limit you set, the firmware is not following it. Check the charge limits and the charge mode in Power › Power Profile › Power controls (Expert view). On a Dell, a limit works only in the Custom charge mode, and a limit set in DeeCure sets Custom by itself. Change the charge mode in Power controls, not in the firmware setup (BIOS): DeeCure sets a mode it keeps again at each start and charger change."
 notes: "Battery wear is normal and not a fault."

@@ -54,6 +54,33 @@ fn need<'a>(subject: Option<&'a str>, what: &str) -> Result<&'a str, String> {
         .ok_or_else(|| format!("this fix needs a {what}"))
 }
 
+/// A GNOME idle time in seconds, in words: "never", "5 minutes".
+fn idle_text(seconds: Option<&str>) -> String {
+    match seconds.and_then(|s| s.parse::<u32>().ok()) {
+        Some(0) => "never".into(),
+        Some(s) => deecure_core::fix::idle_words(s),
+        None => "not reported".into(),
+    }
+}
+
+/// What screen lock does when the screen turns off, after a space, or nothing when it is off.
+/// GNOME locks `lock-delay` seconds after the screen turns off, not always at the same time.
+fn lock_words(on: bool, delay: Option<u32>) -> String {
+    match (on, delay) {
+        (false, _) => String::new(),
+        (true, Some(0)) => {
+            " Your screen lock is on, so the screen also locks when it turns off.".into()
+        }
+        (true, Some(d)) => format!(
+            " Your screen lock is on: the screen locks {} after it turns off.",
+            deecure_core::fix::idle_words(d)
+        ),
+        (true, None) => {
+            " Your screen lock is on, so the screen locks when it turns off, or soon after.".into()
+        }
+    }
+}
+
 async fn disabled_snaps(agent: &Agent) -> Vec<(String, String, u64)> {
     let list = command::output("snap", &["list", "--all"], Duration::from_secs(10))
         .await
@@ -441,7 +468,7 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 ),
                 None => format!("echo {stop} | sudo tee {dir}/charge_control_end_threshold"),
             };
-            vec![step(
+            let mut steps = vec![step(
                 "charge-limits",
                 &text,
                 "Keeping a battery below full slows its wear. DeeCure sets it again at each start."
@@ -455,7 +482,34 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                     start,
                     stop,
                 },
-            )]
+            )];
+            // A battery with a Custom charge mode follows the limit only in that mode (a Dell
+            // in Standard or Adaptive charges to 100%), so the limit alone would do nothing.
+            let mode = agent
+                .root
+                .read(&format!("{dir}/charge_types"))
+                .ok()
+                .map(|t| crate::inventory::power_detail::choice(&t));
+            if stop < 100
+                && let Some(now) = crate::inventory::power_detail::limit_needs_custom(mode.as_ref())
+            {
+                steps.push(step(
+                    "charge-mode-custom",
+                    "Use the Custom charge mode, so the limit works",
+                    format!(
+                        "Now: {now}. This battery stops at the limit only in the Custom charge mode; in any other mode it charges to 100%."
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    format!("echo Custom | sudo tee {dir}/charge_types"),
+                    Call::SetChargeMode {
+                        battery: (*battery).to_owned(),
+                        mode: "Custom".into(),
+                    },
+                ));
+            }
+            steps
         }
         "power.set_charge_mode" => {
             let raw = need(subject, "battery:mode")?;
@@ -744,6 +798,92 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                 ),
                 Call::SetBatteryTurbo { on },
             )]
+        }
+        "power.set_battery_saver" => {
+            let on = on_off(need(subject, "on|off")?)?;
+            subtitle = "DeeCure switches the power mode as you, no password".into();
+            vec![step(
+                "battery-saver",
+                if on {
+                    "Use Power saver on battery"
+                } else {
+                    "Stop switching to Power saver on battery"
+                },
+                if on {
+                    "When you unplug the charger, the power mode changes to Power saver. When you plug it in again, it goes back to the mode you had. If the laptop is on battery now, Power saver turns on within a few seconds. If you pick another mode yourself, DeeCure leaves it until the next unplug."
+                } else {
+                    "The power mode stays as you set it. If DeeCure turned on Power saver, it goes back to the mode you had."
+                }
+                .into(),
+                None,
+                Undo::Full,
+                true,
+                format!(
+                    "on unplug: powerprofilesctl set power-saver ({})",
+                    if on { "on" } else { "off" }
+                ),
+                Call::SetBatterySaver { on },
+            )]
+        }
+        "power.save_when_away" => {
+            let gs = crate::inventory::power::gsetting;
+            let power = "org.gnome.settings-daemon.plugins.power";
+            let num = |v: Option<String>| v.and_then(|v| v.parse::<u32>().ok());
+            let screen_now = num(gs("org.gnome.desktop.session", "idle-delay").await);
+            let sleep_type = gs(power, "sleep-inactive-battery-type").await;
+            let sleep_time = num(gs(power, "sleep-inactive-battery-timeout").await);
+            // The same reading as the Optimize item, so the item and this preview agree.
+            let sleep_now = crate::inventory::power::sleep_after(sleep_time, sleep_type.as_deref());
+            let battery = crate::battery_saver::power_source(&agent.root).is_some();
+            let (screen, sleep) =
+                crate::inventory::optimize::away_needs(screen_now, sleep_now, battery);
+            let lock = gs("org.gnome.desktop.screensaver", "lock-enabled").await;
+            let lock_delay = num(gs("org.gnome.desktop.screensaver", "lock-delay").await);
+            subtitle = "GNOME settings, as you, no password; untick a step to skip it".into();
+            let mut steps = Vec::new();
+            if screen.is_some() {
+                steps.push(step(
+                    "screen-idle",
+                    "Turn the screen off after 5 minutes without use",
+                    format!(
+                        "Now: {}. Only time without keyboard, mouse, or touchpad use counts. A video or a call that asks to keep the screen on still keeps it on.{}",
+                        idle_text(screen_now.map(|s| s.to_string()).as_deref()),
+                        lock_words(lock.as_deref() == Some("true"), lock_delay)
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    "gsettings set org.gnome.desktop.session idle-delay 300".into(),
+                    Call::SetScreenIdle { seconds: 300 },
+                ));
+            }
+            if sleep.is_some() {
+                steps.push(step(
+                    "battery-idle-sleep",
+                    "Sleep after 15 minutes without use, on battery only",
+                    format!(
+                        "Now: {}. Playing music or video, a call, or an app that asks to stay awake keeps the laptop awake. On mains nothing changes.",
+                        match sleep_now {
+                            Some(0) | None => "the laptop never sleeps by itself on battery".to_owned(),
+                            Some(_) => format!(
+                                "it sleeps after {}",
+                                idle_text(sleep_time.map(|s| s.to_string()).as_deref())
+                            ),
+                        }
+                    ),
+                    None,
+                    Undo::Full,
+                    true,
+                    "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-timeout 900; gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type suspend".into(),
+                    Call::SetBatteryIdleSleep {
+                        action: "suspend".into(),
+                        seconds: 900,
+                    },
+                ));
+            }
+            // Already done (for example applied a moment ago): an empty plan, which the app
+            // shows as "nothing to do", not an error.
+            steps
         }
         "storage.cap_journal" => {
             let raw = need(subject, "megabytes|off")?;
@@ -1058,6 +1198,20 @@ mod tests {
     use crate::store::Store;
     use std::sync::{Arc, Mutex};
 
+    #[test]
+    fn the_lock_sentence_follows_the_lock_delay() {
+        assert_eq!(lock_words(false, Some(0)), "");
+        assert_eq!(
+            lock_words(true, Some(0)),
+            " Your screen lock is on, so the screen also locks when it turns off."
+        );
+        assert_eq!(
+            lock_words(true, Some(300)),
+            " Your screen lock is on: the screen locks 5 minutes after it turns off."
+        );
+        assert!(lock_words(true, None).ends_with("or soon after."));
+    }
+
     fn agent() -> Arc<Agent> {
         Agent::new(
             Arc::new(Mutex::new(Store::open_in_memory().unwrap())),
@@ -1070,6 +1224,46 @@ mod tests {
         for (a, _, _) in ACTIONS {
             assert!(FixActionId::new(*a).is_ok(), "{a}");
         }
+    }
+
+    #[tokio::test]
+    async fn a_limit_also_sets_custom_when_the_battery_needs_it() {
+        let root = |name: &str, modes: &'static str| {
+            Agent::new(
+                Arc::new(Mutex::new(Store::open_in_memory().unwrap())),
+                crate::collect::test_support::fixture_root(
+                    name,
+                    &[
+                        ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                        (
+                            "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                            "100\n",
+                        ),
+                        ("/sys/class/power_supply/BAT0/charge_types", modes),
+                    ],
+                ),
+            )
+        };
+        let ops = |p: Plan| p.steps.iter().map(|s| s.id.clone()).collect::<Vec<_>>();
+        // A Dell in Standard: the limit, then Custom.
+        let dell = root("limit-dell", "[Standard] Adaptive Custom Fast\n");
+        let p = plan(&dell, "power.set_charge_limits", Some("BAT0:-:80"))
+            .await
+            .unwrap();
+        assert_eq!(
+            p.steps[1].call,
+            Call::SetChargeMode {
+                battery: "BAT0".into(),
+                mode: "Custom".into()
+            }
+        );
+        assert_eq!(ops(p), ["charge-limits", "charge-mode-custom"]);
+        // Already in Custom, or back to Full (100%): the limit alone.
+        let custom = root("limit-custom", "Standard Adaptive [Custom]\n");
+        let p = plan(&custom, "power.set_charge_limits", Some("BAT0:-:80"));
+        assert_eq!(ops(p.await.unwrap()), ["charge-limits"]);
+        let p = plan(&dell, "power.set_charge_limits", Some("BAT0:-:100"));
+        assert_eq!(ops(p.await.unwrap()), ["charge-limits"]);
     }
 
     #[tokio::test]
@@ -1201,6 +1395,11 @@ mod tests {
                 "power.set_battery_turbo",
                 Some("off"),
                 Call::SetBatteryTurbo { on: false },
+            ),
+            (
+                "power.set_battery_saver",
+                Some("on"),
+                Call::SetBatterySaver { on: true },
             ),
             (
                 "storage.cap_journal",

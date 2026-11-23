@@ -16,6 +16,7 @@ use super::storage_detail;
 mod cleanup;
 mod drivers;
 mod history;
+pub(crate) use history::away_needs;
 
 use super::{
     command, cpu_detail, kernel, memory_detail, pci_detail, power_detail, services_detail,
@@ -293,6 +294,155 @@ async fn trim(root: &SystemRoot) -> Check {
             "admin",
         ),
     }
+}
+
+/// True when the folder under `/sys` or `/dev` has an entry whose name starts with `prefix`.
+fn any_entry(root: &SystemRoot, dir: &str, prefix: &str) -> bool {
+    std::fs::read_dir(root.path(dir))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .any(|e| e.file_name().to_string_lossy().starts_with(prefix))
+}
+
+/// An rfkill switch of this type (`wwan`, `bluetooth`) exists.
+fn rfkill_has(root: &SystemRoot, kind: &str) -> bool {
+    std::fs::read_dir(root.path("/sys/class/rfkill"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .any(|e| {
+            root.read(&format!(
+                "/sys/class/rfkill/{}/type",
+                e.file_name().to_string_lossy()
+            ))
+            .is_ok_and(|t| t.trim() == kind)
+        })
+}
+
+/// Any sign of a mobile modem: a WWAN device or switch, a modem control port, a `ww*` network
+/// interface, or a USB serial port (some USB modems show only that, so it counts too).
+pub fn has_modem(root: &SystemRoot) -> bool {
+    any_entry(root, "/sys/class/wwan", "")
+        || rfkill_has(root, "wwan")
+        || any_entry(root, "/dev", "cdc-wdm")
+        || any_entry(root, "/dev", "ttyUSB")
+        || any_entry(root, "/dev", "ttyACM")
+        || any_entry(root, "/sys/class/net", "ww")
+}
+
+/// Any Bluetooth chip, even one switched off (its rfkill switch stays).
+pub fn has_bluetooth(root: &SystemRoot) -> bool {
+    any_entry(root, "/sys/class/bluetooth", "") || rfkill_has(root, "bluetooth")
+}
+
+/// A service that may wait for hardware this computer does not have.
+pub struct NoHardware {
+    pub unit: &'static str,
+    /// "ModemManager", "The Bluetooth service".
+    pub name: &'static str,
+    /// The item's title.
+    pub title: &'static str,
+    /// What is missing: "mobile modem".
+    pub missing: &'static str,
+    /// How it was looked for, after `missing`: " (no WWAN device and no USB modem)".
+    pub looked: &'static str,
+    /// What was found instead, after "this computer has": "a modem, or a USB serial port that
+    /// may be one".
+    pub found: &'static str,
+}
+
+/// Whether to offer turning the service off, and what was measured. Offered only when the
+/// hardware is missing, the service starts at boot, and it runs now: a service that does not
+/// run would save nothing (`bluetooth.service` does not even start without a Bluetooth chip).
+pub fn no_hardware(s: &NoHardware, has: bool, enabled: &str, active: bool) -> (bool, String) {
+    let NoHardware {
+        unit,
+        name,
+        missing,
+        looked,
+        found,
+        ..
+    } = s;
+    if has {
+        (
+            false,
+            format!("{name} is needed: this computer has {found}."),
+        )
+    } else if enabled != "enabled" {
+        (
+            false,
+            format!("{name} is {enabled}, and this computer has no {missing}."),
+        )
+    } else if !active {
+        (
+            false,
+            format!(
+                "{name} does not run, because this computer has no {missing}: turning it off would save nothing."
+            ),
+        )
+    } else {
+        (
+            true,
+            format!(
+                "{name} runs now and starts at every boot, but this computer has no {missing}{looked}. Turning it off saves a little memory and background work. If you add one later, undo this in DeeCure, or run: sudo systemctl enable --now {unit}"
+            ),
+        )
+    }
+}
+
+/// The services checked by [`no_hardware_services`].
+pub const NO_HARDWARE: &[NoHardware] = &[
+    NoHardware {
+        unit: "ModemManager.service",
+        name: "ModemManager",
+        title: "Turn off ModemManager if there is no modem",
+        missing: "mobile modem",
+        looked: " (no WWAN device and no USB modem)",
+        found: "a modem, or a USB serial port that may be one",
+    },
+    NoHardware {
+        unit: "bluetooth.service",
+        name: "The Bluetooth service",
+        title: "Turn off the Bluetooth service if there is no Bluetooth chip",
+        missing: "Bluetooth chip",
+        looked: "",
+        found: "a Bluetooth chip",
+    },
+];
+
+/// Services that start at every boot to wait for hardware this computer does not have.
+async fn no_hardware_services(root: &SystemRoot) -> Vec<Check> {
+    let mut out = Vec::new();
+    for s in NO_HARDWARE {
+        let systemctl = |verb: &'static str| async move {
+            command::output_any("systemctl", &[verb, s.unit], Duration::from_secs(5))
+                .await
+                .unwrap_or_default()
+                .trim()
+                .to_owned()
+        };
+        let enabled = systemctl("is-enabled").await;
+        if enabled.is_empty() || enabled == "not-found" {
+            continue;
+        }
+        let has = match s.unit {
+            "ModemManager.service" => has_modem(root),
+            _ => has_bluetooth(root),
+        };
+        let active = systemctl("is-active").await == "active";
+        let (offered, measured) = no_hardware(s, has, &enabled, active);
+        out.push(fix(
+            &format!("services.no_hardware:{}", s.unit),
+            s.title,
+            measured,
+            offered,
+            "services.disable",
+            Some(s.unit.into()),
+            "admin",
+        ));
+    }
+    out
 }
 
 fn old_kernels(root: &SystemRoot) -> Check {
@@ -706,6 +856,7 @@ pub async fn read_part(agent: &Agent, part: &str) -> Vec<Check> {
             let mut checks = device_saving(root, &power);
             checks.extend(pcie(root));
             checks.extend(usb_speed(root));
+            checks.extend(no_hardware_services(root).await);
             checks
         }
         "hardware" => {
@@ -738,6 +889,49 @@ pub async fn read(agent: &Agent) -> Vec<Check> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_modem_or_bluetooth_chip_is_found_in_any_of_its_forms() {
+        use crate::collect::test_support::fixture_root;
+        let bare = fixture_root(
+            "opt-bare",
+            &[
+                ("/sys/class/net/wlp45s0/type", "1\n"),
+                ("/sys/class/rfkill/rfkill0/type", "wlan\n"),
+            ],
+        );
+        assert!(!has_modem(&bare));
+        assert!(!has_bluetooth(&bare));
+        let usb_modem = fixture_root("opt-usb-modem", &[("/dev/ttyUSB0", "")]);
+        assert!(has_modem(&usb_modem));
+        let wwan = fixture_root("opt-wwan", &[("/sys/class/net/wwan0/type", "65534\n")]);
+        assert!(has_modem(&wwan));
+        // A Bluetooth chip that is switched off still counts.
+        let blocked = fixture_root(
+            "opt-bt-off",
+            &[("/sys/class/rfkill/rfkill2/type", "bluetooth\n")],
+        );
+        assert!(has_bluetooth(&blocked));
+    }
+
+    #[test]
+    fn a_service_with_no_hardware_is_offered_only_while_it_runs() {
+        let [modem, bluetooth] = NO_HARDWARE else {
+            unreachable!()
+        };
+        let (offered, text) = no_hardware(modem, false, "enabled", true);
+        assert!(offered, "{text}");
+        assert!(text.starts_with("ModemManager runs now and starts at every boot"));
+        // Bluetooth with no chip: bluetoothd does not start, so nothing would be saved.
+        let (offered, text) = no_hardware(bluetooth, false, "enabled", false);
+        assert!(!offered);
+        assert!(text.contains("turning it off would save nothing"), "{text}");
+        // A USB serial port (an Arduino, for example) is not called a mobile modem.
+        let (offered, text) = no_hardware(modem, true, "enabled", true);
+        assert!(!offered);
+        assert!(text.contains("a modem, or a USB serial port that may be one"));
+        assert!(!no_hardware(modem, false, "disabled", false).0);
+    }
 
     #[test]
     fn heat_advice_counts_how_long_not_how_often() {

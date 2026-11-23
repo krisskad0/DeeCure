@@ -160,6 +160,43 @@ fn battery_worn() {
 }
 
 #[test]
+fn battery_over_limit() {
+    let rule = rule("power.battery_over_limit");
+    let battery = |minutes| {
+        list(
+            "batteries",
+            &[(
+                "BAT0",
+                &[
+                    ("name", Value::Text("BAT0".into())),
+                    ("charge_stop", Value::Number(80.0)),
+                    ("over_limit_minutes", Value::Number(minutes)),
+                ],
+            )],
+        )
+    };
+    assert_eq!(severity(&evaluate(&rule, &battery(0.0)).unwrap()), [None]);
+    assert_eq!(severity(&evaluate(&rule, &battery(9.0)).unwrap()), [None]);
+    let results = evaluate(&rule, &battery(12.0)).unwrap();
+    assert_eq!(severity(&results), [Some(Severity::Warning)]);
+    let Outcome::Fired { title, .. } = &results[0].1 else {
+        unreachable!()
+    };
+    assert_eq!(title, "Battery BAT0 charges past its 80% limit");
+    // A battery without a limit has no over-limit reading: nothing to say.
+    let no_limit = list(
+        "batteries",
+        &[("BAT0", &[("name", Value::Text("BAT0".into()))])],
+    );
+    let results = evaluate(&rule, &no_limit).unwrap();
+    assert!(
+        !matches!(results[0].1, Outcome::Fired { .. }),
+        "{:?}",
+        results[0].1
+    );
+}
+
+#[test]
 fn filling_up() {
     let rule = rule("storage.filling_up");
     let disk = |mount: &str, used: f64, filling: bool, days: Option<f64>| {

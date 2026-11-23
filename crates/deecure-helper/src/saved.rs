@@ -52,7 +52,7 @@ pub struct Kept {
     pub id: Option<String>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Saved {
     pub settings: BTreeMap<String, Kept>,
 }
@@ -332,6 +332,54 @@ pub fn apply_setting(root: &Path, key: &str) -> Option<Outcome> {
     Some(Outcome {
         setting: key.to_owned(),
         call: kept.call.clone(),
+        ok: result.is_ok(),
+        message: result.unwrap_or_else(|e| e),
+    })
+}
+
+/// The kept battery charge settings (`charge_limits:<battery>`, `charge_mode:<battery>`).
+pub fn charge_keys(root: &Path) -> Vec<String> {
+    load(&root.join(SAVED))
+        .settings
+        .into_keys()
+        .filter(|k| k.starts_with("charge_limits:") || k.starts_with("charge_mode:"))
+        .collect()
+}
+
+/// Sets a kept setting again only when the system no longer has it (some firmware forgets a
+/// charge limit, or switches the charge mode). `None` when it is not kept, or nothing changed.
+pub fn apply_if_lost(root: &Path, key: &str) -> Option<Outcome> {
+    let saved = load(&root.join(SAVED));
+    let kept = saved.settings.get(key)?;
+    if setting(&kept.call).as_deref() == Some(key)
+        && let Some(Ok((writes, _))) = power::plan(&kept.call, root)
+        && power::already_set(&writes)
+    {
+        return None;
+    }
+    let mut result = apply_one(root, key, kept);
+    let mut call = kept.call.clone();
+    // A value kept before DeeCure read it back (or set by hand) may be one the firmware changes
+    // (Dell). Keep what the firmware keeps, so this is written once, not at every charger change.
+    if result.is_ok()
+        && let Some((stored, note)) = power::as_stored(&kept.call, root)
+    {
+        let mut saved = saved.clone();
+        if let Some(k) = saved.settings.get_mut(key) {
+            k.call = stored.clone();
+        }
+        let kept_now = serde_json::to_string_pretty(&saved)
+            .map_err(|e| e.to_string())
+            .and_then(|text| store(&root.join(SAVED), &text));
+        result = result.map(|m| match kept_now {
+            Ok(()) => format!("{m}. {note}"),
+            Err(e) => format!("{m}. {note} (could not save it: {e})"),
+        });
+        call = stored;
+    }
+    Some(Outcome {
+        setting: key.to_owned(),
+        call,
         ok: result.is_ok(),
         message: result.unwrap_or_else(|e| e),
     })
@@ -628,5 +676,85 @@ mod tests {
         remember(&root, &limit(None), &limit(Some(60))).unwrap();
         assert_eq!(battery_cpu_limit(&root), None);
         assert!(apply_setting(&root, "battery_cpu_limit").is_none());
+    }
+
+    #[test]
+    fn a_lost_charge_limit_is_set_again_and_a_kept_one_is_left_alone() {
+        let root = test_root(
+            "lost",
+            &[
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/model_name", "5B10W51867\n"),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "100\n",
+                ),
+                (
+                    "/sys/class/power_supply/BAT0/charge_types",
+                    "Standard Adaptive [Custom]\n",
+                ),
+            ],
+        );
+        let stop = "sys/class/power_supply/BAT0/charge_control_end_threshold";
+        let mode = |m: &str| Call::SetChargeMode {
+            battery: "BAT0".into(),
+            mode: m.into(),
+        };
+        remember(&root, &limits(80), &limits(100)).unwrap();
+        remember(&root, &mode("Custom"), &mode("Standard")).unwrap();
+        assert_eq!(
+            charge_keys(&root),
+            ["charge_limits:BAT0", "charge_mode:BAT0"]
+        );
+        // The limit is still 100 in the fixture (remember only keeps it): set again.
+        let o = apply_if_lost(&root, "charge_limits:BAT0").unwrap();
+        assert!(o.ok, "{}", o.message);
+        assert_eq!(file(&root, stop), "80");
+        // Now it is there, and Custom is still in use: nothing is written.
+        assert!(apply_if_lost(&root, "charge_limits:BAT0").is_none());
+        assert!(apply_if_lost(&root, "charge_mode:BAT0").is_none());
+        // The firmware switched to Standard: Custom is set again.
+        std::fs::write(
+            root.join("sys/class/power_supply/BAT0/charge_types"),
+            "Standard Adaptive Custom [Standard]\n",
+        )
+        .unwrap();
+        assert!(apply_if_lost(&root, "charge_mode:BAT0").unwrap().ok);
+        assert!(apply_if_lost(&root, "turbo").is_none(), "not kept");
+    }
+
+    #[test]
+    fn numbers_the_firmware_changed_are_read_back() {
+        // A Dell keeps a start of 50% when 40% is asked (no error is given).
+        let root = test_root(
+            "stored",
+            &[
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_start_threshold",
+                    "50\n",
+                ),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "80\n",
+                ),
+            ],
+        );
+        let asked = |start: u32| Call::SetChargeLimits {
+            battery: "BAT0".into(),
+            start: Some(start),
+            stop: 80,
+        };
+        let (stored, note) = power::as_stored(&asked(40), &root).unwrap();
+        assert_eq!(stored, asked(50));
+        assert!(
+            note.contains(
+                "it keeps start below 50% and stop at 80%, not start below 40% and stop at 80%"
+            ),
+            "{note}"
+        );
+        // What was asked is what is there: nothing to say.
+        assert!(power::as_stored(&asked(50), &root).is_none());
+        assert!(power::as_stored(&Call::CleanAptCache, &root).is_none());
     }
 }

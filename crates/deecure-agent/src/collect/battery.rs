@@ -17,8 +17,14 @@ use super::{Collector, Sample, SystemRoot, metric, minutes_since, read_trimmed};
 pub struct Battery {
     /// Minutes in a row plugged in while the battery drains, per battery.
     drain: std::collections::HashMap<String, f64>,
+    /// Minutes in a row charging above the battery's own stop limit, per battery.
+    over: std::collections::HashMap<String, f64>,
     last: Option<Timestamp>,
 }
+
+/// How many points above its stop limit a charging battery must be to count as over it. A
+/// battery can read a point or two over the limit when the charger stops.
+pub const OVER_BY: f64 = 3.0;
 
 /// What the battery's own `health` file says when something is wrong (anything but "Good").
 pub const FAULTS: &[&str] = &[
@@ -148,6 +154,48 @@ impl Collector for Battery {
                 Unit::Count,
                 now,
             ));
+            // The stop limit, and charging on above it (OVER_BY points or more): the firmware
+            // does not follow the limit. On a Dell each of these files is a call into the BIOS
+            // (about 10 ms for the limit, 40 ms for the charge mode), so nothing is read while
+            // the battery does not charge: the limit only while it charges, and the charge
+            // mode only when the charge is already over the limit. Only a limit in use counts:
+            // a battery that offers a Custom charge mode follows the limit only in Custom, and
+            // in any other mode its files still show the stored Custom values (Dell).
+            if supply.join("charge_control_end_threshold").exists() {
+                let charging = status.as_deref() == Some("Charging");
+                let stop = charging
+                    .then(|| number(&supply, "charge_control_end_threshold"))
+                    .flatten();
+                let looks_over = stop.is_some_and(|s| {
+                    s < 100.0 && number(&supply, "capacity").is_some_and(|c| c >= s + OVER_BY)
+                });
+                let in_use = !looks_over
+                    || crate::inventory::power_detail::limit_needs_custom(
+                        text("charge_types")
+                            .map(|t| crate::inventory::power_detail::choice(&t))
+                            .as_ref(),
+                    )
+                    .is_none();
+                if in_use && let Some(stop) = stop {
+                    sample.metrics.push(metric(
+                        "battery.charge_stop",
+                        subject,
+                        stop,
+                        Unit::Percent,
+                        now,
+                    ));
+                }
+                let over = looks_over && in_use;
+                let minutes = self.over.entry(name.clone()).or_insert(0.0);
+                *minutes = if over { *minutes + step } else { 0.0 };
+                sample.metrics.push(metric(
+                    "battery.over_limit_minutes",
+                    subject,
+                    *minutes,
+                    Unit::Count,
+                    now,
+                ));
+            }
             if text("status").as_deref() == Some("Discharging")
                 && let Some(seconds) = time_left(&supply)
             {
@@ -315,6 +363,94 @@ mod tests {
         assert_eq!(
             Battery::default().collect(&root, Timestamp(0)).unwrap(),
             Sample::default()
+        );
+    }
+
+    #[test]
+    fn charging_on_above_the_stop_limit_is_counted_in_minutes() {
+        let files = |status: &'static str, capacity: &'static str| {
+            vec![
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/status", status),
+                ("/sys/class/power_supply/BAT0/capacity", capacity),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "80\n",
+                ),
+            ]
+        };
+        let over = |sample: &Sample| value(sample, "battery.over_limit_minutes", Some("BAT0"));
+        let mut battery = Battery::default();
+        // At the limit, or a point over it: the charger is stopping, not over.
+        let root = fixture_root("battery-at-limit", &files("Charging\n", "81\n"));
+        let sample = battery.collect(&root, Timestamp(0)).unwrap();
+        assert_eq!(
+            value(&sample, "battery.charge_stop", Some("BAT0")),
+            Some(80.0)
+        );
+        assert_eq!(over(&sample), Some(0.0));
+        // Still charging at 93%: one minute over, then two.
+        let root = fixture_root("battery-over-limit", &files("Charging\n", "93\n"));
+        assert_eq!(
+            over(&battery.collect(&root, Timestamp(60_000)).unwrap()),
+            Some(1.0)
+        );
+        assert_eq!(
+            over(&battery.collect(&root, Timestamp(120_000)).unwrap()),
+            Some(2.0)
+        );
+        // Above the limit but not charging (charged before the limit was set): not over, and
+        // the limit is not even read (on a Dell each read is a call into the BIOS).
+        let root = fixture_root("battery-over-idle", &files("Not charging\n", "93\n"));
+        let sample = battery.collect(&root, Timestamp(180_000)).unwrap();
+        assert_eq!(over(&sample), Some(0.0));
+        assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
+        // No limit file: neither reading.
+        let root = fixture_root(
+            "battery-no-limit",
+            &[
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/status", "Charging\n"),
+            ],
+        );
+        let sample = Battery::default().collect(&root, Timestamp(0)).unwrap();
+        assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
+        assert_eq!(over(&sample), None);
+    }
+
+    #[test]
+    fn a_stored_limit_outside_the_custom_mode_is_not_a_limit() {
+        // A Dell in Standard: the limit files show the stored Custom values, which do nothing,
+        // so charging to 100% is normal and must never warn.
+        let files = |modes: &'static str| {
+            vec![
+                ("/sys/class/power_supply/BAT0/type", "Battery\n"),
+                ("/sys/class/power_supply/BAT0/status", "Charging\n"),
+                ("/sys/class/power_supply/BAT0/capacity", "97\n"),
+                (
+                    "/sys/class/power_supply/BAT0/charge_control_end_threshold",
+                    "90\n",
+                ),
+                ("/sys/class/power_supply/BAT0/charge_types", modes),
+            ]
+        };
+        let over = |sample: &Sample| value(sample, "battery.over_limit_minutes", Some("BAT0"));
+        let mut battery = Battery::default();
+        let root = fixture_root(
+            "battery-dell-standard",
+            &files("Trickle Fast [Standard] Adaptive Custom\n"),
+        );
+        let sample = battery.collect(&root, Timestamp(0)).unwrap();
+        assert_eq!(over(&sample), Some(0.0));
+        assert_eq!(value(&sample, "battery.charge_stop", Some("BAT0")), None);
+        // The same Dell in Custom: the limit is in use and is watched.
+        let root = fixture_root(
+            "battery-dell-custom",
+            &files("Trickle Fast Standard Adaptive [Custom]\n"),
+        );
+        assert_eq!(
+            over(&battery.collect(&root, Timestamp(60_000)).unwrap()),
+            Some(1.0)
         );
     }
 }

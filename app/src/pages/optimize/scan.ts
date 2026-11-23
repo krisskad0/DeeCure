@@ -25,10 +25,10 @@ export const PARTS: { id: string; label: string; icon: IconName; what: string }[
   { id: "boot", label: "Start-up", icon: "play", what: 'Whether "wait for network" slows boot' },
   { id: "disks", label: "Disks", icon: "db", what: "Weekly TRIM for SSDs" },
   { id: "kernels", label: "Old kernels", icon: "pkg", what: "Kernels kept besides the running one and a fallback" },
-  { id: "devices", label: "Devices", icon: "usb", what: "Power saving, PCIe link width, and USB speed" },
+  { id: "devices", label: "Devices", icon: "usb", what: "Power saving, PCIe link width, USB speed, and services with no hardware" },
   { id: "hardware", label: "Hardware health", icon: "chip", what: "Heat slowdowns, battery health, restart needed, and memory errors" },
   { id: "cleanup", label: "Space, packages, and updates", icon: "layers", what: "Trash, caches, logs, snaps, Docker, unused packages, updates, firewall, and file watches" },
-  { id: "history", label: "Usage history", icon: "hist", what: "Charge limit, power mode, turbo on battery, wake-ups, and swapping" },
+  { id: "history", label: "Usage history", icon: "hist", what: "Charge limit, battery drain, power saver and turbo on battery, power mode, wake-ups, and swapping" },
   { id: "drivers", label: "Drivers and firmware", icon: "mon", what: "Video driver, second graphics card, recommended drivers, firmware, and DKMS" },
 ];
 
@@ -80,6 +80,10 @@ function save(checks: OptimizeCheck[], at: number) {
 
 let state: ScanState = { error: null, ...load() };
 let running: Promise<void> | null = null;
+/** How many full scans have started, so a one-part re-check can tell one began after it. */
+let scans = 0;
+/** How many fixes have run, so a re-check clears the "a fix ran" mark only when no other fix ran after it. */
+let fixes = 0;
 /** When the last scan started, so a failing agent is asked again only every RETRY_MS. */
 let tried: number | undefined;
 const listeners = new Set<() => void>();
@@ -111,7 +115,7 @@ async function run() {
     const started = Date.now();
     setPart(part.id, { status: "running", startedAt: started });
     try {
-      const got = await getInventory(`optimize_${part.id}`);
+      const got = tagged(await getInventory(`optimize_${part.id}`), part.id);
       all.push(...got);
       const found = got.filter((c) => c.offered);
       setPart(part.id, { status: "done", ms: Date.now() - started, checked: got.length, found: found.length });
@@ -145,6 +149,7 @@ async function run() {
 export function scanOptimize(): Promise<void> {
   if (running) return running;
   tried = Date.now();
+  scans += 1;
   set({ startedAt: tried, error: null, found: [], parts: PARTS.map((p) => ({ id: p.id, status: "waiting" })) });
   running = run().finally(() => {
     running = null;
@@ -153,15 +158,47 @@ export function scanOptimize(): Promise<void> {
   return running;
 }
 
-/** After a fix: the answer may be out of date. Nothing is checked until the user asks. */
-export function optimizeChanged() {
-  if (state.at !== undefined) set({ changedAt: Date.now() });
+/** Marks each check with the part it came from. */
+function tagged(checks: OptimizeCheck[], part: string): OptimizeCheck[] {
+  return checks.map((c) => ({ ...c, part }));
+}
+
+/**
+ * After a fix: the answer may be out of date. When the fix came from a check whose part is known,
+ * only that part is checked again at once (a second or two), so the item shows as done. Otherwise
+ * the page says to scan again.
+ *
+ * The fresh part goes into the newest list when it arrives (not the list from before the wait),
+ * so two quick fixes do not undo each other. If a full scan started or ended meanwhile, its
+ * answer is newer and this one is dropped. Only this fix's "a fix ran" mark is cleared, so a
+ * fix from another page in the meantime still shows it.
+ */
+export async function optimizeChanged(action?: string): Promise<void> {
+  if (state.at === undefined) return;
+  const changedAt = Date.now();
+  const fix = ++fixes;
+  set({ changedAt });
+  const parts = [...new Set((state.checks ?? []).filter((c) => action && c.action === action && c.part).map((c) => c.part as string))];
+  if (parts.length === 0 || running) return;
+  const scan = scans;
+  try {
+    const fresh: OptimizeCheck[] = [];
+    for (const part of parts) fresh.push(...tagged(await getInventory(`optimize_${part}`), part));
+    if (scans !== scan) return;
+    const kept = (state.checks ?? []).filter((c) => !c.part || !parts.includes(c.part));
+    set({ checks: sorted([...kept, ...fresh]), ...(fixes === fix ? { changedAt: undefined } : {}) });
+    save(state.checks ?? [], state.at ?? changedAt);
+  } catch {
+    // The banner stays: "Scan again to see what is left."
+  }
 }
 
 /** For tests: forget every answer and the kept one, or with `keep`, read the kept one again. */
 export function resetOptimizeScan(keep = false) {
   running = null;
   tried = undefined;
+  // A re-check still waiting from before is dropped.
+  scans += 1;
   try {
     if (!keep) window.localStorage.removeItem(KEY);
   } catch {

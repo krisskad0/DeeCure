@@ -5,7 +5,7 @@
 // offers them.
 
 import { useState } from "react";
-import { type CpuDetail, type KeptSetting, type LidSettings, type NetDeep, type PciDevice, type PowerDetail, getInventory } from "../../api";
+import { type Choice, type CpuDetail, type KeptSetting, type LidSettings, type NetDeep, type PciDevice, type PowerDetail, getInventory } from "../../api";
 import { Button } from "../../components/Button";
 import { FieldRow, Select } from "../../components/FormControls";
 import { Panel } from "../../components/Panel";
@@ -24,6 +24,16 @@ export const PRESETS = [
   { name: "Balanced", stop: 90 },
   { name: "Long life", stop: 80 },
 ] as const;
+
+/**
+ * The charge mode in use when the battery follows its limits only in the Custom mode and another
+ * mode is in use (the same rule as `limit_needs_custom` in the agent). Its limit files then show
+ * stored values that do nothing (Dell), and the battery charges to 100%. Undefined otherwise.
+ */
+export function limitNeedsCustom(mode?: Choice): string | undefined {
+  if (!mode?.offered.includes("Custom") || mode.current === "Custom") return undefined;
+  return mode.current ?? "not reported";
+}
 
 /** The subject for a charge limit change: `BAT0:75:80`, or `BAT0:-:80` without a start limit. */
 export function limitsSubject(battery: string, hasStart: boolean, stop: number, start?: number): string {
@@ -172,7 +182,7 @@ function keptValue(p: PowerDetail, setting: string): string | undefined {
 function KeptList({ p }: { p: PowerDetail }) {
   if (!p.kept?.length) return null;
   return (
-    <FieldRow label="Kept after restart" description="DeeCure sets these again at each start, after the same checks. A device setting is skipped when a different device is in its place.">
+    <FieldRow label="Kept after restart" description="DeeCure sets these again at each start, after the same checks. A device setting is skipped when a different device is in its place. Charge limits and the charge mode are also set again when the charger is plugged in or out, if the laptop changed them: to use another charge mode, pick it here in Power controls, not in the firmware setup (BIOS).">
       <ul className="plain-list">
         {p.kept.map((k) => (
           <li key={k.setting}>
@@ -193,7 +203,7 @@ function KeptList({ p }: { p: PowerDetail }) {
   );
 }
 
-function BatteryControls({ b }: { b: PowerDetail["batteries"][number] }) {
+function BatteryControls({ b, keptMode }: { b: PowerDetail["batteries"][number]; keptMode?: string }) {
   const openFix = useFix();
   const hasStart = b.charge_start !== undefined;
   const [stop, setStop] = useState(String(b.charge_stop ?? 80));
@@ -202,13 +212,24 @@ function BatteryControls({ b }: { b: PowerDetail["batteries"][number] }) {
   const s = Number(stop);
   const st = Number(start);
   const valid = Number.isInteger(s) && s >= 20 && s <= 100 && (!hasStart || (Number.isInteger(st) && st >= 0 && st < s));
+  // Not in use: the stored values do nothing, and the battery charges to 100% (Full is in effect).
+  const custom = limitNeedsCustom(b.charge_mode);
+  const now = `${hasStart ? `starts below ${b.charge_start}%, ` : ""}stops at ${b.charge_stop}%`;
+  const inEffect = (stop: number) => (custom ? stop === 100 : b.charge_stop === stop);
   return (
     <>
       {b.charge_stop !== undefined && (
-        <FieldRow label={`Charge limits · ${b.name}`} description={`Now: ${hasStart ? `starts below ${b.charge_start}%, ` : ""}stops at ${b.charge_stop}%. Keeping the battery below full slows its wear.`}>
+        <FieldRow
+          label={`Charge limits · ${b.name}`}
+          description={
+            custom
+              ? `Not in use: this battery follows its limits only in the Custom charge mode, and the mode is ${custom}, so it charges to 100%. Stored: ${now}. Setting a limit below 100% here also sets Custom.`
+              : `Now: ${now}. Keeping the battery below full slows its wear.`
+          }
+        >
           <span className="btn-row">
             {PRESETS.map((p) => (
-              <Button key={p.name} small onClick={() => openFix("power.set_charge_limits", limitsSubject(b.name, hasStart, p.stop))} disabled={b.charge_stop === p.stop}>
+              <Button key={p.name} small onClick={() => openFix("power.set_charge_limits", limitsSubject(b.name, hasStart, p.stop))} disabled={inEffect(p.stop)}>
                 {p.name} ({p.stop}%)
               </Button>
             ))}
@@ -229,7 +250,7 @@ function BatteryControls({ b }: { b: PowerDetail["batteries"][number] }) {
         </FieldRow>
       )}
       {b.charge_mode && b.charge_mode.offered.length > 1 && (
-        <FieldRow label={`Charge mode · ${b.name}`} description="Adaptive learns your use; Fast charges quickly but wears the battery more; Custom uses the limits above.">
+        <FieldRow label={`Charge mode · ${b.name}`} description={`Adaptive learns your use; Fast charges quickly but wears the battery more; Custom uses the limits above.${keptMode ? ` Kept by DeeCure: ${keptMode} is set again at each start and charger change, so pick another mode here, not in the firmware setup (BIOS).` : ""}`}>
           <span className="btn-row">
             <Select value={mode} options={b.charge_mode.offered.map((m) => ({ value: m, label: m }))} onChange={setMode} label="Charge mode" />
             <Button small disabled={!mode || mode === b.charge_mode.current} onClick={() => openFix("power.set_charge_mode", `${b.name}:${mode}`)}>
@@ -242,7 +263,8 @@ function BatteryControls({ b }: { b: PowerDetail["batteries"][number] }) {
   );
 }
 
-export function PowerControls() {
+/** `powerModes`: the power profiles service is running (from the Power page's `power` reading). Without it, "Power saver on battery" could not switch anything, so it is not shown. */
+export function PowerControls({ powerModes = false }: { powerModes?: boolean }) {
   const openFix = useFix();
   const { data: p, error } = useLive<PowerDetail>(loadPower, 15_000);
   const cpu = useLive<CpuDetail>(loadCpu, 30_000).data;
@@ -257,6 +279,7 @@ export function PowerControls() {
   const wifi = net?.wifi.find((w) => w.uuid);
   const topKhz = Math.max(0, ...(cpu?.cores ?? []).map((c) => c.hardware_max_khz ?? c.max_khz ?? 0));
   const cpuLimit = p.kept?.find((k) => k.setting === "battery_cpu_limit")?.call.percent ?? undefined;
+  const turboOff = p.kept?.find((k) => k.setting === "battery_turbo")?.call.on === false;
   return (
     <Panel
       title="Power controls"
@@ -266,12 +289,32 @@ export function PowerControls() {
     >
       <KeptList p={p} />
       {p.batteries.map((b) => (
-        <BatteryControls key={b.name} b={b} />
+        <BatteryControls key={b.name} b={b} keptMode={p.kept?.find((k) => k.setting === `charge_mode:${b.name}`)?.call.mode ?? undefined} />
       ))}
       {cpu?.turbo !== undefined && (
         <FieldRow label="CPU turbo" description={`Now ${cpu.turbo ? "on" : "off"}. Off: lower top speed, less heat, longer battery. Kept after restart.`}>
           <Button small onClick={() => openFix("power.set_turbo", cpu.turbo ? "off" : "on")}>
             Turn turbo {cpu.turbo ? "off" : "on"}
+          </Button>
+        </FieldRow>
+      )}
+      {p.batteries.length > 0 && p.battery_saver !== undefined && powerModes && (
+        <FieldRow
+          label="Power saver on battery"
+          description={`Now ${p.battery_saver ? "on" : "off"}. On: the power mode changes to Power saver when you unplug, and back to your mode when you plug in. A mode you pick yourself stays until the next unplug. No password needed.`}
+        >
+          <Button small onClick={() => openFix("power.set_battery_saver", p.battery_saver ? "off" : "on")}>
+            {p.battery_saver ? "Stop switching" : "Switch on unplug"}
+          </Button>
+        </FieldRow>
+      )}
+      {p.batteries.length > 0 && cpu?.turbo !== undefined && (
+        <FieldRow
+          label="Turbo on battery"
+          description={`Now ${turboOff ? "off on battery" : "the same as on mains"}. Off on battery: lower top speed, less heat, longer battery. On mains, turbo follows the CPU turbo setting.`}
+        >
+          <Button small onClick={() => openFix("power.set_battery_turbo", turboOff ? "on" : "off")}>
+            {turboOff ? "Allow on battery" : "Turn off on battery"}
           </Button>
         </FieldRow>
       )}

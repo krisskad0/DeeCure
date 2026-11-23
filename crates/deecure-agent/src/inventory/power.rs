@@ -159,7 +159,8 @@ fn batteries(root: &SystemRoot) -> (Vec<BatteryInfo>, Option<bool>) {
     (list, on_ac)
 }
 
-async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
+/// The power mode now and the modes offered, from power-profiles-daemon.
+pub(crate) async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
     // The new name first; older releases only have the second.
     for (service, object) in [
         (
@@ -206,7 +207,49 @@ async fn profile(agent: &Agent) -> Option<(String, Vec<String>)> {
     None
 }
 
-async fn gsetting(schema: &str, key: &str) -> Option<String> {
+/// Changes the power mode through power-profiles-daemon, as the user (no password).
+pub(crate) async fn set_profile(agent: &Agent, profile: &str) -> Result<(), String> {
+    for (service, object) in [
+        (
+            "org.freedesktop.UPower.PowerProfiles",
+            "/org/freedesktop/UPower/PowerProfiles",
+        ),
+        ("net.hadess.PowerProfiles", "/net/hadess/PowerProfiles"),
+    ] {
+        if !agent.is_running(Bus::System, service).await {
+            continue;
+        }
+        let bus = agent.bus(Bus::System).await.map_err(|e| e.to_string())?;
+        bus.call_method(
+            Some(service),
+            object,
+            Some("org.freedesktop.DBus.Properties"),
+            "Set",
+            &(
+                service,
+                "ActiveProfile",
+                zbus::zvariant::Value::from(profile),
+            ),
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+    Err("the power profiles service is not running".into())
+}
+
+/// Seconds without use before GNOME puts the computer to sleep (suspend or hibernate) or shuts
+/// it down, from the `sleep-inactive-*-timeout` and `-type` settings; 0 when it never does. The
+/// other actions (`nothing`, `blank`, `logout`, `interactive`) do not sleep, so they count as 0,
+/// and so does a timeout of 0, which GNOME treats as "never".
+pub(crate) fn sleep_after(timeout: Option<u32>, action: Option<&str>) -> Option<u32> {
+    match action {
+        None | Some("suspend" | "hibernate" | "shutdown") => timeout,
+        Some(_) => Some(0),
+    }
+}
+
+pub(crate) async fn gsetting(schema: &str, key: &str) -> Option<String> {
     let out = command::output("gsettings", &["get", schema, key], Duration::from_secs(3)).await?;
     Some(
         out.trim()
@@ -225,10 +268,8 @@ pub async fn read(agent: &Agent) -> PowerInfo {
         .await
         .map_or((None, Vec::new()), |(a, p)| (Some(a), p));
     let power = "org.gnome.settings-daemon.plugins.power";
-    // A suspend timeout only counts when the action is "suspend".
-    let suspend = |timeout: Option<String>, kind: Option<String>| match kind.as_deref() {
-        Some("nothing") => Some(0),
-        _ => timeout.and_then(|t| t.parse().ok()),
+    let suspend = |timeout: Option<String>, kind: Option<String>| {
+        sleep_after(timeout.and_then(|t| t.parse().ok()), kind.as_deref())
     };
     PowerInfo {
         batteries,
@@ -264,6 +305,17 @@ pub async fn read(agent: &Agent) -> PowerInfo {
 mod tests {
     use super::*;
     use crate::collect::test_support::fixture_root;
+
+    #[test]
+    fn only_sleep_hibernate_or_shutdown_count_as_sleep() {
+        assert_eq!(sleep_after(Some(900), Some("suspend")), Some(900));
+        assert_eq!(sleep_after(Some(900), Some("hibernate")), Some(900));
+        // The screen only blanks: the laptop never sleeps.
+        assert_eq!(sleep_after(Some(1200), Some("blank")), Some(0));
+        assert_eq!(sleep_after(Some(1200), Some("nothing")), Some(0));
+        assert_eq!(sleep_after(Some(0), Some("suspend")), Some(0));
+        assert_eq!(sleep_after(None, None), None);
+    }
 
     #[test]
     fn reads_policy_with_defaults() {

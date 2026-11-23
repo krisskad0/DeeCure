@@ -4,6 +4,7 @@
 //!
 //! The binary in `main.rs` only parses arguments and starts [`server::serve`].
 
+pub mod battery_saver;
 pub mod collect;
 pub mod context;
 pub mod fixes;

@@ -125,6 +125,12 @@ pub const ACTIONS: &[(&str, &str, Option<&str>)] = &[
         Some("on|off"),
     ),
     (
+        "power.set_battery_saver",
+        "Use Power saver on battery",
+        Some("on|off"),
+    ),
+    ("power.save_when_away", "Save power when you are away", None),
+    (
         "storage.cap_journal",
         "Cap the system log size",
         Some("megabytes|off"),
@@ -384,6 +390,28 @@ pub enum Call {
         /// Turbo on battery.
         on: bool,
     },
+    /// Switch to the Power saver mode when the charger is unplugged, and back to the mode
+    /// before it when the charger is plugged in again. Kept in [`battery_saver_file`]; the
+    /// agent does the switching, as the user.
+    SetBatterySaver {
+        /// On or off.
+        on: bool,
+    },
+    /// Seconds without use before the screen turns off (GNOME `idle-delay`); 0 = never.
+    SetScreenIdle {
+        /// Any number of seconds, as GNOME takes, so an undo can always put back the old value.
+        seconds: u32,
+    },
+    /// What the laptop does after some time without use on battery (GNOME
+    /// `sleep-inactive-battery-type` and `-timeout`). Apps that play media or ask to stay awake
+    /// still keep it awake.
+    SetBatteryIdleSleep {
+        /// One of [`IDLE_ACTIONS`].
+        action: String,
+        /// 0 (never) up to the largest GNOME takes (a signed 32-bit number), so an undo can
+        /// always put back the old value.
+        seconds: u32,
+    },
     /// Cap the system log (`SystemMaxUse=` in a journald drop-in), and shrink it to the cap now.
     /// `None` removes the drop-in.
     SetJournalCap {
@@ -476,6 +504,9 @@ impl Call {
                 | Call::SetStartupApp { .. }
                 | Call::EndProcess { .. }
                 | Call::SetPowerProfile { .. }
+                | Call::SetBatterySaver { .. }
+                | Call::SetScreenIdle { .. }
+                | Call::SetBatteryIdleSleep { .. }
                 | Call::SetKeyboardBacklight { .. }
                 | Call::SetRadio { .. }
                 | Call::SetWifiPowerSave { .. }
@@ -483,6 +514,50 @@ impl Call {
                 | Call::UpdateFirmware { .. }
         )
     }
+}
+
+/// A time without use in words: "5 minutes", "1 minute", "30 seconds", "90 seconds". Whole
+/// minutes only when the time is a whole number of minutes, so a short time never reads as
+/// "0 minutes". One wording for the Optimize items, the fix previews, and the fix results.
+pub fn idle_words(seconds: u32) -> String {
+    let (n, unit) = if seconds.is_multiple_of(60) {
+        (seconds / 60, "minute")
+    } else {
+        (seconds, "second")
+    };
+    format!("{n} {unit}{}", if n == 1 { "" } else { "s" })
+}
+
+/// What GNOME may do after some time without use (`sleep-inactive-*-type`).
+pub const IDLE_ACTIONS: &[&str] = &[
+    "nothing",
+    "suspend",
+    "hibernate",
+    "shutdown",
+    "interactive",
+    "blank",
+    "logout",
+];
+
+/// Where "Power saver on battery" is kept for this user: `~/.config/deecure/battery-saver.json`.
+/// It holds `{"on": true}` or `{"on": false}`; a missing file means off.
+///
+/// Always under `HOME`, never `$XDG_CONFIG_HOME`: the app writes it from the desktop session,
+/// and the agent reads it from systemd, which can start before the desktop sets that variable.
+/// With two different folders the button would say done and nothing would switch.
+pub fn battery_saver_file() -> Option<std::path::PathBuf> {
+    let home = std::env::var_os("HOME").filter(|h| !h.is_empty())?;
+    Some(std::path::PathBuf::from(home).join(".config/deecure/battery-saver.json"))
+}
+
+/// Is "Power saver on battery" on in this file? A missing or damaged file means off. The one
+/// reader for both the agent (which switches the mode) and the fix (which keeps the undo).
+pub fn battery_saver_on(file: &std::path::Path) -> bool {
+    std::fs::read_to_string(file)
+        .ok()
+        .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+        .and_then(|v| v["on"].as_bool())
+        .unwrap_or(false)
 }
 
 /// One step of a plan.
@@ -612,6 +687,11 @@ mod tests {
         );
         assert!(Call::CleanAptCache.admin());
         assert!(!Call::EmptyTrash.admin());
+        assert!(!Call::SetBatterySaver { on: true }.admin());
+        assert_eq!(
+            serde_json::to_value(Call::SetBatterySaver { on: true }).unwrap(),
+            json!({"op": "set_battery_saver", "on": true})
+        );
         assert!(
             serde_json::from_value::<Call>(json!({"op": "rm_rf", "path": "/"})).is_err(),
             "unknown operations cannot be read"

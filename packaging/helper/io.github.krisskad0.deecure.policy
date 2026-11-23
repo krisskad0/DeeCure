@@ -115,22 +115,13 @@
       <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
-  <action id="io.github.krisskad0.deecure.set-charge-limits">
-    <description>Change the battery charge limits</description>
-    <message>Authentication is required to change when the battery starts and stops charging</message>
+  <action id="io.github.krisskad0.deecure.set-battery-charging">
+    <description>Change how the battery charges</description>
+    <message>Authentication is required to change the battery charge limits or charge mode</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
-    </defaults>
-  </action>
-  <action id="io.github.krisskad0.deecure.set-charge-mode">
-    <description>Change the battery charge mode</description>
-    <message>Authentication is required to change how the battery charges</message>
-    <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
+      <allow_active>auth_admin_keep</allow_active>
     </defaults>
   </action>
   <action id="io.github.krisskad0.deecure.set-turbo">

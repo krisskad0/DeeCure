@@ -102,6 +102,9 @@ async fn run(
     db_path: Option<PathBuf>,
     rules_dir: Option<PathBuf>,
 ) -> Result<(), Box<dyn Error>> {
+    // A throwaway agent (tests, `make ui-real`, `make perf`) has its own database: it must never
+    // change this computer, so only the real one switches the power mode.
+    let real_agent = db_path.is_none();
     let db_path = db_path.or_else(Store::default_path).ok_or_else(|| {
         io::Error::new(io::ErrorKind::NotFound, "HOME is not set; pass --db PATH")
     })?;
@@ -166,6 +169,9 @@ async fn run(
         rule_checker(rules),
     ));
     tokio::spawn(notify::run(agent.clone()));
+    if real_agent {
+        tokio::spawn(deecure_agent::battery_saver::run(agent.clone()));
+    }
     tokio::spawn(deecure_agent::updates::run(agent.clone()));
     let _ = agent.facts.set(Facts {
         database: db_path.clone(),
