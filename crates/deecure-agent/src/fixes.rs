@@ -58,12 +58,26 @@ fn need<'a>(subject: Option<&'a str>, what: &str) -> Result<&'a str, String> {
 fn idle_text(seconds: Option<&str>) -> String {
     match seconds.and_then(|s| s.parse::<u32>().ok()) {
         Some(0) => "never".into(),
-        Some(s) if s % 60 == 0 => {
-            let m = s / 60;
-            format!("{m} minute{}", if m == 1 { "" } else { "s" })
-        }
-        Some(s) => format!("{s} seconds"),
+        Some(s) => deecure_core::fix::idle_words(s),
         None => "not reported".into(),
+    }
+}
+
+/// What screen lock does when the screen turns off, after a space, or nothing when it is off.
+/// GNOME locks `lock-delay` seconds after the screen turns off, not always at the same time.
+fn lock_words(on: bool, delay: Option<u32>) -> String {
+    match (on, delay) {
+        (false, _) => String::new(),
+        (true, Some(0)) => {
+            " Your screen lock is on, so the screen also locks when it turns off.".into()
+        }
+        (true, Some(d)) => format!(
+            " Your screen lock is on: the screen locks {} after it turns off.",
+            deecure_core::fix::idle_words(d)
+        ),
+        (true, None) => {
+            " Your screen lock is on, so the screen locks when it turns off, or soon after.".into()
+        }
     }
 }
 
@@ -824,6 +838,7 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
             let (screen, sleep) =
                 crate::inventory::optimize::away_needs(screen_now, sleep_now, battery);
             let lock = gs("org.gnome.desktop.screensaver", "lock-enabled").await;
+            let lock_delay = num(gs("org.gnome.desktop.screensaver", "lock-delay").await);
             subtitle = "GNOME settings, as you, no password; untick a step to skip it".into();
             let mut steps = Vec::new();
             if screen.is_some() {
@@ -833,11 +848,7 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
                     format!(
                         "Now: {}. Only time without keyboard, mouse, or touchpad use counts. A video or a call that asks to keep the screen on still keeps it on.{}",
                         idle_text(screen_now.map(|s| s.to_string()).as_deref()),
-                        if lock.as_deref() == Some("true") {
-                            " Your screen lock is on, so the screen also locks when it turns off."
-                        } else {
-                            ""
-                        }
+                        lock_words(lock.as_deref() == Some("true"), lock_delay)
                     ),
                     None,
                     Undo::Full,
@@ -1186,6 +1197,20 @@ mod tests {
     use crate::collect::SystemRoot;
     use crate::store::Store;
     use std::sync::{Arc, Mutex};
+
+    #[test]
+    fn the_lock_sentence_follows_the_lock_delay() {
+        assert_eq!(lock_words(false, Some(0)), "");
+        assert_eq!(
+            lock_words(true, Some(0)),
+            " Your screen lock is on, so the screen also locks when it turns off."
+        );
+        assert_eq!(
+            lock_words(true, Some(300)),
+            " Your screen lock is on: the screen locks 5 minutes after it turns off."
+        );
+        assert!(lock_words(true, None).ends_with("or soon after."));
+    }
 
     fn agent() -> Arc<Agent> {
         Agent::new(

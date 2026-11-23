@@ -66,7 +66,7 @@ journalctl -b -1 -u systemd-suspend.service   # what happened during the last su
 3. Open **Optimize**. It offers only what was measured on your laptop:
    - **Save power when you are away**, when the screen never turns off or the laptop never sleeps on battery.
    - **Turn off a service with no hardware**, such as ModemManager on a laptop without a mobile modem.
-   - **Use Power saver on battery**, when the laptop ran on battery for an hour or more in the last 7 days. It also shows your real draw in watts and how long a full charge lasts.
+   - **Use Power saver on battery**, when the laptop ran on battery for an hour or more in the last 7 days. It also shows your real draw in watts and how long a charge lasts (with a charge limit, a charge to that limit).
    - **Turn off turbo on battery**, when the CPU often slowed down from heat on battery in the last 7 days.
    - **Power saving for a device**, when that device supports it and has it off.
    - **A different power mode**, when Performance runs on battery for a long time.

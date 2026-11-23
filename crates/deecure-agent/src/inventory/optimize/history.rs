@@ -15,12 +15,30 @@ use crate::context::Agent;
 const HOUR: i64 = 3_600_000;
 const DAY: i64 = 24 * HOUR;
 
-/// The share of time on mains in `points` (0 to 1; 15-minute and daily points are averages, so
-/// the mean is still the share), and how many days the points cover.
+/// The share of time on mains in `points` (0 to 1), and how many days the points cover.
+///
+/// Each point counts for the time to the next one, at most 15 minutes (the last one for the
+/// same as the one before it). The last 7 days are minute points and older ones 15-minute
+/// averages, so a plain mean would count the newest week about 15 times more (on a real laptop
+/// it said 41% where the time on mains was 33%). A gap, when the computer was off or asleep,
+/// counts as at most 15 minutes.
 pub fn mains_share(points: &[(i64, f64)], now: i64) -> Option<(f64, f64)> {
+    const MINUTE: i64 = 60_000;
     let first = points.first()?.0;
-    let share = points.iter().map(|(_, v)| v).sum::<f64>() / points.len() as f64;
-    Some((share, (now - first) as f64 / DAY as f64))
+    let span = |i: usize| {
+        let gap = match (points.get(i), points.get(i + 1)) {
+            (Some(a), Some(b)) => b.0 - a.0,
+            _ if i > 0 => points[i].0 - points[i - 1].0,
+            _ => MINUTE,
+        };
+        gap.clamp(1, 15 * MINUTE) as f64
+    };
+    let (mut on, mut total) = (0.0, 0.0);
+    for (i, (_, v)) in points.iter().enumerate() {
+        on += v * span(i);
+        total += span(i);
+    }
+    Some((on / total, (now - first) as f64 / DAY as f64))
 }
 
 /// Minutes on battery, and those with heat slowdowns, from the two counters taken together.
@@ -125,7 +143,14 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
             .filter(|(t, _)| now - t <= 7 * DAY)
             .copied()
             .collect();
-        let usage = battery_usage(agent, &b.name, &info, &week, now);
+        let usage = battery_usage(
+            agent,
+            &b.name,
+            power_detail::limit_in_use(b),
+            &info,
+            &week,
+            now,
+        );
         out.push(battery_saver(
             &info,
             minutes_on_battery(&week),
@@ -155,7 +180,7 @@ pub async fn checks(agent: &Agent) -> Vec<Check> {
 pub fn charge_checks(b: &power_detail::BatteryDetail, usage: &str) -> Vec<Check> {
     let mut out = Vec::new();
     let custom = power_detail::limit_needs_custom(b.charge_mode.as_ref());
-    let in_use = b.charge_stop.filter(|s| *s < 100 && custom.is_none());
+    let in_use = power_detail::limit_in_use(b);
     if b.charge_stop.is_some() {
         let subject = format!(
             "{}:{}:80",
@@ -235,9 +260,9 @@ pub fn battery_draw(mains: &[(i64, f64)], watts: &[(i64, f64)]) -> Option<(f64, 
     (!draws.is_empty()).then(|| (draws.iter().sum::<f64>() / draws.len() as f64, draws.len()))
 }
 
-/// "5 minutes", "1 minute".
+/// "5 minutes", "1 minute", "30 seconds": never "0 minutes" for a short time.
 fn minutes(seconds: u32) -> String {
-    count((seconds / 60) as usize, "minute")
+    deecure_core::fix::idle_words(seconds)
 }
 
 /// What is wrong with the screen and sleep settings, if anything: the screen never turns off or
@@ -356,10 +381,11 @@ fn battery_saver(info: &power::PowerInfo, minutes: usize, on: bool, usage: Optio
 }
 
 /// The measured use on battery in the last 7 days, in one sentence: the average draw, the share
-/// of the battery an hour, and how long a full charge lasts. `None` with under 60 minutes.
+/// of the battery an hour, and how long a charge lasts. `None` with under 60 minutes.
 fn battery_usage(
     agent: &Agent,
     battery: &str,
+    limit: Option<u32>,
     info: &power::PowerInfo,
     mains: &[(i64, f64)],
     now: i64,
@@ -382,13 +408,22 @@ fn battery_usage(
         .and_then(|b| b.full_wh)
         .filter(|f| *f > 0.0)?;
     let (w, minutes) = battery_draw(mains, &watts)?;
-    (minutes >= 60).then(|| {
-        format!(
-            "On battery, the laptop used {w:.1} W on average (about {:.0}% of the battery an hour), so a full charge ({full:.0} Wh now) lasts about {}.",
-            w / full * 100.0,
-            hours_text(full / w)
-        )
-    })
+    (minutes >= 60).then(|| usage_text(w, full, limit))
+}
+
+/// The use sentence for an average draw of `w` watts on a battery that holds `full` Wh. With a
+/// charge limit in use, a charge holds only that share of the battery, so the time is for a
+/// charge to the limit, not for a full battery.
+pub fn usage_text(w: f64, full: f64, limit: Option<u32>) -> String {
+    let (what, wh) = match limit {
+        Some(l) => (format!("a charge to {l}%"), full * f64::from(l) / 100.0),
+        None => ("a full charge".to_owned(), full),
+    };
+    format!(
+        "On battery, the laptop used {w:.1} W on average (about {:.0}% of the battery an hour), so {what} ({wh:.0} Wh now) lasts about {}.",
+        w / full * 100.0,
+        hours_text(wh / w)
+    )
 }
 
 /// "7.2 hours", "45 minutes".
@@ -554,6 +589,13 @@ mod tests {
         assert!((share - 12.0 / 14.0).abs() < 1e-9);
         assert!((days - 14.0).abs() < 1e-9);
         assert!(mains_share(&[], 0).is_none());
+        // One hour on mains as four 15-minute averages, then one hour on battery as 60 minute
+        // points: half the time, not 4 of 64 points.
+        let minute = 60_000;
+        let mut mixed: Vec<(i64, f64)> = (0..4).map(|q| (q * 15 * minute, 1.0)).collect();
+        mixed.extend((0..60).map(|m| (HOUR + m * minute, 0.0)));
+        let (share, _) = mains_share(&mixed, 2 * HOUR).unwrap();
+        assert!((share - 0.5).abs() < 1e-9, "{share}");
     }
 
     #[test]
@@ -643,6 +685,40 @@ mod tests {
     fn hours_read_well() {
         assert_eq!(hours_text(7.04), "7.0 hours");
         assert_eq!(hours_text(0.75), "45 minutes");
+    }
+
+    #[test]
+    fn the_time_on_a_charge_follows_the_limit() {
+        // 10 W from a 50 Wh battery: 5 hours from full, 4 hours from a charge to 80%.
+        assert!(
+            usage_text(10.0, 50.0, None)
+                .ends_with("so a full charge (50 Wh now) lasts about 5.0 hours."),
+            "{}",
+            usage_text(10.0, 50.0, None)
+        );
+        let limited = usage_text(10.0, 50.0, Some(80));
+        assert!(
+            limited.ends_with("so a charge to 80% (40 Wh now) lasts about 4.0 hours."),
+            "{limited}"
+        );
+        // The share an hour is of the whole battery either way.
+        assert!(
+            limited.contains("about 20% of the battery an hour"),
+            "{limited}"
+        );
+    }
+
+    #[test]
+    fn short_idle_times_never_read_as_zero_minutes() {
+        let info = power::PowerInfo {
+            screen_blank_seconds: Some(30),
+            ..Default::default()
+        };
+        assert_eq!(
+            away(&info, false).measured,
+            "The screen turns off after 30 seconds without use."
+        );
+        assert_eq!(minutes(60), "1 minute");
     }
 
     #[test]

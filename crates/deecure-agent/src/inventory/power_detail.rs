@@ -313,6 +313,13 @@ pub fn limit_needs_custom(mode: Option<&Choice>) -> Option<String> {
     }
 }
 
+/// The stop limit in use, below 100%: `None` when the battery has none, or when its limit
+/// files show stored Custom values that do nothing in the mode in use ([`limit_needs_custom`]).
+pub fn limit_in_use(b: &BatteryDetail) -> Option<u32> {
+    b.charge_stop
+        .filter(|s| *s < 100 && limit_needs_custom(b.charge_mode.as_ref()).is_none())
+}
+
 /// `Trickle Fast [Custom]`: the one in brackets is in use.
 pub fn choice(text: &str) -> Choice {
     let offered: Vec<String> = text

@@ -516,6 +516,18 @@ impl Call {
     }
 }
 
+/// A time without use in words: "5 minutes", "1 minute", "30 seconds", "90 seconds". Whole
+/// minutes only when the time is a whole number of minutes, so a short time never reads as
+/// "0 minutes". One wording for the Optimize items, the fix previews, and the fix results.
+pub fn idle_words(seconds: u32) -> String {
+    let (n, unit) = if seconds.is_multiple_of(60) {
+        (seconds / 60, "minute")
+    } else {
+        (seconds, "second")
+    };
+    format!("{n} {unit}{}", if n == 1 { "" } else { "s" })
+}
+
 /// What GNOME may do after some time without use (`sleep-inactive-*-type`).
 pub const IDLE_ACTIONS: &[&str] = &[
     "nothing",

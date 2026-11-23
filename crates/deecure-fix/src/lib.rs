@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use deecure_core::Timestamp;
-use deecure_core::fix::{Call, FixRun, Plan, RunStatus, StepResult};
+use deecure_core::fix::{Call, FixRun, Plan, RunStatus, StepResult, idle_words};
 use serde_json::Value;
 use zbus::zvariant::{OwnedValue, Value as Variant};
 
@@ -416,16 +416,6 @@ pub fn gsetting_value(raw: &str) -> String {
         .trim_start_matches("int32 ")
         .trim_matches('\'')
         .to_owned()
-}
-
-/// "5 minutes", "1 minute", "30 seconds".
-pub fn idle_words(seconds: u32) -> String {
-    let (n, unit) = if seconds.is_multiple_of(60) {
-        (seconds / 60, "minute")
-    } else {
-        (seconds, "second")
-    };
-    format!("{n} {unit}{}", if n == 1 { "" } else { "s" })
 }
 
 /// Sets how long the screen stays on without use. The old value is the undo. Any value GNOME
