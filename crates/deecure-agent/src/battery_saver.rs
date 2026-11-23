@@ -91,6 +91,12 @@ pub fn decide(on: bool, last: Option<bool>, mains: bool, mode: &str, before: Opt
             None => Step::Nothing,
         };
     }
+    // Still on battery, but the mode is no longer Power saver: someone picked it by hand. The
+    // saved mode is forgotten now, not at the plug-in, so it never replaces that choice later
+    // (GNOME holds Power saver at low battery; DeeCure must not then put back the old mode).
+    if !mains && last == Some(false) && before.is_some() && mode != SAVER {
+        return Step::Forget;
+    }
     if last == Some(mains) {
         return Step::Nothing;
     }
@@ -101,6 +107,23 @@ pub fn decide(on: bool, last: Option<bool>, mains: bool, mode: &str, before: Opt
         (true, Some(b)) if mode == SAVER => Step::Restore { to: b.to_owned() },
         (true, Some(_)) => Step::Forget,
         _ => Step::Nothing,
+    }
+}
+
+/// A mode to go back to that the computer no longer offers (after a driver or
+/// power-profiles-daemon change) would fail at every look, forever. Balanced, which every
+/// computer with power modes has, is put back instead. `offered` empty means not known.
+pub fn offered_or_balanced(step: Step, offered: &[String]) -> Step {
+    match step {
+        Step::Restore { to } if !offered.is_empty() && !offered.contains(&to) => {
+            eprintln!(
+                "deecure-agent: power saver on battery: {to} is no longer offered, so Balanced is put back"
+            );
+            Step::Restore {
+                to: "balanced".into(),
+            }
+        }
+        other => other,
     }
 }
 
@@ -149,10 +172,10 @@ async fn look(agent: &Agent, file: Option<&Path>, last: Option<bool>) -> Option<
     if !at_screen(agent).await {
         return last;
     }
-    let Some((mode, _)) = power::profile(agent).await else {
+    let Some((mode, offered)) = power::profile(agent).await else {
         return last;
     };
-    let step = decide(on, last, mains, &mode, before.as_deref());
+    let step = offered_or_balanced(decide(on, last, mains, &mode, before.as_deref()), &offered);
     let done = match &step {
         Step::Nothing => true,
         Step::Save { before } => switch(agent, SAVER, Some(before)).await,
@@ -255,11 +278,20 @@ mod tests {
 
     #[test]
     fn a_mode_the_user_picks_is_left_alone() {
-        // On battery, the user picked Performance: no switch back to Power saver.
+        // On battery, the user picked Performance: no switch back to Power saver, and the saved
+        // Balanced is forgotten at once, so it can never replace Performance later.
         assert_eq!(
             decide(true, Some(false), false, "performance", Some("balanced")),
+            Step::Forget
+        );
+        // After that, on battery with nothing saved: nothing to do.
+        assert_eq!(
+            decide(true, Some(false), false, "performance", None),
             Step::Nothing
         );
+        // GNOME then holds Power saver at low battery, and the charger is plugged in: nothing
+        // saved, so DeeCure leaves it, and GNOME puts back Performance.
+        assert_eq!(decide(true, Some(false), true, SAVER, None), Step::Nothing);
         // Then plugged in: the user's choice stays, and the old mode is forgotten.
         assert_eq!(
             decide(true, Some(false), true, "performance", Some("balanced")),
@@ -292,9 +324,13 @@ mod tests {
     #[test]
     fn a_restart_on_the_same_power_source_changes_nothing() {
         // On battery the user picked Performance, then the agent restarted: the kept power
-        // source is still "battery", so the user's mode stays.
+        // source is still "battery", so the user's mode stays (the old saved mode is forgotten).
         assert_eq!(
             decide(true, Some(false), false, "performance", Some("balanced")),
+            Step::Forget
+        );
+        assert_eq!(
+            decide(true, Some(false), false, "performance", None),
             Step::Nothing
         );
         // Unplugged while the agent was not running: that still counts as an unplug.
@@ -304,6 +340,26 @@ mod tests {
                 before: "balanced".into()
             }
         );
+    }
+
+    #[test]
+    fn a_mode_no_longer_offered_is_replaced_by_balanced() {
+        let offered: Vec<String> = ["power-saver", "balanced"].map(String::from).to_vec();
+        let back = |to: &str| Step::Restore { to: to.into() };
+        assert_eq!(
+            offered_or_balanced(back("performance"), &offered),
+            back("balanced")
+        );
+        assert_eq!(
+            offered_or_balanced(back("balanced"), &offered),
+            back("balanced")
+        );
+        // Not known: left as it is. Other steps: untouched.
+        assert_eq!(
+            offered_or_balanced(back("performance"), &[]),
+            back("performance")
+        );
+        assert_eq!(offered_or_balanced(Step::Forget, &offered), Step::Forget);
     }
 
     #[test]
