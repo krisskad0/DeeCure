@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- After "Install security updates", or any other install, the check right after now sees it at once. Before, DeeCure read the package list at most once an hour, so it could still say the updates were waiting.
+
+### Security
+
+- `url` 2.5.9 ([RUSTSEC-2026-0592](https://rustsec.org/advisories/RUSTSEC-2026-0592)): a crafted URL could crash a program that reads its origin. DeeCure gets it through the desktop app's toolkit.
+
 ## [0.1.0-alpha.12] - 2026-11-23
 
 ### Added
