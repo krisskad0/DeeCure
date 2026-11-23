@@ -791,10 +791,8 @@ pub async fn plan(agent: &Agent, action: &str, subject: Option<&str>) -> Result<
             let screen_now = num(gs("org.gnome.desktop.session", "idle-delay").await);
             let sleep_type = gs(power, "sleep-inactive-battery-type").await;
             let sleep_time = num(gs(power, "sleep-inactive-battery-timeout").await);
-            let sleep_now = match sleep_type.as_deref() {
-                Some("nothing") => Some(0),
-                _ => sleep_time,
-            };
+            // The same reading as the Optimize item, so the item and this preview agree.
+            let sleep_now = crate::inventory::power::sleep_after(sleep_time, sleep_type.as_deref());
             let battery = crate::battery_saver::power_source(&agent.root).is_some();
             let (screen, sleep) =
                 crate::inventory::optimize::away_needs(screen_now, sleep_now, battery);

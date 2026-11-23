@@ -5,9 +5,10 @@
 //! before it when the charger is plugged in again.
 //!
 //! It runs as the user, like the "Change the power mode" fix, so it needs no password. It only
-//! acts when the power source changes (and once when it starts or is turned on), so a mode the
-//! user picks by hand stays until the next unplug. The mode to go back to is kept in the
-//! database, so it survives a restart of the agent.
+//! acts when the power source changes (and once when it is turned on), so a mode the user picks
+//! by hand stays until the next unplug. The mode to go back to and the last power source are
+//! kept in the database, so a restart of the agent (log out and in, an update) is not taken for
+//! an unplug; a charger change while the agent was not running still counts.
 
 use std::path::Path;
 use std::time::Duration;
@@ -21,6 +22,9 @@ use crate::store;
 const EVERY: Duration = Duration::from_secs(10);
 /// The mode to go back to on mains, while DeeCure has Power saver on (database setting).
 const BEFORE: &str = "battery_saver.before";
+/// The power source at the last look while the setting is on (database setting): `true` on
+/// mains, `false` on battery, none when it is off or nothing was seen yet.
+const LAST: &str = "battery_saver.last";
 /// The power mode DeeCure switches to on battery.
 pub const SAVER: &str = "power-saver";
 
@@ -107,42 +111,54 @@ pub fn decide(on: bool, last: Option<bool>, mains: bool, mode: &str, before: Opt
 /// power mode when the power source changes.
 pub async fn run(agent: std::sync::Arc<Agent>) {
     let file = deecure_core::fix::battery_saver_file();
-    let mut last: Option<bool> = None;
+    let mut last: Option<bool> = store::lock(&agent.store)
+        .setting::<Option<bool>>(LAST)
+        .ok()
+        .flatten()
+        .flatten();
+    // What the database holds now, so it is written only when the power source changes.
+    let mut kept = last;
     let mut timer = tokio::time::interval(EVERY);
     timer.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     loop {
         timer.tick().await;
-        let on = is_on(file.as_deref());
-        let Some(mains) = power_source(&agent.root) else {
-            // No battery: nothing to do, ever. Look again rarely, in case one appears.
-            last = None;
-            tokio::time::sleep(Duration::from_secs(600)).await;
-            continue;
+        last = match power_source(&agent.root) {
+            Some(mains) => look(&agent, file.as_deref(), last, mains).await,
+            None => {
+                // No battery: nothing to do. Look again rarely, in case one appears.
+                tokio::time::sleep(Duration::from_secs(600)).await;
+                None
+            }
         };
-        let before = store::lock(&agent.store)
-            .setting::<Option<String>>(BEFORE)
-            .ok()
-            .flatten()
-            .flatten();
-        if !on && before.is_none() {
-            last = None;
-            continue;
-        }
-        let Some((mode, _)) = power::profile(&agent).await else {
-            continue;
-        };
-        let step = decide(on, last, mains, &mode, before.as_deref());
-        let done = match &step {
-            Step::Nothing => true,
-            Step::Save { before } => switch(&agent, SAVER, Some(before)).await,
-            Step::Restore { to } => switch(&agent, to, None).await,
-            Step::Forget => forget(&agent),
-        };
-        // A failed switch is tried again at the next look.
-        if done {
-            last = on.then_some(mains);
+        if last != kept && store::lock(&agent.store).set_setting(LAST, &last).is_ok() {
+            kept = last;
         }
     }
+}
+
+/// One look: switches the power mode if needed, and gives the power source to remember.
+async fn look(agent: &Agent, file: Option<&Path>, last: Option<bool>, mains: bool) -> Option<bool> {
+    let on = is_on(file);
+    let before = store::lock(&agent.store)
+        .setting::<Option<String>>(BEFORE)
+        .ok()
+        .flatten()
+        .flatten();
+    if !on && before.is_none() {
+        return None;
+    }
+    let Some((mode, _)) = power::profile(agent).await else {
+        return last;
+    };
+    let step = decide(on, last, mains, &mode, before.as_deref());
+    let done = match &step {
+        Step::Nothing => true,
+        Step::Save { before } => switch(agent, SAVER, Some(before)).await,
+        Step::Restore { to } => switch(agent, to, None).await,
+        Step::Forget => forget(agent),
+    };
+    // A failed switch is tried again at the next look.
+    if done { on.then_some(mains) } else { last }
 }
 
 /// Changes the mode and remembers (or forgets) the mode to go back to.
@@ -221,7 +237,7 @@ mod tests {
 
     #[test]
     fn the_first_look_acts_on_the_power_source_now() {
-        // Turned on (or the agent started) while on battery.
+        // Turned on while on battery (or the very first start: no power source kept yet).
         assert_eq!(
             decide(true, None, false, "balanced", None),
             Step::Save {
@@ -236,6 +252,23 @@ mod tests {
             }
         );
         assert_eq!(decide(true, None, true, "balanced", None), Step::Nothing);
+    }
+
+    #[test]
+    fn a_restart_on_the_same_power_source_changes_nothing() {
+        // On battery the user picked Performance, then the agent restarted: the kept power
+        // source is still "battery", so the user's mode stays.
+        assert_eq!(
+            decide(true, Some(false), false, "performance", Some("balanced")),
+            Step::Nothing
+        );
+        // Unplugged while the agent was not running: that still counts as an unplug.
+        assert_eq!(
+            decide(true, Some(true), false, "balanced", None),
+            Step::Save {
+                before: "balanced".into()
+            }
+        );
     }
 
     #[test]

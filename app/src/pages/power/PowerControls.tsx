@@ -242,7 +242,8 @@ function BatteryControls({ b }: { b: PowerDetail["batteries"][number] }) {
   );
 }
 
-export function PowerControls() {
+/** `powerModes`: the power profiles service is running (from the Power page's `power` reading). Without it, "Power saver on battery" could not switch anything, so it is not shown. */
+export function PowerControls({ powerModes = false }: { powerModes?: boolean }) {
   const openFix = useFix();
   const { data: p, error } = useLive<PowerDetail>(loadPower, 15_000);
   const cpu = useLive<CpuDetail>(loadCpu, 30_000).data;
@@ -276,7 +277,7 @@ export function PowerControls() {
           </Button>
         </FieldRow>
       )}
-      {p.batteries.length > 0 && p.battery_saver !== undefined && (
+      {p.batteries.length > 0 && p.battery_saver !== undefined && powerModes && (
         <FieldRow
           label="Power saver on battery"
           description={`Now ${p.battery_saver ? "on" : "off"}. On: the power mode changes to Power saver when you unplug, and back to your mode when you plug in. A mode you pick yourself stays until the next unplug. No password needed.`}

@@ -153,7 +153,7 @@ export function PowerProfile() {
           ]}
         />
       </Panel>
-      {atLeast(mode, "expert") && <Guard><PowerControls /></Guard>}
+      {atLeast(mode, "expert") && <Guard><PowerControls powerModes={Boolean(power.profile)} /></Guard>}
     </>
   );
 }

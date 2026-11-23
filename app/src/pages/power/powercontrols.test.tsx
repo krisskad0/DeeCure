@@ -86,7 +86,7 @@ describe("Power controls", () => {
   });
 
   it("power saver and turbo on battery open their preview, and an older agent hides power saver", async () => {
-    withFix(<PowerControls />);
+    withFix(<PowerControls powerModes />);
     await waitFor(() => expect(screen.getByText("Switch on unplug")).toBeTruthy());
     expect(screen.getByText(/Now off\. On: the power mode changes to Power saver/)).toBeTruthy();
     fireEvent.click(screen.getByText("Switch on unplug"));
@@ -99,7 +99,7 @@ describe("Power controls", () => {
     opened.length = 0;
     power.battery_saver = true;
     power.kept!.push({ setting: "battery_turbo", call: { op: "set_battery_turbo", on: false } });
-    withFix(<PowerControls />);
+    withFix(<PowerControls powerModes />);
     await waitFor(() => expect(screen.getByText("Stop switching")).toBeTruthy());
     fireEvent.click(screen.getByText("Stop switching"));
     fireEvent.click(screen.getByText("Allow on battery"));
@@ -110,10 +110,15 @@ describe("Power controls", () => {
     cleanup();
     power.kept!.pop();
     power.battery_saver = undefined;
-    withFix(<PowerControls />);
+    withFix(<PowerControls powerModes />);
     await waitFor(() => expect(screen.getByText("Turn off on battery")).toBeTruthy());
     expect(screen.queryByText("Power saver on battery")).toBeNull();
     power.battery_saver = false;
+    // No power profiles service: nothing could switch, so the row is not shown.
+    cleanup();
+    withFix(<PowerControls />);
+    await waitFor(() => expect(screen.getByText("Turn off on battery")).toBeTruthy());
+    expect(screen.queryByText("Power saver on battery")).toBeNull();
   });
 
   it("kept settings show in words with this start's result", async () => {

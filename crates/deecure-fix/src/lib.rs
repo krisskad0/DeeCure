@@ -418,11 +418,19 @@ pub fn gsetting_value(raw: &str) -> String {
         .to_owned()
 }
 
-/// Sets how long the screen stays on without use. The old value is the undo.
+/// "5 minutes", "1 minute", "30 seconds".
+pub fn idle_words(seconds: u32) -> String {
+    let (n, unit) = if seconds.is_multiple_of(60) {
+        (seconds / 60, "minute")
+    } else {
+        (seconds, "second")
+    };
+    format!("{n} {unit}{}", if n == 1 { "" } else { "s" })
+}
+
+/// Sets how long the screen stays on without use. The old value is the undo. Any value GNOME
+/// takes is allowed, so the undo can put back whatever was there (for example 2 hours).
 async fn set_screen_idle(seconds: u32) -> Result<(String, Option<Call>), String> {
-    if seconds != 0 && !(60..=3600).contains(&seconds) {
-        return Err("the time must be 0 (never) or 60-3600 seconds".into());
-    }
     let old: u32 = gsetting(SESSION, "idle-delay")
         .await?
         .parse()
@@ -437,16 +445,43 @@ async fn set_screen_idle(seconds: u32) -> Result<(String, Option<Call>), String>
             "the screen no longer turns off by itself".into()
         } else {
             format!(
-                "the screen turns off after {} minutes without use",
-                seconds / 60
+                "the screen turns off after {} without use",
+                idle_words(seconds)
             )
         },
         Some(Call::SetScreenIdle { seconds: old }),
     ))
 }
 
+/// What a battery idle setting does, in words, for the fix result.
+pub fn idle_sleep_words(action: &str, seconds: u32) -> String {
+    match action {
+        _ if seconds == 0 || action == "nothing" => {
+            "on battery, the laptop no longer sleeps by itself".into()
+        }
+        "suspend" => format!(
+            "on battery, the laptop sleeps after {} without use",
+            idle_words(seconds)
+        ),
+        "hibernate" => format!(
+            "on battery, the laptop hibernates after {} without use",
+            idle_words(seconds)
+        ),
+        "shutdown" => format!(
+            "on battery, the laptop shuts down after {} without use",
+            idle_words(seconds)
+        ),
+        other => format!(
+            "on battery, after {} without use the laptop does: {other}",
+            idle_words(seconds)
+        ),
+    }
+}
+
 /// Sets what the laptop does after some time without use on battery. The old values are the
-/// undo.
+/// undo, exactly as they were: a timeout of 0 stays 0 (GNOME then never acts), so an undo never
+/// turns "never" into "after 1 minute". If the second setting cannot be written, the first is
+/// put back, so nothing is left half changed.
 async fn set_battery_idle_sleep(
     action: &str,
     seconds: u32,
@@ -454,41 +489,44 @@ async fn set_battery_idle_sleep(
     if !deecure_core::fix::IDLE_ACTIONS.contains(&action) {
         return Err(format!("{action} is not an idle action"));
     }
-    if !(60..=86_400).contains(&seconds) {
-        return Err("the time must be 60-86400 seconds".into());
+    if i32::try_from(seconds).is_err() {
+        return Err("the time is too long for GNOME".into());
     }
     let old_action = gsetting(GNOME_POWER, "sleep-inactive-battery-type").await?;
     let old_seconds: u32 = gsetting(GNOME_POWER, "sleep-inactive-battery-timeout")
         .await?
         .parse()
         .map_err(|_| "the sleep time is not a number")?;
-    program(
-        "gsettings",
-        &[
-            "set",
-            GNOME_POWER,
-            "sleep-inactive-battery-timeout",
-            &seconds.to_string(),
-        ],
-    )
-    .await?;
-    program(
+    let set_timeout = |s: u32| async move {
+        program(
+            "gsettings",
+            &[
+                "set",
+                GNOME_POWER,
+                "sleep-inactive-battery-timeout",
+                &s.to_string(),
+            ],
+        )
+        .await
+    };
+    set_timeout(seconds).await?;
+    if let Err(e) = program(
         "gsettings",
         &["set", GNOME_POWER, "sleep-inactive-battery-type", action],
     )
-    .await?;
+    .await
+    {
+        let back = match set_timeout(old_seconds).await {
+            Ok(_) => "the sleep time was put back".to_owned(),
+            Err(b) => format!("the sleep time could not be put back to {old_seconds} s: {b}"),
+        };
+        return Err(format!("{e} ({back})"));
+    }
     Ok((
-        if action == "nothing" {
-            "on battery, the laptop no longer sleeps by itself".into()
-        } else {
-            format!(
-                "on battery, the laptop sleeps after {} minutes without use",
-                seconds / 60
-            )
-        },
+        idle_sleep_words(action, seconds),
         Some(Call::SetBatteryIdleSleep {
             action: old_action,
-            seconds: old_seconds.max(60),
+            seconds: old_seconds,
         }),
     ))
 }
@@ -858,5 +896,26 @@ mod tests {
         assert_eq!(gsetting_value("uint32 300\n"), "300");
         assert_eq!(gsetting_value("'nothing'"), "nothing");
         assert_eq!(gsetting_value("900"), "900");
+    }
+
+    #[test]
+    fn idle_times_and_actions_read_well() {
+        assert_eq!(idle_words(60), "1 minute");
+        assert_eq!(idle_words(900), "15 minutes");
+        assert_eq!(idle_words(7200), "120 minutes");
+        assert_eq!(idle_words(30), "30 seconds");
+        assert_eq!(
+            idle_sleep_words("suspend", 900),
+            "on battery, the laptop sleeps after 15 minutes without use"
+        );
+        // A timeout of 0 means GNOME never acts, whatever the action says.
+        assert_eq!(
+            idle_sleep_words("suspend", 0),
+            "on battery, the laptop no longer sleeps by itself"
+        );
+        assert_eq!(
+            idle_sleep_words("blank", 1200),
+            "on battery, after 20 minutes without use the laptop does: blank"
+        );
     }
 }

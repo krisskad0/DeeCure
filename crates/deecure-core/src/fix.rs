@@ -399,7 +399,7 @@ pub enum Call {
     },
     /// Seconds without use before the screen turns off (GNOME `idle-delay`); 0 = never.
     SetScreenIdle {
-        /// 0, or 60-3600.
+        /// Any number of seconds, as GNOME takes, so an undo can always put back the old value.
         seconds: u32,
     },
     /// What the laptop does after some time without use on battery (GNOME
@@ -408,7 +408,8 @@ pub enum Call {
     SetBatteryIdleSleep {
         /// One of [`IDLE_ACTIONS`].
         action: String,
-        /// 60-86400.
+        /// 0 (never) up to the largest GNOME takes (a signed 32-bit number), so an undo can
+        /// always put back the old value.
         seconds: u32,
     },
     /// Cap the system log (`SystemMaxUse=` in a journald drop-in), and shrink it to the cap now.
@@ -520,6 +521,7 @@ pub const IDLE_ACTIONS: &[&str] = &[
     "nothing",
     "suspend",
     "hibernate",
+    "shutdown",
     "interactive",
     "blank",
     "logout",
