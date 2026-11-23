@@ -207,7 +207,7 @@ async fn at_screen(agent: &Agent) -> bool {
     };
     let state = reply
         .body()
-        .deserialize::<zbus::zvariant::OwnedValue>()
+        .deserialize::<zbus::OwnedVariant>()
         .ok()
         .and_then(|v| String::try_from(v).ok());
     user_at_screen(state.as_deref())

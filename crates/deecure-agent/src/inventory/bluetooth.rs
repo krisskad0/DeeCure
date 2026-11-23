@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 
 use serde::Serialize;
-use zbus::zvariant::{OwnedObjectPath, OwnedValue};
+use zbus::{OwnedObjectPath, OwnedVariant};
 
 use crate::context::{Agent, Bus};
 
@@ -36,9 +36,9 @@ pub struct BluetoothInfo {
     pub devices: Vec<BluetoothDevice>,
 }
 
-type Objects = HashMap<OwnedObjectPath, HashMap<String, HashMap<String, OwnedValue>>>;
+type Objects = HashMap<OwnedObjectPath, HashMap<String, HashMap<String, OwnedVariant>>>;
 
-fn get<T: TryFrom<OwnedValue>>(props: &HashMap<String, OwnedValue>, key: &str) -> Option<T> {
+fn get<T: TryFrom<OwnedVariant>>(props: &HashMap<String, OwnedVariant>, key: &str) -> Option<T> {
     T::try_from(props.get(key)?.try_clone().ok()?).ok()
 }
 

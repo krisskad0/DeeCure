@@ -32,8 +32,8 @@ use deecure_core::VERSION;
 use deecure_core::fix::Call;
 use serde_json::{Value, json};
 use tokio::sync::Mutex;
+use zbus::Variant;
 use zbus::fdo;
-use zbus::zvariant::Value as Variant;
 
 use actions::{Command, Probe};
 
@@ -868,14 +868,16 @@ async fn serve() -> zbus::Result<()> {
         last_call: std::sync::Mutex::new(Instant::now()),
         writing: Mutex::new(()),
     });
-    let _conn = zbus::connection::Builder::system()?
-        .name(BUS_NAME)?
+    // zbus 6: the builder steps never fail; any error (no system bus, the name taken) comes
+    // from build().
+    let _conn = zbus::connection::Builder::system()
+        .name(BUS_NAME)
         .serve_at(
             OBJECT,
             Helper {
                 state: state.clone(),
             },
-        )?
+        )
         .build()
         .await?;
     eprintln!("deecure-helper {VERSION}: ready");

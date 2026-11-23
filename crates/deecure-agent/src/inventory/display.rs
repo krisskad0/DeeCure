@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 use serde::Serialize;
-use zbus::zvariant::OwnedValue;
+use zbus::OwnedVariant;
 
 use crate::collect::SystemRoot;
 use crate::context::{Agent, Bus};
@@ -115,10 +115,10 @@ type Mode = (
     f64,
     f64,
     Vec<f64>,
-    HashMap<String, OwnedValue>,
+    HashMap<String, OwnedVariant>,
 );
 type Spec = (String, String, String, String);
-type Monitor = (Spec, Vec<Mode>, HashMap<String, OwnedValue>);
+type Monitor = (Spec, Vec<Mode>, HashMap<String, OwnedVariant>);
 type Logical = (
     i32,
     i32,
@@ -126,7 +126,7 @@ type Logical = (
     u32,
     bool,
     Vec<Spec>,
-    HashMap<String, OwnedValue>,
+    HashMap<String, OwnedVariant>,
 );
 
 async fn mutter(agent: &Agent, outputs: &mut [Output]) -> zbus::Result<()> {
@@ -140,9 +140,13 @@ async fn mutter(agent: &Agent, outputs: &mut [Output]) -> zbus::Result<()> {
             &(),
         )
         .await?;
-    let (_, monitors, logical, _): (u32, Vec<Monitor>, Vec<Logical>, HashMap<String, OwnedValue>) =
-        reply.body().deserialize()?;
-    let flag = |props: &HashMap<String, OwnedValue>, key: &str| {
+    let (_, monitors, logical, _): (
+        u32,
+        Vec<Monitor>,
+        Vec<Logical>,
+        HashMap<String, OwnedVariant>,
+    ) = reply.body().deserialize()?;
+    let flag = |props: &HashMap<String, OwnedVariant>, key: &str| {
         props
             .get(key)
             .and_then(|v| bool::try_from(v).ok())
@@ -188,7 +192,7 @@ async fn shell_version(agent: &Agent) -> Option<String> {
         )
         .await
         .ok()?;
-    let value: OwnedValue = reply.body().deserialize().ok()?;
+    let value: OwnedVariant = reply.body().deserialize().ok()?;
     String::try_from(value).ok()
 }
 
