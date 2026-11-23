@@ -81,7 +81,9 @@ describe("Hardware pages", () => {
     render(<HardwareSummary />);
     await waitFor(() => expect(screen.getByText("IdeaPad 5 14IAL7")).toBeTruthy());
     expect(screen.getByText("Intel Core i5-1235U · 54 °C")).toBeTruthy();
-    await waitFor(() => expect(screen.getByText(/needs Full access/)).toBeTruthy());
+    // The Storage row's own words: "needs Full access" also appears in an admin-read panel
+    // once its check is done, so a loose match finds two on a slow machine (CI).
+    await waitFor(() => expect(screen.getByText("Health needs Full access")).toBeTruthy());
     await waitFor(() => expect(screen.getByText("fwupd not running")).toBeTruthy());
   });
 
