@@ -1,3 +1,8 @@
 # DeeCure ships from its own APT repository, not the Debian archive, so there
 # is no "intent to package" bug for the first upload to close.
 deecure: initial-upload-closes-no-bugs
+
+# The agent never reads or parses the dpkg database. It only looks at the time
+# /var/lib/dpkg/status last changed, to read `apt list --upgradable` again right
+# after packages are installed (crates/deecure-agent/src/collect/updates.rs).
+deecure: uses-dpkg-database-directly [usr/libexec/deecure/deecure-agent]
