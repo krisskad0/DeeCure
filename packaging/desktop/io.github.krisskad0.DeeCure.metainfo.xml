@@ -44,6 +44,11 @@
     <binary>deecure-desktop</binary>
   </provides>
   <releases>
+    <release version="0.1.0-alpha.12" date="2026-11-23" type="development">
+      <description>
+        <p>Battery care: Power saver turns on by itself when you unplug, turbo can be turned off on battery only, and a new warning says when the battery charges past its limit. Optimize can save power while you are away, turn off services with no hardware, and set an 80% charge limit that also works on Dell laptops.</p>
+      </description>
+    </release>
     <release version="0.1.0-alpha.11" date="2026-11-16" type="development">
       <description>
         <p>A clearer sidebar in seven groups, a new Devices page, and Hardware › All Parts: every part of the computer in one table, with its memory slots, drive slots, and sockets. Optimize is safer: it never purges a package whose removal would delete Docker's data, never removes a snap that was only turned off, and no longer offers changes that do nothing.</p>

@@ -1,3 +1,13 @@
+deecure (0.1.0~alpha.12-1) noble; urgency=medium
+
+  * Power saver on battery, turbo on battery, and a warning when the
+    battery charges past its limit.
+  * Optimize: save power when away, turn off services with no hardware,
+    and an 80% charge limit that also sets Custom on Dell laptops.
+  * Fix: steps that need no password no longer show as Admin.
+
+ -- DeeCure maintainers <krisskad0@users.noreply.github.com>  Mon, 23 Nov 2026 13:33:45 +0530
+
 deecure (0.1.0~alpha.11-1) noble; urgency=medium
 
   * New sidebar in seven groups, a new Devices page, and an All Parts

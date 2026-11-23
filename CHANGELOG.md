@@ -6,6 +6,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [0.1.0-alpha.12] - 2026-11-23
+
+### Added
+
+- **Power saver on battery** (Power › Power Profile › Power controls, and Optimize): when you unplug the charger, the power mode changes to Power saver, and when you plug it in again, your mode comes back. A mode you pick yourself stays. No password needed.
+- **Turbo on battery** in Power controls: turn CPU turbo off on battery only. On the charger, turbo follows the CPU turbo setting.
+- **A new warning, "Battery charges past its limit"**: the battery keeps charging 3 points or more above a charge limit that is in use, for 10 minutes. The laptop's firmware is then not following the limit.
+- **Optimize: Save power when you are away.** The screen turns off after 5 minutes without use, and on battery the laptop sleeps after 15 minutes, offered only when yours never does or waits much longer. Video, calls, and apps that ask to stay awake still keep it on. Each step can be unticked.
+- **Optimize: Turn off ModemManager if there is no modem**, and the Bluetooth service if there is no Bluetooth chip, only while the service really runs.
+- **Optimize: Use Power saver on battery** shows your real use on battery: the average watts, the share of the battery an hour, and how long a charge lasts (with a charge limit, a charge to that limit).
+
+### Changed
+
+- **Limit battery charge to 80%** is offered for every battery that has no limit in use, not only for laptops that were on the charger most of 14 days. A lower limit you chose, such as 90%, is left alone.
+- On laptops that follow a charge limit only in the Custom charge mode (Dell), a limit set in DeeCure also sets Custom, with the same password. Power controls shows stored limits that do nothing in another mode as "Not in use".
+- When the firmware keeps other numbers than you asked (a Dell allows a start of 50-95% and a stop of 55-100%), DeeCure keeps the real numbers and tells you.
+- A kept charge limit or charge mode that the laptop lost is set again when the charger is plugged in or out.
+- After a fix from Optimize, its item is checked again at once and shows as done.
+
+### Fixed
+
+- Steps that need no password (the keyboard light, radios, Wi-Fi power saving, firmware updates, and your own Flatpak cleanup) no longer show as Admin, and work in Basic access.
+- A fix with nothing left to change now says so, instead of "The fix could not run".
+
 ## [0.1.0-alpha.11] - 2026-11-16
 
 ### Added
