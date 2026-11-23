@@ -30,10 +30,7 @@ pub const SAVER: &str = "power-saver";
 
 /// Is the setting on? A missing or damaged file means off.
 pub fn is_on(file: Option<&Path>) -> bool {
-    file.and_then(|f| std::fs::read_to_string(f).ok())
-        .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
-        .and_then(|v| v["on"].as_bool())
-        .unwrap_or(false)
+    file.is_some_and(deecure_core::fix::battery_saver_on)
 }
 
 /// Whether this computer has a system battery, and whether a charger is plugged in. `None` on

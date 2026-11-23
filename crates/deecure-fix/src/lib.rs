@@ -535,7 +535,7 @@ async fn set_battery_idle_sleep(
 /// the switching when the charger is plugged in or out.
 fn set_battery_saver(on: bool) -> Result<(String, Option<Call>), String> {
     let file = deecure_core::fix::battery_saver_file().ok_or("HOME is not set")?;
-    let was = battery_saver_on(&file);
+    let was = deecure_core::fix::battery_saver_on(&file);
     write_battery_saver(&file, on)?;
     Ok((
         if on {
@@ -545,15 +545,6 @@ fn set_battery_saver(on: bool) -> Result<(String, Option<Call>), String> {
         },
         Some(Call::SetBatterySaver { on: was }),
     ))
-}
-
-/// Is "Power saver on battery" on in this file? A missing or damaged file means off.
-pub fn battery_saver_on(file: &Path) -> bool {
-    std::fs::read_to_string(file)
-        .ok()
-        .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
-        .and_then(|v| v["on"].as_bool())
-        .unwrap_or(false)
 }
 
 /// Writes the setting through a temporary file, so the agent never reads half a file.

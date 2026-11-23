@@ -540,6 +540,16 @@ pub fn battery_saver_file() -> Option<std::path::PathBuf> {
     Some(config.join("deecure/battery-saver.json"))
 }
 
+/// Is "Power saver on battery" on in this file? A missing or damaged file means off. The one
+/// reader for both the agent (which switches the mode) and the fix (which keeps the undo).
+pub fn battery_saver_on(file: &std::path::Path) -> bool {
+    std::fs::read_to_string(file)
+        .ok()
+        .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+        .and_then(|v| v["on"].as_bool())
+        .unwrap_or(false)
+}
+
 /// One step of a plan.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Step {

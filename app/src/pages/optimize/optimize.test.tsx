@@ -9,7 +9,7 @@ import type { OptimizeCheck } from "../../api";
 import { FixContext } from "../../shell/FixDrawer";
 import { OptimizeStrip } from "../overview/OptimizeStrip";
 import { OptimizeAll, areaOf, offered, resetSeen } from "./Optimize";
-import { optimizeChanged, resetOptimizeScan } from "./scan";
+import { optimizeChanged, resetOptimizeScan, scanOptimize } from "./scan";
 
 let checks: OptimizeCheck[] = [];
 const calls: string[] = [];
@@ -179,6 +179,34 @@ describe("Optimize", () => {
     await optimizeChanged("storage.free_space");
     expect(calls).toEqual([]);
     await waitFor(() => expect(screen.getByText("A fix ran after this check")).toBeTruthy());
+  });
+
+  it("a re-check that ends after a full scan is dropped, and a fix from another page keeps its banner", async () => {
+    checks = [WAIT];
+    withFix(<OptimizeAll />);
+    await waitFor(() => expect(screen.getByText("1 improvement for this computer")).toBeTruthy());
+    // The re-check waits; meanwhile a full scan runs and still finds the item.
+    hold = "optimize_boot";
+    checks = [{ ...WAIT, offered: false }];
+    const recheck = optimizeChanged(WAIT.action);
+    const late = release as unknown as () => void;
+    hold = null;
+    checks = [WAIT];
+    await scanOptimize();
+    late();
+    await recheck;
+    expect(screen.getByText("1 improvement for this computer")).toBeTruthy();
+    // The re-check waits; meanwhile a fix runs from another page. (A short wait first, so the
+    // fix is not in the same millisecond as the scan above, which real use never is.)
+    await new Promise((done) => setTimeout(done, 5));
+    hold = "optimize_boot";
+    checks = [{ ...WAIT, offered: false }];
+    const second = optimizeChanged(WAIT.action);
+    await optimizeChanged("storage.free_space");
+    (release as unknown as () => void)();
+    await second;
+    await waitFor(() => expect(screen.queryByText("1 improvement for this computer")).toBeNull());
+    expect(screen.getByText("A fix ran after this check")).toBeTruthy();
   });
 
   it("checks by itself when the kept answer is a day old", async () => {
